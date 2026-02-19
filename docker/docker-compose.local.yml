@@ -1,0 +1,35 @@
+# Stack local: n8n + ngrok. Usar con ./start.local.sh
+# n8n usa la misma volume nombrada que en n8n/ para compartir datos.
+services:
+  ngrok:
+    image: ngrok/ngrok:latest
+    restart: unless-stopped
+    command: ["http", "n8n:5678"]
+    environment:
+      - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN}
+    ports:
+      - "4040:4040"
+
+  n8n:
+    build:
+      context: ../n8n
+      dockerfile: Dockerfile.n8n-local
+    image: n8n-local
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    environment:
+      - GENERIC_TIMEZONE=${GENERIC_TIMEZONE:-Europe/Madrid}
+      - TZ=${TZ:-Europe/Madrid}
+      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
+      - USE_NGROK=1
+      - NGROK_API_HOST=ngrok
+      - NGROK_API_PORT=4040
+    volumes:
+      - n8n_data:/home/node/.n8n
+    depends_on:
+      - ngrok
+
+volumes:
+  n8n_data:
+    name: n8n_n8n_data

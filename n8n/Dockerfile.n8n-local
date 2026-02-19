@@ -1,0 +1,5 @@
+FROM docker.n8n.io/n8nio/n8n:latest
+USER node
+COPY entrypoint-n8n-ngrok.mjs /entrypoint-n8n-ngrok.mjs
+ENTRYPOINT ["node", "/entrypoint-n8n-ngrok.mjs"]
+CMD ["n8n", "start"]

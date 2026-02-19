@@ -1,12 +1,12 @@
 {
-  "name": "Daily Briefing - Notion → Telegram",
+  "name": "Daily Briefing",
   "nodes": [
     {
       "parameters": {
-        "chatId": "REPLACE_WITH_YOUR_TELEGRAM_CHAT_ID",
-        "text": "={{ $json.text }}",
+        "chatId": "7812154300",
+        "text": "={{ $json.output }}",
         "additionalFields": {
-          "parse_mode": "Markdown"
+          "parse_mode": "HTML"
         }
       },
       "id": "0bb99b01-c22a-4d3a-9e65-8edb0fe54b49",
@@ -14,8 +14,8 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        -768,
-        -336
+        208,
+        -128
       ],
       "webhookId": "6f35ec27-3f30-4cc7-9e04-5240dd4264ce",
       "credentials": {
@@ -30,8 +30,8 @@
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        -1568,
-        -416
+        -2032,
+        -224
       ],
       "id": "e852c106-f587-4519-9f9d-bc3962e6737f",
       "name": "When clicking ‘Execute workflow’"
@@ -52,35 +52,72 @@
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
       "position": [
-        -1568,
-        -208
+        -2032,
+        -48
       ]
     },
     {
       "parameters": {
-        "options": {}
+        "promptType": "define",
+        "text": "={{ $json.contexto_completo }}",
+        "options": {
+          "systemMessage": "Eres un Asistente de Productividad de alto rendimiento. Tu objetivo es transformar un JSON desordenado de tareas y eventos en un plan de acción diario ultra-claro.\n\nREGLAS DE CLASIFICACIÓN:\n\nBloque Laboral: Prioriza todo lo relacionado con el desarrollo de rebeal o tareas técnicas de ingeniería. Usa el hashtag #rebeal o #ingenieria si aparecen.\n\nBloque Personal: Todo lo marcado con #personal, trámites de visado, o temas familiares.\n\nPrioridad Hoy: Analiza las fechas \"due\" y los eventos de calendario de hoy (19 de febrero de 2026).\n\nFORMATO DE SALIDA (HTML para Telegram). Usa <b></b> para negritas, emojis como viñetas en lugar de asteriscos (ej: 🚀, 🔹, ✅). NO uses asteriscos * ni guiones bajos _ sueltos.\n\n🚀 PLAN DEL DÍA - [FECHA]\n💼 FOCO LABORAL\n\n[Hora] - [Tarea/Evento]: [Detalles de sitio/personas]\n\n🏠 ASUNTOS PERSONALES\n\n[Hora] - [Tarea/Evento]: [Ubicación en Manizales si aplica]\n\n⚠️ IMPORTANTES DE LA SEMANA (Highlights)\n\n[Día] - [Hito relevante]: (Menciona si hay algo crítico como el Visado o hitos de rebeal).\n\nNOTAS TÉCNICAS:\n\nSi un evento tiene ubicación o \"description\", extráela.\n\nSé breve pero directo, con un tono profesional y ligeramente ingenioso."
+        }
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3.1,
       "position": [
-        -1248,
-        -336
+        -224,
+        -128
       ],
       "id": "f047c6c8-53a6-407b-ab6f-73b7620b9dce",
-      "name": "AI Agent"
+      "name": "AI Agent",
+      "executeOnce": true
     },
     {
       "parameters": {
-        "options": {}
+        "modelName": "models/gemini-2.0-flash",
+        "options": {
+          "temperature": 0.1
+        }
       },
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
       "typeVersion": 1,
       "position": [
-        -1328,
-        64
+        -224,
+        48
       ],
       "id": "ad5f61b1-8b2b-420d-aff4-1ac373648d28",
-      "name": "Google Gemini Chat Model"
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "1X3HQekSXuPXxwIF",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "task": "VnJhOVRqckpoOUFpSW9TUw",
+        "returnAll": true,
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.googleTasks",
+      "typeVersion": 1,
+      "position": [
+        -1600,
+        -416
+      ],
+      "id": "08a55b3f-7c80-43ba-be55-47ea75f05e6f",
+      "name": "TASKS / High",
+      "alwaysOutputData": false,
+      "credentials": {
+        "googleTasksOAuth2Api": {
+          "id": "mAC4HVTc9huEUeUn",
+          "name": "Google Tasks account"
+        }
+      }
     },
     {
       "parameters": {
@@ -94,18 +131,42 @@
         "returnAll": true,
         "options": {}
       },
-      "type": "n8n-nodes-base.googleCalendarTool",
+      "type": "n8n-nodes-base.googleCalendar",
       "typeVersion": 1.3,
       "position": [
-        -848,
-        64
+        -1600,
+        144
       ],
-      "id": "e3648f79-1509-4db3-ba2e-0929e4013306",
-      "name": "CAL / Personal",
+      "id": "92735e46-d63a-4cac-a932-8fbd8e24ead0",
+      "name": "CAL / Me",
+      "executeOnce": false,
       "credentials": {
         "googleCalendarOAuth2Api": {
           "id": "I9lCuECopLV28HuY",
           "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "task": "dkZadkd6ZEVkOWdoM0lSQg",
+        "returnAll": true,
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.googleTasks",
+      "typeVersion": 1,
+      "position": [
+        -1600,
+        -224
+      ],
+      "id": "77d12acd-cb74-4c34-9528-3421b08cf7bc",
+      "name": "TASKS / Med",
+      "executeOnce": false,
+      "credentials": {
+        "googleTasksOAuth2Api": {
+          "id": "mAC4HVTc9huEUeUn",
+          "name": "Google Tasks account"
         }
       }
     },
@@ -121,14 +182,15 @@
         "returnAll": true,
         "options": {}
       },
-      "type": "n8n-nodes-base.googleCalendarTool",
+      "type": "n8n-nodes-base.googleCalendar",
       "typeVersion": 1.3,
       "position": [
-        -720,
-        64
+        -1600,
+        -48
       ],
-      "id": "bc95c8d1-d8f3-47d6-b1cf-c3c7960aaf45",
+      "id": "df57c70f-3480-4575-a5da-89fd294744b8",
       "name": "CAL / Trastos",
+      "executeOnce": false,
       "credentials": {
         "googleCalendarOAuth2Api": {
           "id": "I9lCuECopLV28HuY",
@@ -138,47 +200,142 @@
     },
     {
       "parameters": {
-        "operation": "getAll",
-        "task": "VnJhOVRqckpoOUFpSW9TUw",
-        "returnAll": true,
-        "additionalFields": {}
+        "mode": "raw",
+        "jsonOutput": "={\n  \"description\": \"{{ $json.description }}\",\n  \"end\": \"{{ $json.end.dateTime }}\",\n  \"timezone\": \"{{ $json.end.timeZone }}\",\n  \"start\":\"{{ $json.start.dateTime }}\",\n  \"organizer\":\"{{ $json.organizer.email }}\",\n  \"summary\":\"{{ $json.summary }}\",\n  \"calendarName\":\"{{ $json.organizer.displayName }}\",\n}\n ",
+        "options": {}
       },
-      "type": "n8n-nodes-base.googleTasksTool",
-      "typeVersion": 1,
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
       "position": [
-        -1136,
-        64
+        -1392,
+        -48
       ],
-      "id": "52cca0f3-2688-41fa-852a-972f1e4df737",
-      "name": "TASKS / High",
-      "credentials": {
-        "googleTasksOAuth2Api": {
-          "id": "mAC4HVTc9huEUeUn",
-          "name": "Google Tasks account"
-        }
-      }
+      "id": "e1d780d8-0867-47eb-a6da-40e878fb79bb",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -1184,
+        -320
+      ],
+      "id": "512ea32a-6f5c-4610-b875-524d7bbbfe5e",
+      "name": "Merge / TASKS"
     },
     {
       "parameters": {
-        "operation": "getAll",
-        "task": "dkZadkd6ZEVkOWdoM0lSQg",
-        "returnAll": true,
-        "additionalFields": {}
+        "mode": "raw",
+        "jsonOutput": "={\n  \"title\": \"{{ $json.title }}\",\n  \"due\": \"{{ $json.due }}\",\n  \"priority\": \"High\"\n}",
+        "includeOtherFields": true,
+        "include": "selected",
+        "includeFields": "title,due,notes",
+        "options": {}
       },
-      "type": "n8n-nodes-base.googleTasksTool",
-      "typeVersion": 1,
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
       "position": [
-        -1024,
-        64
+        -1392,
+        -416
       ],
-      "id": "01ad9cdd-17d8-46bc-932d-42e2fa8e518a",
-      "name": "TASKS / Med",
-      "credentials": {
-        "googleTasksOAuth2Api": {
-          "id": "mAC4HVTc9huEUeUn",
-          "name": "Google Tasks account"
-        }
-      }
+      "id": "c9d15b44-5037-4a0f-8d7c-b08b9c0d3b3a",
+      "name": "Edit HIGH"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"title\": \"{{ $json.title }}\",\n  \"due\": \"{{ $json.due }}\",\n  \"priority\": \"Medium\"\n} ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1392,
+        -224
+      ],
+      "id": "9fa9a120-bbb9-4e49-9db0-ba537d812654",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "{\n  \"description\": \"{{ $json.description }}\",\n  \"end\": \"{{ $json.end.dateTime }}\",\n  \"timezone\": \"{{ $json.end.timeZone }}\",\n  \"start\":\"{{ $json.start.dateTime }}\",\n  \"organizer\":\"{{ $json.organizer.email }}\",\n  \"summary\":\"{{ $json.summary }}\",\n  \"calendarName\":\"{{ $json.organizer.displayName }}\",\n}\n ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1392,
+        144
+      ],
+      "id": "5330c47b-65e9-4bb7-8168-c5d35bcaecec",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -1184,
+        48
+      ],
+      "id": "344dcec4-b819-4bb6-a8d7-0522ee59fe4b",
+      "name": "Merge / CAL"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -752,
+        -128
+      ],
+      "id": "d2c86776-925a-4872-8255-4efc90bda89f",
+      "name": "Merge / ALL"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"type\": \"task\",\n  \"data\": {\n    \"title\": \"{{ $json.title }}\",\n    \"due\": \"{{ $json.due }}\",\n    \"priority\":\"{{ $json.priority }}\"\n  },\n}\n ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -976,
+        -320
+      ],
+      "id": "e4251801-b604-4201-a44e-de61ebc5e05c",
+      "name": "Edit Fields3"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"type\": \"event\",\n  \"data\": {\n  \"description\": \"{{ $json.description }}\",\n  \"end\": \"{{ $json.end }}\",\n  \"timezone\": \"{{ $json.timezone }}\",\n  \"start\":\"{{ $json.start }}\",\n  \"organizer\":\"{{ $json.organizer }}\",\n  \"summary\":\"{{ $json.summary }}\",\n  \"calendarName\":\"{{ $json.calendarName }}\",\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -976,
+        48
+      ],
+      "id": "c67f3e35-4e40-4987-aba8-6d77c75a23d4",
+      "name": "Edit Fields4"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Agrupamos todos los 14 elementos del Merge en un solo string\nconst allData = items.map(item => {\n  const i = item.json;\n  // Extraemos lo útil según sea Tarea o Evento\n  if (i.type === 'task') {\n    return `- [TAREA] ${i.data.title} (Vence: ${i.data.due || 'N/A'}) [${i.data.priority}]`;\n  } else {\n    return `- [EVENTO] ${i.data.summary} (Inicio: ${i.data.start}) en ${i.data.calendarName}`;\n  }\n}).join('\\n');\n\n// Devolvemos un UNICO objeto con todo el texto\nreturn [{ json: { contexto_completo: allData } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -544,
+        -128
+      ],
+      "id": "6249d4cb-f583-4b15-82a0-281c47acb080",
+      "name": "List to variable"
     }
   ],
   "pinData": {},
@@ -187,7 +344,22 @@
       "main": [
         [
           {
-            "node": "AI Agent",
+            "node": "TASKS / High",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "TASKS / Med",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "CAL / Trastos",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "CAL / Me",
             "type": "main",
             "index": 0
           }
@@ -198,7 +370,22 @@
       "main": [
         [
           {
-            "node": "AI Agent",
+            "node": "TASKS / High",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "TASKS / Med",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "CAL / Trastos",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "CAL / Me",
             "type": "main",
             "index": 0
           }
@@ -227,45 +414,155 @@
         ]
       ]
     },
-    "CAL / Personal": {
-      "ai_tool": [
-        [
-          {
-            "node": "AI Agent",
-            "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "CAL / Trastos": {
-      "ai_tool": [
-        [
-          {
-            "node": "AI Agent",
-            "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "TASKS / High": {
-      "ai_tool": [
+      "main": [
         [
           {
-            "node": "AI Agent",
-            "type": "ai_tool",
+            "node": "Edit HIGH",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CAL / Me": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
             "index": 0
           }
         ]
       ]
     },
     "TASKS / Med": {
-      "ai_tool": [
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CAL / Trastos": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "Merge / CAL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge / TASKS": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit HIGH": {
+      "main": [
+        [
+          {
+            "node": "Merge / TASKS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Merge / TASKS",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Merge / CAL",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge / CAL": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge / ALL": {
+      "main": [
+        [
+          {
+            "node": "List to variable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields3": {
+      "main": [
+        [
+          {
+            "node": "Merge / ALL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields4": {
+      "main": [
+        [
+          {
+            "node": "Merge / ALL",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "List to variable": {
+      "main": [
         [
           {
             "node": "AI Agent",
-            "type": "ai_tool",
+            "type": "main",
             "index": 0
           }
         ]
@@ -278,8 +575,9 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "cd9b45ad-8607-4712-8c3c-1ba424290e84",
+  "versionId": "5203b677-9ba8-4c06-95bc-cec025727cf4",
   "meta": {
+    "templateCredsSetupCompleted": true,
     "instanceId": "c161f39dbc3d63a699f9365c3d1da2eea605158e14e61448e8a00c19513dbf33"
   },
   "id": "ZLZGmhoUC2eGKAOC",

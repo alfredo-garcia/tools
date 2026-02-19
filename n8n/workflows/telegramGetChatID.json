@@ -1,0 +1,123 @@
+{
+  "name": "Telegram / Chat ID",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -48,
+        0
+      ],
+      "id": "c20d73b0-66b9-4428-9ec4-91a3a42fbeca",
+      "name": "Telegram Trigger",
+      "webhookId": "8aba23ee-bfea-4080-a5d9-0ba4ad1330a4",
+      "credentials": {
+        "telegramApi": {
+          "id": "Q5ngejEflEgTSkao",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.message.chat.id }}",
+        "text": "=Here's your chat ID:  {{ $json.message.chat.id }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        480,
+        -16
+      ],
+      "id": "847e06d8-3e2b-4edb-8cdd-b46d5f7d2086",
+      "name": "Send a text message",
+      "webhookId": "8a0e4fb2-99f9-4a1b-92da-2f6ef898e8b7",
+      "credentials": {
+        "telegramApi": {
+          "id": "Q5ngejEflEgTSkao",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "43354afe-4c4f-4b6c-ab87-1c3f4a5c8d9e",
+              "leftValue": "={{ $json.message.text }}",
+              "rightValue": "chat ID",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        208,
+        0
+      ],
+      "id": "9b7b6c96-2b51-43fd-aa55-16526286a809",
+      "name": "If"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "a5fbcba6-2bb5-46ae-a209-88451824409b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c161f39dbc3d63a699f9365c3d1da2eea605158e14e61448e8a00c19513dbf33"
+  },
+  "id": "ipZ4LIfkq59hDcAT",
+  "tags": []
+}

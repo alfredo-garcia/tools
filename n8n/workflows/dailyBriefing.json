@@ -6,6 +6,7 @@
         "chatId": "7812154300",
         "text": "={{ $json.output }}",
         "additionalFields": {
+          "appendAttribution": false,
           "parse_mode": "HTML"
         }
       },
@@ -331,7 +332,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -544,
+        -576,
         -128
       ],
       "id": "6249d4cb-f583-4b15-82a0-281c47acb080",
@@ -575,7 +576,7 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "5203b677-9ba8-4c06-95bc-cec025727cf4",
+  "versionId": "46c31448-40d1-48f9-9c87-d9b595d5abc0",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "c161f39dbc3d63a699f9365c3d1da2eea605158e14e61448e8a00c19513dbf33"

@@ -31,3 +31,7 @@ La **primera** vez que entres en http://localhost:5678 verás el asistente de co
 
 - Si quieres otra zona horaria, copia `.env.example` a `.env` y cambia `GENERIC_TIMEZONE` y `TZ` (valores IANA, ej. `Europe/Madrid`).
 - Sin `.env` se usa por defecto `Europe/Madrid`.
+
+## Workflows
+
+Los workflows en JSON están en [workflows/](workflows/). Importa desde n8n: menú ⋮ → Import from File.

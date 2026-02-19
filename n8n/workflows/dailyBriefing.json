@@ -1,0 +1,287 @@
+{
+  "name": "Daily Briefing - Notion → Telegram",
+  "nodes": [
+    {
+      "parameters": {
+        "chatId": "REPLACE_WITH_YOUR_TELEGRAM_CHAT_ID",
+        "text": "={{ $json.text }}",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "0bb99b01-c22a-4d3a-9e65-8edb0fe54b49",
+      "name": "Send to Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -768,
+        -336
+      ],
+      "webhookId": "6f35ec27-3f30-4cc7-9e04-5240dd4264ce",
+      "credentials": {
+        "telegramApi": {
+          "id": "Q5ngejEflEgTSkao",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1568,
+        -416
+      ],
+      "id": "e852c106-f587-4519-9f9d-bc3962e6737f",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 6 * * *"
+            }
+          ]
+        }
+      },
+      "id": "55513e0e-412d-412c-9a62-87adbb979197",
+      "name": "Every morning (6:00)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1568,
+        -208
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -1248,
+        -336
+      ],
+      "id": "f047c6c8-53a6-407b-ab6f-73b7620b9dce",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -1328,
+        64
+      ],
+      "id": "ad5f61b1-8b2b-420d-aff4-1ac373648d28",
+      "name": "Google Gemini Chat Model"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "alfredo.garcia.torres@gmail.com",
+          "mode": "list",
+          "cachedResultName": "alfredo.garcia.torres@gmail.com"
+        },
+        "returnAll": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        -848,
+        64
+      ],
+      "id": "e3648f79-1509-4db3-ba2e-0929e4013306",
+      "name": "CAL / Personal",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "I9lCuECopLV28HuY",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "46d5d84604b8c8683777fa575cc76728df696639835e26b5e046d1fc0dab6511@group.calendar.google.com",
+          "mode": "list",
+          "cachedResultName": "Trastos"
+        },
+        "returnAll": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        -720,
+        64
+      ],
+      "id": "bc95c8d1-d8f3-47d6-b1cf-c3c7960aaf45",
+      "name": "CAL / Trastos",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "I9lCuECopLV28HuY",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "task": "VnJhOVRqckpoOUFpSW9TUw",
+        "returnAll": true,
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.googleTasksTool",
+      "typeVersion": 1,
+      "position": [
+        -1136,
+        64
+      ],
+      "id": "52cca0f3-2688-41fa-852a-972f1e4df737",
+      "name": "TASKS / High",
+      "credentials": {
+        "googleTasksOAuth2Api": {
+          "id": "mAC4HVTc9huEUeUn",
+          "name": "Google Tasks account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "task": "dkZadkd6ZEVkOWdoM0lSQg",
+        "returnAll": true,
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.googleTasksTool",
+      "typeVersion": 1,
+      "position": [
+        -1024,
+        64
+      ],
+      "id": "01ad9cdd-17d8-46bc-932d-42e2fa8e518a",
+      "name": "TASKS / Med",
+      "credentials": {
+        "googleTasksOAuth2Api": {
+          "id": "mAC4HVTc9huEUeUn",
+          "name": "Google Tasks account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Every morning (6:00)": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send to Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CAL / Personal": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CAL / Trastos": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TASKS / High": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TASKS / Med": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "cd9b45ad-8607-4712-8c3c-1ba424290e84",
+  "meta": {
+    "instanceId": "c161f39dbc3d63a699f9365c3d1da2eea605158e14e61448e8a00c19513dbf33"
+  },
+  "id": "ZLZGmhoUC2eGKAOC",
+  "tags": []
+}

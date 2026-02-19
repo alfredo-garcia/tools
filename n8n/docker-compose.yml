@@ -8,6 +8,7 @@ services:
       - GENERIC_TIMEZONE=${GENERIC_TIMEZONE:-Europe/Madrid}
       - TZ=${TZ:-Europe/Madrid}
       - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
+      - N8N_CREATE_TUNNEL=true
     volumes:
       - n8n_data:/home/node/.n8n
 

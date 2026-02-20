@@ -2,37 +2,12 @@
   "name": "Daily Briefing",
   "nodes": [
     {
-      "parameters": {
-        "chatId": "7812154300",
-        "text": "={{ $json.output }}",
-        "additionalFields": {
-          "appendAttribution": false,
-          "parse_mode": "HTML"
-        }
-      },
-      "id": "0bb99b01-c22a-4d3a-9e65-8edb0fe54b49",
-      "name": "Send to Telegram",
-      "type": "n8n-nodes-base.telegram",
-      "typeVersion": 1.2,
-      "position": [
-        208,
-        -128
-      ],
-      "webhookId": "6f35ec27-3f30-4cc7-9e04-5240dd4264ce",
-      "credentials": {
-        "telegramApi": {
-          "id": "Q5ngejEflEgTSkao",
-          "name": "Telegram account"
-        }
-      }
-    },
-    {
       "parameters": {},
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        -2208,
-        -224
+        -2288,
+        -48
       ],
       "id": "e852c106-f587-4519-9f9d-bc3962e6737f",
       "name": "When clicking ‘Execute workflow’"
@@ -53,8 +28,8 @@
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
       "position": [
-        -2208,
-        -48
+        -2288,
+        144
       ]
     },
     {
@@ -212,7 +187,8 @@
         -48
       ],
       "id": "e1d780d8-0867-47eb-a6da-40e878fb79bb",
-      "name": "Edit Fields2"
+      "name": "Edit Fields2",
+      "alwaysOutputData": true
     },
     {
       "parameters": {},
@@ -241,7 +217,8 @@
         -416
       ],
       "id": "c9d15b44-5037-4a0f-8d7c-b08b9c0d3b3a",
-      "name": "Edit HIGH"
+      "name": "Edit HIGH",
+      "alwaysOutputData": true
     },
     {
       "parameters": {
@@ -256,7 +233,8 @@
         -224
       ],
       "id": "9fa9a120-bbb9-4e49-9db0-ba537d812654",
-      "name": "Edit Fields"
+      "name": "Edit Fields",
+      "alwaysOutputData": true
     },
     {
       "parameters": {
@@ -271,7 +249,8 @@
         144
       ],
       "id": "5330c47b-65e9-4bb7-8168-c5d35bcaecec",
-      "name": "Edit Fields1"
+      "name": "Edit Fields1",
+      "alwaysOutputData": true
     },
     {
       "parameters": {},
@@ -340,29 +319,120 @@
     },
     {
       "parameters": {
-        "inputSource": "passthrough"
+        "inputSource": "jsonExample",
+        "jsonExample": "{\n  \"channel\": \"telegram\",\n  \"command\": \"/plan\",\n  \"chatID\":\"1234\"\n}"
       },
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
       "position": [
-        -2208,
-        -400
+        -2288,
+        -320
       ],
       "id": "28b047e3-49d4-4a03-a079-44345e72ec4e",
       "name": "When Executed by Another Workflow"
     },
     {
       "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "1s8bYMIYbzv2fpLx",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/1s8bYMIYbzv2fpLx",
+          "cachedResultName": "Bot Output"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "chatID": "={{ $('Normalized Input Fields').item.json.chatID }}",
+            "channel": "={{ $('Normalized Input Fields').item.json.channel }}",
+            "message": "={{ $json.output }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "channel",
+              "displayName": "channel",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "messageOptions",
+              "displayName": "messageOptions",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "array",
+              "removed": true
+            },
+            {
+              "id": "chatID",
+              "displayName": "chatID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        176,
+        -128
+      ],
+      "id": "b1451cc9-5af0-4cba-b9fc-2eb8dfa0ffa2",
+      "name": "Call 'Bot Output'"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "{\n  \"channel\": \"telegram\",\n  \"command\": \"/plan\",\n  \"chatID\":\"7812154300\"\n}",
         "options": {}
       },
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -2016,
-        -224
+        -2128,
+        48
+      ],
+      "id": "c3e402bb-7029-4b72-8ee0-71ef7a9a0c5b",
+      "name": "Manual Input Fields"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"channel\": \"{{ $json.channel}}\",\n  \"command\": \"{{ $json.command }}\",\n  \"chatID\":\"{{ $json.chatID }}\"\n} ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1872,
+        -112
       ],
       "id": "0b25b71b-8bb6-48d0-aa10-9e082190cf38",
-      "name": "Edit Fields5"
+      "name": "Normalized Input Fields"
     }
   ],
   "pinData": {},
@@ -371,7 +441,7 @@
       "main": [
         [
           {
-            "node": "Edit Fields5",
+            "node": "Manual Input Fields",
             "type": "main",
             "index": 0
           }
@@ -382,7 +452,7 @@
       "main": [
         [
           {
-            "node": "Edit Fields5",
+            "node": "Manual Input Fields",
             "type": "main",
             "index": 0
           }
@@ -404,7 +474,7 @@
       "main": [
         [
           {
-            "node": "Send to Telegram",
+            "node": "Call 'Bot Output'",
             "type": "main",
             "index": 0
           }
@@ -569,14 +639,30 @@
       "main": [
         [
           {
-            "node": "Edit Fields5",
+            "node": "Normalized Input Fields",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Edit Fields5": {
+    "Call 'Bot Output'": {
+      "main": [
+        []
+      ]
+    },
+    "Manual Input Fields": {
+      "main": [
+        [
+          {
+            "node": "Normalized Input Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalized Input Fields": {
       "main": [
         [
           {
@@ -609,7 +695,7 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "1a98565a-e9b5-42f1-89fd-ffb47a68df50",
+  "versionId": "18f6886e-896c-48cf-bace-9cfe14d789b9",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "c161f39dbc3d63a699f9365c3d1da2eea605158e14e61448e8a00c19513dbf33"

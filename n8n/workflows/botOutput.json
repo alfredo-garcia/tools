@@ -1,0 +1,242 @@
+{
+  "name": "Bot Output",
+  "nodes": [
+    {
+      "parameters": {
+        "chatId": "={{ $('Channel split').item.json.chatID }}",
+        "text": "={{ $('Channel split').item.json.message }}",
+        "replyMarkup": "={{ '{\"inline_keyboard\":' + JSON.stringify($json.reply_markup.inline_keyboard) + '}' }}",
+        "forceReply": {},
+        "replyKeyboardOptions": {},
+        "replyKeyboardRemove": {},
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "id": "76cb883f-840a-4ac7-98e4-fc20296df29f",
+      "name": "Send Message (Telegram)",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        384,
+        -96
+      ],
+      "webhookId": "324aabe6-cec7-41cf-9776-afe16ee70a20",
+      "credentials": {
+        "telegramApi": {
+          "id": "Q5ngejEflEgTSkao",
+          "name": "Telegram account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.channel }}",
+                    "rightValue": "telegram",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "c1be38a4-ecbd-4d4c-a4c5-1c5e36818d7f"
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "id": "c1d9ee72-6a26-4ae0-acd7-bd996da0618f",
+      "name": "Channel split",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -240,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "inputSource": "jsonExample",
+        "jsonExample": "{\n  \"channel\": \"telegram\",\n  \"message\": \"/chatID\",\n  \"messageOptions\": [\n    {\n      \"title\": \"Pick me!\",\n      \"description\": \"Pick me cause I'm the best!\",\n      \"callback\": \"callbacking\"\n    },\n    {\n      \"title\": \"Pick me!\",\n      \"description\": \"Pick me cause I'm the best!\",\n      \"callback\": \"callbacking\"\n    }\n  ],\n  \"chatID\": \"1234\"\n}"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -464,
+        112
+      ],
+      "id": "60f11a5b-c7d7-4705-9cab-1bc53a99a54c",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -656,
+        384
+      ],
+      "id": "19a171f9-c607-4729-bc42-f6bd31d7028d",
+      "name": "Manual TEST",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "{\n  \"channel\": \"telegram\",\n  \"message\": \"/chatID\",\n  \"messageOptions\": [\n    {\n      \"title\": \"Pick me!\",\n      \"description\": \"Pick me cause I'm the best!\",\n      \"callback\": \"callbacking\"\n    },\n    {\n      \"title\": \"Pick me!\",\n      \"description\": \"Pick me cause I'm the best!\",\n      \"callback\": \"callbacking\"\n    }\n  ],\n  \"chatID\": \"7812154300\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -464,
+        384
+      ],
+      "id": "1fed02ff-b9ff-4b06-97a4-58c9af6105da",
+      "name": "MockData"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first().json;\nconst options = item.messageOptions || [];\n\n// Un botón por fila (cada opción en su propia fila)\nconst inline_keyboard = options.map((o) => [\n  { text: o.title, callback_data: o.callback }\n]);\n\n// Si prefieres todos los botones en una sola fila, usa esto en su lugar:\n// const inline_keyboard = [ options.map((o) => ({ text: o.title, callback_data: o.callback })) ];\n\nreturn [{\n  json: {\n    reply_markup: {\n      inline_keyboard\n    }\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        160,
+        96
+      ],
+      "id": "9f0e7c3e-095a-464f-8c2b-13d06e45f50c",
+      "name": "Map Options to Inline Keyboard for Telegram"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot8524010641:AAGm2Dt77FUTbAMPmHgbg7P5yWxuD96hE0M/sendMessage",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "chat_id",
+              "value": "={{ $('Channel split').item.json.chatID }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $('Channel split').item.json.message }}"
+            },
+            {
+              "name": "reply_markup",
+              "value": "={{ JSON.stringify($json.reply_markup) }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        384,
+        96
+      ],
+      "id": "454121b7-439d-4d32-9335-ce3be2e1b0bd",
+      "name": "Send by Telegram.. tiene bugazo"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Send Message (Telegram)": {
+      "main": [
+        []
+      ]
+    },
+    "Channel split": {
+      "main": [
+        [
+          {
+            "node": "Map Options to Inline Keyboard for Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Channel split",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual TEST": {
+      "main": [
+        [
+          {
+            "node": "MockData",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MockData": {
+      "main": [
+        [
+          {
+            "node": "Channel split",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Map Options to Inline Keyboard for Telegram": {
+      "main": [
+        [
+          {
+            "node": "Send by Telegram.. tiene bugazo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "HXl34Jw5o9I6vqhk",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "22c49914-b360-4f53-a1fb-0ba810288957",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c161f39dbc3d63a699f9365c3d1da2eea605158e14e61448e8a00c19513dbf33"
+  },
+  "id": "1s8bYMIYbzv2fpLx",
+  "tags": []
+}

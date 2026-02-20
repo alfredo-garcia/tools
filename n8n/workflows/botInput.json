@@ -1,0 +1,740 @@
+{
+  "name": "Bot Input",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message",
+          "callback_query"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1168,
+        16
+      ],
+      "id": "c20d73b0-66b9-4428-9ec4-91a3a42fbeca",
+      "name": "Telegram Message",
+      "webhookId": "8aba23ee-bfea-4080-a5d9-0ba4ad1330a4",
+      "credentials": {
+        "telegramApi": {
+          "id": "Q5ngejEflEgTSkao",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"channel\": \"{{ $('Switch Data Normalized').item.json.channel }}\",\n  \"command\": \"/help\",\n  \"chatID\": \"{{ $('Switch Data Normalized').item.json.chatID }}\",\n}\n  ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        32,
+        336
+      ],
+      "id": "06bdd1e3-7cb1-401f-bb63-5d30e6fb2feb",
+      "name": "Fallback to Help"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"channel\": \"telegram\",\n  \"command\": \"{{ $json.message.text }}\",\n  \"chatID\": \"{{ $json.message.chat.id }}\",\n}\n  ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -768,
+        128
+      ],
+      "id": "042feec4-d741-4d52-90c8-a457d0afc0b6",
+      "name": "Normalize from Telegram Message"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"channel\": \"telegram\",\n  \"command\": \"{{ $json.callback_query.data }}\",\n  \"chatID\":\"{{ $json.callback_query.from.id }}\",\n}\n ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -768,
+        -96
+      ],
+      "id": "969e3840-e90c-4a73-aa39-1601bad1e478",
+      "name": "Normalize from Telegram Callback"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "1s8bYMIYbzv2fpLx",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/1s8bYMIYbzv2fpLx",
+          "cachedResultName": "Bot Output"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "channel": "={{ $json.channel }}",
+            "message": "=Here's your chat ID: {{ $json.chatID }}",
+            "chatID": "={{ $json.chatID }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "channel",
+              "displayName": "channel",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "chatID",
+              "displayName": "chatID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -176,
+        -192
+      ],
+      "id": "b24db238-d6fc-4fad-a965-6ee809efd9b7",
+      "name": "Bot Output ChatID"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "ZLZGmhoUC2eGKAOC",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/ZLZGmhoUC2eGKAOC",
+          "cachedResultName": "Daily Briefing"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "channel": "={{ $json.channel }}",
+            "command": "={{ $json.command }}",
+            "chatID": "={{ $json.chatID }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "channel",
+              "displayName": "channel",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "command",
+              "displayName": "command",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "chatID",
+              "displayName": "chatID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -96,
+        -16
+      ],
+      "id": "fe57f81e-7d41-4676-9c37-419f50ece93d",
+      "name": "Call DailyBriefing Workflow"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "1s8bYMIYbzv2fpLx",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/1s8bYMIYbzv2fpLx",
+          "cachedResultName": "Bot Output"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "channel": "={{ $json.channel }}",
+            "message": "=Sorry, that didn't work 😵‍💫 Try again.",
+            "chatID": "={{ $json.chatID }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "channel",
+              "displayName": "channel",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "chatID",
+              "displayName": "chatID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -176,
+        336
+      ],
+      "id": "3b98f063-4f3b-4dbf-a4bc-8002ab3d5e06",
+      "name": "Bot Output Fallback"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "1s8bYMIYbzv2fpLx",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/1s8bYMIYbzv2fpLx",
+          "cachedResultName": "Bot Output"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "channel": "={{ $json.channel }}",
+            "message": "=Here's your chat ID: {{ $json.chatID }}",
+            "chatID": "={{ $json.chatID }}",
+            "messageOptions": "={{ [\n    {\n      \"title\": \"🧭 Today's plan (/plan)\",\n      \"description\": \"\",\n      \"callback\": \"/plan\"\n    },\n    {\n      \"title\": \"🐖 Say something nice (/mosco)\",\n      \"description\": \"\",\n      \"callback\": \"/nice\"\n    },\n    {\n      \"title\": \"🆔 View Chat ID (/chatID)\",\n      \"description\": \"\",\n      \"callback\": \"/chatID\"\n    }\n] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "channel",
+              "displayName": "channel",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "messageOptions",
+              "displayName": "messageOptions",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "array",
+              "removed": false
+            },
+            {
+              "id": "chatID",
+              "displayName": "chatID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -176,
+        -368
+      ],
+      "id": "3948de46-a28b-47b1-af81-5432aea1d5a8",
+      "name": "Bot Output Help"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notExists",
+                      "singleValue": true
+                    },
+                    "id": "aeeab6a1-fc14-4422-8084-ec3bc117a8df"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "845a48ab-db97-4495-91af-fe5975066302",
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -992,
+        16
+      ],
+      "id": "9db23bfd-5856-43ab-b299-35ccccc9ed40",
+      "name": "Switch Telegram Message vs Callback"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.command }}",
+                    "rightValue": "/help",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "d0e0fc52-3c6b-40f8-be02-9ddb2ec35b21"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "1cec12ab-2f13-446e-9ebb-6deb157e5c38",
+                    "leftValue": "={{ $json.command }}",
+                    "rightValue": "/chatID",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "1fd7ca02-9f98-4e76-9d98-ff8ce802559d",
+                    "leftValue": "={{ $json.command }}",
+                    "rightValue": "/plan",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "c2c9aec3-0f54-4da3-bdfe-a240f180b98d",
+                    "leftValue": "={{ $json.command }}",
+                    "rightValue": "/nice",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "18c1ba9a-b7d1-433b-a01a-60ae61b428a9",
+                    "leftValue": "={{ $json.command }}",
+                    "rightValue": "/start",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -512,
+        -16
+      ],
+      "id": "277907c9-2e0e-4502-bbf5-0353fc1f0bac",
+      "name": "Switch Data Normalized"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "1s8bYMIYbzv2fpLx",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/1s8bYMIYbzv2fpLx",
+          "cachedResultName": "Bot Output"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "channel": "={{ $json.channel }}",
+            "message": "=Te ves muy lindo hoy mosquitorrofio 😻",
+            "chatID": "={{ $json.chatID }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "channel",
+              "displayName": "channel",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "chatID",
+              "displayName": "chatID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -176,
+        160
+      ],
+      "id": "15b6067e-ddac-4d50-8d12-81cca065922e",
+      "name": "Bot Output BeNice"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Message": {
+      "main": [
+        [
+          {
+            "node": "Switch Telegram Message vs Callback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fallback to Help": {
+      "main": [
+        [
+          {
+            "node": "Bot Output Help",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize from Telegram Message": {
+      "main": [
+        [
+          {
+            "node": "Switch Data Normalized",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize from Telegram Callback": {
+      "main": [
+        [
+          {
+            "node": "Switch Data Normalized",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bot Output Fallback": {
+      "main": [
+        [
+          {
+            "node": "Fallback to Help",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch Telegram Message vs Callback": {
+      "main": [
+        [
+          {
+            "node": "Normalize from Telegram Callback",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Normalize from Telegram Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch Data Normalized": {
+      "main": [
+        [
+          {
+            "node": "Bot Output Help",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Bot Output ChatID",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Call DailyBriefing Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Bot Output BeNice",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Bot Output Help",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Bot Output Fallback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "HXl34Jw5o9I6vqhk",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "3d6621a7-6afe-4c54-9b38-b74461f4fa3a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c161f39dbc3d63a699f9365c3d1da2eea605158e14e61448e8a00c19513dbf33"
+  },
+  "id": "ipZ4LIfkq59hDcAT",
+  "tags": []
+}

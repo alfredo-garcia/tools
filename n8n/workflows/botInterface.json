@@ -93,6 +93,29 @@
                 ],
                 "combinator": "and"
               }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "18c1ba9a-b7d1-433b-a01a-60ae61b428a9",
+                    "leftValue": "={{ $json.command }}",
+                    "rightValue": "/start",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
             }
           ]
         },
@@ -441,6 +464,13 @@
         ],
         [
           {
+            "node": "/help",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
             "node": "Fallback",
             "type": "main",
             "index": 0
@@ -536,7 +566,7 @@
     "errorWorkflow": "HXl34Jw5o9I6vqhk",
     "callerPolicy": "workflowsFromSameOwner"
   },
-  "versionId": "a022cd4e-db33-4a50-a853-9cb99c4b5e7d",
+  "versionId": "27725c85-ce75-4583-9628-111a1762e9fc",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "c161f39dbc3d63a699f9365c3d1da2eea605158e14e61448e8a00c19513dbf33"

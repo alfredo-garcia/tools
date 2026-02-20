@@ -31,7 +31,7 @@
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        -2032,
+        -2208,
         -224
       ],
       "id": "e852c106-f587-4519-9f9d-bc3962e6737f",
@@ -53,7 +53,7 @@
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
       "position": [
-        -2032,
+        -2208,
         -48
       ]
     },
@@ -337,6 +337,32 @@
       ],
       "id": "6249d4cb-f583-4b15-82a0-281c47acb080",
       "name": "List to variable"
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -2208,
+        -400
+      ],
+      "id": "28b047e3-49d4-4a03-a079-44345e72ec4e",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -2016,
+        -224
+      ],
+      "id": "0b25b71b-8bb6-48d0-aa10-9e082190cf38",
+      "name": "Edit Fields5"
     }
   ],
   "pinData": {},
@@ -345,22 +371,7 @@
       "main": [
         [
           {
-            "node": "TASKS / High",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "TASKS / Med",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "CAL / Trastos",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "CAL / Me",
+            "node": "Edit Fields5",
             "type": "main",
             "index": 0
           }
@@ -371,22 +382,7 @@
       "main": [
         [
           {
-            "node": "TASKS / High",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "TASKS / Med",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "CAL / Trastos",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "CAL / Me",
+            "node": "Edit Fields5",
             "type": "main",
             "index": 0
           }
@@ -568,15 +564,52 @@
           }
         ]
       ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields5": {
+      "main": [
+        [
+          {
+            "node": "TASKS / High",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "TASKS / Med",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "CAL / Trastos",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "CAL / Me",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
-  "active": false,
+  "active": true,
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "46c31448-40d1-48f9-9c87-d9b595d5abc0",
+  "versionId": "1a98565a-e9b5-42f1-89fd-ffb47a68df50",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "c161f39dbc3d63a699f9365c3d1da2eea605158e14e61448e8a00c19513dbf33"

@@ -1,0 +1,533 @@
+{
+  "name": "IM / Bot Interface",
+  "nodes": [
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.command }}",
+                    "rightValue": "/help",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "d0e0fc52-3c6b-40f8-be02-9ddb2ec35b21"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "1cec12ab-2f13-446e-9ebb-6deb157e5c38",
+                    "leftValue": "={{ $json.command }}",
+                    "rightValue": "/chatID",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "1fd7ca02-9f98-4e76-9d98-ff8ce802559d",
+                    "leftValue": "={{ $json.command }}",
+                    "rightValue": "/plan",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "c2c9aec3-0f54-4da3-bdfe-a240f180b98d",
+                    "leftValue": "={{ $json.command }}",
+                    "rightValue": "/mosco",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -512,
+        -16
+      ],
+      "id": "277907c9-2e0e-4502-bbf5-0353fc1f0bac",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatID }}",
+        "text": "=Type any of these options to interact:",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "🧭 Dime mi plan para hoy (/plan)",
+                    "additionalFields": {
+                      "callback_data": "/plan"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "🐖 Dime algo bonito (/mosco)",
+                    "additionalFields": {
+                      "callback_data": "/mosco"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "🆔 Ver mi Chat ID (/chatID)",
+                    "additionalFields": {
+                      "callback_data": "/chatID"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -176,
+        -368
+      ],
+      "id": "847e06d8-3e2b-4edb-8cdd-b46d5f7d2086",
+      "name": "/help",
+      "webhookId": "8a0e4fb2-99f9-4a1b-92da-2f6ef898e8b7",
+      "credentials": {
+        "telegramApi": {
+          "id": "Q5ngejEflEgTSkao",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatID }}",
+        "text": "=Here's your chat ID:  {{ $json.chatID }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -176,
+        -192
+      ],
+      "id": "a66a2bd7-fbe6-4361-b473-1e625d130517",
+      "name": "/chatID",
+      "webhookId": "8a0e4fb2-99f9-4a1b-92da-2f6ef898e8b7",
+      "credentials": {
+        "telegramApi": {
+          "id": "Q5ngejEflEgTSkao",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatID }}",
+        "text": "=Here's your chat ID:  {{ $json.message.chat.id }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -176,
+        -16
+      ],
+      "id": "6fdb1604-fc5a-410f-aa71-a5b0fa23b842",
+      "name": "/plan",
+      "webhookId": "8a0e4fb2-99f9-4a1b-92da-2f6ef898e8b7",
+      "credentials": {
+        "telegramApi": {
+          "id": "Q5ngejEflEgTSkao",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatID }}",
+        "text": "=Te ves muy lindo hoy mosquitorrofio 😻",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -176,
+        160
+      ],
+      "id": "674d8dd9-d88a-4c07-af61-4ff125c1f219",
+      "name": "/mosco",
+      "webhookId": "8a0e4fb2-99f9-4a1b-92da-2f6ef898e8b7",
+      "credentials": {
+        "telegramApi": {
+          "id": "Q5ngejEflEgTSkao",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatID }}",
+        "text": "=Sorry, that didn't work 😵‍💫 Try again.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -176,
+        336
+      ],
+      "id": "bd863741-e84b-4cbd-a38d-69bceb2c01e6",
+      "name": "Fallback",
+      "webhookId": "8a0e4fb2-99f9-4a1b-92da-2f6ef898e8b7",
+      "credentials": {
+        "telegramApi": {
+          "id": "Q5ngejEflEgTSkao",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"channel\": \"telegram\",\n  \"command\": \"{{ $json.callback_query.data }}\",\n  \"chatID\":\"{{ $json.callback_query.from.id }}\",\n}\n ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -736,
+        -192
+      ],
+      "id": "969e3840-e90c-4a73-aa39-1601bad1e478",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"channel\": \"telegram\",\n  \"command\": \"{{ $json.message.text }}\",\n  \"chatID\": \"{{ $json.message.chat.id }}\",\n}\n  ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -736,
+        32
+      ],
+      "id": "042feec4-d741-4d52-90c8-a457d0afc0b6",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -944,
+        32
+      ],
+      "id": "c20d73b0-66b9-4428-9ec4-91a3a42fbeca",
+      "name": "Telegram Message",
+      "webhookId": "8aba23ee-bfea-4080-a5d9-0ba4ad1330a4",
+      "credentials": {
+        "telegramApi": {
+          "id": "Q5ngejEflEgTSkao",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "callback_query"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -944,
+        -192
+      ],
+      "id": "e88915c6-9fc2-430c-88bc-df6143c74dab",
+      "name": "Telegram CallbackQuery",
+      "webhookId": "42133c49-0100-47f8-b3ed-bab515932b49",
+      "credentials": {
+        "telegramApi": {
+          "id": "Q5ngejEflEgTSkao",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"channel\": \"telegram\",\n  \"command\": \"/help\",\n  \"chatID\": \"{{ $json.result.chat.id }}\",\n}\n  ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        32,
+        336
+      ],
+      "id": "06bdd1e3-7cb1-401f-bb63-5d30e6fb2feb",
+      "name": "Fallback to Help"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "ZLZGmhoUC2eGKAOC",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/ZLZGmhoUC2eGKAOC",
+          "cachedResultName": "Daily Briefing"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        32,
+        -16
+      ],
+      "id": "fe57f81e-7d41-4676-9c37-419f50ece93d",
+      "name": "Call 'Daily Briefing'"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "/help",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "/chatID",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "/plan",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "/mosco",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fallback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "/help": {
+      "main": [
+        []
+      ]
+    },
+    "Fallback": {
+      "main": [
+        [
+          {
+            "node": "Fallback to Help",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Message": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram CallbackQuery": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "/plan": {
+      "main": [
+        [
+          {
+            "node": "Call 'Daily Briefing'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fallback to Help": {
+      "main": [
+        [
+          {
+            "node": "/help",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "HXl34Jw5o9I6vqhk",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "04ce2944-2bf5-48b8-aeac-a39e84e582a4",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c161f39dbc3d63a699f9365c3d1da2eea605158e14e61448e8a00c19513dbf33"
+  },
+  "id": "ipZ4LIfkq59hDcAT",
+  "tags": []
+}

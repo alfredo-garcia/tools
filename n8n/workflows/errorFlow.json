@@ -1,0 +1,91 @@
+{
+  "name": "Error Flow",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "45cc17f5-c387-47e5-a1d9-8318e75129a3",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Normaliza datos de error (execution o trigger) y construye mensaje para Telegram\nconst item = $input.first();\nconst d = item.json;\nconst w = d.workflow || {};\nconst exec = d.execution || {};\nconst trig = d.trigger || {};\n\nconst err = exec.error || (trig.error && { message: trig.error.message || (trig.error.cause && trig.error.cause.message), stack: (trig.error.cause && trig.error.cause.stack) || '' });\nconst nodeName = exec.lastNodeExecuted || (trig.error && trig.error.node && trig.error.node.name) || 'N/A';\nconst msg = (err && err.message) || 'Sin mensaje';\nconst stack = (err && err.stack) ? String(err.stack).slice(0, 400) : '';\nconst url = exec.url || '';\nconst mode = exec.mode || (trig.mode) || '';\n\nlet html = '🚨 <b>Error en n8n</b>\\n\\n';\nhtml += `<b>Workflow:</b> ${w.name || 'N/A'} (${w.id || '-'})\\n`;\nhtml += `<b>Nodo:</b> ${nodeName}\\n`;\nhtml += `<b>Error:</b> ${msg}\\n`;\nif (mode) html += `<b>Modo:</b> ${mode}\\n`;\nif (url) html += `\\n<b>Ejecución:</b> ${url}\\n`;\nif (stack) html += `\\n<code>${stack.replace(/</g, '&lt;')}…</code>`;\n\nreturn [{ json: { message: html } }];\n"
+      },
+      "id": "99fe1066-297d-4c2d-89d2-07eff256fc4d",
+      "name": "Formatear mensaje",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "7812154300",
+        "text": "={{ $json.message }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "id": "7ce1253f-7194-4653-902d-16069c2b4d2d",
+      "name": "Enviar a Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        448,
+        0
+      ],
+      "webhookId": "83035f95-7c7e-42a9-b5b3-b51136723155",
+      "credentials": {
+        "telegramApi": {
+          "id": "Q5ngejEflEgTSkao",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Formatear mensaje",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatear mensaje": {
+      "main": [
+        [
+          {
+            "node": "Enviar a Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "bf40f794-fe59-4cf8-bbb3-72f5089a55d1",
+  "meta": {
+    "instanceId": "c161f39dbc3d63a699f9365c3d1da2eea605158e14e61448e8a00c19513dbf33"
+  },
+  "id": "HXl34Jw5o9I6vqhk",
+  "tags": []
+}

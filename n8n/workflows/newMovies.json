@@ -1,0 +1,1191 @@
+{
+  "name": "Culture / New movies",
+  "nodes": [
+    {
+      "parameters": {
+        "url": "https://cinepolis.com.co/cartelera/manizales-colombia/cinepolis-mallplaza-manizales",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        32,
+        -544
+      ],
+      "id": "29c77344-e523-4433-bf92-6f1a1a881bcf",
+      "name": "Web / Scrapping / Cinepolis Manizales"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Seleccionamos el HTML del input (ajusta 'data' si el campo tiene otro nombre)\nconst htmlString = items[0].json.data;\nconst generateUUID = () => {\n  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {\n    const r = Math.random() * 16 | 0;\n    const v = c === 'x' ? r : (r & 0x3 | 0x8);\n    return v.toString(16);\n  });\n};\n\n// Usamos una expresión regular para buscar todos los bloques de \"data-layer\" \n// que contienen la info de las películas\nconst movieRegex = /<span class=\"data-layer\"([\\s\\S]*?)><\\/span>/g;\nconst results = [];\nlet match;\n\nwhile ((match = movieRegex.exec(htmlString)) !== null) {\n    const attributesHtml = match[1];\n    \n    // Función auxiliar para extraer el valor de los atributos data-\n    const getAttr = (attr) => {\n        const regex = new RegExp(`data-${attr}=\"([^\"]*)\"`);\n        const m = attributesHtml.match(regex);\n        return m ? m[1] : null;\n    };\n\n    const movieTitle = getAttr('titulo');\n    \n    // Evitamos duplicados (el HTML a veces repite bloques para móvil/desktop o preventas)\n    if (movieTitle && !results.find(m => m.titulo === movieTitle)) {\n        results.push({\n            id:generateUUID(),\n            title: movieTitle,\n            original_title: getAttr('titulooriginal'),\n            genre: getAttr('genero'),\n            classification: getAttr('clasificacion'),\n            director: getAttr('director'),\n            cast: getAttr('actor'),\n            cinema: \"Cinepolis-Manizales\",\n            // La fecha de cartelera la sacamos del atributo de la página\n            date: htmlString.match(/filterDate='([^']*)'/)?.[1] || \"Hoy\"\n        });\n    }\n}\n\n// Retornamos el formato que n8n espera\nreturn results.map(movie => ({ json: movie }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        208,
+        -544
+      ],
+      "id": "4581821f-896d-4689-bccb-859e079f41a5",
+      "name": "Movies / Current"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"id\":\"{{ $json.ID }}\",\n  \"title\": \"{{ $json.Title }}\",\n  \"original_title\": \"{{ $json['Original title'] }}\",\n  \"genre\": \"{{ $json.Genre }}\",\n  \"classification\": \"\",\n  \"director\": \"{{ $json.Director }}\",\n  \"cast\": \"{{ $json.Cast }}\",\n  \"date\": \"{{ $json['Last updated'] }}\",\n  \"cinema\": \"{{ $json.Cinema }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        -720
+      ],
+      "id": "cbd853f3-0fbd-4979-9a56-6c97d0b2bd91",
+      "name": "Movies / My list"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1c9MhmlhERslNrI0PfKwZPco2n19Q6FWg5SnTe5EaWzE",
+          "mode": "list",
+          "cachedResultName": "cultural agenda",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1c9MhmlhERslNrI0PfKwZPco2n19Q6FWg5SnTe5EaWzE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1278826531,
+          "mode": "list",
+          "cachedResultName": "movies",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1c9MhmlhERslNrI0PfKwZPco2n19Q6FWg5SnTe5EaWzE/edit#gid=1278826531"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        32,
+        -720
+      ],
+      "id": "3b09cc43-7b76-440f-8aa2-42d314636e22",
+      "name": "Movies / My list / Source",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "5oAEdOTWk38TPOx2",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "fieldsToMatchString": "title",
+        "joinMode": "keepNonMatches",
+        "outputDataFrom": "input2",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        672,
+        -624
+      ],
+      "id": "43029ad9-5d20-40a4-8deb-654ead46a0a5",
+      "name": "Merge",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1c9MhmlhERslNrI0PfKwZPco2n19Q6FWg5SnTe5EaWzE",
+          "mode": "list",
+          "cachedResultName": "cultural agenda",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1c9MhmlhERslNrI0PfKwZPco2n19Q6FWg5SnTe5EaWzE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1278826531,
+          "mode": "list",
+          "cachedResultName": "movies",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1c9MhmlhERslNrI0PfKwZPco2n19Q6FWg5SnTe5EaWzE/edit#gid=1278826531"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Title": "={{ $json.title }}",
+            "Original title": "={{ $json.original_title }}",
+            "Genre": "={{ $json.genre }}",
+            "Director": "={{ $json.director }}",
+            "Cast": "={{ $json.cast }}",
+            "Last updated": "={{ $json.date }}",
+            "Status": "Pending",
+            "Cinema": "={{ $json.cinema }}",
+            "ID": "={{ $json.id }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Title",
+              "displayName": "Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Original title",
+              "displayName": "Original title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Genre",
+              "displayName": "Genre",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Director",
+              "displayName": "Director",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Cast",
+              "displayName": "Cast",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Cinema",
+              "displayName": "Cinema",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Interest",
+              "displayName": "Interest",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Last updated",
+              "displayName": "Last updated",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1136,
+        -752
+      ],
+      "id": "18c38fe3-ff59-4573-9a56-342adaa34de8",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "5oAEdOTWk38TPOx2",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "ae1eaaa1-2d2b-4296-bfcd-4ad2060ba0af",
+              "leftValue": "={{ $json.title }}",
+              "rightValue": "=movie.Title",
+              "operator": {
+                "type": "string",
+                "operation": "notContains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        384,
+        -544
+      ],
+      "id": "08bf5425-42a5-431d-b729-bc0831ce1616",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "inputSource": "jsonExample",
+        "jsonExample": "{\n  \"channel\": \"telegram\",\n  \"command\": \"/plan\",\n  \"chatID\":\"7812154300\"\n}"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -1104,
+        -336
+      ],
+      "id": "0eef64e7-4f9c-44a2-a9ac-7559e3dc24a6",
+      "name": "Workflow Input"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "22b0f64b-b6c7-4fe0-98d2-995c9befb8fc",
+              "leftValue": "={{ $json.title }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        848,
+        -624
+      ],
+      "id": "7d46ef3a-de30-4cf2-bdd3-ad6822bfcf79",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "1s8bYMIYbzv2fpLx",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/1s8bYMIYbzv2fpLx",
+          "cachedResultName": "Bot Output"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "channel": "={{ $('Normalized input fields').item.json.channel }}",
+            "chatID": "={{ $('Normalized input fields').item.json.chatID }}",
+            "message": "=New movie:\n- Title: {{ $('Merge').item.json.title }}\n- Original title: {{ $('Merge').item.json.original_title }}\n- Director: {{ $('Merge').item.json.director }}\n- Cast: {{ $('Merge').item.json.cast }}",
+            "messageOptions": "={{ [\n    {\n      \"title\": \"Interested\",\n      \"description\": \"\",\n      \"callback\": \"/newMoviesInterested-\" + $json.ID\n    },\n    {\n      \"title\": \"Not interested\",\n      \"description\": \"\",\n      \"callback\": \"/newMoviesNotInterested-\" + $json.ID\n    }\n] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "channel",
+              "displayName": "channel",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "messageOptions",
+              "displayName": "messageOptions",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "array",
+              "removed": false
+            },
+            {
+              "id": "chatID",
+              "displayName": "chatID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "mode": "each",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        1312,
+        -752
+      ],
+      "id": "2febc765-1d6f-43bc-9d17-97329bdaf656",
+      "name": "Send movies"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "1s8bYMIYbzv2fpLx",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/1s8bYMIYbzv2fpLx",
+          "cachedResultName": "Bot Output"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "channel": "={{ $('Workflow Input').item.json.channel }}",
+            "chatID": "={{ $('Workflow Input').item.json.chatID }}",
+            "message": "No new movies for you my friend 😅"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "channel",
+              "displayName": "channel",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "messageOptions",
+              "displayName": "messageOptions",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "array",
+              "removed": true
+            },
+            {
+              "id": "chatID",
+              "displayName": "chatID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        1136,
+        -512
+      ],
+      "id": "8afc4846-c6ed-42b2-83e5-ec0f0433e7cf",
+      "name": "Send no-movies"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1104,
+        -64
+      ],
+      "id": "430e013d-5c2c-4b77-9662-57b4389a6106",
+      "name": "Manual trigger",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.command }}",
+                    "rightValue": "/newMovies",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "aa923700-3602-4eca-9daa-f73a8b2c6d80"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "c4954b6b-bec5-4b19-b101-d8d287628679",
+                    "leftValue": "={{ $json.command }}",
+                    "rightValue": "/newMoviesInterested",
+                    "operator": {
+                      "type": "string",
+                      "operation": "startsWith"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "ddc3ef85-fc7d-44ea-9d52-475175446d3f",
+                    "leftValue": "={{ $json.command }}",
+                    "rightValue": "/newMoviesNotInterested",
+                    "operator": {
+                      "type": "string",
+                      "operation": "startsWith"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -496,
+        -352
+      ],
+      "id": "2bbf1041-1c51-4e5a-86e6-b26081aa5bfc",
+      "name": "Command switch"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"channel\": \"{{ $json.channel }}\",\n  \"command\": \"{{ $json.command }}\",\n  \"chatID\": \"{{ $json.chatID }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -704,
+        -336
+      ],
+      "id": "04ee95f7-9e79-42ab-bd49-ebb5e291ac86",
+      "name": "Normalized input fields"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(item => {\n  const command = item.json.command || \"\";\n  \n  // Dividimos el string por \"Interested-\" y tomamos la parte de la derecha (el UUID)\n  const uid = command.split('Interested-')[1] || null;\n\n  return {\n    json: {\n      uid: uid,\n      interested: true\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        32,
+        -288
+      ],
+      "id": "5d2add86-77c8-4cf9-82b5-4bcceb60b621",
+      "name": "Map interested True"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(item => {\n  const command = item.json.command || \"\";\n  \n  // Dividimos el string por \"Interested-\" y tomamos la parte de la derecha (el UUID)\n  const uid = command.split('Interested-')[1] || null;\n\n  return {\n    json: {\n      uid: uid,\n      interested: false\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        32,
+        -144
+      ],
+      "id": "1b6b9212-a88d-45f3-8ca6-cf9026376a49",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "{\n  \"channel\": \"telegram\",\n  \"command\": \"/newMovies\",\n  \"chatID\":\"7812154300\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -896,
+        -64
+      ],
+      "id": "88ecae0b-3781-4453-b735-685705eaa55d",
+      "name": "Manual Data / Update interest"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1c9MhmlhERslNrI0PfKwZPco2n19Q6FWg5SnTe5EaWzE",
+          "mode": "list",
+          "cachedResultName": "cultural agenda",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1c9MhmlhERslNrI0PfKwZPco2n19Q6FWg5SnTe5EaWzE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1278826531,
+          "mode": "list",
+          "cachedResultName": "movies",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1c9MhmlhERslNrI0PfKwZPco2n19Q6FWg5SnTe5EaWzE/edit#gid=1278826531"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ID": "={{ $json.uid }}",
+            "Interest": "={{ $json.interested }}"
+          },
+          "matchingColumns": [
+            "ID"
+          ],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Title",
+              "displayName": "Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Original title",
+              "displayName": "Original title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Genre",
+              "displayName": "Genre",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Director",
+              "displayName": "Director",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Cast",
+              "displayName": "Cast",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Cinema",
+              "displayName": "Cinema",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Interest",
+              "displayName": "Interest",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Last updated",
+              "displayName": "Last updated",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        384,
+        -224
+      ],
+      "id": "24692965-0836-47a5-a0d1-0988376f7cac",
+      "name": "Update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "5oAEdOTWk38TPOx2",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "=  {\n    \"uid\": \"{{ $json.uid }}\",\n    \"interested\": {{ $json.interested }}\n  }\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        -224
+      ],
+      "id": "f3760642-75bb-40d9-8435-e0539dc37588",
+      "name": "Update interest command"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "1s8bYMIYbzv2fpLx",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/1s8bYMIYbzv2fpLx",
+          "cachedResultName": "Bot Output"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "channel": "={{ $('Normalized input fields').item.json.channel }}",
+            "chatID": "={{ $('Normalized input fields').item.json.chatID }}",
+            "message": "Thanks for sharing your interest 🫡"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "channel",
+              "displayName": "channel",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "messageOptions",
+              "displayName": "messageOptions",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "array",
+              "removed": true
+            },
+            {
+              "id": "chatID",
+              "displayName": "chatID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        1136,
+        -224
+      ],
+      "id": "fad9b8c6-2674-44e9-a0eb-c708408c0944",
+      "name": "Confirm update interest"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "1s8bYMIYbzv2fpLx",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/1s8bYMIYbzv2fpLx",
+          "cachedResultName": "Bot Output"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "channel": "={{ $('Normalized input fields').item.json.channel }}",
+            "chatID": "={{ $('Normalized input fields').item.json.chatID }}",
+            "message": "... checking new movies for you..."
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "channel",
+              "displayName": "channel",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "messageOptions",
+              "displayName": "messageOptions",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "array",
+              "removed": true
+            },
+            {
+              "id": "chatID",
+              "displayName": "chatID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -224,
+        -640
+      ],
+      "id": "3a254004-f13c-4451-90d4-06974b4c9f85",
+      "name": "Call 'Bot Output'"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "{\n  \"channel\": \"telegram\",\n  \"command\": \"/newMoviesInterested-0da82ae9-5b83-464c-9e32-c9f5625432a5\",\n  \"chatID\":\"7812154300\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -896,
+        128
+      ],
+      "id": "f1aa08d3-9986-490a-8b43-7f265bb3cc4c",
+      "name": "Manual Data / Update interest1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Web / Scrapping / Cinepolis Manizales": {
+      "main": [
+        [
+          {
+            "node": "Movies / Current",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Movies / Current": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Movies / My list": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Movies / My list / Source": {
+      "main": [
+        [
+          {
+            "node": "Movies / My list",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Workflow Input": {
+      "main": [
+        [
+          {
+            "node": "Normalized input fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send no-movies",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual trigger": {
+      "main": [
+        [
+          {
+            "node": "Manual Data / Update interest",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send movies",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Command switch": {
+      "main": [
+        [
+          {
+            "node": "Call 'Bot Output'",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Map interested True",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalized input fields": {
+      "main": [
+        [
+          {
+            "node": "Command switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Data / Update interest": {
+      "main": [
+        [
+          {
+            "node": "Normalized input fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Update interest command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Map interested True": {
+      "main": [
+        [
+          {
+            "node": "Update interest command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update interest command": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Confirm update interest",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'Bot Output'": {
+      "main": [
+        [
+          {
+            "node": "Web / Scrapping / Cinepolis Manizales",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Movies / My list / Source",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "HXl34Jw5o9I6vqhk",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "0eddf19f-c2c9-4d7d-b61a-968be07ce120",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c161f39dbc3d63a699f9365c3d1da2eea605158e14e61448e8a00c19513dbf33"
+  },
+  "id": "r1kbw8qJizBtZwM3",
+  "tags": []
+}

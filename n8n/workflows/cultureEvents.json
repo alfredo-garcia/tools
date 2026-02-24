@@ -1,0 +1,1134 @@
+{
+  "name": "Culture / New events",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1c9MhmlhERslNrI0PfKwZPco2n19Q6FWg5SnTe5EaWzE",
+          "mode": "list",
+          "cachedResultName": "cultural agenda",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1c9MhmlhERslNrI0PfKwZPco2n19Q6FWg5SnTe5EaWzE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1962360309,
+          "mode": "list",
+          "cachedResultName": "events",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1c9MhmlhERslNrI0PfKwZPco2n19Q6FWg5SnTe5EaWzE/edit#gid=1962360309"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $json.id }}",
+            "title": "={{ $json.title }}",
+            "type": "={{ $json.type }}",
+            "category": "={{ $json.category }}",
+            "venue": "={{ $json.venue }}",
+            "start_date": "={{ $json.start_date }}",
+            "description": "={{ $json.description }}",
+            "image_url": "={{ $json.image_url }}",
+            "source": "={{ $json.source }}",
+            "price": "={{ $json.price }}",
+            "director": "={{ $json.director }}",
+            "cast": "={{ $json.cast }}",
+            "detail_url": "={{ $json.detail_url }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "type",
+              "displayName": "type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "category",
+              "displayName": "category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "venue",
+              "displayName": "venue",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "start_date",
+              "displayName": "start_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "image_url",
+              "displayName": "image_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "price",
+              "displayName": "price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "director",
+              "displayName": "director",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "cast",
+              "displayName": "cast",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "detail_url",
+              "displayName": "detail_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2032,
+        -448
+      ],
+      "id": "2b4a61c2-df3a-428c-9375-d02e0c4c2558",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "5oAEdOTWk38TPOx2",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputSource": "jsonExample",
+        "jsonExample": "{\n  \"channel\": \"telegram\",\n  \"command\": \"/plan\",\n  \"chatID\":\"7812154300\"\n}"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -848,
+        -720
+      ],
+      "id": "f98a5917-4346-439c-836a-48413483d36c",
+      "name": "Workflow Input"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "22b0f64b-b6c7-4fe0-98d2-995c9befb8fc",
+              "leftValue": "={{ $json.title }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1664,
+        -288
+      ],
+      "id": "d1c49d3e-d48b-45ef-9a14-924634558c19",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "1s8bYMIYbzv2fpLx",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/1s8bYMIYbzv2fpLx",
+          "cachedResultName": "Bot Output"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "channel": "={{ $('Normalized input fields').item.json.channel }}",
+            "chatID": "={{ $('Normalized input fields').item.json.chatID }}",
+            "message": "No new stuff for you today, my friend 😅"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "channel",
+              "displayName": "channel",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "messageOptions",
+              "displayName": "messageOptions",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "array",
+              "removed": true
+            },
+            {
+              "id": "chatID",
+              "displayName": "chatID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        2032,
+        -208
+      ],
+      "id": "a8c325c2-d8ae-4d1e-a8d7-78f1dafae779",
+      "name": "Send no-movies"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -848,
+        -448
+      ],
+      "id": "9881e6c7-4ea5-4115-9604-b519d79fb1b9",
+      "name": "Manual trigger",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"channel\": \"{{ $json.channel }}\",\n  \"command\": \"{{ $json.command }}\",\n  \"chatID\": \"{{ $json.chatID }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -544,
+        -720
+      ],
+      "id": "e43bf95f-c374-4c4c-8351-05e3d5054371",
+      "name": "Normalized input fields"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "{\n  \"channel\": \"telegram\",\n  \"command\": \"/newMovies\",\n  \"chatID\":\"7812154300\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -688,
+        -448
+      ],
+      "id": "6dabea68-fded-4eb8-8aa4-f7d39dbb2796",
+      "name": "Manual Data / Update interest"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "{\n  \"channel\": \"telegram\",\n  \"command\": \"/newMoviesInterested-0da82ae9-5b83-464c-9e32-c9f5625432a5\",\n  \"chatID\":\"7812154300\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -688,
+        -256
+      ],
+      "id": "af973c92-486e-4ce8-bcb5-df4df7a41202",
+      "name": "Manual Data / Update interest1"
+    },
+    {
+      "parameters": {
+        "content": "Get my events list",
+        "height": 256,
+        "width": 1104
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -48,
+        -800
+      ],
+      "typeVersion": 1,
+      "id": "531c2351-c494-4d97-aafb-7a13d12c8313",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1c9MhmlhERslNrI0PfKwZPco2n19Q6FWg5SnTe5EaWzE",
+          "mode": "list",
+          "cachedResultName": "cultural agenda",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1c9MhmlhERslNrI0PfKwZPco2n19Q6FWg5SnTe5EaWzE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1962360309,
+          "mode": "list",
+          "cachedResultName": "events",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1c9MhmlhERslNrI0PfKwZPco2n19Q6FWg5SnTe5EaWzE/edit#gid=1962360309"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        32,
+        -720
+      ],
+      "id": "34465d32-a560-4141-9f49-2a4aeec2f22e",
+      "name": "Culture / Events / My list",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "5oAEdOTWk38TPOx2",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n\"id\": \"{{ $json.id }}\",\n\"title\": \"{{ $json.title }}\",\n\"type\": \"{{ $json.type }}\",\n\"category\": \"{{ $json.category }}\",\n\"venue\": \"{{ $json.venue }}\",\n\"start_date\": \"{{ $json.start_date }}\",\n\"description\": \"{{ $json.description }}\",\n\"image_url\": \"{{ $json.image_url }}\",\n\"source\": \"{{ $json.source }}\",\n\"price\": \"{{ $json.price }}\",\n\"director\": \"{{ $json.director }}\",\n\"cast\": \"{{ $json.cast }}\",\n\"detail_url\": \"{{ $json.detail_url }}\",\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        880,
+        -720
+      ],
+      "id": "626737cb-f1f3-460e-a971-bad1363bc348",
+      "name": "Events / My list",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "content": "Get info from online sources",
+        "height": 560,
+        "width": 1108
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -48,
+        -480
+      ],
+      "typeVersion": 1,
+      "id": "c147dd8f-7525-4f1d-9f36-86f27c24a495",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "1s8bYMIYbzv2fpLx",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/1s8bYMIYbzv2fpLx",
+          "cachedResultName": "Bot Output"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "channel": "={{ $('Normalized input fields').item.json.channel }}",
+            "chatID": "={{ $('Normalized input fields').item.json.chatID }}",
+            "message": "Checking new events for you, wait a sec ... ⏰"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "channel",
+              "displayName": "channel",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "messageOptions",
+              "displayName": "messageOptions",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "array",
+              "removed": true
+            },
+            {
+              "id": "chatID",
+              "displayName": "chatID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -224,
+        -720
+      ],
+      "id": "bbbb057c-e32c-44ef-ad5f-440badd6e27c",
+      "name": "\"Be patient\" message"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://cinepolis.com.co/Cartelera.aspx/GetNowPlayingByCity",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n  \"Content-Type\": \"application/json; charset=utf-8\",\n  \"X-Requested-With\": \"XMLHttpRequest\",\n  \"Accept\": \"application/json, text/javascript, */*; q=0.01\",\n  \"Referer\": \"https://cinepolis.com.co/cartelera/manizales-colombia/cinepolis-mallplaza-manizales\",\n  \"Origin\": \"https://cinepolis.com.co\",\n  \"User-Agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36\",\n  \"Sec-Fetch-Dest\": \"empty\",\n  \"Sec-Fetch-Mode\": \"cors\",\n  \"Sec-Fetch-Site\": \"same-origin\"\n}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n    \"claveCiudad\": \"manizales-colombia\",\n    \"esVIP\": false\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        32,
+        -432
+      ],
+      "id": "a9aae83d-4d49-485c-ab72-c268dcd4a22c",
+      "name": "Scrapper / Cinepolis Manizales"
+    },
+    {
+      "parameters": {
+        "url": "=https://plan52manizales.com/categoria-eventos/agenda-cultural/page/{{ $json['plan52-page'] }}/",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n  \"User-Agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36\",\n  \"Accept\": \"text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8\",\n  \"Accept-Language\": \"es-ES,es;q=0.9,en;q=0.8,en-US;q=0.7\",\n  \"Cache-Control\": \"no-cache\",\n  \"Pragma\": \"no-cache\",\n  \"Upgrade-Insecure-Requests\": \"1\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        192,
+        -208
+      ],
+      "id": "09031116-3262-43e7-9294-fc38d4fbff8b",
+      "name": "Scrapper / Plan 52 Manizales"
+    },
+    {
+      "parameters": {
+        "amount": 1
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        720,
+        -144
+      ],
+      "id": "97e46285-2873-410d-b3c2-824f3945c34e",
+      "name": "Wait",
+      "webhookId": "2c9c1730-2613-4eaa-9dd3-5ba32bfea469"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "847b726a-458d-41fd-9c3c-4cc0a58fcad1",
+              "name": "plan52-page",
+              "value": 1,
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        32,
+        -208
+      ],
+      "id": "8ae5c8e5-e57b-48f2-8dd8-2b8bd1f027cf",
+      "name": "Pagination / Plan 52"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1e9de712-87b4-4c56-adf2-1dc07ced0afc",
+              "name": "plan52-page",
+              "value": "={{ $json.meta.currentPage + 1 }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        864,
+        -144
+      ],
+      "id": "5937472a-e00a-4f1f-b380-e04e77f29e06",
+      "name": "Pagination / Plan 52 / Update"
+    },
+    {
+      "parameters": {
+        "jsCode": "const html = $json.data;\nconst events = [];\n\n// 1. Detectamos la página actual de forma segura\nconst pageTitleMatch = html.match(/Página\\s*(\\d+)/i);\nconst currentPage = pageTitleMatch ? parseInt(pageTitleMatch[1]) : 1;\n\n// 2. Extraer metadatos de paginación\nconst pagesMatch = html.match(/data-pages=\"(\\d+)\"/);\nconst maxPages = pagesMatch ? parseInt(pagesMatch[1]) : 1;\n\n// 3. Extraer eventos (Lógica de bloques)\nconst blocks = html.split('class=\"jet-listing-grid__item');\nblocks.shift(); \n\nblocks.forEach(block => {\n    const idMatch = block.match(/data-post-id=\"(\\d+)\"/);\n    const titleMatch = block.match(/<h2[^>]*class=\"elementor-heading-title[^>]*>([\\s\\S]*?)<\\/h2>/);\n    const urlMatch = block.match(/data-url=\"([^\"]*)\"/);\n    const imgMatch = block.match(/src=\"([^\"]*)\"/);\n    const venueMatch = block.match(/<p[^>]*class=\"elementor-heading-title[^>]*>([\\s\\S]*?)<\\/p>/);\n    \n    const dateParts = [...block.matchAll(/class=\"jet-listing-dynamic-field__content\"[^>]*>([\\s\\S]*?)<\\/div>/g)];\n    const start_date = dateParts.length >= 3 \n        ? `${dateParts[0][1]} ${dateParts[1][1]} ${dateParts[2][1]}`.replace(/\\s+/g, ' ').trim()\n        : \"Consultar\";\n\n    if (titleMatch && idMatch) {\n        events.push({\n            id: `p52-${idMatch[1]}`,\n            title: titleMatch[1].replace(/&nbsp;/g, ' ').trim(),\n            type: \"Evento Cultural\",\n            venue: venueMatch ? venueMatch[1].trim() : \"Manizales\",\n            start_date: start_date,\n            image_url: imgMatch ? imgMatch[1] : \"\",\n            detail_url: urlMatch ? urlMatch[1] : \"\",\n            source: \"Plan 52\"\n        });\n    }\n});\n\n// 4. Retorno Limpio\nreturn {\n    results: events,\n    meta: {\n      currentPage: parseInt(currentPage),\n      maxPages: maxPages,\n      totalInPage: events.length\n    }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        352,
+        -208
+      ],
+      "id": "2bcb3a72-375a-4143-b945-6c34eaf167ab",
+      "name": "Mapper / Plan52 Manizales"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "8abe04fa-b734-4c23-85f2-e855b38dbc49",
+              "leftValue": "={{ $json.meta.currentPage }}",
+              "rightValue": "={{ $json.meta.maxPages }}",
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        512,
+        -208
+      ],
+      "id": "7a7896ff-10da-4380-b575-a3b5af008364",
+      "name": "Pagination / Plan52 / Check"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Usamos la función .all() sobre el nombre del nodo que extrae los datos.\n// Esto NO lee el input que le llega (que sería solo la última página), \n// sino que extrae el HISTORIAL completo de ese nodo.\nconst todasLasVueltas = $(\"Mapper / Plan52 Manizales\").all();\n\n// 2. 'todasLasVueltas' es un array de objetos, donde cada objeto es una página.\n// Usamos flatMap para extraer los 'results' de cada página y aplanarlos en una sola lista.\nconst listaPlanaDeEventos = todasLasVueltas.flatMap(vuelta => {\n    return vuelta.json.results || [];\n});\n\n// 3. Retornamos la lista de eventos. \n// n8n los convertirá automáticamente en ítems individuales.\nreturn listaPlanaDeEventos.map(evento => ({ json: evento }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        -288
+      ],
+      "id": "32fcd87a-20a8-411c-aab2-f68728973079",
+      "name": "Mapper / Plan52 / Full"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.item.json.d;\nconst results = [];\n\nif (data && data.Cinemas) {\n    data.Cinemas[0].Dates.forEach(dateObj => {\n        dateObj.Movies.forEach(movie => {\n            const horarios = movie.Formats[0].Showtimes.map(s => s.Time).join(' | ');\n            \n            results.push({\n                json: {\n                    id: `cine-${movie.Id}`,\n                    title: movie.Title,\n                    type: \"Cine\",\n                    category: movie.Gender || \"N/A\",\n                    venue: \"Cinépolis Mallplaza\",\n                    start_date: `${dateObj.ShowtimeDate} - Horarios: ${horarios}`,\n                    description: movie.RatingDescription || \"\",\n                    image_url: movie.Poster,\n                    source: \"Cinépolis\",\n                    price: \"Consultar App\",\n                    director: movie.Director,\n                    cast: movie.Actors ? movie.Actors.join(', ') : \"Sin datos\",\n                    detail_url: `https://cinepolis.com.co/pelicula/${movie.Key}`\n                }\n            });\n        });\n    });\n}\n// Eliminamos duplicados por título para el mismo día\nreturn [...new Map(results.map(item => [item.json.title, item])).values()];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        -432
+      ],
+      "id": "b4977f7b-a71c-4e22-9433-a7ca06f3ea16",
+      "name": "Mapper / Cinepolis Manizales"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "fieldsToMatchString": "id",
+        "joinMode": "keepNonMatches",
+        "outputDataFrom": "input2",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1184,
+        -448
+      ],
+      "id": "2325c8a3-27be-4f17-ae03-918af37d3b86",
+      "name": "Merge / Cinepolis Manizales",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "fieldsToMatchString": "id",
+        "joinMode": "keepNonMatches",
+        "outputDataFrom": "input2",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1184,
+        -176
+      ],
+      "id": "b4f29ea8-cedd-424a-bf3d-58651ad5db7a",
+      "name": "Merge / Plan 52 Manizales",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1392,
+        -288
+      ],
+      "id": "b8d8c2af-3933-47fc-a0fc-22279583431f",
+      "name": "Merge / All new"
+    },
+    {
+      "parameters": {
+        "content": "Filter and create \"new items\" lists",
+        "height": 880,
+        "width": 416
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1120,
+        -800
+      ],
+      "typeVersion": 1,
+      "id": "d31794e9-40cb-4354-8771-53ad54a82621",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "1s8bYMIYbzv2fpLx",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/1s8bYMIYbzv2fpLx",
+          "cachedResultName": "Bot Output"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "channel": "={{ $('Normalized input fields').item.json.channel }}",
+            "chatID": "={{ $('Normalized input fields').item.json.chatID }}",
+            "message": "={{ $json.messageText }}",
+            "messageOptions": "={{[\n  {\n    \"title\": \"➡️ See more\",\n    \"description\": \"\",\n    \"callback\": $('If').item.json.detail_url\n  }\n]}}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "channel",
+              "displayName": "channel",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "messageOptions",
+              "displayName": "messageOptions",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "array",
+              "removed": false
+            },
+            {
+              "id": "chatID",
+              "displayName": "chatID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "mode": "each",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        2400,
+        -448
+      ],
+      "id": "012b30ac-3239-4a7f-9f2c-a0afa8f1e648",
+      "name": "Send events"
+    },
+    {
+      "parameters": {
+        "jsCode": "const event = $json;\nlet msg = \"\";\n\n// Lógica por tipo de evento\nif (event.type === \"Cine\" || event.source === \"Cinépolis\") {\n  msg = `🎬 ${event.title}\\n\\n`;\n  if (event.director) msg += `👤 Director: ${event.director}\\n`;\n  if (event.cast) msg += `🎭 Cast: ${event.cast}\\n`;\n} \nelse if (event.type === \"Evento Cultural\" || event.source === \"Plan 52\") {\n  msg = `🎸 ${event.title}*\\n\\n`;\n  msg += `🏷 Category: ${event.category || event.type}\\n`;\n} \nelse {\n  msg = `📅 ${event.title}\\n\\n`;\n}\n\n// Datos comunes para todos\nmsg += `📍 ${event.venue}\\n`;\nmsg += `🗓 ${event.start_date}\\n`;\n\nreturn { messageText: msg };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2224,
+        -448
+      ],
+      "id": "a023f540-6e29-4cd5-9cea-8b4f0acc263d",
+      "name": "Message formatter"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Workflow Input": {
+      "main": [
+        [
+          {
+            "node": "Normalized input fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send no-movies",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual trigger": {
+      "main": [
+        [
+          {
+            "node": "Manual Data / Update interest",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Message formatter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalized input fields": {
+      "main": [
+        [
+          {
+            "node": "\"Be patient\" message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Data / Update interest": {
+      "main": [
+        [
+          {
+            "node": "Normalized input fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Culture / Events / My list": {
+      "main": [
+        [
+          {
+            "node": "Events / My list",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Events / My list": {
+      "main": [
+        [
+          {
+            "node": "Merge / Cinepolis Manizales",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge / Plan 52 Manizales",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "\"Be patient\" message": {
+      "main": [
+        [
+          {
+            "node": "Culture / Events / My list",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Scrapper / Cinepolis Manizales",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Pagination / Plan 52",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Scrapper / Cinepolis Manizales": {
+      "main": [
+        [
+          {
+            "node": "Mapper / Cinepolis Manizales",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Scrapper / Plan 52 Manizales": {
+      "main": [
+        [
+          {
+            "node": "Mapper / Plan52 Manizales",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Pagination / Plan 52 / Update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pagination / Plan 52": {
+      "main": [
+        [
+          {
+            "node": "Scrapper / Plan 52 Manizales",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pagination / Plan 52 / Update": {
+      "main": [
+        [
+          {
+            "node": "Scrapper / Plan 52 Manizales",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mapper / Plan52 Manizales": {
+      "main": [
+        [
+          {
+            "node": "Pagination / Plan52 / Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pagination / Plan52 / Check": {
+      "main": [
+        [
+          {
+            "node": "Mapper / Plan52 / Full",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mapper / Plan52 / Full": {
+      "main": [
+        [
+          {
+            "node": "Merge / Plan 52 Manizales",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Mapper / Cinepolis Manizales": {
+      "main": [
+        [
+          {
+            "node": "Merge / Cinepolis Manizales",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge / Cinepolis Manizales": {
+      "main": [
+        [
+          {
+            "node": "Merge / All new",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge / Plan 52 Manizales": {
+      "main": [
+        [
+          {
+            "node": "Merge / All new",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge / All new": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message formatter": {
+      "main": [
+        [
+          {
+            "node": "Send events",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "HXl34Jw5o9I6vqhk",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "71dbb760-3c7b-497a-b429-1f7e63504474",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c161f39dbc3d63a699f9365c3d1da2eea605158e14e61448e8a00c19513dbf33"
+  },
+  "id": "675HNgGwLw8xltJv",
+  "tags": []
+}

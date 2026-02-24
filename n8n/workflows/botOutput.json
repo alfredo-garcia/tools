@@ -115,7 +115,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const item = $input.first().json;\nconst options = item.messageOptions || [];\n\n// Un botón por fila (cada opción en su propia fila)\nconst inline_keyboard = options.map((o) => [\n  { text: o.title, callback_data: o.callback }\n]);\n\n// Si prefieres todos los botones en una sola fila, usa esto en su lugar:\n// const inline_keyboard = [ options.map((o) => ({ text: o.title, callback_data: o.callback })) ];\n\nreturn [{\n  json: {\n    reply_markup: {\n      inline_keyboard\n    }\n  }\n}];"
+        "jsCode": "const item = $input.first().json;\nconst options = item.messageOptions || [];\n\n// Un botón por fila (cada opción en su propia fila)\nconst inline_keyboard = options.map((o) => {\n  const isUrl = o.callback.startsWith('http');\n  \n  return [{\n    text: o.title,\n    // Si empieza por http usa 'url', de lo contrario 'callback_data'\n    [isUrl ? 'url' : 'callback_data']: o.callback\n  }];\n});\n\nreturn { inline_keyboard };\n\n// Si prefieres todos los botones en una sola fila, usa esto en su lugar:\n// const inline_keyboard = [ options.map((o) => ({ text: o.title, callback_data: o.callback })) ];\n\nreturn [{\n  json: {\n    reply_markup: {\n      inline_keyboard\n    }\n  }\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -143,7 +143,7 @@
             },
             {
               "name": "reply_markup",
-              "value": "={{ JSON.stringify($json.reply_markup) }}"
+              "value": "={{ JSON.stringify($json) }}"
             }
           ]
         },
@@ -232,7 +232,7 @@
     "errorWorkflow": "HXl34Jw5o9I6vqhk",
     "callerPolicy": "workflowsFromSameOwner"
   },
-  "versionId": "22c49914-b360-4f53-a1fb-0ba810288957",
+  "versionId": "5699c1d7-73b1-4cb0-b0b3-ea8c2e97f332",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "c161f39dbc3d63a699f9365c3d1da2eea605158e14e61448e8a00c19513dbf33"

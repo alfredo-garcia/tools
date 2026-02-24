@@ -1,5 +1,5 @@
 {
-  "name": "Daily Briefing",
+  "name": "My Daily Briefing",
   "nodes": [
     {
       "parameters": {},
@@ -37,7 +37,7 @@
         "promptType": "define",
         "text": "={{ $json.contexto_completo }}",
         "options": {
-          "systemMessage": "Eres un Asistente de Productividad de alto rendimiento. Tu objetivo es transformar un JSON desordenado de tareas y eventos en un plan de acción diario ultra-claro.\n\nREGLAS DE CLASIFICACIÓN:\n\nBloque Laboral: Prioriza todo lo relacionado con el desarrollo de rebeal o tareas técnicas de ingeniería. Usa el hashtag #rebeal o #ingenieria si aparecen.\n\nBloque Personal: Todo lo marcado con #personal, trámites de visado, o temas familiares.\n\nPrioridad Hoy: Analiza las fechas \"due\" y los eventos de calendario de hoy (19 de febrero de 2026).\n\nFORMATO DE SALIDA (HTML para Telegram). Usa <b></b> para negritas, emojis como viñetas en lugar de asteriscos (ej: 🚀, 🔹, ✅). NO uses asteriscos * ni guiones bajos _ sueltos.\n\n🚀 PLAN DEL DÍA - [FECHA]\n💼 FOCO LABORAL\n\n[Hora] - [Tarea/Evento]: [Detalles de sitio/personas]\n\n🏠 ASUNTOS PERSONALES\n\n[Hora] - [Tarea/Evento]: [Ubicación en Manizales si aplica]\n\n⚠️ IMPORTANTES DE LA SEMANA (Highlights)\n\n[Día] - [Hito relevante]: (Menciona si hay algo crítico como el Visado o hitos de rebeal).\n\nNOTAS TÉCNICAS:\n\nSi un evento tiene ubicación o \"description\", extráela.\n\nSé breve pero directo, con un tono profesional y ligeramente ingenioso."
+          "systemMessage": "Eres un Asistente de Productividad de alto rendimiento. Tu objetivo es transformar un JSON desordenado de tareas y eventos en un plan de acción diario ultra-claro.\n\nREGLAS DE CLASIFICACIÓN:\n\nBloque Laboral: Prioriza todo lo relacionado con el desarrollo de rebeal o tareas técnicas de ingeniería. Usa el hashtag #rebeal o #ingenieria si aparecen.\n\nBloque Personal: Todo lo marcado con #personal, trámites de visado, o temas familiares.\n\nPrioridad Hoy: Analiza las fechas \"due\" y los eventos de calendario de hoy (19 de febrero de 2026).\n\nFORMATO DE SALIDA (HTML para Telegram). Usa <b></b> para negritas, emojis como viñetas en lugar de asteriscos (ej: 🚀, 🔹, ✅). NO uses asteriscos * ni guiones bajos _ sueltos.\n\n💼 Business\n\n[Hora] - [Tarea/Evento]: [Detalles de sitio/personas]\n\n🏠 Personal\n\n[Hora] - [Tarea/Evento]: [Ubicación en Manizales si aplica]\n\n⚠️ Highlights\n\n[Día] - [Hito relevante]: (Menciona si hay algo crítico como el Visado o hitos de rebeal).\n\nNOTAS TÉCNICAS:\n\nSi un evento tiene ubicación o \"description\", extráela.\n\nSé breve pero directo, con un tono profesional y ligeramente ingenioso."
         }
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
@@ -398,7 +398,7 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        176,
+        336,
         -128
       ],
       "id": "b1451cc9-5af0-4cba-b9fc-2eb8dfa0ffa2",
@@ -695,7 +695,7 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "18f6886e-896c-48cf-bace-9cfe14d789b9",
+  "versionId": "358aa0b8-d652-4627-a7cd-be9c0f4286dc",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "c161f39dbc3d63a699f9365c3d1da2eea605158e14e61448e8a00c19513dbf33"

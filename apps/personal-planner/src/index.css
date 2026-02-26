@@ -31,14 +31,64 @@ body {
   @apply min-h-screen antialiased font-bold font-sans text-text bg-background;
 }
 
-/* Sidebar: oculto en mobile (fallback por si hidden/md:flex no genera) */
+/* Mobile: márgenes horizontales del contenido */
 @media (max-width: 767px) {
   .app-sidebar {
     display: none !important;
   }
+  .app-content {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  .app-content main {
+    padding-left: 0;
+    padding-right: 0;
+  }
 }
 
-/* Bottom nav: oculto en tablet horizontal y desktop (fallback por si md:hidden no genera) */
+/* Desktop: márgenes horizontales del contenido (recuperados) */
+@media (min-width: 768px) {
+  .app-content {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
+/* Bottom nav: en mobile fijado abajo y estilos de barra profesional */
+@media (max-width: 767px) {
+  .app-bottom-nav {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    padding: 0 0.75rem 0.75rem;
+    padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
+    pointer-events: none;
+  }
+  .app-bottom-nav-inner {
+    pointer-events: auto;
+    background: var(--token-nav-bg);
+    border: 1px solid var(--token-nav-border);
+    border-bottom: none;
+    border-radius: 1rem 1rem 0 0;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+    max-width: 28rem;
+    margin: 0 auto;
+  }
+  .app-bottom-nav-link {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center;
+    justify-content: center;
+  }
+  .app-bottom-nav-link span {
+    text-align: center;
+    display: block;
+    width: 100%;
+  }
+}
+
+/* Bottom nav: oculto en tablet horizontal y desktop */
 @media (min-width: 768px) {
   .app-bottom-nav {
     display: none !important;

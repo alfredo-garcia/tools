@@ -55,3 +55,12 @@ export function isThisMonth(d) {
   const [y, m, day] = only.split('-').map(Number)
   return y === thisYear && m === thisMonth && day >= 1 && day <= lastDay
 }
+
+/** Due date is strictly before today (past due). */
+export function isPastDue(d) {
+  const only = toLocalDateStr(d)
+  if (!only) return false
+  const today = new Date()
+  const todayStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0')
+  return only < todayStr
+}

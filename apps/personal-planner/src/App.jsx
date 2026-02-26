@@ -13,6 +13,7 @@ import { HabitDetail } from './pages/HabitDetail'
 import { AnalysisOKR } from './pages/AnalysisOKR'
 import { AnalysisTasks } from './pages/AnalysisTasks'
 import { AnalysisHabits } from './pages/AnalysisHabits'
+import { Settings } from './pages/Settings'
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
         <AppShell>
           <Routes>
             <Route path="/" element={<Dashboard />} />
+            <Route path="/settings" element={<Settings />} />
             <Route path="/objectives" element={<ObjectivesList />} />
             <Route path="/objectives/:id" element={<ObjectiveDetail />} />
             <Route path="/key-results" element={<KeyResultsList />} />

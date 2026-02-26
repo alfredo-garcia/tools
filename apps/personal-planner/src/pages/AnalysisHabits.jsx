@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { useApi } from '../lib/api'
 import { Spinner } from '../components/Spinner'
+import { PageHeader } from '../components/PageHeader'
 import { field, str, dateStr } from '../lib/normalize'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
 
@@ -26,29 +27,27 @@ export function AnalysisHabits() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  useEffect(() => {
-    let cancelled = false
+  const refetch = useCallback(() => {
+    setLoading(true)
+    setError(null)
     Promise.all([
       fetchApi('/api/habits').then((r) => r.data),
       fetchApi('/api/habit-tracking').then((r) => r.data),
     ])
       .then(([h, t]) => {
-        if (!cancelled) {
-          setHabits(h || [])
-          setTracking(t || [])
-        }
+        setHabits(h || [])
+        setTracking(t || [])
       })
-      .catch((e) => {
-        if (!cancelled) setError(e.message)
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false)
-      })
-    return () => { cancelled = true }
+      .catch((e) => setError(e.message))
+      .finally(() => setLoading(false))
   }, [fetchApi])
 
-  if (loading) return <div className="flex justify-center py-12"><Spinner size="lg" /></div>
-  if (error) return <p className="text-red-600 dark:text-red-400">{error}</p>
+  useEffect(() => {
+    refetch()
+  }, [refetch])
+
+  if (loading && habits.length === 0) return <div className="flex justify-center py-12"><Spinner size="lg" /></div>
+  if (error && habits.length === 0) return <p className="text-red-600 dark:text-red-400">{error}</p>
 
   const successTotal = tracking.filter(isSuccess).length
   const totalRecords = tracking.length
@@ -90,28 +89,28 @@ export function AnalysisHabits() {
     }
   }).filter((x) => x.total > 0)
 
-  const colors = ['#0ea5e9', '#22c55e', '#8b5cf6', '#f59e0b']
+  const colors = ['#f97316', '#22c55e', '#a3a3a3', '#737373']
 
   return (
     <div className="space-y-8">
-      <h1 className="text-xl font-bold text-gray-900 dark:text-white">Análisis Hábitos</h1>
+      <PageHeader title="Análisis Hábitos" onRefresh={refetch} loading={loading} />
 
       <section className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="rounded-2xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5">
-          <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400">Tasa de éxito global</h2>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">{overallPct}%</p>
-          <p className="text-sm text-gray-600 dark:text-gray-300">{successTotal} / {totalRecords} registros</p>
+        <div className="rounded-2xl border border-2 border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-5">
+          <h2 className="text-sm font-medium text-neutral-500 dark:text-neutral-400">Tasa de éxito global</h2>
+          <p className="text-2xl font-bold text-neutral-900 dark:text-white">{overallPct}%</p>
+          <p className="text-sm text-neutral-600 dark:text-neutral-300">{successTotal} / {totalRecords} registros</p>
         </div>
-        <div className="rounded-2xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5">
-          <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400">Hábitos con tracking</h2>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">{byHabit.length}</p>
-          <p className="text-sm text-gray-600 dark:text-gray-300">de {habits.length} hábitos</p>
+        <div className="rounded-2xl border border-2 border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-5">
+          <h2 className="text-sm font-medium text-neutral-500 dark:text-neutral-400">Hábitos con tracking</h2>
+          <p className="text-2xl font-bold text-neutral-900 dark:text-white">{byHabit.length}</p>
+          <p className="text-sm text-neutral-600 dark:text-neutral-300">de {habits.length} hábitos</p>
         </div>
       </section>
 
       {weekData.length > 0 && (
-        <section className="rounded-2xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5">
-          <h2 className="text-base font-semibold text-gray-800 dark:text-gray-200 mb-4">
+        <section className="rounded-2xl border border-2 border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-5">
+          <h2 className="text-base font-semibold text-neutral-800 dark:text-white mb-4">
             Éxito por semana (últimas 8)
           </h2>
           <ResponsiveContainer width="100%" height={280}>
@@ -119,15 +118,15 @@ export function AnalysisHabits() {
               <XAxis dataKey="name" tick={{ fontSize: 11 }} />
               <YAxis domain={[0, 100]} tickFormatter={(v) => `${v}%`} />
               <Tooltip formatter={(v) => [`${v}%`, 'Éxito']} />
-              <Bar dataKey="pct" fill="#22c55e" radius={[4, 4, 0, 0]} name="Éxito %" />
+              <Bar dataKey="pct" fill="#f97316" radius={[4, 4, 0, 0]} name="Éxito %" />
             </BarChart>
           </ResponsiveContainer>
         </section>
       )}
 
       {byHabit.length > 0 && (
-        <section className="rounded-2xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5">
-          <h2 className="text-base font-semibold text-gray-800 dark:text-gray-200 mb-4">
+        <section className="rounded-2xl border border-2 border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-5">
+          <h2 className="text-base font-semibold text-neutral-800 dark:text-white mb-4">
             Tasa de éxito por hábito
           </h2>
           <ResponsiveContainer width="100%" height={300}>
@@ -152,8 +151,8 @@ export function AnalysisHabits() {
       )}
 
       <section>
-        <h2 className="text-base font-semibold text-gray-800 dark:text-gray-200 mb-3">
-          <Link to="/habits" className="text-sky-600 dark:text-sky-400 hover:underline">
+        <h2 className="text-base font-semibold text-neutral-800 dark:text-white mb-3">
+          <Link to="/habits" className="text-orange-500 dark:text-orange-400 hover:underline">
             Ver todos los hábitos →
           </Link>
         </h2>

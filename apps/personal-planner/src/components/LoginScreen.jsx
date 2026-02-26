@@ -41,35 +41,34 @@ export function LoginScreen() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-gray-50 dark:bg-slate-900">
+    <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-white dark:bg-neutral-950">
       <div className="w-full max-w-sm">
-        <h1 className="text-xl font-semibold text-center text-gray-800 dark:text-gray-100 mb-2">
+        <h1 className="text-xl font-bold text-center text-neutral-900 dark:text-white mb-2">
           Acceso privado
         </h1>
-        <p className="text-base text-gray-600 dark:text-gray-400 text-center mb-6">
+        <p className="text-base font-medium text-neutral-600 dark:text-neutral-400 text-center mb-6">
           Introduce tu código de acceso
         </p>
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
             type="password"
-            inputMode="numeric"
-            autoComplete="one-time-code"
-            placeholder="Código"
+            autoComplete="current-password"
+            placeholder="Código (alfanumérico)"
             value={code}
             onChange={(e) => setCode(e.target.value)}
-            className="w-full px-4 py-3 text-base rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 focus:ring-2 focus:ring-sky-500 focus:border-transparent outline-none"
+            className="w-full px-4 py-3 text-base font-medium rounded-xl border-2 border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white placeholder-neutral-500 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
             disabled={loading}
             autoFocus
           />
           {error && (
-            <p className="text-sm text-red-600 dark:text-red-400 text-center" role="alert">
+            <p className="text-sm font-medium text-red-600 dark:text-red-400 text-center" role="alert">
               {error}
             </p>
           )}
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 px-4 text-base font-medium rounded-xl bg-sky-600 hover:bg-sky-700 text-white disabled:opacity-60 min-h-[48px] touch-manipulation"
+            className="w-full py-3 px-4 text-base font-bold rounded-xl bg-orange-500 hover:bg-orange-600 text-white disabled:opacity-60 min-h-[48px] touch-manipulation transition-colors"
           >
             {loading ? 'Comprobando…' : 'Entrar'}
           </button>

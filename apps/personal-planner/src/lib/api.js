@@ -1,14 +1,16 @@
+import { useCallback } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 
 const AUTH_HEADER = 'Authorization'
 
 /**
  * Cliente para llamar a las APIs con el código de acceso en headers.
+ * fetchApi está estable (useCallback) para no provocar refetches innecesarios.
  */
 export function useApi() {
   const { getAccessCode } = useAuth()
 
-  const fetchApi = async (path, options = {}) => {
+  const fetchApi = useCallback(async (path, options = {}) => {
     const headers = {
       [AUTH_HEADER]: getAccessCode(),
       'Content-Type': 'application/json',
@@ -18,7 +20,7 @@ export function useApi() {
     const data = await res.json().catch(() => ({}))
     if (!res.ok) throw new Error(data.error ?? 'Error en la petición')
     return data
-  }
+  }, [getAccessCode])
 
   return { fetchApi }
 }

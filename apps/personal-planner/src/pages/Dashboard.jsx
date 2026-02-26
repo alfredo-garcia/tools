@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { useApi } from '../lib/api'
 import { Spinner } from '../components/Spinner'
+import { PageHeader } from '../components/PageHeader'
 import { field, num, str, arr, dateStr } from '../lib/normalize'
 import {
   BarChart,
@@ -46,8 +47,9 @@ function useDashboardData() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  useEffect(() => {
-    let cancelled = false
+  const refetch = useCallback(() => {
+    setLoading(true)
+    setError(null)
     Promise.all([
       fetchApi('/api/objectives').then((r) => r.data),
       fetchApi('/api/key-results').then((r) => r.data),
@@ -56,41 +58,40 @@ function useDashboardData() {
       fetchApi('/api/habit-tracking').then((r) => r.data),
     ])
       .then(([objectives, keyResults, tasks, habits, habitTracking]) => {
-        if (!cancelled) setData({ objectives, keyResults, tasks, habits, habitTracking })
+        setData({ objectives, keyResults, tasks, habits, habitTracking })
       })
-      .catch((e) => {
-        if (!cancelled) setError(e.message)
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false)
-      })
-    return () => { cancelled = true }
+      .catch((e) => setError(e.message))
+      .finally(() => setLoading(false))
   }, [fetchApi])
 
-  return { data, loading, error }
+  useEffect(() => {
+    refetch()
+  }, [refetch])
+
+  return { data, loading, error, refetch }
 }
 
 function KpiCard({ title, value, subtitle, to }) {
   return (
     <Link
       to={to || '#'}
-      className={`rounded-2xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 shadow-sm hover:shadow-md transition-shadow ${
+      className={`rounded-2xl border border-2 border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-5 shadow-sm hover:shadow-md transition-shadow ${
         to ? 'cursor-pointer' : 'cursor-default'
       }`}
     >
-      <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{title}</p>
-      <p className="mt-1 text-2xl font-bold text-gray-900 dark:text-white">{value}</p>
+      <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400">{title}</p>
+      <p className="mt-1 text-2xl font-bold text-neutral-900 dark:text-white">{value}</p>
       {subtitle != null && (
-        <p className="mt-0.5 text-sm text-gray-600 dark:text-gray-300">{subtitle}</p>
+        <p className="mt-0.5 text-sm text-neutral-600 dark:text-neutral-300">{subtitle}</p>
       )}
     </Link>
   )
 }
 
 export function Dashboard() {
-  const { data, loading, error } = useDashboardData()
+  const { data, loading, error, refetch } = useDashboardData()
 
-  if (loading) {
+  if (loading && !data.objectives?.length) {
     return (
       <div className="flex items-center justify-center py-20">
         <Spinner size="lg" />
@@ -147,16 +148,16 @@ export function Dashboard() {
     progress: num(field(kr, 'Progress (%)', 'Progress', 'Progress %')) ?? 0,
   }))
   const statusPie = [
-    { name: 'Completadas', value: weekTasksDone.length, color: '#0ea5e9' },
-    { name: 'Pendientes', value: weekTasks.length - weekTasksDone.length, color: '#94a3b8' },
+    { name: 'Completadas', value: weekTasksDone.length, color: '#f97316' },
+    { name: 'Pendientes', value: weekTasks.length - weekTasksDone.length, color: '#737373' },
   ].filter((d) => d.value > 0)
 
   return (
     <div className="space-y-8">
-      <h1 className="text-xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
+      <PageHeader title="Dashboard" onRefresh={refetch} loading={loading} />
 
       <section>
-        <h2 className="text-base font-semibold text-gray-700 dark:text-gray-300 mb-4">
+        <h2 className="text-base font-semibold text-neutral-700 dark:text-neutral-300 mb-4">
           Resumen de cumplimiento
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -188,29 +189,29 @@ export function Dashboard() {
       </section>
 
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="rounded-2xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5">
-          <h3 className="text-base font-semibold text-gray-800 dark:text-gray-200 mb-4">
+        <div className="rounded-2xl border border-2 border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-5">
+          <h3 className="text-base font-semibold text-neutral-800 dark:text-white mb-4">
             Progreso Key Results (top 8)
           </h3>
           {okrChartData.length === 0 ? (
-            <p className="text-gray-500 dark:text-gray-400 text-sm">Sin datos</p>
+            <p className="text-neutral-500 dark:text-neutral-400 text-sm">Sin datos</p>
           ) : (
             <ResponsiveContainer width="100%" height={260}>
               <BarChart data={okrChartData} layout="vertical" margin={{ left: 4, right: 20 }}>
                 <XAxis type="number" domain={[0, 100]} tickFormatter={(v) => `${v}%`} />
                 <YAxis type="category" dataKey="name" width={80} tick={{ fontSize: 12 }} />
                 <Tooltip formatter={(v) => [`${v}%`, 'Progreso']} />
-                <Bar dataKey="progress" fill="#0ea5e9" radius={[0, 4, 4, 0]} />
+                <Bar dataKey="progress" fill="#f97316" radius={[0, 4, 4, 0]} />
               </BarChart>
             </ResponsiveContainer>
           )}
         </div>
-        <div className="rounded-2xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5">
-          <h3 className="text-base font-semibold text-gray-800 dark:text-gray-200 mb-4">
+        <div className="rounded-2xl border border-2 border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-5">
+          <h3 className="text-base font-semibold text-neutral-800 dark:text-white mb-4">
             Tareas esta semana
           </h3>
           {statusPie.length === 0 ? (
-            <p className="text-gray-500 dark:text-gray-400 text-sm">Sin tareas esta semana</p>
+            <p className="text-neutral-500 dark:text-neutral-400 text-sm">Sin tareas esta semana</p>
           ) : (
             <ResponsiveContainer width="100%" height={260}>
               <PieChart>
@@ -240,17 +241,17 @@ export function Dashboard() {
       <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Link
           to="/objectives"
-          className="rounded-2xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 hover:shadow-md transition-shadow"
+          className="rounded-2xl border border-2 border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-5 hover:shadow-md transition-shadow"
         >
-          <h3 className="text-base font-semibold text-gray-800 dark:text-gray-200">
+          <h3 className="text-base font-semibold text-neutral-800 dark:text-white">
             Objetivos recientes
           </h3>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
             {objectives.length} objetivos · Ver todos
           </p>
           <ul className="mt-3 space-y-1">
             {objectives.slice(0, 3).map((o) => (
-              <li key={o.id} className="text-sm text-gray-700 dark:text-gray-300 truncate">
+              <li key={o.id} className="text-sm text-neutral-700 dark:text-neutral-300 truncate">
                 {str(field(o, 'Objective Name', 'Objective Name')) || '(sin nombre)'}
               </li>
             ))}
@@ -258,15 +259,15 @@ export function Dashboard() {
         </Link>
         <Link
           to="/habits"
-          className="rounded-2xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 hover:shadow-md transition-shadow"
+          className="rounded-2xl border border-2 border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-5 hover:shadow-md transition-shadow"
         >
-          <h3 className="text-base font-semibold text-gray-800 dark:text-gray-200">Hábitos</h3>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          <h3 className="text-base font-semibold text-neutral-800 dark:text-white">Hábitos</h3>
+          <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
             {habits.length} hábitos · Ver todos
           </p>
           <ul className="mt-3 space-y-1">
             {habits.slice(0, 3).map((h) => (
-              <li key={h.id} className="text-sm text-gray-700 dark:text-gray-300 truncate">
+              <li key={h.id} className="text-sm text-neutral-700 dark:text-neutral-300 truncate">
                 {str(field(h, 'Habit Name', 'Habit Name')) || '(sin nombre)'}
               </li>
             ))}

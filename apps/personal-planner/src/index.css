@@ -3,9 +3,9 @@
 /* Dark mode: control por clase en <html> */
 @variant dark (&:where(.dark, .dark *));
 
-/* Mobile-first base: min 16px to avoid iOS zoom */
+/* Tema: negro + naranja, fuentes bold, aspecto tecnológico */
 @theme {
-  --font-sans: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-sans: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
 }
 
 html {
@@ -14,12 +14,22 @@ html {
 }
 
 body {
-  @apply min-h-screen antialiased text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-slate-900;
   margin: 0;
+  @apply min-h-screen antialiased font-bold font-sans;
+  @apply text-neutral-900 bg-white dark:text-white dark:bg-neutral-950;
+}
+
+/* Acentos naranja en toda la app */
+a.text-accent,
+button.text-accent,
+.text-accent {
+  @apply text-orange-500;
 }
 
 /* Touch-friendly minimum tap target */
-button, a[role="button"], [type="submit"] {
+button,
+a[role="button"],
+[type="submit"] {
   min-height: 44px;
   min-width: 44px;
 }

@@ -40,12 +40,46 @@ const MIMES = {
   '.woff2': 'font/woff2'
 }
 
+// Rate limit: máx 120 peticiones por minuto por cliente (por IP + auth)
+const RATE_LIMIT_WINDOW_MS = 60_000
+const RATE_LIMIT_MAX = 120
+const rateLimit = new Map()
+function getClientKey(req) {
+  const auth = (req.headers?.authorization || req.headers?.Authorization || '').slice(0, 20)
+  const ip = req.socket?.remoteAddress || 'unknown'
+  return `${ip}:${auth}`
+}
+function checkRateLimit(req) {
+  const key = getClientKey(req)
+  const now = Date.now()
+  let entry = rateLimit.get(key)
+  if (!entry || now > entry.resetAt) {
+    entry = { count: 0, resetAt: now + RATE_LIMIT_WINDOW_MS }
+    rateLimit.set(key, entry)
+  }
+  entry.count++
+  if (entry.count > RATE_LIMIT_MAX) return false
+  return true
+}
+setInterval(() => {
+  const now = Date.now()
+  for (const [k, v] of rateLimit.entries()) {
+    if (now > v.resetAt) rateLimit.delete(k)
+  }
+}, 30_000)
+
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url || '/', `http://localhost:${PORT}`)
   const pathname = url.pathname.replace(/\/$/, '') || '/'
 
   // API: /api/validate, /api/data, etc.
   if (pathname.startsWith('/api/')) {
+    if (!checkRateLimit(req)) {
+      res.statusCode = 429
+      res.setHeader('Content-Type', 'application/json')
+      res.end(JSON.stringify({ error: 'Demasiadas peticiones. Espera un momento.' }))
+      return
+    }
     const name = pathname.slice(5).split('/')[0] || 'validate'
     let handler
     try {

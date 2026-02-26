@@ -6,10 +6,10 @@ export function Layout({ children }) {
 
   if (isChecking) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-slate-900">
+      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-neutral-950">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-10 h-10 border-2 border-sky-500 border-t-transparent rounded-full animate-spin" aria-hidden />
-          <p className="text-base text-gray-600 dark:text-gray-400">Cargando…</p>
+          <div className="w-10 h-10 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" aria-hidden />
+          <p className="text-base font-bold text-neutral-600 dark:text-neutral-400">Cargando…</p>
         </div>
       </div>
     )
@@ -20,7 +20,7 @@ export function Layout({ children }) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
+    <div className="min-h-screen bg-white dark:bg-neutral-950">
       {children}
     </div>
   )

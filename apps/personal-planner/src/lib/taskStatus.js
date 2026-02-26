@@ -5,8 +5,6 @@ export const STATUS_DONE = ['Done', 'Complete', 'Completado', 'Hecho', 'Cerrado'
 export const STATUS_IN_PROGRESS = [
   'In Progress',
   'En progreso',
-  'In progress',
-  'En Progreso',
 ]
 
 const DONE_SET = new Set(STATUS_DONE.map((s) => s.toLowerCase()))

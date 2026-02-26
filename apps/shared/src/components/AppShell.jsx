@@ -1,24 +1,29 @@
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { IconChevronsLeft, IconChevronsRight } from './Icons.jsx'
+import { IconMenu } from './Icons.jsx'
 
 /**
- * Sidebar (lg+) + bottom nav (< lg). navItems = [{ to, label, Icon?, aria }].
- * title opcional para el logo/brand en sidebar.
+ * AppShell: sidebar sticky (md+) + bottom nav (< md).
+ * Layout: flex row estándar — sidebar en flujo normal, sticky.
+ * navItems = [{ to, label, Icon?, aria }]
+ *
+ * El toggle (hamburguesa) vive como primer ítem del nav para que los iconos
+ * queden perfectamente alineados con los ítems de menú en ambos estados.
  */
 function NavLink({ to, label, Icon, aria, isActive, collapsed }) {
   return (
     <Link
       to={to}
       aria-label={aria}
-      className={`flex items-center gap-3 rounded-xl min-h-[44px] py-2.5 text-base font-bold touch-manipulation transition-colors ${
+      aria-current={isActive ? 'page' : undefined}
+      className={`flex items-center gap-3 rounded-lg min-h-[44px] px-3 py-2.5 text-base font-semibold touch-manipulation transition-colors ${
         isActive
           ? 'bg-primary-muted text-primary'
           : 'text-nav-text hover:bg-surface hover:text-text'
-      } ${collapsed ? 'justify-center px-0' : 'pl-5 pr-3'}`}
+      } ${collapsed ? 'justify-center gap-0' : ''}`}
     >
       {Icon && <Icon size={22} className="shrink-0" />}
-      {!collapsed && <span>{label}</span>}
+      {!collapsed && <span className="truncate">{label}</span>}
     </Link>
   )
 }
@@ -33,97 +38,88 @@ export function AppShell({ children, navItems = [], title = '' }) {
   }
 
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row bg-background">
-      <div
-        className="app-shell-sidebar-wrapper hidden lg:block fixed z-20 rounded-xl transition-[width] duration-200"
+    <div className="flex min-h-screen bg-background">
+
+      {/* ── Sidebar: solo md+ (CSS fallback en index.css) ── */}
+      <aside
+        className="app-sidebar hidden md:flex flex-col bg-nav-bg rounded-xl shrink-0 overflow-hidden"
         style={{
-          left: '24px',
-          top: '24px',
-          width: sidebarOpen ? '12rem' : '4rem',
-          height: 'calc(100vh - 48px)',
-          paddingLeft: '24px',
-          boxSizing: 'content-box',
+          width: sidebarOpen ? '15rem' : '4rem',
+          transition: 'width 300ms ease-in-out',
+          position: 'sticky',
+          top: '1rem',
+          height: 'calc(100vh - 2rem)',
+          marginTop: '1rem',
+          marginLeft: '1rem',
+          marginBottom: '1rem',
         }}
       >
-        <aside
-          className="flex flex-col h-full rounded-xl bg-nav-bg transition-[width] duration-200 shrink-0"
-          style={{
-            width: sidebarOpen ? '12rem' : '4rem',
-            flexDirection: 'column',
-            minHeight: 0,
-          }}
+        <nav
+          className="flex-1 overflow-y-auto overflow-x-hidden py-2 px-2 space-y-1"
+          aria-label="Navegación principal"
         >
-          {/* Título arriba: My Planner + botón colapsar; colapsado: centrado para alinear con ítems */}
-          <div
-            className={`flex items-center shrink-0 h-14 rounded-t-xl ${sidebarOpen ? 'justify-between pl-5 pr-3' : 'justify-center'}`}
-            style={{ order: 1 }}
+          {/* Hamburguesa + título como primer ítem del nav:
+              mismo padding que NavLink → iconos alineados verticalmente */}
+          <button
+            type="button"
+            onClick={() => setSidebarOpen(o => !o)}
+            aria-label={sidebarOpen ? 'Colapsar menú' : 'Expandir menú'}
+            className={`flex items-center w-full rounded-lg min-h-[44px] px-3 py-2.5 text-base font-bold touch-manipulation transition-colors text-nav-text hover:bg-surface hover:text-text cursor-pointer ${
+              !sidebarOpen ? 'justify-center gap-0' : 'gap-3'
+            }`}
           >
-            {sidebarOpen && title ? (
-              <Link to="/" className="font-bold text-text truncate text-lg">
-                {title}
-              </Link>
-            ) : null}
-            <button
-              type="button"
-              onClick={() => setSidebarOpen((o) => !o)}
-              aria-label={sidebarOpen ? 'Colapsar menú' : 'Expandir menú'}
-              className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl text-nav-text hover:bg-surface hover:text-text transition-colors"
-            >
-              {sidebarOpen ? <IconChevronsLeft size={20} /> : <IconChevronsRight size={20} />}
-            </button>
-          </div>
-          {/* Ítems del menú debajo del título; colapsado: px-0 para alinear iconos con el de expandir */}
-          <nav
-            className={`flex-1 py-4 space-y-1 overflow-y-auto min-h-0 ${sidebarOpen ? 'px-5' : 'px-0'}`}
-            style={{ order: 2 }}
-          >
-            {navItems.map(({ to, label, Icon, aria }) => (
-              <NavLink
-                key={to}
-                to={to}
-                label={label}
-                Icon={Icon}
-                aria={aria}
-                isActive={isActive(to)}
-                collapsed={!sidebarOpen}
-              />
-            ))}
-          </nav>
-        </aside>
-      </div>
+            <IconMenu size={22} className="shrink-0" />
+            {sidebarOpen && title && (
+              <span className="truncate flex-1 text-left">{title}</span>
+            )}
+          </button>
 
-      <div
-        className={`flex-1 flex flex-col min-h-screen transition-[margin] duration-200 ${
-          sidebarOpen ? 'lg:ml-[calc(12rem+48px)]' : 'lg:ml-[calc(4rem+48px)]'
-        }`}
-      >
-        <main className="flex-1 w-full max-w-4xl mx-auto pt-6 px-6 pb-24 lg:pb-8">
+          {navItems.map(({ to, label, Icon, aria }) => (
+            <NavLink
+              key={to}
+              to={to}
+              label={label}
+              Icon={Icon}
+              aria={aria}
+              isActive={isActive(to)}
+              collapsed={!sidebarOpen}
+            />
+          ))}
+        </nav>
+      </aside>
+
+      {/* ── Contenido principal ── */}
+      {/* marginTop: 1rem iguala el punto de partida vertical con el sidebar,
+          pt-4 en main posiciona el breadcrumb/título a la misma altura que el hamburguesa */}
+      <div className="flex-1 flex flex-col min-w-0" style={{ marginTop: '1.5rem' }}>
+        <main className="flex-1 w-full max-w-4xl mx-auto pt-5 px-6 pb-24 md:pb-8">
           {children}
         </main>
-
-        <nav
-          className="app-shell-bottom-nav fixed bottom-0 left-0 right-0 z-30 bg-nav-bg border-t border-nav-border pb-[env(safe-area-inset-bottom)] lg:hidden"
-          aria-label="Navegación principal (móvil)"
-        >
-          <div className="flex items-stretch justify-around h-16">
-            {navItems.map(({ to, label, Icon, aria }) => (
-              <Link
-                key={to}
-                to={to}
-                aria-label={aria}
-                className={`flex flex-col items-center justify-center flex-1 min-w-0 py-2 text-xs font-bold touch-manipulation transition-colors ${
-                  isActive(to)
-                    ? 'text-nav-text-active'
-                    : 'text-nav-text'
-                }`}
-              >
-                {Icon && <Icon size={22} className="mb-0.5" />}
-                <span className="truncate w-full text-center">{label}</span>
-              </Link>
-            ))}
-          </div>
-        </nav>
       </div>
+
+      {/* ── Bottom nav: solo mobile (md:hidden + CSS fallback en index.css) ── */}
+      <nav
+        className="app-bottom-nav fixed bottom-0 left-0 right-0 z-30 bg-nav-bg border-t border-nav-border pb-[env(safe-area-inset-bottom)] md:hidden"
+        aria-label="Navegación principal (móvil)"
+      >
+        <div className="flex items-stretch justify-around h-16">
+          {navItems.map(({ to, label, Icon, aria }) => (
+            <Link
+              key={to}
+              to={to}
+              aria-label={aria}
+              aria-current={isActive(to) ? 'page' : undefined}
+              className={`flex flex-col items-center justify-center flex-1 min-w-0 py-2 text-xs font-semibold touch-manipulation transition-colors ${
+                isActive(to) ? 'text-nav-text-active' : 'text-nav-text'
+              }`}
+            >
+              {Icon && <Icon size={22} className="mb-0.5" />}
+              <span className="truncate w-full text-center">{label}</span>
+            </Link>
+          ))}
+        </div>
+      </nav>
+
     </div>
   )
 }

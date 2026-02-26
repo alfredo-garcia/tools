@@ -31,18 +31,16 @@ body {
   @apply min-h-screen antialiased font-bold font-sans text-text bg-background;
 }
 
-/* Sidebar: margen obligatorio a la izquierda y arriba (desktop) */
-@media (min-width: 1024px) {
-  .app-shell-sidebar-wrapper {
-    left: 24px !important;
-    top: 24px !important;
-    padding-left: 24px !important;
+/* Sidebar: oculto en mobile (fallback por si hidden/md:flex no genera) */
+@media (max-width: 767px) {
+  .app-sidebar {
+    display: none !important;
   }
 }
 
-/* Ocultar barra inferior en desktop (fallback por si lg:hidden no se genera) */
-@media (min-width: 1024px) {
-  .app-shell-bottom-nav {
+/* Bottom nav: oculto en tablet horizontal y desktop (fallback por si md:hidden no genera) */
+@media (min-width: 768px) {
+  .app-bottom-nav {
     display: none !important;
   }
 }

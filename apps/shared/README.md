@@ -135,6 +135,6 @@ Los tokens definen colores, tipografía y espaciados de forma semántica. Las ap
 ## Despliegue en Vercel
 
 - Un proyecto Vercel por app (por ejemplo uno para personal-planner, otro para template).
-- **Root Directory**: en cada proyecto, Root Directory = carpeta de la app (ej. `apps/personal-planner`). El repositorio que Vercel clona es el **monorepo completo**; solo cambia el directorio de trabajo del build.
-- Al hacer `npm install` dentro de esa carpeta, `"@tools/shared": "file:../shared"` resuelve a `apps/shared`, que existe en el clone. No hace falta copiar ni compilar shared a otro sitio.
-- **Requisito**: el repositorio debe contener tanto la app como `apps/shared`. No desplegar desde un subárbol que excluya `apps/shared`.
+- **Root Directory**: en cada proyecto, Root Directory = carpeta de la app (ej. `apps/personal-planner`).
+- **Incluir carpeta hermana**: en la configuración del proyecto (Settings → General → Root Directory → Edit), activa **"Include source files outside of the Root Directory in the Build Step"**. Así el build puede acceder a `../shared` y `npm install` resuelve `"@tools/shared": "file:../shared"`.
+- El repositorio debe contener tanto la app como `apps/shared`. Si el build falla con "failed to resolve @tools/shared", comprueba que esa opción está activada y que la rama incluye `apps/shared`.

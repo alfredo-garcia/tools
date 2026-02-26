@@ -18,9 +18,36 @@ const publicDir = join(root, 'public')
 const defaultInput = join(root, 'assets', 'image.png')
 const inputPath = process.argv[2] || defaultInput
 
-const ORANGE = rgbaToInt(249, 115, 22, 255) // #f97316
 const SPLASH_W = 1284
 const SPLASH_H = 2778
+
+/** Sample background color from image corners (icon background = splash background) */
+function sampleBackgroundColor(img) {
+  const w = img.bitmap.width
+  const h = img.bitmap.height
+  const data = img.bitmap.data
+  const samples = [
+    [2, 2],
+    [w - 3, 2],
+    [2, h - 3],
+    [w - 3, h - 3]
+  ]
+  let r = 0, g = 0, b = 0, n = 0
+  for (const [px, py] of samples) {
+    if (px >= 0 && px < w && py >= 0 && py < h) {
+      const idx = (py * w + px) << 2
+      r += data[idx]
+      g += data[idx + 1]
+      b += data[idx + 2]
+      n++
+    }
+  }
+  if (n === 0) return rgbaToInt(249, 115, 22, 255)
+  r = Math.round(r / n)
+  g = Math.round(g / n)
+  b = Math.round(b / n)
+  return rgbaToInt(r, g, b, 255)
+}
 
 async function main() {
   const full = await Jimp.read(inputPath)
@@ -42,13 +69,14 @@ async function main() {
   writeFileSync(join(publicDir, 'favicon.png'), await icon32.getBuffer('image/png'))
   console.log('Wrote pwa-192x192.png, apple-touch-icon.png, favicon.png')
 
-  // Splash: full image scaled to fit, centered on orange
+  // Splash: full image scaled to fit, centered on same background as icon
+  const bgColor = sampleBackgroundColor(full)
   const scale = Math.min(SPLASH_W / w, SPLASH_H / h)
   const scaledW = Math.round(w * scale)
   const scaledH = Math.round(h * scale)
   const x = Math.round((SPLASH_W - scaledW) / 2)
   const y = Math.round((SPLASH_H - scaledH) / 2)
-  const bg = new Jimp({ width: SPLASH_W, height: SPLASH_H, color: ORANGE })
+  const bg = new Jimp({ width: SPLASH_W, height: SPLASH_H, color: bgColor })
   const scaled = full.clone().resize({ w: scaledW, h: scaledH })
   bg.blit({ src: scaled, x, y })
   writeFileSync(join(publicDir, 'splash.png'), await bg.getBuffer('image/png'))

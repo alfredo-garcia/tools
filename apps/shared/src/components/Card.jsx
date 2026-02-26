@@ -4,7 +4,7 @@ import { IconChevronDown, IconChevronUp } from './Icons.jsx'
 /**
  * Card: sin borde, fondo ligeramente distinto (bg-surface).
  * - title, icon opcional
- * - children = contenido principal
+ * - children = body (cualquier contenido, sin estilo forzado)
  * - expandable: muestra toggle y contenido extra en expandedContent
  * - buttons: nodo(s) que se muestran debajo
  */
@@ -31,7 +31,7 @@ export function Card({
           {icon && <div className="shrink-0 mt-0.5 text-text-muted">{icon}</div>}
           <div className="flex-1 min-w-0">
             <div className="font-semibold text-text">{title}</div>
-            {children && <div className="mt-1 text-sm text-text-muted">{children}</div>}
+            {children != null && children !== '' && <div className="mt-1">{children}</div>}
           </div>
           {expandable && (
             <button

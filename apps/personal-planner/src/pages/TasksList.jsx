@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { useApi, Spinner, PageHeader, Card, CardList, IconCheckSquare } from '@tools/shared'
 import { field, str, dateStr } from '../lib/normalize'
-import { getTaskDisplayGroup } from '../lib/taskStatus'
+import { getTaskStatusGroup } from '../lib/taskStatus'
 import { isToday, isThisWeek, isThisMonth, isPastDue } from '../lib/dateFilters'
 
 const FILTER_OPTIONS = [
@@ -12,9 +12,8 @@ const FILTER_OPTIONS = [
   { value: 'all', label: 'Todas' },
 ]
 
-const GROUP_ORDER = ['past_due', 'in_progress', 'pending', 'done']
+const GROUP_ORDER = ['in_progress', 'pending', 'done']
 const GROUP_LABELS = {
-  past_due: 'Past due',
   in_progress: 'In progress',
   pending: 'Pending',
   done: 'Done',
@@ -37,8 +36,9 @@ function TaskCard({ task, getDue }) {
   const status = str(field(task, 'Status', 'Status'))
   const due = getDue(task)
   const assignee = field(task, 'Assignee', 'Assignee')
-  const statusGroup = getTaskDisplayGroup(task, due, isPastDue)
+  const statusGroup = getTaskStatusGroup(task)
   const isDone = statusGroup === 'done'
+  const showPastDueTag = !isDone && due && isPastDue(due)
 
   return (
     <Link to={`/tasks/${task.id}`} className="block">
@@ -47,13 +47,20 @@ function TaskCard({ task, getDue }) {
         icon={<IconCheckSquare size={20} />}
         className={isDone ? 'opacity-90' : ''}
       >
-        <div className="flex flex-wrap gap-x-3 gap-y-0.5">
-          {category && <span>{category}</span>}
-          {status && <span>{status}</span>}
-          <span>Vence: {due || '—'}</span>
-          {assignee != null && assignee !== '' && (
-            <span>Asignado: {str(assignee)}</span>
+        <div className="flex flex-wrap items-center gap-2">
+          {showPastDueTag && (
+            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-500/20 text-red-600 dark:text-red-400">
+              Previsto: {due}
+            </span>
           )}
+          <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-sm text-text-muted">
+            {category && <span>{category}</span>}
+            {status && <span>{status}</span>}
+            <span>Vence: {due || '—'}</span>
+            {assignee != null && assignee !== '' && (
+              <span>Asignado: {str(assignee)}</span>
+            )}
+          </div>
         </div>
         {isDone && (
           <span className="inline-block mt-1 text-xs text-green-600 dark:text-green-400">Completada</span>
@@ -84,10 +91,22 @@ export function TasksList() {
   }, [refetch])
 
   const getDue = (t) => dateStr(field(t, 'Due Date', 'Due Date'))
-  const filtered = filterByDate(list, filter, getDue)
+  const filteredByDate = filterByDate(list, filter, getDue)
+  const pastDueFromFull = list.filter((t) => {
+    const due = getDue(t)
+    return due && isPastDue(due) && getTaskStatusGroup(t) !== 'done'
+  })
+  const filteredIds = new Set(filteredByDate.map((t) => t.id))
+  const filtered = [...filteredByDate]
+  pastDueFromFull.forEach((t) => {
+    if (!filteredIds.has(t.id)) {
+      filtered.push(t)
+      filteredIds.add(t.id)
+    }
+  })
 
-  const groupBy = (t) => getTaskDisplayGroup(t, getDue(t), isPastDue)
-  const initialCollapsed = { past_due: false, in_progress: false, pending: false, done: true }
+  const groupBy = getTaskStatusGroup
+  const initialCollapsed = { in_progress: false, pending: false, done: true }
 
   const groups = GROUP_ORDER.reduce((acc, key) => {
     acc[key] = filtered.filter((t) => groupBy(t) === key)
@@ -96,7 +115,7 @@ export function TasksList() {
   const doneCount = groups.done.length
   const inProgressCount = groups.in_progress.length
   const pendingCount = groups.pending.length
-  const pastDueCount = groups.past_due.length
+  const pastDueCount = pastDueFromFull.length
   const total = filtered.length
   const completionPct = total === 0 ? 0 : Math.round((doneCount / total) * 100)
 

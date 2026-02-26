@@ -1,8 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import { useApi } from '../lib/api'
-import { Spinner } from '../components/Spinner'
-import { PageHeader } from '../components/PageHeader'
+import { useApi, Spinner, PageHeader } from '@tools/shared'
 import { field, num, str, dateStr } from '../lib/normalize'
 
 export function KeyResultsList() {
@@ -37,23 +35,23 @@ export function KeyResultsList() {
             <li key={kr.id}>
               <Link
                 to={`/key-results/${kr.id}`}
-                className="block rounded-xl border border-2 border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-4 hover:shadow-md transition-shadow"
+                className="block rounded-xl border border-2 border-border bg-surface p-4 hover:shadow-md transition-shadow"
               >
-                <span className="font-medium text-neutral-900 dark:text-white">
+                <span className="font-medium text-text">
                   {str(field(kr, 'Key Result Name', 'Key Result Name')) || '(sin nombre)'}
                 </span>
                 <div className="mt-2 flex items-center gap-3">
-                  <div className="flex-1 h-2 rounded-full bg-neutral-200 dark:bg-neutral-700 overflow-hidden">
+                  <div className="flex-1 h-2 rounded-full bg-border overflow-hidden">
                     <div
-                      className="h-full rounded-full bg-orange-500"
+                      className="h-full rounded-full bg-primary"
                       style={{ width: `${Math.min(100, Math.max(0, progress))}%` }}
                     />
                   </div>
-                  <span className="text-sm font-medium text-neutral-600 dark:text-neutral-400 w-12">
+                  <span className="text-sm font-medium text-text-muted w-12">
                     {progress}%
                   </span>
                 </div>
-                <div className="flex flex-wrap gap-2 mt-2 text-sm text-neutral-500 dark:text-neutral-400">
+                <div className="flex flex-wrap gap-2 mt-2 text-sm text-text-muted">
                   <span>{str(field(kr, 'Status', 'Status'))}</span>
                   <span>Deadline: {dateStr(field(kr, 'Deadline', 'Deadline')) || '—'}</span>
                 </div>
@@ -63,7 +61,7 @@ export function KeyResultsList() {
         })}
       </ul>
       {list.length === 0 && (
-        <p className="text-neutral-500 dark:text-neutral-400">No hay key results.</p>
+        <p className="text-text-muted">No hay key results.</p>
       )}
     </div>
   )

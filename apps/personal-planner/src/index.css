@@ -1,11 +1,24 @@
 @import "tailwindcss";
+@import "@tools/shared/tokens.css";
 
 /* Dark mode: control por clase en <html> */
 @variant dark (&:where(.dark, .dark *));
 
-/* Tema: negro + naranja, fuentes bold, aspecto tecnológico */
 @theme {
-  --font-sans: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --color-background: var(--token-background);
+  --color-surface: var(--token-surface);
+  --color-border: var(--token-border);
+  --color-text: var(--token-text);
+  --color-text-muted: var(--token-text-muted);
+  --color-primary: var(--token-primary);
+  --color-primary-hover: var(--token-primary-hover);
+  --color-primary-muted: var(--token-primary-muted);
+  --color-nav-bg: var(--token-nav-bg);
+  --color-nav-border: var(--token-nav-border);
+  --color-nav-text: var(--token-nav-text);
+  --color-nav-text-active: var(--token-nav-text-active);
+  --color-spinner: var(--token-spinner);
+  --font-sans: var(--font-sans);
 }
 
 html {
@@ -15,15 +28,14 @@ html {
 
 body {
   margin: 0;
-  @apply min-h-screen antialiased font-bold font-sans;
-  @apply text-neutral-900 bg-white dark:text-white dark:bg-neutral-950;
+  @apply min-h-screen antialiased font-bold font-sans text-text bg-background;
 }
 
-/* Acentos naranja en toda la app */
-a.text-accent,
-button.text-accent,
-.text-accent {
-  @apply text-orange-500;
+/* Ocultar barra inferior en desktop (fallback por si lg:hidden no se genera) */
+@media (min-width: 1024px) {
+  .app-shell-bottom-nav {
+    display: none !important;
+  }
 }
 
 /* Touch-friendly minimum tap target */

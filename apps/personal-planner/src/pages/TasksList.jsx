@@ -1,8 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import { useApi } from '../lib/api'
-import { Spinner } from '../components/Spinner'
-import { PageHeader } from '../components/PageHeader'
+import { useApi, Spinner, PageHeader } from '@tools/shared'
 import { field, str, dateStr } from '../lib/normalize'
 
 const STATUS_DONE = ['Done', 'Complete', 'Completado', 'Hecho', 'Cerrado']
@@ -61,8 +59,8 @@ export function TasksList() {
             onClick={() => setFilter(f)}
             className={`min-h-[44px] px-4 py-2 rounded-xl text-base font-medium ${
               filter === f
-                ? 'bg-orange-500 text-white'
-                : 'bg-white dark:bg-neutral-900 border-2 border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300'
+                ? 'bg-primary text-white'
+                : 'bg-surface border-2 border-border text-text'
             }`}
           >
             {f === 'all' ? 'Todas' : f === 'week' ? 'Esta semana' : 'Completadas'}
@@ -77,16 +75,16 @@ export function TasksList() {
             <li key={t.id}>
               <Link
                 to={`/tasks/${t.id}`}
-                className={`block rounded-xl border bg-white bg-white dark:bg-neutral-900 p-4 hover:shadow-md transition-shadow ${
+                className={`block rounded-xl border bg-white bg-surface p-4 hover:shadow-md transition-shadow ${
                   done
                     ? 'border-green-200 dark:border-green-800/50 opacity-90'
-                    : 'border-2 border-neutral-200 dark:border-neutral-700'
+                    : 'border-2 border-border'
                 }`}
               >
-                <span className={`font-medium ${done ? 'line-through text-neutral-500 dark:text-neutral-400' : 'text-neutral-900 dark:text-white'}`}>
+                <span className={`font-medium ${done ? 'line-through text-text-muted' : 'text-text'}`}>
                   {str(field(t, 'Task Name', 'Task Name')) || '(sin nombre)'}
                 </span>
-                <div className="flex flex-wrap gap-2 mt-2 text-sm text-neutral-500 dark:text-neutral-400">
+                <div className="flex flex-wrap gap-2 mt-2 text-sm text-text-muted">
                   <span>{str(field(t, 'Category', 'Category'))}</span>
                   <span>{status}</span>
                   <span>Vence: {dateStr(field(t, 'Due Date', 'Due Date')) || '—'}</span>
@@ -100,7 +98,7 @@ export function TasksList() {
         })}
       </ul>
       {filtered.length === 0 && (
-        <p className="text-neutral-500 dark:text-neutral-400">No hay tareas con este filtro.</p>
+        <p className="text-text-muted">No hay tareas con este filtro.</p>
       )}
     </div>
   )

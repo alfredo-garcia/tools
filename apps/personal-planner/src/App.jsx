@@ -1,6 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import { Layout } from './components/Layout'
-import { AppShell } from './components/AppShell'
+import { Layout, AppShell, SettingsPage, IconHome, IconTarget, IconCheckSquare, IconCircle, IconSettings } from '@tools/shared'
 import { Dashboard } from './pages/Dashboard'
 import { ObjectivesList } from './pages/ObjectivesList'
 import { ObjectiveDetail } from './pages/ObjectiveDetail'
@@ -13,16 +12,23 @@ import { HabitDetail } from './pages/HabitDetail'
 import { AnalysisOKR } from './pages/AnalysisOKR'
 import { AnalysisTasks } from './pages/AnalysisTasks'
 import { AnalysisHabits } from './pages/AnalysisHabits'
-import { Settings } from './pages/Settings'
+
+const navItems = [
+  { to: '/', label: 'Home', Icon: IconHome, aria: 'Dashboard' },
+  { to: '/objectives', label: 'OKRs', Icon: IconTarget, aria: 'Objetivos y Key Results' },
+  { to: '/tasks', label: 'Tasks', Icon: IconCheckSquare, aria: 'Tareas' },
+  { to: '/habits', label: 'Habits', Icon: IconCircle, aria: 'Hábitos' },
+  { to: '/settings', label: 'Settings', Icon: IconSettings, aria: 'Ajustes' },
+]
 
 function App() {
   return (
     <Layout>
       <BrowserRouter>
-        <AppShell>
+        <AppShell navItems={navItems} title="My Planner">
           <Routes>
             <Route path="/" element={<Dashboard />} />
-            <Route path="/settings" element={<Settings />} />
+            <Route path="/settings" element={<SettingsPage backTo="/" backLabel="← Volver al inicio" />} />
             <Route path="/objectives" element={<ObjectivesList />} />
             <Route path="/objectives/:id" element={<ObjectiveDetail />} />
             <Route path="/key-results" element={<KeyResultsList />} />

@@ -1,8 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import { useApi } from '../lib/api'
-import { Spinner } from '../components/Spinner'
-import { PageHeader } from '../components/PageHeader'
+import { useApi, Spinner, PageHeader } from '@tools/shared'
 import { field, str, dateStr } from '../lib/normalize'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts'
 
@@ -72,20 +70,20 @@ export function AnalysisTasks() {
       <PageHeader title="Análisis Tareas / TODOs" onRefresh={refetch} loading={loading} />
 
       <section className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="rounded-2xl border border-2 border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-5">
-          <h2 className="text-sm font-medium text-neutral-500 dark:text-neutral-400">Tareas completadas (total)</h2>
-          <p className="text-2xl font-bold text-neutral-900 dark:text-white">{completionPct}%</p>
-          <p className="text-sm text-neutral-600 dark:text-neutral-300">{done.length} / {total}</p>
+        <div className="rounded-2xl border border-2 border-border bg-surface p-5">
+          <h2 className="text-sm font-medium text-text-muted">Tareas completadas (total)</h2>
+          <p className="text-2xl font-bold text-text">{completionPct}%</p>
+          <p className="text-sm text-text-muted">{done.length} / {total}</p>
         </div>
-        <div className="rounded-2xl border border-2 border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-5">
-          <h2 className="text-sm font-medium text-neutral-500 dark:text-neutral-400">Por estado</h2>
-          <p className="text-lg font-bold text-neutral-900 dark:text-white">{Object.keys(byStatus).length} estados</p>
+        <div className="rounded-2xl border border-2 border-border bg-surface p-5">
+          <h2 className="text-sm font-medium text-text-muted">Por estado</h2>
+          <p className="text-lg font-bold text-text">{Object.keys(byStatus).length} estados</p>
         </div>
       </section>
 
       {weekData.length > 0 && (
-        <section className="rounded-2xl border border-2 border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-5">
-          <h2 className="text-base font-semibold text-neutral-800 dark:text-white mb-4">
+        <section className="rounded-2xl border border-2 border-border bg-surface p-5">
+          <h2 className="text-base font-semibold text-text mb-4">
             Cumplimiento por semana (últimas 8)
           </h2>
           <ResponsiveContainer width="100%" height={280}>
@@ -100,8 +98,8 @@ export function AnalysisTasks() {
       )}
 
       {statusPie.length > 0 && (
-        <section className="rounded-2xl border border-2 border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-5">
-          <h2 className="text-base font-semibold text-neutral-800 dark:text-white mb-4">
+        <section className="rounded-2xl border border-2 border-border bg-surface p-5">
+          <h2 className="text-base font-semibold text-text mb-4">
             Distribución por estado
           </h2>
           <ResponsiveContainer width="100%" height={280}>
@@ -129,8 +127,8 @@ export function AnalysisTasks() {
       )}
 
       <section>
-        <h2 className="text-base font-semibold text-neutral-800 dark:text-white mb-3">
-          <Link to="/tasks" className="text-orange-500 dark:text-orange-400 hover:underline">
+        <h2 className="text-base font-semibold text-text mb-3">
+          <Link to="/tasks" className="text-primary hover:underline">
             Ver todas las tareas →
           </Link>
         </h2>

@@ -1,0 +1,40 @@
+/**
+ * Design tokens: única fuente de verdad para colores, tipografía y espaciados.
+ * Las apps importan este archivo y referencian estos tokens desde su @theme de Tailwind.
+ */
+:root {
+  --token-background: #ffffff;
+  --token-surface: #fafafa;
+  --token-surface-elevated: #ffffff;
+  --token-border: #e5e5e5;
+  --token-border-strong: #a3a3a3;
+  --token-text: #171717;
+  --token-text-muted: #737373;
+  --token-primary: #f97316;
+  --token-primary-hover: #ea580c;
+  --token-primary-muted: rgba(249, 115, 22, 0.2);
+  --token-nav-bg: #171717;
+  --token-nav-border: #262626;
+  --token-nav-text: #a3a3a3;
+  --token-nav-text-active: #f97316;
+  --token-spinner: #f97316;
+  --font-sans: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+}
+
+.dark {
+  --token-background: #0a0a0a;
+  --token-surface: #171717;
+  --token-surface-elevated: #262626;
+  --token-border: #262626;
+  --token-border-strong: #525252;
+  --token-text: #fafafa;
+  --token-text-muted: #a3a3a3;
+  --token-primary: #fb923c;
+  --token-primary-hover: #f97316;
+  --token-primary-muted: rgba(251, 146, 60, 0.2);
+  --token-nav-bg: #0a0a0a;
+  --token-nav-border: #262626;
+  --token-nav-text: #a3a3a3;
+  --token-nav-text-active: #fb923c;
+  --token-spinner: #f97316;
+}

@@ -6,7 +6,7 @@ export function Spinner({ className = '', size = 'md' }) {
   }
   return (
     <div
-      className={`${sizeClasses[size]} border-orange-500 border-t-transparent rounded-full animate-spin ${className}`}
+      className={`${sizeClasses[size]} border-spinner border-t-transparent rounded-full animate-spin ${className}`}
       role="status"
       aria-label="Cargando"
     />

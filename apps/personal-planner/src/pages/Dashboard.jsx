@@ -1,8 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import { useApi } from '../lib/api'
-import { Spinner } from '../components/Spinner'
-import { PageHeader } from '../components/PageHeader'
+import { useApi, Spinner, PageHeader } from '@tools/shared'
 import { field, num, str, arr, dateStr } from '../lib/normalize'
 import {
   BarChart,
@@ -75,14 +73,14 @@ function KpiCard({ title, value, subtitle, to }) {
   return (
     <Link
       to={to || '#'}
-      className={`rounded-2xl border border-2 border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-5 shadow-sm hover:shadow-md transition-shadow ${
+      className={`rounded-2xl border border-2 border-border bg-surface p-5 shadow-sm hover:shadow-md transition-shadow ${
         to ? 'cursor-pointer' : 'cursor-default'
       }`}
     >
-      <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400">{title}</p>
-      <p className="mt-1 text-2xl font-bold text-neutral-900 dark:text-white">{value}</p>
+      <p className="text-sm font-medium text-text-muted">{title}</p>
+      <p className="mt-1 text-2xl font-bold text-text">{value}</p>
       {subtitle != null && (
-        <p className="mt-0.5 text-sm text-neutral-600 dark:text-neutral-300">{subtitle}</p>
+        <p className="mt-0.5 text-sm text-text-muted">{subtitle}</p>
       )}
     </Link>
   )
@@ -157,7 +155,7 @@ export function Dashboard() {
       <PageHeader title="Dashboard" onRefresh={refetch} loading={loading} />
 
       <section>
-        <h2 className="text-base font-semibold text-neutral-700 dark:text-neutral-300 mb-4">
+        <h2 className="text-base font-semibold text-text-muted mb-4">
           Resumen de cumplimiento
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -189,12 +187,12 @@ export function Dashboard() {
       </section>
 
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="rounded-2xl border border-2 border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-5">
-          <h3 className="text-base font-semibold text-neutral-800 dark:text-white mb-4">
+        <div className="rounded-2xl border border-2 border-border bg-surface p-5">
+          <h3 className="text-base font-semibold text-text mb-4">
             Progreso Key Results (top 8)
           </h3>
           {okrChartData.length === 0 ? (
-            <p className="text-neutral-500 dark:text-neutral-400 text-sm">Sin datos</p>
+            <p className="text-text-muted text-sm">Sin datos</p>
           ) : (
             <ResponsiveContainer width="100%" height={260}>
               <BarChart data={okrChartData} layout="vertical" margin={{ left: 4, right: 20 }}>
@@ -206,12 +204,12 @@ export function Dashboard() {
             </ResponsiveContainer>
           )}
         </div>
-        <div className="rounded-2xl border border-2 border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-5">
-          <h3 className="text-base font-semibold text-neutral-800 dark:text-white mb-4">
+        <div className="rounded-2xl border border-2 border-border bg-surface p-5">
+          <h3 className="text-base font-semibold text-text mb-4">
             Tareas esta semana
           </h3>
           {statusPie.length === 0 ? (
-            <p className="text-neutral-500 dark:text-neutral-400 text-sm">Sin tareas esta semana</p>
+            <p className="text-text-muted text-sm">Sin tareas esta semana</p>
           ) : (
             <ResponsiveContainer width="100%" height={260}>
               <PieChart>
@@ -241,17 +239,17 @@ export function Dashboard() {
       <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Link
           to="/objectives"
-          className="rounded-2xl border border-2 border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-5 hover:shadow-md transition-shadow"
+          className="rounded-2xl border border-2 border-border bg-surface p-5 hover:shadow-md transition-shadow"
         >
-          <h3 className="text-base font-semibold text-neutral-800 dark:text-white">
+          <h3 className="text-base font-semibold text-text">
             Objetivos recientes
           </h3>
-          <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
+          <p className="text-sm text-text-muted mt-1">
             {objectives.length} objetivos · Ver todos
           </p>
           <ul className="mt-3 space-y-1">
             {objectives.slice(0, 3).map((o) => (
-              <li key={o.id} className="text-sm text-neutral-700 dark:text-neutral-300 truncate">
+              <li key={o.id} className="text-sm text-text-muted truncate">
                 {str(field(o, 'Objective Name', 'Objective Name')) || '(sin nombre)'}
               </li>
             ))}
@@ -259,15 +257,15 @@ export function Dashboard() {
         </Link>
         <Link
           to="/habits"
-          className="rounded-2xl border border-2 border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-5 hover:shadow-md transition-shadow"
+          className="rounded-2xl border border-2 border-border bg-surface p-5 hover:shadow-md transition-shadow"
         >
-          <h3 className="text-base font-semibold text-neutral-800 dark:text-white">Hábitos</h3>
-          <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
+          <h3 className="text-base font-semibold text-text">Hábitos</h3>
+          <p className="text-sm text-text-muted mt-1">
             {habits.length} hábitos · Ver todos
           </p>
           <ul className="mt-3 space-y-1">
             {habits.slice(0, 3).map((h) => (
-              <li key={h.id} className="text-sm text-neutral-700 dark:text-neutral-300 truncate">
+              <li key={h.id} className="text-sm text-text-muted truncate">
                 {str(field(h, 'Habit Name', 'Habit Name')) || '(sin nombre)'}
               </li>
             ))}

@@ -1,11 +1,10 @@
 import { useCallback } from 'react'
-import { useAuth } from '../contexts/AuthContext'
+import { useAuth } from '../contexts/AuthContext.jsx'
 
 const AUTH_HEADER = 'Authorization'
 
 /**
  * Cliente para llamar a las APIs con el código de acceso en headers.
- * fetchApi está estable (useCallback) para no provocar refetches innecesarios.
  */
 export function useApi() {
   const { getAccessCode } = useAuth()

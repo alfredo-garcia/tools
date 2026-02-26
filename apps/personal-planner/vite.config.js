@@ -1,10 +1,22 @@
+import path from 'path'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
+const appRoot = path.resolve(process.cwd())
+const resolveFromApp = (pkg) => path.join(appRoot, 'node_modules', pkg)
+
 // https://vite.dev/config/
 export default defineConfig({
+  resolve: {
+    dedupe: ['react', 'react-dom', 'react-router-dom'],
+    alias: {
+      react: resolveFromApp('react'),
+      'react-dom': resolveFromApp('react-dom'),
+      'react-router-dom': resolveFromApp('react-router-dom')
+    }
+  },
   plugins: [
     react(),
     tailwindcss(),

@@ -15,8 +15,6 @@ export function AuthProvider({ children }) {
       setIsChecking(false)
       return
     }
-    // La validación real se hace en el backend; aquí confiamos en que si hay token
-    // y la app cargó, el usuario ya pasó. Opcional: hacer un ping a /api/validate al inicio.
     setIsAuthenticated(true)
     setIsChecking(false)
   }, [])

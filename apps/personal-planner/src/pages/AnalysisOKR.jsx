@@ -1,8 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import { useApi } from '../lib/api'
-import { Spinner } from '../components/Spinner'
-import { PageHeader } from '../components/PageHeader'
+import { useApi, Spinner, PageHeader } from '@tools/shared'
 import { field, num, str, arr } from '../lib/normalize'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
 
@@ -74,24 +72,24 @@ export function AnalysisOKR() {
       <PageHeader title="Análisis OKR" onRefresh={refetch} loading={loading} />
 
       <section className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="rounded-2xl border border-2 border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-5">
-          <h2 className="text-sm font-medium text-neutral-500 dark:text-neutral-400">Progreso medio (Key Results)</h2>
-          <p className="text-2xl font-bold text-neutral-900 dark:text-white">{overallAvg}%</p>
+        <div className="rounded-2xl border border-2 border-border bg-surface p-5">
+          <h2 className="text-sm font-medium text-text-muted">Progreso medio (Key Results)</h2>
+          <p className="text-2xl font-bold text-text">{overallAvg}%</p>
         </div>
-        <div className="rounded-2xl border border-2 border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-5">
-          <h2 className="text-sm font-medium text-neutral-500 dark:text-neutral-400">Key Results completados</h2>
-          <p className="text-2xl font-bold text-neutral-900 dark:text-white">
+        <div className="rounded-2xl border border-2 border-border bg-surface p-5">
+          <h2 className="text-sm font-medium text-text-muted">Key Results completados</h2>
+          <p className="text-2xl font-bold text-text">
             {completedKR} / {keyResults.length}
           </p>
         </div>
       </section>
 
-      <section className="rounded-2xl border border-2 border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-5">
-        <h2 className="text-base font-semibold text-neutral-800 dark:text-white mb-4">
+      <section className="rounded-2xl border border-2 border-border bg-surface p-5">
+        <h2 className="text-base font-semibold text-text mb-4">
           Progreso por objetivo (media de sus Key Results)
         </h2>
         {krByObjective.length === 0 ? (
-          <p className="text-neutral-500 dark:text-neutral-400 text-sm">Sin datos para mostrar.</p>
+          <p className="text-text-muted text-sm">Sin datos para mostrar.</p>
         ) : (
           <ResponsiveContainer width="100%" height={320}>
             <BarChart data={krByObjective} margin={{ left: 8, right: 20 }}>
@@ -112,7 +110,7 @@ export function AnalysisOKR() {
       </section>
 
       <section>
-        <h2 className="text-base font-semibold text-neutral-800 dark:text-white mb-3">
+        <h2 className="text-base font-semibold text-text mb-3">
           Objetivos y sus Key Results
         </h2>
         <ul className="space-y-3">
@@ -120,10 +118,10 @@ export function AnalysisOKR() {
             <li key={o.id}>
               <Link
                 to={`/objectives/${o.id}`}
-                className="block rounded-xl border border-2 border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-4 hover:shadow-md"
+                className="block rounded-xl border border-2 border-border bg-surface p-4 hover:shadow-md"
               >
-                <span className="font-medium text-neutral-900 dark:text-white">{o.name}</span>
-                <div className="mt-2 flex items-center gap-4 text-sm text-neutral-500 dark:text-neutral-400">
+                <span className="font-medium text-text">{o.name}</span>
+                <div className="mt-2 flex items-center gap-4 text-sm text-text-muted">
                   <span>Progreso medio: {o.avgProgress}%</span>
                   <span>KR: {o.doneKR}/{o.totalKR} completados</span>
                 </div>

@@ -1,6 +1,17 @@
 <!doctype html>
 <html lang="es">
   <head>
+    <script>
+      (function () {
+        var t = localStorage.getItem('app_theme') || 'system';
+        var resolved = t === 'system'
+          ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+          : t;
+        var root = document.documentElement;
+        root.classList.remove('light', 'dark');
+        root.classList.add(resolved);
+      })();
+    </script>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />

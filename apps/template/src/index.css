@@ -1,11 +1,24 @@
 @import "tailwindcss";
+@import "@tools/shared/tokens.css";
 
 /* Dark mode: control por clase en <html> */
 @variant dark (&:where(.dark, .dark *));
 
-/* Mobile-first base: min 16px to avoid iOS zoom */
 @theme {
-  --font-sans: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --color-background: var(--token-background);
+  --color-surface: var(--token-surface);
+  --color-border: var(--token-border);
+  --color-text: var(--token-text);
+  --color-text-muted: var(--token-text-muted);
+  --color-primary: var(--token-primary);
+  --color-primary-hover: var(--token-primary-hover);
+  --color-primary-muted: var(--token-primary-muted);
+  --color-nav-bg: var(--token-nav-bg);
+  --color-nav-border: var(--token-nav-border);
+  --color-nav-text: var(--token-nav-text);
+  --color-nav-text-active: var(--token-nav-text-active);
+  --color-spinner: var(--token-spinner);
+  --font-sans: var(--font-sans);
 }
 
 html {
@@ -14,8 +27,8 @@ html {
 }
 
 body {
-  @apply min-h-screen antialiased text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-slate-900;
   margin: 0;
+  @apply min-h-screen antialiased font-sans font-bold text-text bg-background;
 }
 
 /* Touch-friendly minimum tap target */

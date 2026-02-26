@@ -1,5 +1,5 @@
 {
-  "name": "My Daily Briefing",
+  "name": "Agenda / Briefing",
   "nodes": [
     {
       "parameters": {},
@@ -37,13 +37,13 @@
         "promptType": "define",
         "text": "={{ $json.contexto_completo }}",
         "options": {
-          "systemMessage": "Eres un Asistente de Productividad de alto rendimiento. Tu objetivo es transformar un JSON desordenado de tareas y eventos en un plan de acción diario ultra-claro.\n\nREGLAS DE CLASIFICACIÓN:\n\nBloque Laboral: Prioriza todo lo relacionado con el desarrollo de rebeal o tareas técnicas de ingeniería. Usa el hashtag #rebeal o #ingenieria si aparecen.\n\nBloque Personal: Todo lo marcado con #personal, trámites de visado, o temas familiares.\n\nPrioridad Hoy: Analiza las fechas \"due\" y los eventos de calendario de hoy (19 de febrero de 2026).\n\nFORMATO DE SALIDA (HTML para Telegram). Usa <b></b> para negritas, emojis como viñetas en lugar de asteriscos (ej: 🚀, 🔹, ✅). NO uses asteriscos * ni guiones bajos _ sueltos.\n\n💼 Business\n\n[Hora] - [Tarea/Evento]: [Detalles de sitio/personas]\n\n🏠 Personal\n\n[Hora] - [Tarea/Evento]: [Ubicación en Manizales si aplica]\n\n⚠️ Highlights\n\n[Día] - [Hito relevante]: (Menciona si hay algo crítico como el Visado o hitos de rebeal).\n\nNOTAS TÉCNICAS:\n\nSi un evento tiene ubicación o \"description\", extráela.\n\nSé breve pero directo, con un tono profesional y ligeramente ingenioso."
+          "systemMessage": "Aquí tienes el prompt completo y optimizado. He integrado la extracción de prioridad, la limpieza de la salida y la lógica de clasificación que necesitas para que el nodo de n8n reciba exactamente lo que espera.\n\nSystem Prompt para el Nodo de Agente IA\nRole:\nEres un Asistente de Productividad experto en análisis de datos y estructuración JSON. Tu objetivo es procesar un extracto de tareas (TODOs) y eventos de calendario para generar un plan de acción diario ultra-claro.\n\nInstrucciones de Clasificación y Extracción:\n\nWork: Tareas de ingeniería, desarrollo de \"rebeal\", o marcadas con #rebeal.\n\nPersonal: Temas individuales, trámites de visado, financieros o familiares.\n\nPartner (Trastos): Todo lo que involucre planes de pareja, eventos sociales compartidos o tareas marcadas como \"trastos\".\n\nPrioridad: Extrae la prioridad buscando etiquetas como [High], [Medium] o [Low]. Si no se especifica, asume Medium.\n\nReglas de Formato y Tiempos:\n\nFecha de Hoy: 25 de febrero de 2026.\n\nFocus for Today: Incluye eventos/tareas cuya fecha sea hoy (2026-02-25) o que no tengan fecha definida pero tengan prioridad High.\n\nHighlights rest of the week: Incluye el resto de ítems con fechas futuras.\n\nLimpieza de Datos: En el campo item, elimina los tags (ej: #rebeal) y las marcas de prioridad (ej: [High]) para dejar el texto limpio.\n\nREGLA CRÍTICA DE SALIDA:\nResponde únicamente con el objeto JSON. No uses bloques de código Markdown (```json). No añadas introducciones ni conclusiones. La respuesta debe empezar con { y terminar con }.\n\nEstructura Requerida (JSON):\n{\n\"focus_today\": [\n{\n\"item\": \"string\",\n\"type\": \"EVENTO | TAREA\",\n\"category\": \"Work | Personal | Partner\",\n\"priority\": \"High | Medium | Low\",\n\"details\": {\n\"time\": \"HH:mm | null\",\n\"location\": \"string | null\",\n\"participants\": [\"string\"],\n\"tags\": [\"string\"]\n}\n}\n],\n\"highlights_rest_of_week\": [\n{\n\"day\": \"YYYY-MM-DD\",\n\"item\": \"string\",\n\"type\": \"EVENTO | TAREA\",\n\"category\": \"Work | Personal | Partner\",\n\"priority\": \"High | Medium | Low\"\n}\n]\n}"
         }
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3.1,
       "position": [
-        -224,
+        48,
         -128
       ],
       "id": "f047c6c8-53a6-407b-ab6f-73b7620b9dce",
@@ -60,7 +60,7 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
       "typeVersion": 1,
       "position": [
-        -224,
+        48,
         48
       ],
       "id": "ad5f61b1-8b2b-420d-aff4-1ac373648d28",
@@ -82,7 +82,7 @@
       "type": "n8n-nodes-base.googleTasks",
       "typeVersion": 1,
       "position": [
-        -1600,
+        -1328,
         -416
       ],
       "id": "08a55b3f-7c80-43ba-be55-47ea75f05e6f",
@@ -110,7 +110,7 @@
       "type": "n8n-nodes-base.googleCalendar",
       "typeVersion": 1.3,
       "position": [
-        -1600,
+        -1328,
         144
       ],
       "id": "92735e46-d63a-4cac-a932-8fbd8e24ead0",
@@ -133,7 +133,7 @@
       "type": "n8n-nodes-base.googleTasks",
       "typeVersion": 1,
       "position": [
-        -1600,
+        -1328,
         -224
       ],
       "id": "77d12acd-cb74-4c34-9528-3421b08cf7bc",
@@ -161,7 +161,7 @@
       "type": "n8n-nodes-base.googleCalendar",
       "typeVersion": 1.3,
       "position": [
-        -1600,
+        -1328,
         -48
       ],
       "id": "df57c70f-3480-4575-a5da-89fd294744b8",
@@ -183,7 +183,7 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -1392,
+        -1120,
         -48
       ],
       "id": "e1d780d8-0867-47eb-a6da-40e878fb79bb",
@@ -195,7 +195,7 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        -1184,
+        -912,
         -320
       ],
       "id": "512ea32a-6f5c-4610-b875-524d7bbbfe5e",
@@ -213,7 +213,7 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -1392,
+        -1120,
         -416
       ],
       "id": "c9d15b44-5037-4a0f-8d7c-b08b9c0d3b3a",
@@ -229,7 +229,7 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -1392,
+        -1120,
         -224
       ],
       "id": "9fa9a120-bbb9-4e49-9db0-ba537d812654",
@@ -245,7 +245,7 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -1392,
+        -1120,
         144
       ],
       "id": "5330c47b-65e9-4bb7-8168-c5d35bcaecec",
@@ -257,7 +257,7 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        -1184,
+        -912,
         48
       ],
       "id": "344dcec4-b819-4bb6-a8d7-0522ee59fe4b",
@@ -268,7 +268,7 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        -752,
+        -480,
         -128
       ],
       "id": "d2c86776-925a-4872-8255-4efc90bda89f",
@@ -283,7 +283,7 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -976,
+        -704,
         -320
       ],
       "id": "e4251801-b604-4201-a44e-de61ebc5e05c",
@@ -298,7 +298,7 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -976,
+        -704,
         48
       ],
       "id": "c67f3e35-4e40-4987-aba8-6d77c75a23d4",
@@ -311,7 +311,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -576,
+        -304,
         -128
       ],
       "id": "6249d4cb-f583-4b15-82a0-281c47acb080",
@@ -345,7 +345,7 @@
           "value": {
             "chatID": "={{ $('Normalized Input Fields').item.json.chatID }}",
             "channel": "={{ $('Normalized Input Fields').item.json.channel }}",
-            "message": "={{ $json.output }}"
+            "message": "={{ $json.message }}"
           },
           "matchingColumns": [],
           "schema": [
@@ -398,7 +398,7 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        336,
+        608,
         -128
       ],
       "id": "b1451cc9-5af0-4cba-b9fc-2eb8dfa0ffa2",
@@ -433,6 +433,92 @@
       ],
       "id": "0b25b71b-8bb6-48d0-aa10-9e082190cf38",
       "name": "Normalized Input Fields"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Extraemos y limpiamos el output del Agente\nlet rawOutput = items[0].json.output;\n// Por si acaso el modelo ignora la instrucción de no usar Markdown, mantenemos la limpieza\nlet cleanJsonString = rawOutput.replace(/```json|```/g, \"\").trim();\nconst data = JSON.parse(cleanJsonString);\n\n// Función centralizada para iconos basada en prioridad y tipo\nconst getIcon = (item, isHighlight = false) => {\n  // Si es prioridad alta, fuego siempre\n  if (item.priority === 'High') return '🔥';\n  \n  // Si es un highlight futuro, icono por tipo\n  if (isHighlight) return item.type === 'EVENTO' ? '📅' : '📝';\n  \n  // Default para hoy\n  return '🔹';\n};\n\nlet message = \"\";\n\n// 💼 BUSINESS FOCUS\nmessage += \"💼 Business focus for today\\n\";\nconst workItems = data.focus_today.filter(i => i.category.toLowerCase() === 'work');\n\nif (workItems.length > 0) {\n  workItems.forEach(i => {\n    message += `${getIcon(i)} ${i.item}${i.details.time ? ' (at ' + i.details.time + ')' : ''}\\n`;\n  });\n} else {\n  message += \"No hay tareas de trabajo pendientes.\\n\";\n}\n\nmessage += \"\\n\";\n\n// 🏠 PERSONAL & TRASTOS FOCUS\nmessage += \"🏠 Personal & Trastos focus\\n\";\nconst personalItems = data.focus_today.filter(i => \n  i.category.toLowerCase() === 'personal' || i.category.toLowerCase() === 'partner'\n);\n\nif (personalItems.length > 0) {\n  personalItems.forEach(i => {\n    const isPartner = i.category.toLowerCase() === 'partner';\n    const priorityIcon = getIcon(i);\n    // Si es de pareja, añadimos el emoji de pareja junto al de prioridad\n    const prefix = `${priorityIcon} `;\n    \n    message += `${prefix}${i.item}${i.details.location ? ' @ ' + i.details.location : ''}\\n`;\n  });\n} else {\n  message += \"Sin pendientes personales para hoy.\\n\";\n}\n\nmessage += \"\\n\";\n\n// 🗓️ HIGHLIGHTS REST OF WEEK\nmessage += \"🗓️ Highlights rest of the week\\n\";\nif (data.highlights_rest_of_week && data.highlights_rest_of_week.length > 0) {\n  data.highlights_rest_of_week.forEach(i => {\n    // Formatea fecha de YYYY-MM-DD a DD/MM\n    const date = i.day ? i.day.split('-').reverse().slice(0,2).join('/') : 'Próx.';\n    message += `${getIcon(i, true)} [${date}] ${i.item}\\n`;\n  });\n} else {\n  message += \"No hay eventos destacados el resto de la semana.\\n\";\n}\n\n// Retornamos el objeto para el nodo de Telegram\nreturn [{ json: { message: message } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        384,
+        -128
+      ],
+      "id": "b078f015-2d27-4921-835a-8d7ee51dfdaf",
+      "name": "Mapper / Agent to Sender"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "1s8bYMIYbzv2fpLx",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/1s8bYMIYbzv2fpLx",
+          "cachedResultName": "Bot Output"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "chatID": "={{ $('Normalized Input Fields').item.json.chatID }}",
+            "channel": "={{ $('Normalized Input Fields').item.json.channel }}",
+            "message": "=Checking your agenda... wait a sec 🤓"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "channel",
+              "displayName": "channel",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "messageOptions",
+              "displayName": "messageOptions",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "array",
+              "removed": true
+            },
+            {
+              "id": "chatID",
+              "displayName": "chatID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -1584,
+        -112
+      ],
+      "id": "9ae129bf-820e-4f95-9284-904153543d9c",
+      "name": "\"Be patient\" message"
     }
   ],
   "pinData": {},
@@ -474,7 +560,7 @@
       "main": [
         [
           {
-            "node": "Call 'Bot Output'",
+            "node": "Mapper / Agent to Sender",
             "type": "main",
             "index": 0
           }
@@ -666,6 +752,28 @@
       "main": [
         [
           {
+            "node": "\"Be patient\" message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mapper / Agent to Sender": {
+      "main": [
+        [
+          {
+            "node": "Call 'Bot Output'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "\"Be patient\" message": {
+      "main": [
+        [
+          {
             "node": "TASKS / High",
             "type": "main",
             "index": 0
@@ -693,9 +801,14 @@
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate",
-    "availableInMCP": false
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "saveExecutionProgress": false,
+    "saveManualExecutions": false,
+    "callerPolicy": "workflowsFromSameOwner",
+    "timeSavedPerExecution": 2
   },
-  "versionId": "358aa0b8-d652-4627-a7cd-be9c0f4286dc",
+  "versionId": "678bc065-84c4-414c-890d-381c8b579f9e",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "c161f39dbc3d63a699f9365c3d1da2eea605158e14e61448e8a00c19513dbf33"

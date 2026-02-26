@@ -178,7 +178,7 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        2032,
+        1840,
         -448
       ],
       "id": "2b4a61c2-df3a-428c-9375-d02e0c4c2558",
@@ -232,7 +232,7 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        1664,
+        1616,
         -288
       ],
       "id": "d1c49d3e-d48b-45ef-9a14-924634558c19",
@@ -252,7 +252,7 @@
           "value": {
             "channel": "={{ $('Normalized input fields').item.json.channel }}",
             "chatID": "={{ $('Normalized input fields').item.json.chatID }}",
-            "message": "No new stuff for you today, my friend 😅"
+            "message": "Nothing new today, enjoy your life 🥳"
           },
           "matchingColumns": [],
           "schema": [
@@ -305,7 +305,7 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        2032,
+        1840,
         -208
       ],
       "id": "a8c325c2-d8ae-4d1e-a8d7-78f1dafae779",
@@ -514,7 +514,7 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        -224,
+        -256,
         -720
       ],
       "id": "bbbb057c-e32c-44ef-ad5f-440badd6e27c",
@@ -821,7 +821,7 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        2400,
+        2208,
         -448
       ],
       "id": "012b30ac-3239-4a7f-9f2c-a0afa8f1e648",
@@ -829,12 +829,12 @@
     },
     {
       "parameters": {
-        "jsCode": "const event = $json;\nlet msg = \"\";\n\n// Lógica por tipo de evento\nif (event.type === \"Cine\" || event.source === \"Cinépolis\") {\n  msg = `🎬 ${event.title}\\n\\n`;\n  if (event.director) msg += `👤 Director: ${event.director}\\n`;\n  if (event.cast) msg += `🎭 Cast: ${event.cast}\\n`;\n} \nelse if (event.type === \"Evento Cultural\" || event.source === \"Plan 52\") {\n  msg = `🎸 ${event.title}*\\n\\n`;\n  msg += `🏷 Category: ${event.category || event.type}\\n`;\n} \nelse {\n  msg = `📅 ${event.title}\\n\\n`;\n}\n\n// Datos comunes para todos\nmsg += `📍 ${event.venue}\\n`;\nmsg += `🗓 ${event.start_date}\\n`;\n\nreturn { messageText: msg };"
+        "jsCode": "const event = $json;\nlet msg = \"\";\n\n// Lógica por tipo de evento\nif (event.type === \"Cine\" || event.source === \"Cinépolis\") {\n  msg = `🎬 ${event.title}\\n\\n`;\n  if (event.director) msg += `👤 ${event.director}\\n`;\n  if (event.cast) msg += `🎭 ${event.cast}\\n`;\n} \nelse if (event.type === \"Evento Cultural\" || event.source === \"Plan 52\") {\n  msg = `🎸 ${event.title}*\\n\\n`;\n  msg += `🏷 ${event.category || event.type}\\n`;\n} \nelse {\n  msg = `📅 ${event.title}\\n\\n`;\n}\n\n// Datos comunes para todos\nmsg += `📍 ${event.venue}\\n`;\nmsg += `🗓 ${event.start_date}\\n`;\n\nreturn { messageText: msg };"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2224,
+        2032,
         -448
       ],
       "id": "a023f540-6e29-4cd5-9cea-8b4f0acc263d",
@@ -1122,9 +1122,11 @@
     "availableInMCP": false,
     "timeSavedMode": "fixed",
     "errorWorkflow": "HXl34Jw5o9I6vqhk",
-    "callerPolicy": "workflowsFromSameOwner"
+    "callerPolicy": "workflowsFromSameOwner",
+    "saveManualExecutions": false,
+    "timeSavedPerExecution": 4
   },
-  "versionId": "71dbb760-3c7b-497a-b429-1f7e63504474",
+  "versionId": "19c548d0-fa6b-4849-bf48-c683a1fb00df",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "c161f39dbc3d63a699f9365c3d1da2eea605158e14e61448e8a00c19513dbf33"

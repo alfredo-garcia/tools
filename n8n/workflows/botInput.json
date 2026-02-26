@@ -13,7 +13,7 @@
       "typeVersion": 1.2,
       "position": [
         -1168,
-        16
+        -208
       ],
       "id": "c20d73b0-66b9-4428-9ec4-91a3a42fbeca",
       "name": "Telegram Message",
@@ -35,7 +35,7 @@
       "typeVersion": 3.4,
       "position": [
         32,
-        592
+        800
       ],
       "id": "06bdd1e3-7cb1-401f-bb63-5d30e6fb2feb",
       "name": "Fallback to Help"
@@ -50,7 +50,7 @@
       "typeVersion": 3.4,
       "position": [
         -768,
-        128
+        -96
       ],
       "id": "042feec4-d741-4d52-90c8-a457d0afc0b6",
       "name": "Normalize from Telegram Message"
@@ -65,7 +65,7 @@
       "typeVersion": 3.4,
       "position": [
         -768,
-        -96
+        -320
       ],
       "id": "969e3840-e90c-4a73-aa39-1601bad1e478",
       "name": "Normalize from Telegram Callback"
@@ -258,7 +258,7 @@
       "typeVersion": 1.3,
       "position": [
         -176,
-        592
+        800
       ],
       "id": "3b98f063-4f3b-4dbf-a4bc-8002ab3d5e06",
       "name": "Bot Output Fallback"
@@ -278,7 +278,7 @@
             "channel": "={{ $json.channel }}",
             "message": "=What do you want to do today?",
             "chatID": "={{ $json.chatID }}",
-            "messageOptions": "={{ [\n    {\n      \"title\": \"🧭 Today's plan (/plan)\",\n      \"description\": \"\",\n      \"callback\": \"/plan\"\n    },\n    {\n      \"title\": \"🎟️ Check new events (/newEvents)\",\n      \"description\": \"\",\n      \"callback\": \"/newEvents\"\n    },\n    {\n      \"title\": \"🐖 Say something nice (/mosco)\",\n      \"description\": \"\",\n      \"callback\": \"/nice\"\n    },\n    {\n      \"title\": \"🆔 View Chat ID (/chatID)\",\n      \"description\": \"\",\n      \"callback\": \"/chatID\"\n    }\n] }}"
+            "messageOptions": "={{ [\n    {\n      \"title\": \"🧭 Today's plan (/plan)\",\n      \"description\": \"\",\n      \"callback\": \"/plan\"\n    },\n    {\n      \"title\": \"🧳 Search cheap flights (/flights)\",\n      \"description\": \"\",\n      \"callback\": \"/flights\"\n    },\n    {\n      \"title\": \"🎟️ Check new events (/newEvents)\",\n      \"description\": \"\",\n      \"callback\": \"/newEvents\"\n    },\n    {\n      \"title\": \"🐖 Say something nice (/mosco)\",\n      \"description\": \"\",\n      \"callback\": \"/nice\"\n    },\n    {\n      \"title\": \"🆔 View Chat ID (/chatID)\",\n      \"description\": \"\",\n      \"callback\": \"/chatID\"\n    }\n] }}"
           },
           "matchingColumns": [],
           "schema": [
@@ -397,7 +397,7 @@
       "typeVersion": 3.4,
       "position": [
         -992,
-        16
+        -208
       ],
       "id": "9db23bfd-5856-43ab-b299-35ccccc9ed40",
       "name": "Switch Telegram Message vs Callback"
@@ -511,6 +511,52 @@
                     "operator": {
                       "type": "string",
                       "operation": "startsWith"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "aad901be-fc1e-4ec9-a206-99aed0a4f2ef",
+                    "leftValue": "={{ $json.command }}",
+                    "rightValue": "/start",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "e5d79f4d-30f5-4968-8195-ddf669012c8d",
+                    "leftValue": "={{ $json.command }}",
+                    "rightValue": "/flights",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
                     }
                   }
                 ],
@@ -655,10 +701,104 @@
       "typeVersion": 1.3,
       "position": [
         -96,
-        352
+        336
       ],
       "id": "ff47c738-cdfe-47e9-806f-4bfe092a7d4c",
       "name": "Call NewEvents Workflow"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "e91e79a4-c062-4879-adf8-599f7c23d2d4",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1168,
+        160
+      ],
+      "id": "c7a6881a-3231-4c7e-b98a-117e4aa48aa4",
+      "name": "Webhook Input",
+      "webhookId": "e91e79a4-c062-4879-adf8-599f7c23d2d4"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"channel\": \"{{ $json.body.channel }}\",\n  \"command\": \"{{ $json.body.command }}\",\n  \"chatID\": \"{{ $json.body.chatID }}\",\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -960,
+        160
+      ],
+      "id": "8407b78a-9608-4eed-b433-3760a2872d87",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "paWArP0VJjdNKMGE",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/paWArP0VJjdNKMGE",
+          "cachedResultName": "Shopping / Cheap flights"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "channel": "={{ $json.channel }}",
+            "command": "={{ $json.command }}",
+            "chatID": "={{ $json.chatID }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "channel",
+              "displayName": "channel",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "command",
+              "displayName": "command",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "chatID",
+              "displayName": "chatID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -96,
+        512
+      ],
+      "id": "753d81c5-400b-4ec7-825a-eebde2974af3",
+      "name": "Call CheapFlights Workflow"
     }
   ],
   "pinData": {},
@@ -775,7 +915,43 @@
         ],
         [
           {
+            "node": "Bot Output Help",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Call CheapFlights Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
             "node": "Bot Output Fallback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Input": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Switch Data Normalized",
             "type": "main",
             "index": 0
           }
@@ -792,7 +968,7 @@
     "errorWorkflow": "HXl34Jw5o9I6vqhk",
     "callerPolicy": "workflowsFromSameOwner"
   },
-  "versionId": "c4f10350-79da-4f2e-9359-6ab00cea71d8",
+  "versionId": "b05722bd-2743-43f9-baf1-79f32c44cb22",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "c161f39dbc3d63a699f9365c3d1da2eea605158e14e61448e8a00c19513dbf33"

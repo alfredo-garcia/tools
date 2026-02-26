@@ -1,0 +1,638 @@
+{
+  "name": "Shopping / Cheap flights",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "jsonExample",
+        "jsonExample": "{\n  \"channel\": \"telegram\",\n  \"command\": \"/plan\",\n  \"chatID\": \"7812154300\"\n}"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        48,
+        240
+      ],
+      "id": "5662536d-9de5-4ae2-a35d-fb17b7b05133",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "{\n  \"channel\": \"telegram\",\n  \"command\": \"/flights\",\n  \"chatID\": \"7812154300\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        240,
+        480
+      ],
+      "id": "a5fa7ca0-b73f-4d1a-8aa9-2002f7a6bc0f",
+      "name": "Manual Mock Data"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"channel\": \"{{ $json.channel }}\",\n  \"command\": \"{{ $json.command }}\",\n  \"chatID\": \"{{ $json.chatID }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        400,
+        240
+      ],
+      "id": "9f842697-e01c-4216-a802-1f77cb325642",
+      "name": "Normalized Input Fields"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1SJQ7qOHycfdrDof7dRPMMz3wwiqRM0KOmIqzrgDLS9A",
+          "mode": "list",
+          "cachedResultName": "cheap flights",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1SJQ7qOHycfdrDof7dRPMMz3wwiqRM0KOmIqzrgDLS9A/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "routes",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1SJQ7qOHycfdrDof7dRPMMz3wwiqRM0KOmIqzrgDLS9A/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        672,
+        240
+      ],
+      "id": "28ff9f70-77f3-4611-a51e-2ab8f6f87076",
+      "name": "Read Routes Sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "5oAEdOTWk38TPOx2",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "cond-routes",
+              "leftValue": "={{ $json.origin }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "cond-lastchecked",
+              "leftValue": "={{ $json.dateChecked }}",
+              "rightValue": "={{ $now.format('yyyy-MM-dd') }}",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2,
+      "position": [
+        864,
+        240
+      ],
+      "id": "3f3bf797-6739-4dde-a378-2a8559ea0eba",
+      "name": "Filter routes (lastChecked not today)"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        2240,
+        16
+      ],
+      "id": "b6e949a8-bbcf-40b5-88fe-e3c317cf4dc9",
+      "name": "Merge sources"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.av.example.com/search?origin={{ $json.origin }}&destination={{ $json.destination }}&type={{ $json.flightType }}&from={{ $now.format('yyyy-MM-dd') }}&to={{ $json.toDate }}&days={{ $json.daysOfStay }}&pax={{ $json.paxCount }}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2032,
+        0
+      ],
+      "id": "cdb53c66-d9ab-4060-ab3f-fbbffea04405",
+      "name": "AV - Check flights"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.skyscanner.example.com/search?origin={{ $json.origin }}&destination={{ $json.destination }}&type={{ $json.flightType }}&from={{ $now.format('yyyy-MM-dd') }}&to={{ $json.toDate }}&days={{ $json.daysOfStay }}&pax={{ $json.paxCount }}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2032,
+        352
+      ],
+      "id": "ceabfb68-0e57-4d54-b34a-b0a047773f7f",
+      "name": "Skyscanner - Check flights"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Prepara parámetros: fromDate = max(hoy, fromDate), y obtén 5 precios más bajos\nconst items = $input.all();\nconst today = new Date().toISOString().slice(0, 10);\nconst out = [];\nfor (const item of items) {\n  const j = item.json;\n  const fromDate = j.fromDate || today;\n  const toDate = j.toDate || today;\n  const from = fromDate > today ? fromDate : today;\n  out.push({\n    json: {\n      ...j,\n      _searchFrom: from,\n      _searchTo: toDate,\n      _daysOfStay: j.daysOfStay || 0,\n      _paxCount: j.paxCount || 1\n    }\n  });\n}\nreturn out;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1328,
+        240
+      ],
+      "id": "00f25874-4f2e-4d17-b811-d9c42427e210",
+      "name": "Prepare search params (fromDate, toDate, daysOfStay, paxCount)"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Ordenar por precio y quedarse con los 5 más bajos (días distintos)\nconst items = $input.all();\nconst byPrice = (a, b) => (a.json.price ?? 999999) - (b.json.price ?? 999999);\nconst seen = new Set();\nconst top5 = [];\nfor (const item of [...items].sort(byPrice)) {\n  const day = item.json.departureDate || item.json.date || '';\n  if (top5.length >= 5) break;\n  if (day && seen.has(day)) continue;\n  seen.add(day);\n  top5.push(item);\n}\nreturn top5.length ? top5 : items.slice(0, 1);"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2448,
+        16
+      ],
+      "id": "04846734-72ca-4b77-9932-a2f8d1c41b4a",
+      "name": "Top 5 lowest prices"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_SPREADSHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "flights",
+          "mode": "list",
+          "cachedResultName": "flights"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "origin": "={{ $json.origin }}",
+            "destination": "={{ $json.destination }}",
+            "flightType": "={{ $json.flightType }}",
+            "maxPrice": "={{ $json.maxPrice }}",
+            "carrierRestrictions": "={{ $json.carrierRestrictions }}",
+            "lastChecked": "={{ $now.format('yyyy-MM-dd') }}",
+            "fromDate": "={{ $json.fromDate }}",
+            "toDate": "={{ $json.toDate }}",
+            "daysOfStay": "={{ $json.daysOfStay }}",
+            "paxCount": "={{ $json.paxCount }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "origin",
+              "displayName": "origin",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "destination",
+              "displayName": "destination",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "flightType",
+              "displayName": "flightType",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "maxPrice",
+              "displayName": "maxPrice",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "carrierRestrictions",
+              "displayName": "carrierRestrictions",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "lastChecked",
+              "displayName": "lastChecked",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "fromDate",
+              "displayName": "fromDate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "toDate",
+              "displayName": "toDate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "daysOfStay",
+              "displayName": "daysOfStay",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "paxCount",
+              "displayName": "paxCount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2528,
+        128
+      ],
+      "id": "c5b7fb04-b4a0-40bd-9ebd-2995021d87be",
+      "name": "Save to flights sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "5oAEdOTWk38TPOx2",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "1s8bYMIYbzv2fpLx",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/1s8bYMIYbzv2fpLx",
+          "cachedResultName": "Bot Output"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "channel": "={{ $('Normalized Input Fields').item.json.channel }}",
+            "chatID": "={{ $('Normalized Input Fields').item.json.chatID }}",
+            "message": "=Cheap flights check done. Results saved to flights sheet."
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "channel",
+              "displayName": "channel",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "chatID",
+              "displayName": "chatID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        2768,
+        128
+      ],
+      "id": "3ed7b2d8-09cb-4513-8232-9fb238ff5c3e",
+      "name": "Execute sub-workflow"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        48,
+        480
+      ],
+      "id": "1074aefa-e4b3-4fad-8f0f-d6bde090c628",
+      "name": "Manual Execution"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "cond-has-items",
+              "leftValue": "={{ $input.all().length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1040,
+        240
+      ],
+      "id": "895958fd-27c1-492f-90e3-b37d69695967",
+      "name": "Has routes?"
+    },
+    {
+      "parameters": {
+        "content": "Read my routes wishlist",
+        "height": 240,
+        "width": 560
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        624,
+        176
+      ],
+      "typeVersion": 1,
+      "id": "676f7b51-95be-4f0a-889d-865f9156d411",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "Create search inputs from combinations of routes, dates, lengthOfStay",
+        "height": 240,
+        "width": 560
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1248,
+        176
+      ],
+      "typeVersion": 1,
+      "id": "f7eabf6e-df73-4e1b-badf-d0a062bb4dff",
+      "name": "Sticky Note1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Normalized Input Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Mock Data": {
+      "main": [
+        [
+          {
+            "node": "Normalized Input Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalized Input Fields": {
+      "main": [
+        [
+          {
+            "node": "Read Routes Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Routes Sheet": {
+      "main": [
+        [
+          {
+            "node": "Filter routes (lastChecked not today)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter routes (lastChecked not today)": {
+      "main": [
+        [
+          {
+            "node": "Has routes?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare search params (fromDate, toDate, daysOfStay, paxCount)": {
+      "main": [
+        [
+          {
+            "node": "AV - Check flights",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AV - Check flights": {
+      "main": [
+        [
+          {
+            "node": "Merge sources",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Skyscanner - Check flights": {
+      "main": [
+        []
+      ]
+    },
+    "Merge sources": {
+      "main": [
+        [
+          {
+            "node": "Top 5 lowest prices",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Top 5 lowest prices": {
+      "main": [
+        [
+          {
+            "node": "Save to flights sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save to flights sheet": {
+      "main": [
+        [
+          {
+            "node": "Execute sub-workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Execution": {
+      "main": [
+        [
+          {
+            "node": "Manual Mock Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has routes?": {
+      "main": [
+        [
+          {
+            "node": "Prepare search params (fromDate, toDate, daysOfStay, paxCount)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "ae34302e-84d4-44f8-9631-311742c25d92",
+  "meta": {
+    "instanceId": "c161f39dbc3d63a699f9365c3d1da2eea605158e14e61448e8a00c19513dbf33"
+  },
+  "id": "paWArP0VJjdNKMGE",
+  "tags": []
+}

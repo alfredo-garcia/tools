@@ -1,0 +1,25 @@
+@import "tailwindcss";
+
+/* Dark mode: control por clase en <html> */
+@variant dark (&:where(.dark, .dark *));
+
+/* Mobile-first base: min 16px to avoid iOS zoom */
+@theme {
+  --font-sans: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  @apply min-h-screen antialiased text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-slate-900;
+  margin: 0;
+}
+
+/* Touch-friendly minimum tap target */
+button, a[role="button"], [type="submit"] {
+  min-height: 44px;
+  min-width: 44px;
+}

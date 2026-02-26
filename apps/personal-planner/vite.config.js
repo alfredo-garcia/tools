@@ -24,8 +24,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.png', 'apple-touch-icon.png', 'mask-icon.svg', 'splash.png'],
       manifest: {
-        name: 'My Planner',
-        short_name: 'My Planner',
+        name: 'Mosco Planner',
+        short_name: 'Mosco Planner',
         description: 'OKRs, tareas y hábitos',
         theme_color: '#f97316',
         background_color: '#f97316',

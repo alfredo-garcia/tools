@@ -22,7 +22,7 @@ export function PageHeader({ title, onRefresh, loading }) {
           onClick={handleRefresh}
           disabled={isBusy}
           aria-label="Actualizar datos"
-          className="shrink-0 p-2 rounded-xl border-2 border-border bg-surface text-text-muted hover:bg-surface hover:text-primary disabled:opacity-50 min-h-[44px] min-w-[44px] flex items-center justify-center touch-manipulation transition-colors active:scale-95"
+          className="shrink-0 p-2 text-text-muted hover:text-primary disabled:opacity-50 min-h-[44px] min-w-[44px] flex items-center justify-center touch-manipulation transition-colors active:scale-95"
         >
           <IconRefresh size={20} className={isBusy ? 'animate-spin' : ''} />
         </button>

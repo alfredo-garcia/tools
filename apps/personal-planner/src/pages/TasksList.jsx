@@ -75,7 +75,7 @@ export function TasksList() {
             <li key={t.id}>
               <Link
                 to={`/tasks/${t.id}`}
-                className={`block rounded-xl border bg-white bg-surface p-4 hover:shadow-md transition-shadow ${
+                className={`block rounded-xl border bg-surface p-4 hover:shadow-md transition-shadow ${
                   done
                     ? 'border-green-200 dark:border-green-800/50 opacity-90'
                     : 'border-2 border-border'

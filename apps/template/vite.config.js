@@ -23,7 +23,7 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
+      includeAssets: ['favicon.png', 'apple-touch-icon.png', 'mask-icon.svg', 'splash.png'],
       manifest: {
         name: 'Micro App Template',
         short_name: 'Template',

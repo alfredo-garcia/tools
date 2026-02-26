@@ -22,13 +22,13 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
+      includeAssets: ['favicon.png', 'apple-touch-icon.png', 'mask-icon.svg', 'splash.png'],
       manifest: {
         name: 'My Planner',
         short_name: 'My Planner',
         description: 'OKRs, tareas y hábitos',
-        theme_color: '#0a0a0a',
-        background_color: '#0a0a0a',
+        theme_color: '#f97316',
+        background_color: '#f97316',
         display: 'standalone',
         orientation: 'portrait-primary',
         start_url: '/',

@@ -25,7 +25,7 @@ function App() {
   return (
     <Layout>
       <BrowserRouter>
-        <AppShell navItems={navItems} title="My Planner">
+        <AppShell navItems={navItems} title="Mosco Planner">
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/settings" element={<SettingsPage backTo="/" backLabel="← Volver al inicio" />} />

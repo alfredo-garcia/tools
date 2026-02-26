@@ -41,32 +41,90 @@ export function LoginScreen() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-background">
-      <div className="w-full max-w-sm">
-        <h1 className="text-xl font-bold text-center text-text mb-2">Acceso privado</h1>
-        <p className="text-base font-medium text-text-muted text-center mb-6">Introduce tu código de acceso</p>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <input
-            type="password"
-            autoComplete="current-password"
-            placeholder="Código (alfanumérico)"
-            value={code}
-            onChange={(e) => setCode(e.target.value)}
-            className="w-full px-4 py-3 text-base font-medium rounded-xl border-2 border-border bg-surface text-text placeholder-text-muted focus:ring-2 focus:ring-primary focus:border-primary outline-none"
-            disabled={loading}
-            autoFocus
-          />
-          {error && (
-            <p className="text-sm font-medium text-red-600 dark:text-red-400 text-center" role="alert">{error}</p>
-          )}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-3 px-4 text-base font-bold rounded-xl bg-primary hover:bg-primary-hover text-white disabled:opacity-60 min-h-[48px] touch-manipulation transition-colors"
+    <div
+      className="bg-background"
+      style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '24px',
+        boxSizing: 'border-box',
+      }}
+    >
+      <div
+        style={{
+          width: '100%',
+          maxWidth: '380px',
+          flexShrink: 0,
+        }}
+      >
+        <div
+          className="rounded-2xl border-2 border-border bg-surface"
+          style={{
+            padding: '32px 28px',
+            boxShadow: '0 4px 24px rgba(0,0,0,0.12)',
+          }}
+        >
+          <h1
+            className="text-text font-bold"
+            style={{ fontSize: '1.5rem', marginBottom: '8px', textAlign: 'center' }}
           >
-            {loading ? 'Comprobando…' : 'Entrar'}
-          </button>
-        </form>
+            Acceso privado
+          </h1>
+          <p
+            className="text-text-muted font-medium"
+            style={{ fontSize: '0.9375rem', marginBottom: '28px', textAlign: 'center' }}
+          >
+            Introduce tu código de acceso
+          </p>
+          <form
+            onSubmit={handleSubmit}
+            style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}
+          >
+            <label htmlFor="access-code" className="sr-only">
+              Código de acceso
+            </label>
+            <input
+              id="access-code"
+              type="password"
+              autoComplete="current-password"
+              placeholder="Código (alfanumérico)"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              className="w-full rounded-xl border-2 border-border bg-background text-text placeholder-text-muted focus:ring-2 focus:ring-primary focus:border-primary outline-none"
+              style={{
+                padding: '14px 16px',
+                fontSize: '1rem',
+                boxSizing: 'border-box',
+              }}
+              disabled={loading}
+              autoFocus
+            />
+            {error && (
+              <p
+                className="text-red-600 dark:text-red-400 font-medium"
+                style={{ fontSize: '0.875rem', textAlign: 'center', margin: 0 }}
+                role="alert"
+              >
+                {error}
+              </p>
+            )}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full rounded-xl bg-primary hover:bg-primary-hover text-white font-bold disabled:opacity-60 touch-manipulation transition-colors outline-none border-0"
+              style={{
+                padding: '14px 16px',
+                fontSize: '1rem',
+                minHeight: '48px',
+                boxSizing: 'border-box',
+              }}
+            >
+              {loading ? 'Comprobando…' : 'Entrar'}
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   )

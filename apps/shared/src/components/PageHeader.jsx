@@ -31,19 +31,19 @@ export function PageHeader({ title, breadcrumbs, onRefresh, loading }) {
         return (
           <span key={i} className="flex items-baseline gap-1.5">
             {i > 0 && (
-              <span className="text-text-muted font-normal px-1 text-sm select-none" aria-hidden>
+              <span className="page-header-breadcrumb-sep text-text-muted font-normal text-base select-none" aria-hidden>
                 \
               </span>
             )}
             {item.to != null && isParent ? (
               <Link
                 to={item.to}
-                className="text-sm font-medium text-text-muted hover:text-primary transition-colors underline-offset-2 hover:underline"
+                className="text-base font-medium text-text-muted hover:text-primary transition-colors underline-offset-2 hover:underline"
               >
                 {item.label}
               </Link>
             ) : (
-              <span className={isLast ? 'text-xl font-bold text-text' : 'text-sm font-medium text-text-muted'}>
+              <span className={isLast ? 'text-2xl font-bold text-text' : 'text-base font-medium text-text-muted'}>
                 {item.label}
               </span>
             )}
@@ -52,7 +52,7 @@ export function PageHeader({ title, breadcrumbs, onRefresh, loading }) {
       })}
     </nav>
   ) : (
-    <h1 className="text-xl font-bold text-text">{title}</h1>
+    <h1 className="text-2xl font-bold text-text">{title}</h1>
   )
 
   return (
@@ -61,9 +61,9 @@ export function PageHeader({ title, breadcrumbs, onRefresh, loading }) {
         <Link
           to={parent.to}
           aria-label={`Volver a ${parent.label}`}
-          className="md:hidden shrink-0 -ml-1 p-2 rounded-xl text-text-muted hover:text-primary hover:bg-surface transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+          className="app-header-back md:hidden shrink-0 -ml-1 p-2 rounded-xl text-text-muted hover:text-primary hover:bg-surface transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
         >
-          <IconChevronLeft size={20} />
+          <IconChevronLeft size={30} />
         </Link>
       )}
       <div className="flex-1 flex items-center gap-3">

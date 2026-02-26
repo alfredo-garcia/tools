@@ -60,7 +60,7 @@ export function HabitDetail() {
       <Link to="/habits" className="text-sm text-primary hover:underline">
         ← Volver a Hábitos
       </Link>
-      <PageHeader title={title} onRefresh={refetch} loading={loading} />
+      <PageHeader breadcrumbs={[{ label: 'Home', to: '/' }, { label: 'Hábitos', to: '/habits' }, { label: title }]} onRefresh={refetch} loading={loading} />
       <div className="rounded-2xl border border-2 border-border bg-surface overflow-hidden">
         <div className="p-6 border-b border-border">
           <dl className="grid gap-2 sm:grid-cols-2">

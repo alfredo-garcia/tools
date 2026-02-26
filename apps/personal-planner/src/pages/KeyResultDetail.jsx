@@ -47,7 +47,7 @@ export function KeyResultDetail() {
       <Link to="/key-results" className="text-sm text-primary hover:underline">
         ← Volver a Key Results
       </Link>
-      <PageHeader title={title} onRefresh={refetch} loading={loading} />
+      <PageHeader breadcrumbs={[{ label: 'Home', to: '/' }, { label: 'Key Results', to: '/key-results' }, { label: title }]} onRefresh={refetch} loading={loading} />
       <div className="rounded-2xl border border-2 border-border bg-surface overflow-hidden">
         <div className="p-6 border-b border-border">
           <div className="mt-2">

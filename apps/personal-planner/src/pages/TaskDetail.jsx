@@ -46,7 +46,7 @@ export function TaskDetail() {
       <Link to="/tasks" className="text-sm text-primary hover:underline">
         ← Volver a Tareas
       </Link>
-      <PageHeader title={title} onRefresh={refetch} loading={loading} />
+      <PageHeader breadcrumbs={[{ label: 'Home', to: '/' }, { label: 'Tareas', to: '/tasks' }, { label: title }]} onRefresh={refetch} loading={loading} />
       <div className="rounded-2xl border border-2 border-border bg-surface overflow-hidden">
         <div className="p-6">
           <dl className="grid gap-2 sm:grid-cols-2">

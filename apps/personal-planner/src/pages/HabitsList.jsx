@@ -27,7 +27,7 @@ export function HabitsList() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Hábitos" onRefresh={refetch} loading={loading} />
+      <PageHeader breadcrumbs={[{ label: 'Home', to: '/' }, { label: 'Hábitos', to: '/habits' }]} onRefresh={refetch} loading={loading} />
       <ul className="space-y-3">
         {list.map((h) => (
           <li key={h.id}>

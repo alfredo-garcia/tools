@@ -91,7 +91,7 @@ export function AnalysisHabits() {
 
   return (
     <div className="space-y-8">
-      <PageHeader title="Análisis Hábitos" onRefresh={refetch} loading={loading} />
+      <PageHeader breadcrumbs={[{ label: 'Home', to: '/' }, { label: 'Análisis Hábitos', to: '/analysis/habits' }]} onRefresh={refetch} loading={loading} />
 
       <section className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="rounded-2xl border border-2 border-border bg-surface p-5">

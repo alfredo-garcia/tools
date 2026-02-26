@@ -27,7 +27,7 @@ export function KeyResultsList() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Key Results" onRefresh={refetch} loading={loading} />
+      <PageHeader breadcrumbs={[{ label: 'Home', to: '/' }, { label: 'Key Results', to: '/key-results' }]} onRefresh={refetch} loading={loading} />
       <ul className="space-y-3">
         {list.map((kr) => {
           const progress = num(field(kr, 'Progress (%)', 'Progress', 'Progress %')) ?? 0

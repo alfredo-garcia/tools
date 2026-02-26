@@ -50,7 +50,7 @@ export function TasksList() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Tareas" onRefresh={refetch} loading={loading} />
+      <PageHeader breadcrumbs={[{ label: 'Home', to: '/' }, { label: 'Tareas', to: '/tasks' }]} onRefresh={refetch} loading={loading} />
       <div className="flex flex-wrap gap-2">
         {['all', 'week', 'done'].map((f) => (
           <button

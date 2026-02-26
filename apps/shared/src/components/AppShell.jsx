@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { IconChevronLeft, IconChevronRight } from './Icons.jsx'
+import { IconChevronsLeft, IconChevronsRight } from './Icons.jsx'
 
 /**
  * Sidebar (lg+) + bottom nav (< lg). navItems = [{ to, label, Icon?, aria }].
@@ -15,7 +15,7 @@ function NavLink({ to, label, Icon, aria, isActive, collapsed }) {
         isActive
           ? 'bg-primary-muted text-primary'
           : 'text-nav-text hover:bg-surface hover:text-text'
-      } ${collapsed ? 'justify-center px-2' : 'pl-4 pr-3'}`}
+      } ${collapsed ? 'justify-center px-0' : 'pl-5 pr-3'}`}
     >
       {Icon && <Icon size={22} className="shrink-0" />}
       {!collapsed && <span>{label}</span>}
@@ -34,47 +34,70 @@ export function AppShell({ children, navItems = [], title = '' }) {
 
   return (
     <div className="min-h-screen flex flex-col lg:flex-row bg-background">
-      <aside
-        className={`hidden lg:flex flex-col fixed left-0 top-0 z-20 h-full bg-nav-bg border-r border-nav-border transition-[width] duration-200 ${
-          sidebarOpen ? 'w-64' : 'w-16'
-        }`}
+      <div
+        className="app-shell-sidebar-wrapper hidden lg:block fixed z-20 rounded-xl transition-[width] duration-200"
+        style={{
+          left: '24px',
+          top: '24px',
+          width: sidebarOpen ? '12rem' : '4rem',
+          height: 'calc(100vh - 48px)',
+          paddingLeft: '24px',
+          boxSizing: 'content-box',
+        }}
       >
-        <div className={`flex items-center h-14 shrink-0 border-b border-nav-border ${sidebarOpen ? 'justify-between pl-5 pr-3' : 'justify-center'}`}>
-          {sidebarOpen && title ? (
-            <Link to="/" className="font-bold text-text truncate text-lg">
-              {title}
-            </Link>
-          ) : null}
-          <button
-            type="button"
-            onClick={() => setSidebarOpen((o) => !o)}
-            aria-label={sidebarOpen ? 'Colapsar menú' : 'Expandir menú'}
-            className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl text-nav-text hover:bg-surface hover:text-text transition-colors"
+        <aside
+          className="flex flex-col h-full rounded-xl bg-nav-bg transition-[width] duration-200 shrink-0"
+          style={{
+            width: sidebarOpen ? '12rem' : '4rem',
+            flexDirection: 'column',
+            minHeight: 0,
+          }}
+        >
+          {/* Título arriba: My Planner + botón colapsar; colapsado: centrado para alinear con ítems */}
+          <div
+            className={`flex items-center shrink-0 h-14 rounded-t-xl ${sidebarOpen ? 'justify-between pl-5 pr-3' : 'justify-center'}`}
+            style={{ order: 1 }}
           >
-            {sidebarOpen ? <IconChevronLeft size={20} /> : <IconChevronRight size={20} />}
-          </button>
-        </div>
-        <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
-          {navItems.map(({ to, label, Icon, aria }) => (
-            <NavLink
-              key={to}
-              to={to}
-              label={label}
-              Icon={Icon}
-              aria={aria}
-              isActive={isActive(to)}
-              collapsed={!sidebarOpen}
-            />
-          ))}
-        </nav>
-      </aside>
+            {sidebarOpen && title ? (
+              <Link to="/" className="font-bold text-text truncate text-lg">
+                {title}
+              </Link>
+            ) : null}
+            <button
+              type="button"
+              onClick={() => setSidebarOpen((o) => !o)}
+              aria-label={sidebarOpen ? 'Colapsar menú' : 'Expandir menú'}
+              className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl text-nav-text hover:bg-surface hover:text-text transition-colors"
+            >
+              {sidebarOpen ? <IconChevronsLeft size={20} /> : <IconChevronsRight size={20} />}
+            </button>
+          </div>
+          {/* Ítems del menú debajo del título; colapsado: px-0 para alinear iconos con el de expandir */}
+          <nav
+            className={`flex-1 py-4 space-y-1 overflow-y-auto min-h-0 ${sidebarOpen ? 'px-5' : 'px-0'}`}
+            style={{ order: 2 }}
+          >
+            {navItems.map(({ to, label, Icon, aria }) => (
+              <NavLink
+                key={to}
+                to={to}
+                label={label}
+                Icon={Icon}
+                aria={aria}
+                isActive={isActive(to)}
+                collapsed={!sidebarOpen}
+              />
+            ))}
+          </nav>
+        </aside>
+      </div>
 
       <div
         className={`flex-1 flex flex-col min-h-screen transition-[margin] duration-200 ${
-          sidebarOpen ? 'lg:ml-64' : 'lg:ml-16'
+          sidebarOpen ? 'lg:ml-[calc(12rem+48px)]' : 'lg:ml-[calc(4rem+48px)]'
         }`}
       >
-        <main className="flex-1 w-full max-w-4xl mx-auto px-5 py-6 pb-24 lg:pb-8">
+        <main className="flex-1 w-full max-w-4xl mx-auto pt-6 px-6 pb-24 lg:pb-8">
           {children}
         </main>
 

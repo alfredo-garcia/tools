@@ -31,11 +31,30 @@ body {
   @apply min-h-screen antialiased font-bold font-sans text-text bg-background;
 }
 
+/* Sidebar: margen obligatorio a la izquierda y arriba (desktop) */
+@media (min-width: 1024px) {
+  .app-shell-sidebar-wrapper {
+    left: 24px !important;
+    top: 24px !important;
+    padding-left: 24px !important;
+  }
+}
+
 /* Ocultar barra inferior en desktop (fallback por si lg:hidden no se genera) */
 @media (min-width: 1024px) {
   .app-shell-bottom-nav {
     display: none !important;
   }
+}
+
+/* Icono refresh: gira mientras carga */
+@keyframes page-header-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.page-header-refresh-spin {
+  animation: page-header-spin 0.7s linear infinite;
 }
 
 /* Touch-friendly minimum tap target */

@@ -31,6 +31,14 @@ body {
   @apply min-h-screen antialiased font-sans font-bold text-text bg-background;
 }
 
+/* Icono refresh: gira mientras carga */
+@keyframes page-header-spin {
+  to { transform: rotate(360deg); }
+}
+.page-header-refresh-spin {
+  animation: page-header-spin 0.7s linear infinite;
+}
+
 /* Touch-friendly minimum tap target */
 button, a[role="button"], [type="submit"] {
   min-height: 44px;

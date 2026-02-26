@@ -152,7 +152,7 @@ export function Dashboard() {
 
   return (
     <div className="space-y-8">
-      <PageHeader title="Dashboard" onRefresh={refetch} loading={loading} />
+      <PageHeader breadcrumbs={[{ label: 'Home', to: '/' }]} onRefresh={refetch} loading={loading} />
 
       <section>
         <h2 className="text-base font-semibold text-text-muted mb-4">

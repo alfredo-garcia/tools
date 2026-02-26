@@ -20,7 +20,7 @@ function NavLink({ to, label, Icon, aria, isActive, collapsed }) {
         isActive
           ? 'bg-primary-muted text-primary'
           : 'text-nav-text hover:bg-surface hover:text-text'
-      } ${collapsed ? 'justify-center gap-0' : ''}`}
+      }`}
     >
       {Icon && <Icon size={22} className="shrink-0" />}
       {!collapsed && <span className="truncate">{label}</span>}
@@ -64,9 +64,7 @@ export function AppShell({ children, navItems = [], title = '' }) {
             type="button"
             onClick={() => setSidebarOpen(o => !o)}
             aria-label={sidebarOpen ? 'Colapsar menú' : 'Expandir menú'}
-            className={`flex items-center w-full rounded-lg min-h-[44px] px-3 py-2.5 text-base font-bold touch-manipulation transition-colors text-nav-text hover:bg-surface hover:text-text cursor-pointer ${
-              !sidebarOpen ? 'justify-center gap-0' : 'gap-3'
-            }`}
+            className="flex items-center w-full rounded-lg min-h-[44px] px-3 py-2.5 gap-3 text-base font-bold touch-manipulation transition-colors text-nav-text hover:bg-surface hover:text-text cursor-pointer"
           >
             <IconMenu size={22} className="shrink-0" />
             {sidebarOpen && title && (

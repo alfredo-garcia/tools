@@ -107,8 +107,16 @@ function DayColumn({
   const [habitsCollapsed, setHabitsCollapsed] = useState(false)
 
   const tasksForDay = getTasksForDay(tasks, dayStr)
-  const tasksDone = tasksForDay.filter((t) => getTaskStatusGroup(t) === 'done').length
-  const tasksPct = tasksForDay.length === 0 ? 0 : Math.round((tasksDone / tasksForDay.length) * 100)
+  const total = tasksForDay.length
+  const doneCount = tasksForDay.filter((t) => getTaskStatusGroup(t) === 'done').length
+  const inProgressCount = tasksForDay.filter((t) => getTaskStatusGroup(t) === 'in_progress').length
+  const pendingCount = tasksForDay.filter((t) => getTaskStatusGroup(t) === 'pending').length
+  const donePct = total === 0 ? 0 : Math.round((doneCount / total) * 100)
+  const inProgressPct = total === 0 ? 0 : Math.round((inProgressCount / total) * 100)
+  const pendingPct = total === 0 ? 0 : Math.round((pendingCount / total) * 100)
+  const progressBarTitle = total === 0
+    ? 'Sin tareas'
+    : `Hecho: ${donePct}%, En progreso: ${inProgressPct}%, Pendiente: ${pendingPct}%`
   const habitsDoneCount = habits.filter((h) => {
     const entry = getHabitEntryForDay(habitTracking, h.id, dayStr)
     return entry && isHabitEntrySuccessful(entry)
@@ -150,17 +158,26 @@ function DayColumn({
       {!tasksCollapsed && (
         <>
           <div className="w-full flex items-center gap-2 pt-0.5 pb-0">
-            <div className="flex-1 h-2 rounded-full bg-border overflow-hidden">
-              <div
-                className="h-full rounded-full bg-primary transition-all"
-                style={{ width: `${tasksPct}%` }}
-                role="progressbar"
-                aria-valuenow={tasksPct}
-                aria-valuemin={0}
-                aria-valuemax={100}
-              />
+            <div
+              className="flex-1 h-2 rounded-full overflow-hidden flex"
+              role="progressbar"
+              aria-valuenow={donePct}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-label={progressBarTitle}
+              title={progressBarTitle}
+            >
+              {donePct > 0 && (
+                <div className="h-full bg-green-500 transition-all shrink-0" style={{ width: `${donePct}%` }} />
+              )}
+              {inProgressPct > 0 && (
+                <div className="h-full bg-blue-500 transition-all shrink-0" style={{ width: `${inProgressPct}%` }} />
+              )}
+              {pendingPct > 0 && (
+                <div className="h-full bg-gray-500 transition-all shrink-0" style={{ width: `${pendingPct}%` }} />
+              )}
             </div>
-            <span className="text-xs font-medium text-text-muted shrink-0">{tasksPct}%</span>
+            <span className="text-xs font-medium text-text-muted shrink-0" title={progressBarTitle}>{donePct}%</span>
           </div>
           <ul className="space-y-2 w-full mt-3">
             {tasksForDay.length === 0 && (

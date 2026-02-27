@@ -30,12 +30,14 @@ export function Switch({ checked, onChange, label, className = '' }) {
         aria-checked={checked}
         onClick={handleClick}
         onKeyDown={handleKeyDown}
-        className={`relative inline-flex h-6 w-10 shrink-0 rounded-full border border-border transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/70 focus-visible:ring-offset-2 focus-visible:ring-offset-surface ${
-          checked ? 'bg-border/70' : 'bg-surface'
+        className={`relative inline-flex h-6 w-10 shrink-0 rounded-full border transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/70 focus-visible:ring-offset-2 focus-visible:ring-offset-surface ${
+          checked
+            ? 'border-gray-400 dark:border-gray-500 bg-gray-500 dark:bg-gray-500'
+            : 'border-border bg-gray-200 dark:bg-gray-700'
         }`}
       >
         <span
-          className={`pointer-events-none absolute top-0.5 left-0.5 inline-block h-4 w-4 rounded-full bg-white shadow transition-transform ${
+          className={`pointer-events-none absolute top-1/2 left-0.5 h-4 w-4 -translate-y-1/2 rounded-full bg-white shadow-sm ring-1 ring-black/5 transition-transform ${
             checked ? 'translate-x-5' : 'translate-x-0'
           }`}
         />

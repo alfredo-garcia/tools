@@ -1,12 +1,24 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useApi, Spinner, PageHeader, IconChevronDown, IconChevronUp, IconStar, IconFlameFilled, IconTarget, IconCalendar, IconUser, IconTag, IconCircle, IconPlay, IconCheckSquare } from '@tools/shared'
-import { field, str, dateStr, arr, getWeekDays, getWeekdayIndex } from '@tools/shared'
+import { useApi, Spinner, PageHeader, IconChevronDown, IconChevronUp, IconChevronLeft, IconChevronRight, IconStar, IconFlameFilled, IconTarget, IconCalendar, IconUser, IconTag, IconCircle, IconPlay, IconCheckSquare } from '@tools/shared'
+import { field, str, dateStr, arr, getWeekDays, getWeekStart, getWeekdayIndex } from '@tools/shared'
 import { getTaskStatusGroup } from '../lib/taskStatus'
 import { TaskCard, STATUS_OPTIONS, getPriorityTagClass } from '../components/TaskCard'
 
 const DAY_NAMES = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 const MONTH_NAMES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
 const MIN_HABITS_FOR_FIRE = 5
+
+function getWeekDaysForOffset(weekOffset) {
+  const start = getWeekStart(new Date())
+  start.setDate(start.getDate() + weekOffset * 7)
+  return getWeekDays(start)
+}
+
+function addDays(dateStr, delta) {
+  const d = new Date(dateStr + 'T12:00:00')
+  d.setDate(d.getDate() + delta)
+  return d.toISOString().slice(0, 10)
+}
 
 function usePlannerData() {
   const { fetchApi } = useApi()
@@ -640,14 +652,17 @@ export function PlannerPage() {
   const { fetchApi } = useApi()
   const { data, loading, error, refetch } = usePlannerData()
   const { tasks, habits, habitTracking } = data
-  const weekDays = getWeekDays()
   const todayStr = new Date().toISOString().slice(0, 10)
-  const defaultDayIndex = getWeekdayIndex(todayStr)
-  const [mobileDayIndex, setMobileDayIndex] = useState(defaultDayIndex >= 0 ? defaultDayIndex : 0)
+  const [weekOffset, setWeekOffset] = useState(0)
+  const [mobileDateStr, setMobileDateStr] = useState(todayStr)
   const [touchStartX, setTouchStartX] = useState(null)
   const [modalTask, setModalTask] = useState(null)
   const [desktopTasksCollapsed, setDesktopTasksCollapsed] = useState(false)
   const [desktopHabitsCollapsed, setDesktopHabitsCollapsed] = useState(false)
+
+  const weekDays = getWeekDaysForOffset(weekOffset)
+  const mobileWeekDays = getWeekDays(mobileDateStr)
+  const mobileDayIndex = getWeekdayIndex(mobileDateStr)
 
   const handleTouchStart = (e) => {
     setTouchStartX(e.targetTouches[0].clientX)
@@ -657,8 +672,8 @@ export function PlannerPage() {
     const endX = e.changedTouches[0].clientX
     const diff = touchStartX - endX
     if (Math.abs(diff) > 50) {
-      if (diff > 0) setMobileDayIndex((i) => Math.min(6, i + 1))
-      else setMobileDayIndex((i) => Math.max(0, i - 1))
+      if (diff > 0) setMobileDateStr((d) => addDays(d, 1))
+      else setMobileDateStr((d) => addDays(d, -1))
     }
     setTouchStartX(null)
   }
@@ -739,6 +754,21 @@ export function PlannerPage() {
       hideDayHeader
     />
   ))
+  const mobileDayColumns = mobileWeekDays.map((dayStr, i) => (
+    <DayColumn
+      key={dayStr}
+      dayStr={dayStr}
+      dayIndex={i}
+      tasks={tasks}
+      habits={habits}
+      habitTracking={habitTracking}
+      onTaskStatusChange={handleTaskStatusChange}
+      onHabitToggle={handleHabitToggle}
+      onTaskClick={setModalTask}
+      refetch={refetch}
+      hideDayHeader
+    />
+  ))
 
   return (
     <div className="space-y-6">
@@ -750,16 +780,39 @@ export function PlannerPage() {
 
       {/* Desktop: layout agrupado (días en fila, luego Tasks en bloque, luego Habits en bloque) */}
       <div className="hidden md:block space-y-0">
-        <div className="grid grid-cols-7 gap-3 border-b border-border pb-3">
+        <div className="grid grid-cols-7 gap-3 border-b border-border pb-3 items-stretch">
           {weekDays.map((dayStr, i) => (
-            <DayHeaderCell
-              key={dayStr}
-              dayStr={dayStr}
-              dayIndex={i}
-              tasks={tasks}
-              habits={habits}
-              habitTracking={habitTracking}
-            />
+            <div key={dayStr} className="flex items-center gap-1 min-w-0">
+              {i === 0 && (
+                <button
+                  type="button"
+                  onClick={() => setWeekOffset((o) => o - 1)}
+                  aria-label="Semana anterior"
+                  className="shrink-0 p-1.5 rounded-lg text-text-muted hover:bg-border hover:text-text"
+                >
+                  <IconChevronLeft size={20} />
+                </button>
+              )}
+              <div className="flex-1 min-w-0">
+                <DayHeaderCell
+                  dayStr={dayStr}
+                  dayIndex={i}
+                  tasks={tasks}
+                  habits={habits}
+                  habitTracking={habitTracking}
+                />
+              </div>
+              {i === 6 && (
+                <button
+                  type="button"
+                  onClick={() => setWeekOffset((o) => o + 1)}
+                  aria-label="Semana siguiente"
+                  className="shrink-0 p-1.5 rounded-lg text-text-muted hover:bg-border hover:text-text"
+                >
+                  <IconChevronRight size={20} />
+                </button>
+              )}
+            </div>
           ))}
         </div>
         <div className="mt-4">
@@ -817,21 +870,19 @@ export function PlannerPage() {
           <button
             type="button"
             aria-label="Día anterior"
-            onClick={() => setMobileDayIndex((i) => Math.max(0, i - 1))}
-            disabled={mobileDayIndex === 0}
-            className="min-h-[44px] min-w-[44px] rounded-xl border-2 border-border bg-surface text-text disabled:opacity-50 disabled:pointer-events-none"
+            onClick={() => setMobileDateStr((d) => addDays(d, -1))}
+            className="min-h-[44px] min-w-[44px] rounded-xl border-2 border-border bg-surface text-text"
           >
             ←
           </button>
           <span className="font-semibold text-text">
-            {DAY_NAMES[mobileDayIndex]} {formatDayDate(weekDays[mobileDayIndex])}
+            {DAY_NAMES[mobileDayIndex]} {formatDayDate(mobileDateStr)}
           </span>
           <button
             type="button"
             aria-label="Día siguiente"
-            onClick={() => setMobileDayIndex((i) => Math.min(6, i + 1))}
-            disabled={mobileDayIndex === 6}
-            className="min-h-[44px] min-w-[44px] rounded-xl border-2 border-border bg-surface text-text disabled:opacity-50 disabled:pointer-events-none"
+            onClick={() => setMobileDateStr((d) => addDays(d, 1))}
+            className="min-h-[44px] min-w-[44px] rounded-xl border-2 border-border bg-surface text-text"
           >
             →
           </button>
@@ -841,7 +892,7 @@ export function PlannerPage() {
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
         >
-          {dayColumns[mobileDayIndex]}
+          {mobileDayColumns[mobileDayIndex]}
         </div>
       </div>
 

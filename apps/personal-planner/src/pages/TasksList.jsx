@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Link } from 'react-router-dom'
 import { useApi, Spinner, PageHeader, Card, CardList, IconCheckSquare } from '@tools/shared'
 import { field, str, dateStr, isToday, isThisWeek, isThisMonth, isPastDue } from '@tools/shared'
 import { getTaskStatusGroup } from '../lib/taskStatus'
+import { getPriorityTagClass } from '../components/TaskCard'
+import { TaskModal } from '../components/TaskModal'
 
 const FILTER_OPTIONS = [
   { value: 'today', label: 'Today' },
@@ -29,43 +30,47 @@ function filterByDate(list, filter, getDue) {
   })
 }
 
-function TaskCard({ task, getDue }) {
+function TaskCardClickable({ task, getDue, onClick }) {
   const name = str(field(task, 'Task Name', 'Task Name')) || '(untitled)'
-  const category = str(field(task, 'Category', 'Category'))
-  const status = str(field(task, 'Status', 'Status'))
+  const description = str(field(task, 'Description', 'Description')) || ''
+  const priority = str(field(task, 'Priority', 'Priority'))
   const due = getDue(task)
-  const assignee = field(task, 'Assignee', 'Assignee')
   const statusGroup = getTaskStatusGroup(task)
   const isDone = statusGroup === 'done'
   const showPastDueTag = !isDone && due && isPastDue(due)
 
   return (
-    <Link to={`/tasks/${task.id}`} className="block">
+    <button type="button" onClick={() => onClick?.(task)} className="block w-full text-left">
       <Card
         title={name}
         icon={<IconCheckSquare size={20} />}
         className={isDone ? 'opacity-90' : ''}
       >
+        {description && (
+          <p className="text-sm text-text-muted line-clamp-2 mb-2">{description}</p>
+        )}
         <div className="flex flex-wrap items-center gap-2">
           {showPastDueTag && (
             <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-500/20 text-red-600 dark:text-red-400">
               Past due: {due}
             </span>
           )}
-          <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-sm text-text-muted">
-            {category && <span>{category}</span>}
-            {status && <span>{status}</span>}
-            <span>Due: {due || '—'}</span>
-            {assignee != null && assignee !== '' && (
-              <span>Assignee: {str(assignee)}</span>
-            )}
-          </div>
+          {priority && (
+            <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getPriorityTagClass(priority)}`}>
+              {priority}
+            </span>
+          )}
+          {due && (
+            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-border text-text-muted">
+              {due}
+            </span>
+          )}
         </div>
         {isDone && (
           <span className="inline-block mt-1 text-xs text-green-600 dark:text-green-400">Completed</span>
         )}
       </Card>
-    </Link>
+    </button>
   )
 }
 
@@ -75,6 +80,7 @@ export function TasksList() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [filter, setFilter] = useState('today')
+  const [modalTask, setModalTask] = useState(null)
 
   const refetch = useCallback(() => {
     setLoading(true)
@@ -88,6 +94,40 @@ export function TasksList() {
   useEffect(() => {
     refetch()
   }, [refetch])
+
+  const handleTaskStatusChange = useCallback(async (taskId, status) => {
+    try {
+      await fetchApi(`/api/tasks/${taskId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ Status: status }),
+      })
+    } catch (err) {
+      console.error(err)
+    }
+    refetch()
+  }, [fetchApi, refetch])
+
+  const handleTaskUpdate = useCallback(async (taskId, fields) => {
+    try {
+      await fetchApi(`/api/tasks/${taskId}`, {
+        method: 'PATCH',
+        body: JSON.stringify(fields),
+      })
+      refetch()
+    } catch (err) {
+      console.error(err)
+    }
+  }, [fetchApi, refetch])
+
+  const handleTaskDelete = useCallback(async (taskId) => {
+    try {
+      await fetchApi(`/api/tasks/${taskId}`, { method: 'DELETE' })
+      refetch()
+      setModalTask((current) => (current?.id === taskId ? null : current))
+    } catch (err) {
+      console.error(err)
+    }
+  }, [fetchApi, refetch])
 
   const getDue = (t) => dateStr(field(t, 'Due Date', 'Due Date'))
   const filteredByDate = filterByDate(list, filter, getDue)
@@ -114,11 +154,17 @@ export function TasksList() {
   const doneCount = groups.done.length
   const inProgressCount = groups.in_progress.length
   const pendingCount = groups.pending.length
-  const pastDueCount = pastDueFromFull.length
   const total = filtered.length
   const completionPct = total === 0 ? 0 : Math.round((doneCount / total) * 100)
+  const inProgressPct = total === 0 ? 0 : Math.round((inProgressCount / total) * 100)
+  const pendingPct = total === 0 ? 0 : Math.round((pendingCount / total) * 100)
+  const progressBarTitle = total === 0
+    ? 'No tasks'
+    : `Done: ${completionPct}%, In progress: ${inProgressPct}%, To do: ${pendingPct}%`
 
-  const renderItem = (task) => <TaskCard key={task.id} task={task} getDue={getDue} />
+  const renderItem = (task) => (
+    <TaskCardClickable key={task.id} task={task} getDue={getDue} onClick={setModalTask} />
+  )
 
   if (loading && list.length === 0) return <div className="flex justify-center py-12"><Spinner size="lg" /></div>
   if (error && list.length === 0) return <p className="text-red-600 dark:text-red-400">{error}</p>
@@ -143,14 +189,32 @@ export function TasksList() {
         ))}
       </div>
 
-      <section className="rounded-2xl bg-surface p-4">
-        <h2 className="text-sm font-medium text-text-muted mb-3">KPIs</h2>
-        <div className="flex flex-wrap gap-4 items-baseline">
-          <span className="text-2xl font-bold text-text">{completionPct}% completed</span>
-          <span className="text-text-muted">Past due: <strong className="text-text">{pastDueCount}</strong></span>
-          <span className="text-text-muted">In progress: <strong className="text-text">{inProgressCount}</strong></span>
-          <span className="text-text-muted">Pending: <strong className="text-text">{pendingCount}</strong></span>
-          <span className="text-text-muted">Done: <strong className="text-text">{doneCount}</strong></span>
+      <section className="space-y-3">
+        <h2 className="text-base font-semibold text-text">Tasks</h2>
+        <div className="flex items-center gap-2 w-full">
+          <span className="text-sm font-medium text-text-muted shrink-0" title={progressBarTitle}>
+            ({total})
+          </span>
+          <div
+            className="flex-1 h-2 rounded-full overflow-hidden flex min-w-0"
+            role="progressbar"
+            aria-valuenow={completionPct}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-label={progressBarTitle}
+            title={progressBarTitle}
+          >
+            {total === 0 ? (
+              <div className="h-full bg-status-pending shrink-0 w-full" />
+            ) : (
+              <>
+                {completionPct > 0 && <div className="h-full bg-status-done shrink-0" style={{ width: `${completionPct}%` }} />}
+                {inProgressPct > 0 && <div className="h-full bg-status-in-progress shrink-0" style={{ width: `${inProgressPct}%` }} />}
+                {pendingPct > 0 && <div className="h-full bg-status-pending shrink-0" style={{ width: `${pendingPct}%` }} />}
+              </>
+            )}
+          </div>
+          <span className="text-sm font-medium text-text-muted shrink-0">{completionPct}%</span>
         </div>
       </section>
 
@@ -165,6 +229,17 @@ export function TasksList() {
 
       {filtered.length === 0 && (
         <p className="text-text-muted">No tasks for this filter.</p>
+      )}
+
+      {modalTask && (
+        <TaskModal
+          task={list.find((t) => t.id === modalTask.id) || modalTask}
+          onClose={() => setModalTask(null)}
+          onStatusChange={handleTaskStatusChange}
+          onTaskUpdate={handleTaskUpdate}
+          onTaskDelete={handleTaskDelete}
+          refetch={refetch}
+        />
       )}
     </div>
   )

@@ -92,6 +92,112 @@ function getHabitsByCategory(habits) {
   return withoutName.length ? [...withName, ['', withoutName]] : withName
 }
 
+/** Celda de cabecera de un día (nombre + fecha + estrellas). Usado en desktop. */
+function DayHeaderCell({ dayStr, dayIndex, tasks, habits, habitTracking }) {
+  const tasksForDay = getTasksForDay(tasks, dayStr)
+  const { hasStar, hasFire } = dayHeaderStars(tasksForDay, habits, habitTracking, dayStr)
+  const dayLabel = DAY_NAMES[dayIndex]
+  return (
+    <div className="py-2 shrink-0 flex items-center justify-between gap-2 px-2 min-w-0">
+      <div className="min-w-0">
+        <div className="font-bold text-text truncate">{dayLabel}</div>
+        <div className="text-sm text-text-muted">{formatDayDate(dayStr)}</div>
+      </div>
+      <div className="flex items-center gap-0.5 shrink-0">
+        {hasStar && (
+          <span className="text-amber-500" title={hasFire ? 'Tareas + 5+ hábitos' : 'Todas las tareas'}>
+            <IconStar size={18} />
+          </span>
+        )}
+        {hasFire && (
+          <span className="text-orange-500" title="5+ hábitos">
+            <IconFlameFilled size={22} />
+          </span>
+        )}
+      </div>
+    </div>
+  )
+}
+
+/** Columna de tasks de un día (header + barra + lista). Sin collapse. */
+function DayTasksColumn({ dayStr, tasks, onTaskStatusChange, onTaskClick, refetch }) {
+  const tasksForDay = getTasksForDay(tasks, dayStr)
+  const total = tasksForDay.length
+  const doneCount = tasksForDay.filter((t) => getTaskStatusGroup(t) === 'done').length
+  const inProgressCount = tasksForDay.filter((t) => getTaskStatusGroup(t) === 'in_progress').length
+  const pendingCount = tasksForDay.filter((t) => getTaskStatusGroup(t) === 'pending').length
+  const donePct = total === 0 ? 0 : Math.round((doneCount / total) * 100)
+  const inProgressPct = total === 0 ? 0 : Math.round((inProgressCount / total) * 100)
+  const pendingPct = total === 0 ? 0 : Math.round((pendingCount / total) * 100)
+  const progressBarTitle = total === 0
+    ? 'Sin tareas'
+    : `Hecho: ${donePct}%, En progreso: ${inProgressPct}%, Pendiente: ${pendingPct}%`
+  return (
+    <div className="flex flex-col min-w-0 px-2">
+      <div className="font-semibold text-sm text-text py-1">Tasks ({total})</div>
+      <div className="w-full flex items-center gap-2 pt-0.5 pb-0">
+        <div
+          className="flex-1 h-2 rounded-full overflow-hidden flex min-w-0"
+          role="progressbar"
+          aria-valuenow={donePct}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          title={progressBarTitle}
+        >
+          {donePct > 0 && <div className="h-full bg-status-done shrink-0" style={{ width: `${donePct}%` }} />}
+          {inProgressPct > 0 && <div className="h-full bg-status-in-progress shrink-0" style={{ width: `${inProgressPct}%` }} />}
+          {pendingPct > 0 && <div className="h-full bg-status-pending shrink-0" style={{ width: `${pendingPct}%` }} />}
+        </div>
+        <span className="text-xs font-medium text-text-muted shrink-0">{donePct}%</span>
+      </div>
+      <ul className="space-y-2 w-full mt-3">
+        {tasksForDay.length === 0 && <li className="text-xs text-text-muted py-1">Ninguna tarea</li>}
+        {tasksForDay.map((task) => (
+          <li key={task.id} className="w-full">
+            <TaskCard task={task} dayStr={dayStr} onStatusChange={onTaskStatusChange} onOpenModal={onTaskClick} refetch={refetch} />
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
+/** Columna de habits de un día (estrellas + lista por categoría). Sin collapse. */
+function DayHabitsColumn({ dayStr, habits, habitTracking, onHabitToggle, refetch }) {
+  const habitsDoneCount = habits.filter((h) => {
+    const entry = getHabitEntryForDay(habitTracking, h.id, dayStr)
+    return entry && isHabitEntrySuccessful(entry)
+  }).length
+  return (
+    <div className="flex flex-col min-w-0 px-2">
+      <div className="w-full pt-0.5 pb-0 flex items-center gap-0.5">
+        {[1, 2, 3, 4, 5].map((n) => (
+          <span
+            key={n}
+            className={`shrink-0 ${n <= habitsDoneCount ? (n === 5 ? 'text-orange-500' : 'text-amber-500') : 'text-border'}`}
+            title={n === 5 ? '5+ hábitos' : `Punto ${n}`}
+          >
+            {n === 5 ? <IconFlameFilled size={16} /> : <IconStar size={14} />}
+          </span>
+        ))}
+      </div>
+      <div className="w-full space-y-3 mt-3">
+        {habits.length === 0 && <p className="text-xs text-text-muted py-1">Ningún hábito</p>}
+        {getHabitsByCategory(habits).map(([categoryLabel, habitsInCategory]) => (
+          <div key={categoryLabel || '_sin_categoria'} className="space-y-0.5">
+            {categoryLabel && <p className="text-xs font-medium text-text-muted px-0.5 py-0.5">{categoryLabel}</p>}
+            <ul className="space-y-0.5 w-full">
+              {habitsInCategory.map((habit) => (
+                <PlannerHabitRow key={habit.id} habit={habit} dayStr={dayStr} habitTracking={habitTracking} onToggle={onHabitToggle} refetch={refetch} />
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 function DayColumn({
   dayStr,
   dayIndex,
@@ -126,7 +232,6 @@ function DayColumn({
 
   return (
     <div className="flex flex-col min-w-0 overflow-y-auto overflow-x-hidden px-2">
-      {/* Day header - solo un elemento, sin contenedor visual */}
       <div className="py-2 shrink-0 flex items-center justify-between gap-2">
         <div>
           <div className="font-bold text-text">{dayLabel}</div>
@@ -146,64 +251,32 @@ function DayColumn({
         </div>
       </div>
 
-      {/* Tasks - cabecera sin borde ni fondo, ancho total */}
-      <button
-        type="button"
-        onClick={() => setTasksCollapsed((c) => !c)}
-        className="w-full flex items-center justify-between gap-2 py-1.5 text-left font-semibold text-base text-text"
-      >
+      <button type="button" onClick={() => setTasksCollapsed((c) => !c)} className="w-full flex items-center justify-between gap-2 py-1.5 text-left font-semibold text-base text-text">
         <span>Tasks ({tasksForDay.length})</span>
         {tasksCollapsed ? <IconChevronDown size={22} /> : <IconChevronUp size={22} />}
       </button>
       {!tasksCollapsed && (
         <>
           <div className="w-full flex items-center gap-2 pt-0.5 pb-0">
-            <div
-              className="flex-1 h-2 rounded-full overflow-hidden flex"
-              role="progressbar"
-              aria-valuenow={donePct}
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-label={progressBarTitle}
-              title={progressBarTitle}
-            >
-              {donePct > 0 && (
-                <div className="h-full bg-status-done transition-all shrink-0" style={{ width: `${donePct}%` }} />
-              )}
-              {inProgressPct > 0 && (
-                <div className="h-full bg-status-in-progress transition-all shrink-0" style={{ width: `${inProgressPct}%` }} />
-              )}
-              {pendingPct > 0 && (
-                <div className="h-full bg-status-pending transition-all shrink-0" style={{ width: `${pendingPct}%` }} />
-              )}
+            <div className="flex-1 h-2 rounded-full overflow-hidden flex" role="progressbar" aria-valuenow={donePct} aria-valuemin={0} aria-valuemax={100} aria-label={progressBarTitle} title={progressBarTitle}>
+              {donePct > 0 && <div className="h-full bg-status-done transition-all shrink-0" style={{ width: `${donePct}%` }} />}
+              {inProgressPct > 0 && <div className="h-full bg-status-in-progress transition-all shrink-0" style={{ width: `${inProgressPct}%` }} />}
+              {pendingPct > 0 && <div className="h-full bg-status-pending transition-all shrink-0" style={{ width: `${pendingPct}%` }} />}
             </div>
             <span className="text-xs font-medium text-text-muted shrink-0" title={progressBarTitle}>{donePct}%</span>
           </div>
           <ul className="space-y-2 w-full mt-3">
-            {tasksForDay.length === 0 && (
-              <li className="text-xs text-text-muted py-1">Ninguna tarea</li>
-            )}
+            {tasksForDay.length === 0 && <li className="text-xs text-text-muted py-1">Ninguna tarea</li>}
             {tasksForDay.map((task) => (
               <li key={task.id} className="w-full">
-                <TaskCard
-                  task={task}
-                  dayStr={dayStr}
-                  onStatusChange={onTaskStatusChange}
-                  onOpenModal={onTaskClick}
-                  refetch={refetch}
-                />
+                <TaskCard task={task} dayStr={dayStr} onStatusChange={onTaskStatusChange} onOpenModal={onTaskClick} refetch={refetch} />
               </li>
             ))}
           </ul>
         </>
       )}
 
-      {/* Habits - cabecera sin borde ni fondo, ancho total */}
-      <button
-        type="button"
-        onClick={() => setHabitsCollapsed((c) => !c)}
-        className="w-full flex items-center justify-between gap-2 py-1.5 text-left font-semibold text-base text-text mt-5"
-      >
+      <button type="button" onClick={() => setHabitsCollapsed((c) => !c)} className="w-full flex items-center justify-between gap-2 py-1.5 text-left font-semibold text-base text-text mt-5">
         <span>Habits</span>
         {habitsCollapsed ? <IconChevronDown size={22} /> : <IconChevronUp size={22} />}
       </button>
@@ -211,34 +284,19 @@ function DayColumn({
         <>
           <div className="w-full pt-0.5 pb-0 flex items-center gap-0.5">
             {[1, 2, 3, 4, 5].map((n) => (
-              <span
-                key={n}
-                className={`shrink-0 ${n <= habitsDoneCount ? (n === 5 ? 'text-orange-500' : 'text-amber-500') : 'text-border'}`}
-                title={n === 5 ? '5+ hábitos' : `Punto ${n}`}
-              >
+              <span key={n} className={`shrink-0 ${n <= habitsDoneCount ? (n === 5 ? 'text-orange-500' : 'text-amber-500') : 'text-border'}`} title={n === 5 ? '5+ hábitos' : `Punto ${n}`}>
                 {n === 5 ? <IconFlameFilled size={16} /> : <IconStar size={14} />}
               </span>
             ))}
           </div>
           <div className="w-full space-y-3 mt-3">
-            {habits.length === 0 && (
-              <p className="text-xs text-text-muted py-1">Ningún hábito</p>
-            )}
+            {habits.length === 0 && <p className="text-xs text-text-muted py-1">Ningún hábito</p>}
             {getHabitsByCategory(habits).map(([categoryLabel, habitsInCategory]) => (
               <div key={categoryLabel || '_sin_categoria'} className="space-y-0.5">
-                {categoryLabel && (
-                  <p className="text-xs font-medium text-text-muted px-0.5 py-0.5">{categoryLabel}</p>
-                )}
+                {categoryLabel && <p className="text-xs font-medium text-text-muted px-0.5 py-0.5">{categoryLabel}</p>}
                 <ul className="space-y-0.5 w-full">
                   {habitsInCategory.map((habit) => (
-                    <PlannerHabitRow
-                      key={habit.id}
-                      habit={habit}
-                      dayStr={dayStr}
-                      habitTracking={habitTracking}
-                      onToggle={onHabitToggle}
-                      refetch={refetch}
-                    />
+                    <PlannerHabitRow key={habit.id} habit={habit} dayStr={dayStr} habitTracking={habitTracking} onToggle={onHabitToggle} refetch={refetch} />
                   ))}
                 </ul>
               </div>
@@ -572,6 +630,8 @@ export function PlannerPage() {
   const [mobileDayIndex, setMobileDayIndex] = useState(defaultDayIndex >= 0 ? defaultDayIndex : 0)
   const [touchStartX, setTouchStartX] = useState(null)
   const [modalTask, setModalTask] = useState(null)
+  const [desktopTasksCollapsed, setDesktopTasksCollapsed] = useState(false)
+  const [desktopHabitsCollapsed, setDesktopHabitsCollapsed] = useState(false)
 
   const handleTouchStart = (e) => {
     setTouchStartX(e.targetTouches[0].clientX)
@@ -671,8 +731,68 @@ export function PlannerPage() {
         loading={loading}
       />
 
-      <div className="hidden md:grid md:grid-cols-7 gap-3 overflow-x-auto">
-        {dayColumns}
+      {/* Desktop: layout agrupado (días en fila, luego Tasks en bloque, luego Habits en bloque) */}
+      <div className="hidden md:block space-y-0">
+        <div className="grid grid-cols-7 gap-3 border-b border-border pb-3">
+          {weekDays.map((dayStr, i) => (
+            <DayHeaderCell
+              key={dayStr}
+              dayStr={dayStr}
+              dayIndex={i}
+              tasks={tasks}
+              habits={habits}
+              habitTracking={habitTracking}
+            />
+          ))}
+        </div>
+        <div className="mt-4">
+          <button
+            type="button"
+            onClick={() => setDesktopTasksCollapsed((c) => !c)}
+            className="w-full flex items-center justify-between gap-2 py-2 text-left font-semibold text-base text-text"
+          >
+            <span>Tasks</span>
+            {desktopTasksCollapsed ? <IconChevronDown size={22} /> : <IconChevronUp size={22} />}
+          </button>
+          {!desktopTasksCollapsed && (
+            <div className="grid grid-cols-7 gap-3 mt-2 min-h-[120px]">
+              {weekDays.map((dayStr) => (
+                <DayTasksColumn
+                  key={dayStr}
+                  dayStr={dayStr}
+                  tasks={tasks}
+                  onTaskStatusChange={handleTaskStatusChange}
+                  onTaskClick={setModalTask}
+                  refetch={refetch}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+        <div className="mt-6 pt-4 border-t border-border">
+          <button
+            type="button"
+            onClick={() => setDesktopHabitsCollapsed((c) => !c)}
+            className="w-full flex items-center justify-between gap-2 py-2 text-left font-semibold text-base text-text"
+          >
+            <span>Habits</span>
+            {desktopHabitsCollapsed ? <IconChevronDown size={22} /> : <IconChevronUp size={22} />}
+          </button>
+          {!desktopHabitsCollapsed && (
+            <div className="grid grid-cols-7 gap-3 mt-2 min-h-[80px]">
+              {weekDays.map((dayStr) => (
+                <DayHabitsColumn
+                  key={dayStr}
+                  dayStr={dayStr}
+                  habits={habits}
+                  habitTracking={habitTracking}
+                  onHabitToggle={handleHabitToggle}
+                  refetch={refetch}
+                />
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="md:hidden">

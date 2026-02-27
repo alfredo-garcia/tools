@@ -1,5 +1,5 @@
 import { validateAccess } from './_lib/auth.js'
-import { fetchTable, createRecord } from './_lib/airtable.js'
+import { fetchTable, createRecord, updateRecord } from './_lib/airtable.js'
 
 const TABLE = process.env.AIRTABLE_TABLE_KEY_RESULT_TRACKING || 'Key Results Tracking'
 
@@ -47,19 +47,44 @@ export default async function handler(req, res) {
       res.end(JSON.stringify({ error: '"Current Value" must be a number' }))
       return
     }
+    const progressRaw = body['Progress (%)'] ?? body.progress ?? body['Progress %']
+    const progressNum = progressRaw === '' || progressRaw == null ? null : (typeof progressRaw === 'number' ? progressRaw : Number(progressRaw))
+    const progressPct = (progressNum != null && !Number.isNaN(progressNum)) ? Math.min(100, Math.max(0, Math.round(progressNum))) : null
+
+    const krIdTrimmed = krIdResolved.trim()
     const fields = {
-      'Key Result': [krIdResolved.trim()],
+      'Key Result': [krIdTrimmed],
       Date: dateStr,
     }
     if (numValue != null) fields['Current Value'] = numValue
+    if (progressPct != null) fields['Progress (%)'] = progressPct
+
+    const updatePayload = {}
+    if (numValue != null) updatePayload['Current Value'] = numValue
+    if (progressPct != null) updatePayload['Progress (%)'] = progressPct
+
     try {
-      const created = await createRecord(TABLE, fields)
-      res.statusCode = 201
-      res.end(JSON.stringify({ data: created }))
+      const all = await fetchTable(TABLE, 5000)
+      const dateNorm = (d) => (d == null ? '' : String(d).slice(0, 10))
+      const existing = all.find((r) => {
+        const link = r['Key Result']
+        const ids = Array.isArray(link) ? link : link != null ? [link] : []
+        return ids.includes(krIdTrimmed) && dateNorm(r['Date']) === dateStr
+      })
+
+      if (existing) {
+        const updated = await updateRecord(TABLE, existing.id, updatePayload)
+        res.statusCode = 200
+        res.end(JSON.stringify({ data: updated }))
+      } else {
+        const created = await createRecord(TABLE, fields)
+        res.statusCode = 201
+        res.end(JSON.stringify({ data: created }))
+      }
     } catch (err) {
       if (err.error === 'INVALID_VALUE_FOR_COLUMN' && String(err.message || '').includes('Key Result')) {
         try {
-          const fallback = { ...fields, 'Key Result': krIdResolved.trim() }
+          const fallback = { ...fields, 'Key Result': krIdTrimmed }
           const created = await createRecord(TABLE, fallback)
           res.statusCode = 201
           res.end(JSON.stringify({ data: created }))

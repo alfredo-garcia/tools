@@ -106,22 +106,34 @@ export function KeyResultDetail() {
         method: 'PATCH',
         body: JSON.stringify(fields),
       })
-      if (fields['Current Value'] !== undefined) {
-        const numVal = fields['Current Value'] === '' || fields['Current Value'] == null ? null : Number(fields['Current Value'])
-        if (numVal != null && !Number.isNaN(numVal)) {
-          const today = new Date().toISOString().slice(0, 10)
-          try {
-            await fetchApi('/api/key-result-tracking', {
-              method: 'POST',
-              body: JSON.stringify({
-                'Key Result': item.id,
-                Date: today,
-                'Current Value': numVal,
-              }),
-            })
-          } catch (trackErr) {
-            console.error('key-result-tracking POST:', trackErr)
-          }
+      const today = new Date().toISOString().slice(0, 10)
+      const currentValForTracking = fields['Current Value'] !== undefined
+        ? (fields['Current Value'] === '' || fields['Current Value'] == null ? null : Number(fields['Current Value']))
+        : field(item, 'Current Value', 'Current Value')
+      const currentNum = currentValForTracking != null && currentValForTracking !== '' ? Number(currentValForTracking) : NaN
+      const hasCurrentForTracking = typeof currentNum === 'number' && !Number.isNaN(currentNum)
+      const progressForTracking = fields['Progress (%)'] !== undefined
+        ? (fields['Progress (%)'] == null ? null : Math.min(100, Math.max(0, Math.round(Number(fields['Progress (%)'])))))
+        : (hasCurrentForTracking ? (() => {
+            const targetVal = field(item, 'Target Value', 'Target Value')
+            const targetNum = targetVal != null && targetVal !== '' ? Number(targetVal) : NaN
+            return (typeof targetNum === 'number' && !Number.isNaN(targetNum) && targetNum !== 0)
+              ? Math.min(100, Math.max(0, Math.round((currentNum / targetNum) * 100)))
+              : null
+          })() : null)
+      if (hasCurrentForTracking && (fields['Current Value'] !== undefined || fields['Progress (%)'] !== undefined)) {
+        try {
+          await fetchApi('/api/key-result-tracking', {
+            method: 'POST',
+            body: JSON.stringify({
+              'Key Result': item.id,
+              Date: today,
+              'Current Value': currentNum,
+              ...(progressForTracking != null && { 'Progress (%)': progressForTracking }),
+            }),
+          })
+        } catch (trackErr) {
+          console.error('key-result-tracking POST:', trackErr)
         }
       }
       setItem((prev) => (prev ? { ...prev, ...fields } : null))

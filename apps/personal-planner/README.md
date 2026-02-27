@@ -8,7 +8,7 @@ Configura una base con estas tablas (los nombres de campos pueden variar; la app
 
 - **Objectives**: Objective Name, Description, Category, Status, Target Date, Start Date, Priority
 - **Key Results**: Key Result Name, Description, Metric, Target Value, Current Value, Unit, Status, Deadline, Progress (%), Objective Link (link a Objectives)
-- **Key Result Tracking**: Key Result (link a Key Results), Date, Current Value (opcional). Se crea un registro al actualizar "Current Value" en un Key Result.
+- **Key Result Tracking**: Key Result (link a Key Results), Date, Current Value, Progress (%) (opcionales). Se crea un registro al actualizar "Current value" o "Progress (%)" en un Key Result, con snapshot de valor y progreso.
 - **Tasks**: Task Name, Description, Category, Priority, Status, Assignee, Due Date, Objectives, Key Result (links opcionales)
 - **Habits**: Habit Name, Habit Description, Category, Frequency, Priority
 - **Habit Tracking**: Habit (link a Habits), Was Successful?, Execution Date-Time

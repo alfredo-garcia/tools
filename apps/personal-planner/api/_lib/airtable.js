@@ -27,6 +27,7 @@ export function fetchTable(tableName, maxRecords = 500) {
   })
 }
 
+
 /**
  * Actualiza un registro por id.
  * @param {string} tableName

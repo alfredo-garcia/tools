@@ -383,6 +383,7 @@ export function ObjectiveDetail() {
               )}
             </div>
 
+          </div>
           <hr className="border-border" />
           <div className="flex items-center justify-between gap-2 w-full flex-wrap">
             <div className="flex flex-wrap gap-2">
@@ -424,7 +425,6 @@ export function ObjectiveDetail() {
             >
               <IconTrash size={20} />
             </button>
-          </div>
           </div>
         </div>
       </div>

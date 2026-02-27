@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import { useApi, Spinner, PageHeader, Card, IconTarget, IconCalendar, IconTag, IconCircle, IconPlay, IconCheckSquare, IconTrash } from '@tools/shared'
+import { useApi, Spinner, PageHeader, Card, IconTarget, IconPriority, IconCalendar, IconTag, IconCircle, IconPlay, IconCheckSquare, IconTrash } from '@tools/shared'
 import { field, str, dateStr, arr, num } from '@tools/shared'
 import { getTaskStatusGroup } from '../lib/taskStatus'
 import { getPriorityTagClass, STATUS_OPTIONS } from '../components/TaskCard'
@@ -276,7 +276,7 @@ export function ObjectiveDetail() {
           <div className="space-y-2">
             {/* Priority */}
             <div className="flex items-center gap-2 text-sm">
-              <span className="text-text-muted shrink-0"><IconTarget size={18} /></span>
+              <span className="text-text-muted shrink-0"><IconPriority size={18} /></span>
               <span className="text-text-muted shrink-0">Priority:</span>
               {editingField === 'priority' ? (
                 <select

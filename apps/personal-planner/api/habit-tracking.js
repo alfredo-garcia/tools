@@ -1,5 +1,5 @@
 import { validateAccess } from './_lib/auth.js'
-import { fetchTable, createRecord, deleteRecord } from './_lib/airtable.js'
+import { fetchTable, createRecord, deleteRecord, updateRecord } from './_lib/airtable.js'
 
 const TABLE = process.env.AIRTABLE_TABLE_HABIT_TRACKING || 'Habit Tracking'
 
@@ -17,6 +17,25 @@ export default async function handler(req, res) {
   }
   const segments = getPathSegments(req.url)
   const recordId = segments[1]
+
+  if (recordId && req.method === 'PATCH') {
+    const successful = req.body?.['Was Successful?']
+    if (typeof successful !== 'boolean') {
+      res.statusCode = 400
+      res.end(JSON.stringify({ error: 'Body must include "Was Successful?" (boolean)' }))
+      return
+    }
+    try {
+      const updated = await updateRecord(TABLE, recordId, { 'Was Successful?': successful })
+      res.statusCode = 200
+      res.end(JSON.stringify({ data: updated }))
+    } catch (err) {
+      console.error('habit-tracking PATCH error:', err)
+      res.statusCode = err.statusCode === 404 ? 404 : 500
+      res.end(JSON.stringify({ error: err.message }))
+    }
+    return
+  }
 
   if (recordId && req.method === 'DELETE') {
     try {
@@ -60,7 +79,25 @@ export default async function handler(req, res) {
       })
       res.statusCode = 201
       res.end(JSON.stringify({ data: created }))
+      return
     } catch (err) {
+      if (err.error === 'INVALID_VALUE_FOR_COLUMN' && String(err.message || '').includes('Habit')) {
+        try {
+          const created = await createRecord(TABLE, {
+            Habit: habitIdTrimmed,
+            'Execution Date-Time': isoDate,
+            'Was Successful?': true,
+          })
+          res.statusCode = 201
+          res.end(JSON.stringify({ data: created }))
+          return
+        } catch (err2) {
+          console.error('habit-tracking POST error (fallback):', err2)
+          res.statusCode = 500
+          res.end(JSON.stringify({ error: err2.message }))
+          return
+        }
+      }
       console.error('habit-tracking POST error:', err)
       res.statusCode = 500
       res.end(JSON.stringify({ error: err.message }))

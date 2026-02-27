@@ -57,11 +57,20 @@ function getHabitEntryForDay(habitTracking, habitId, dayStr) {
   })
 }
 
+function isHabitEntrySuccessful(entry) {
+  if (!entry) return false
+  const v = field(entry, 'Was Successful?', 'Was Successful')
+  return v === true || String(v).toLowerCase() === 'yes' || v === '1'
+}
+
 function completionPct(tasksForDay, habits, habitTracking, dayStr) {
   const totalTasks = tasksForDay.length
   const tasksDone = tasksForDay.filter((t) => getTaskStatusGroup(t) === 'done').length
   const totalHabits = habits.length
-  const habitsDone = habits.filter((h) => getHabitEntryForDay(habitTracking, h.id, dayStr)).length
+  const habitsDone = habits.filter((h) => {
+    const entry = getHabitEntryForDay(habitTracking, h.id, dayStr)
+    return entry && isHabitEntrySuccessful(entry)
+  }).length
   const total = totalTasks + totalHabits
   if (total === 0) return 0
   return Math.round(((tasksDone + habitsDone) / total) * 100)
@@ -196,7 +205,7 @@ function PlannerTaskCard({ task, onStatusChange, refetch }) {
 function PlannerHabitRow({ habit, dayStr, habitTracking, onToggle, refetch }) {
   const name = str(field(habit, 'Habit Name', 'Habit Name')) || '(sin nombre)'
   const entry = getHabitEntryForDay(habitTracking, habit.id, dayStr)
-  const isDone = !!entry
+  const isDone = entry && isHabitEntrySuccessful(entry)
 
   const handleToggle = async () => {
     try {
@@ -265,7 +274,15 @@ export function PlannerPage() {
   const handleHabitToggle = useCallback(
     async (habitId, date, currentlyDone, entryId) => {
       if (currentlyDone && entryId) {
-        await fetchApi(`/api/habit-tracking/${entryId}`, { method: 'DELETE' })
+        await fetchApi(`/api/habit-tracking/${entryId}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ 'Was Successful?': false }),
+        })
+      } else if (entryId) {
+        await fetchApi(`/api/habit-tracking/${entryId}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ 'Was Successful?': true }),
+        })
       } else {
         await fetchApi('/api/habit-tracking', {
           method: 'POST',

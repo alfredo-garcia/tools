@@ -279,7 +279,7 @@ function PlannerTaskCard({ task, dayStr, onStatusChange, onOpenModal, refetch })
   )
 
   const statusButtons = (
-    <div className="flex items-center gap-1 mt-2" onClick={(e) => e.stopPropagation()}>
+    <div className="flex items-center justify-start gap-2 mt-2" onClick={(e) => e.stopPropagation()}>
       {STATUS_OPTIONS.map(({ value }) => {
         const isActive =
           (value === 'Done' && statusGroup === 'done') ||
@@ -303,9 +303,9 @@ function PlannerTaskCard({ task, dayStr, onStatusChange, onOpenModal, refetch })
             type="button"
             onClick={(e) => handleStatus(e, value)}
             title={title}
-            className={`p-1 rounded ${btnClass}`}
+            className={`w-6 h-6 !min-w-6 !min-h-6 flex items-center justify-center rounded shrink-0 ${btnClass}`}
           >
-            <Icon size={14} />
+            <Icon size={10} />
           </button>
         )
       })}

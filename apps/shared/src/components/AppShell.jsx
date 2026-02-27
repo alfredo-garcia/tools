@@ -86,9 +86,9 @@ export function AppShell({ children, navItems = [], title = '' }) {
         </nav>
       </aside>
 
-      {/* ── Contenido principal ── */}
-      <div className="flex-1 flex flex-col min-w-0 app-content" style={{ marginTop: '1.5rem' }}>
-        <main className="flex-1 w-full min-w-0 pt-5 px-0 md:px-6 pb-28 md:pb-8">
+      {/* ── Contenido principal. Espacio superior: marginTop aquí y pt- en main ── */}
+      <div className="flex-1 flex flex-col min-w-0 app-content" style={{ marginTop: '0.5rem' }}>
+        <main className="flex-1 w-full min-w-0 pt-2 px-0 md:px-6 pb-28 md:pb-8">
           {children}
         </main>
       </div>

@@ -356,6 +356,7 @@ export function KeyResultDetail() {
                   valueLabel="Current value"
                   targetLabel="Target"
                   height={200}
+                  maxHeight={280}
                 />
               </div>
             )}

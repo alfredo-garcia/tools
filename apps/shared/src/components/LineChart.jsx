@@ -5,7 +5,8 @@
  *   - targetValue: number (opcional) — línea horizontal de referencia
  *   - valueLabel: string (opcional) — etiqueta para la línea de valor
  *   - targetLabel: string (opcional) — etiqueta para la línea target
- *   - height: number (altura del SVG, default 200)
+ *   - height: number (altura del SVG en viewBox, default 200)
+ *   - maxHeight: number (opcional) altura máxima en px del SVG para alinear con contenido adyacente
  *   - className: string
  */
 export function LineChart({
@@ -14,6 +15,7 @@ export function LineChart({
   valueLabel = 'Value',
   targetLabel = 'Target',
   height = 200,
+  maxHeight,
   className = '',
 }) {
   if (data.length === 0 && targetValue == null) return null
@@ -57,7 +59,7 @@ export function LineChart({
       <svg
         viewBox={`0 0 ${width} ${height}`}
         className="block w-full h-auto"
-        style={{ width: '100%' }}
+        style={{ width: '100%', ...(maxHeight != null && { maxHeight }) }}
         preserveAspectRatio="xMidYMid meet"
         aria-hidden
       >
@@ -150,7 +152,7 @@ export function LineChart({
           </text>
         ))}
       </svg>
-      <div className="flex items-center gap-4 mt-1 flex-wrap">
+      <div className="flex items-center justify-center gap-4 mt-1 flex-wrap">
         <span className="inline-flex items-center gap-1.5 text-xs text-text-muted">
           <span className="w-3 h-0.5 bg-text rounded" />
           {valueLabel}

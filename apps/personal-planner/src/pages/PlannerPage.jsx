@@ -342,25 +342,29 @@ function PlannerHabitRow({ habit, dayStr, habitTracking, onToggle, refetch }) {
     }
   }
 
-  const checkbox = (
-    <button
-      type="button"
-      onClick={handleToggle}
-      aria-pressed={isDone}
-      className={`shrink-0 w-[10px] h-[10px] rounded-sm border flex items-center justify-center transition-colors ${
-        isDone
-          ? 'bg-primary border-primary text-white'
-          : 'bg-surface border-border text-transparent hover:border-primary'
-      }`}
-    >
-      {isDone && <span className="text-[6px] leading-none">✓</span>}
-    </button>
-  )
+  const boxStyle = { width: 15, height: 15, minWidth: 15, minHeight: 15, padding: 0 }
 
   return (
-    <li className={`w-full flex items-center gap-2 py-0.5 min-h-0 ${isDone ? 'opacity-90' : ''}`}>
-      {checkbox}
-      <span className="text-sm text-text truncate">{name}</span>
+    <li className={`w-full min-h-0 ${isDone ? 'opacity-90' : ''}`}>
+      <button
+        type="button"
+        onClick={handleToggle}
+        aria-pressed={isDone}
+        className="w-full flex items-center gap-2 py-0.5 text-left cursor-pointer rounded hover:bg-black/10 dark:hover:bg-white/5 transition-colors"
+      >
+        <span
+          style={boxStyle}
+          className={`shrink-0 self-center rounded-sm border flex items-center justify-center transition-colors ${
+            isDone
+              ? 'bg-primary border-primary text-white'
+              : 'bg-surface border-border text-transparent'
+          }`}
+          aria-hidden
+        >
+          {isDone && <span className="text-[5px] leading-none">✓</span>}
+        </span>
+        <span className={`text-sm text-text truncate ${isDone ? 'font-normal line-through opacity-80' : ''}`}>{name}</span>
+      </button>
     </li>
   )
 }

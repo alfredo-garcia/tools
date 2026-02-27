@@ -1,5 +1,5 @@
 import { validateAccess } from './_lib/auth.js'
-import { fetchTable, updateRecord } from './_lib/airtable.js'
+import { fetchTable, updateRecord, deleteRecord } from './_lib/airtable.js'
 
 const TABLE = process.env.AIRTABLE_TABLE_TASKS || 'Tasks'
 
@@ -24,6 +24,19 @@ export default async function handler(req, res) {
   }
   const segments = getPathSegments(req.url)
   const recordId = segments[1]
+
+  if (recordId && req.method === 'DELETE') {
+    try {
+      await deleteRecord(TABLE, recordId)
+      res.statusCode = 200
+      res.end(JSON.stringify({ deleted: recordId }))
+    } catch (err) {
+      console.error('tasks DELETE error:', err)
+      res.statusCode = err.statusCode === 404 ? 404 : 500
+      res.end(JSON.stringify({ error: err.message }))
+    }
+    return
+  }
 
   if (recordId && req.method === 'PATCH') {
     const body = req.body || {}

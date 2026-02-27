@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useApi, Spinner, PageHeader, IconChevronDown, IconChevronUp, IconChevronLeft, IconChevronRight, IconStar, IconFlameFilled, IconTarget, IconCalendar, IconUser, IconTag, IconCircle, IconPlay, IconCheckSquare } from '@tools/shared'
+import { useApi, Spinner, PageHeader, Switch, IconChevronDown, IconChevronUp, IconChevronLeft, IconChevronRight, IconStar, IconFlameFilled, IconTarget, IconCalendar, IconUser, IconTag, IconCircle, IconPlay, IconCheckSquare, IconTrash } from '@tools/shared'
 import { field, str, dateStr, arr, getWeekDays, getWeekStart, getWeekdayIndex } from '@tools/shared'
 import { getTaskStatusGroup } from '../lib/taskStatus'
 import { TaskCard, STATUS_OPTIONS, getPriorityTagClass } from '../components/TaskCard'
@@ -131,8 +131,10 @@ function DayHeaderCell({ dayStr, dayIndex, tasks, habits, habitTracking }) {
   )
 }
 
-/** Columna de tasks de un día (header + barra + lista). Sin collapse. */
-function DayTasksColumn({ dayStr, tasks, onTaskStatusChange, onTaskClick, refetch }) {
+/** Columna de tasks de un día (header + barra + lista). Sin collapse.
+ * showCompleted: si true, se muestran las Done al final.
+ */
+function DayTasksColumn({ dayStr, tasks, showCompleted = false, onTaskStatusChange, onTaskClick, refetch }) {
   const tasksForDay = getTasksForDay(tasks, dayStr)
   const total = tasksForDay.length
   const doneCount = tasksForDay.filter((t) => getTaskStatusGroup(t) === 'done').length
@@ -144,6 +146,10 @@ function DayTasksColumn({ dayStr, tasks, onTaskStatusChange, onTaskClick, refetc
   const progressBarTitle = total === 0
     ? 'No tasks'
     : `Done: ${donePct}%, In progress: ${inProgressPct}%, To do: ${pendingPct}%`
+  const pending = tasksForDay.filter((t) => getTaskStatusGroup(t) === 'pending')
+  const inProgress = tasksForDay.filter((t) => getTaskStatusGroup(t) === 'in_progress')
+  const done = tasksForDay.filter((t) => getTaskStatusGroup(t) === 'done')
+  const visibleTasks = showCompleted ? [...pending, ...inProgress, ...done] : [...pending, ...inProgress]
   return (
     <div className="flex flex-col min-w-0 px-2">
       <div className="w-full flex items-center gap-2 pt-0.5 pb-0">
@@ -169,8 +175,8 @@ function DayTasksColumn({ dayStr, tasks, onTaskStatusChange, onTaskClick, refetc
         <span className="text-xs font-medium text-text-muted shrink-0">{donePct}%</span>
       </div>
       <ul className="space-y-2 w-full mt-3">
-        {tasksForDay.length === 0 && <li className="text-xs text-text-muted py-1">No tasks</li>}
-        {tasksForDay.map((task) => (
+        {visibleTasks.length === 0 && <li className="text-xs text-text-muted py-1">No tasks</li>}
+        {visibleTasks.map((task) => (
           <li key={task.id} className="w-full">
             <TaskCard task={task} dayStr={dayStr} onStatusChange={onTaskStatusChange} onOpenModal={onTaskClick} refetch={refetch} />
           </li>
@@ -230,6 +236,7 @@ function DayColumn({
 }) {
   const [tasksCollapsed, setTasksCollapsed] = useState(false)
   const [habitsCollapsed, setHabitsCollapsed] = useState(false)
+  const [showCompleted, setShowCompleted] = useState(false)
 
   const tasksForDay = getTasksForDay(tasks, dayStr)
   const total = tasksForDay.length
@@ -380,7 +387,7 @@ function PlannerHabitRow({ habit, dayStr, habitTracking, onToggle, refetch }) {
 
 const PRIORITY_OPTIONS = ['Low', 'Medium', 'High']
 
-function TaskModal({ task, onClose, onStatusChange, onTaskUpdate, refetch }) {
+function TaskModal({ task, onClose, onStatusChange, onTaskUpdate, onTaskDelete, refetch }) {
   const [editingField, setEditingField] = useState(null)
   const [editValue, setEditValue] = useState('')
 
@@ -398,6 +405,15 @@ function TaskModal({ task, onClose, onStatusChange, onTaskUpdate, refetch }) {
     try {
       await onStatusChange(task.id, newStatus)
       refetch()
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!onTaskDelete) return
+    try {
+      await onTaskDelete(task.id)
     } catch (err) {
       console.error(err)
     }
@@ -613,34 +629,46 @@ function TaskModal({ task, onClose, onStatusChange, onTaskUpdate, refetch }) {
             </div>
           </div>
           <hr className="border-border" />
-          <div className="flex flex-wrap gap-2">
-            {STATUS_OPTIONS.map(({ value, label }) => {
-              const isActive =
-                (value === 'Done' && statusGroup === 'done') ||
-                (value === 'In Progress' && statusGroup === 'in_progress') ||
-                (value === 'Pending' && statusGroup === 'pending')
-              const isPending = value === 'Pending'
-              const isInProgress = value === 'In Progress'
-              const btnClass = isActive
-                ? isPending
-                  ? 'bg-status-pending text-white'
-                  : isInProgress
-                    ? 'bg-status-in-progress text-white'
-                    : 'bg-status-done text-white'
-                : 'bg-border text-text hover:bg-border/80'
-              const Icon = isPending ? IconCircle : isInProgress ? IconPlay : IconCheckSquare
-              return (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={(e) => handleStatus(e, value)}
-                  className={`min-h-[44px] px-4 rounded-xl text-sm font-medium flex items-center gap-2 cursor-pointer ${btnClass}`}
-                >
-                  <Icon size={18} />
-                  {label}
-                </button>
-              )
-            })}
+          <div className="flex items-center justify-between gap-2 w-full flex-wrap">
+            <div className="flex flex-wrap gap-2">
+              {STATUS_OPTIONS.map(({ value, label }) => {
+                const isActive =
+                  (value === 'Done' && statusGroup === 'done') ||
+                  (value === 'In Progress' && statusGroup === 'in_progress') ||
+                  (value === 'Pending' && statusGroup === 'pending')
+                const isPending = value === 'Pending'
+                const isInProgress = value === 'In Progress'
+                const btnClass = isActive
+                  ? isPending
+                    ? 'bg-status-pending text-white'
+                    : isInProgress
+                      ? 'bg-status-in-progress text-white'
+                      : 'bg-status-done text-white'
+                  : 'bg-border text-text hover:bg-border/80'
+                const Icon = isPending ? IconCircle : isInProgress ? IconPlay : IconCheckSquare
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={(e) => handleStatus(e, value)}
+                    className={`min-h-[44px] px-4 rounded-xl text-sm font-medium flex items-center gap-2 cursor-pointer ${btnClass}`}
+                  >
+                    <Icon size={18} />
+                    {label}
+                  </button>
+                )
+              })}
+            </div>
+            {onTaskDelete && (
+              <button
+                type="button"
+                onClick={handleDelete}
+                title="Delete task"
+                className="min-h-[44px] px-3 rounded-xl flex items-center justify-center shrink-0 bg-transparent text-text-muted hover:bg-red-500/20 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+              >
+                <IconTrash size={20} />
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -659,6 +687,7 @@ export function PlannerPage() {
   const [modalTask, setModalTask] = useState(null)
   const [desktopTasksCollapsed, setDesktopTasksCollapsed] = useState(false)
   const [desktopHabitsCollapsed, setDesktopHabitsCollapsed] = useState(false)
+  const [desktopShowCompleted, setDesktopShowCompleted] = useState(false)
 
   const weekDays = getWeekDaysForOffset(weekOffset)
   const mobileWeekDays = getWeekDays(mobileDateStr)
@@ -677,6 +706,15 @@ export function PlannerPage() {
     }
     setTouchStartX(null)
   }
+
+  const handleTaskDelete = useCallback(
+    async (taskId) => {
+      await fetchApi(`/api/tasks/${taskId}`, { method: 'DELETE' })
+      refetch()
+      setModalTask((current) => (current?.id === taskId ? null : current))
+    },
+    [fetchApi, refetch]
+  )
 
   const handleTaskStatusChange = useCallback(
     async (taskId, status) => {
@@ -819,10 +857,15 @@ export function PlannerPage() {
           <button
             type="button"
             onClick={() => setDesktopTasksCollapsed((c) => !c)}
-            className="w-full flex items-center justify-between gap-2 py-2 text-left font-semibold text-base text-text"
+            className="w-full flex items-center justify-between gap-3 py-2 text-left font-semibold text-base text-text"
           >
             <span>Tasks</span>
-            {desktopTasksCollapsed ? <IconChevronDown size={22} /> : <IconChevronUp size={22} />}
+            <span className="flex items-center gap-3 shrink-0">
+              {!desktopTasksCollapsed && (
+                <Switch checked={desktopShowCompleted} onChange={setDesktopShowCompleted} label="Show completed" />
+              )}
+              {desktopTasksCollapsed ? <IconChevronDown size={22} /> : <IconChevronUp size={22} />}
+            </span>
           </button>
           {!desktopTasksCollapsed && (
             <div className="grid grid-cols-7 gap-3 mt-2 min-h-[120px]">
@@ -831,6 +874,7 @@ export function PlannerPage() {
                   key={dayStr}
                   dayStr={dayStr}
                   tasks={tasks}
+                  showCompleted={desktopShowCompleted}
                   onTaskStatusChange={handleTaskStatusChange}
                   onTaskClick={setModalTask}
                   refetch={refetch}
@@ -902,6 +946,7 @@ export function PlannerPage() {
           onClose={() => setModalTask(null)}
           onStatusChange={handleTaskStatusChange}
           onTaskUpdate={handleTaskUpdate}
+          onTaskDelete={handleTaskDelete}
           refetch={refetch}
         />
       )}

@@ -18,7 +18,7 @@ export function getPriorityTagClass(priority) {
 
 /**
  * Reusable task card: title, 2-line description, priority/due tags, status buttons.
- * Props: task, dayStr (optional; if provided, due tag is hidden when it's the same day), onStatusChange(taskId, status), onOpenModal(task), refetch().
+ * Props: task, dayStr (optional), onStatusChange(taskId, status), onOpenModal(task), refetch().
  */
 export function TaskCard({ task, dayStr, onStatusChange, onOpenModal, refetch }) {
   const name = str(field(task, 'Task Name', 'Task Name')) || '(untitled)'

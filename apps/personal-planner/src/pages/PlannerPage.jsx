@@ -1,15 +1,16 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Link } from 'react-router-dom'
-import { useApi, Spinner, PageHeader, Card, IconCheckSquare, IconCircle } from '@tools/shared'
-import { field, str, dateStr, getWeekDays, getWeekdayIndex } from '@tools/shared'
+import { useApi, Spinner, PageHeader, Card, IconChevronDown, IconChevronUp, IconStar, IconFlame } from '@tools/shared'
+import { field, str, dateStr, arr, getWeekDays, getWeekdayIndex, isPastDue } from '@tools/shared'
 import { getTaskStatusGroup } from '../lib/taskStatus'
 
 const DAY_NAMES = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
+const MONTH_NAMES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
 const STATUS_OPTIONS = [
   { value: 'Pending', label: 'Pendiente' },
   { value: 'In Progress', label: 'En progreso' },
   { value: 'Done', label: 'Hecho' },
 ]
+const MIN_HABITS_FOR_FIRE = 5
 
 function usePlannerData() {
   const { fetchApi } = useApi()
@@ -63,17 +64,23 @@ function isHabitEntrySuccessful(entry) {
   return v === true || String(v).toLowerCase() === 'yes' || v === '1'
 }
 
-function completionPct(tasksForDay, habits, habitTracking, dayStr) {
+function formatDayDate(dayStr) {
+  if (!dayStr) return ''
+  const d = new Date(dayStr + 'T12:00:00')
+  return `${d.getDate()} ${MONTH_NAMES[d.getMonth()]}`
+}
+
+function dayHeaderStars(tasksForDay, habits, habitTracking, dayStr) {
   const totalTasks = tasksForDay.length
   const tasksDone = tasksForDay.filter((t) => getTaskStatusGroup(t) === 'done').length
-  const totalHabits = habits.length
-  const habitsDone = habits.filter((h) => {
+  const allTasksDone = totalTasks > 0 && tasksDone === totalTasks
+  const habitsDoneCount = habits.filter((h) => {
     const entry = getHabitEntryForDay(habitTracking, h.id, dayStr)
     return entry && isHabitEntrySuccessful(entry)
   }).length
-  const total = totalTasks + totalHabits
-  if (total === 0) return 0
-  return Math.round(((tasksDone + habitsDone) / total) * 100)
+  const hasFire = allTasksDone && habitsDoneCount >= MIN_HABITS_FOR_FIRE
+  const hasStar = allTasksDone
+  return { hasStar, hasFire }
 }
 
 function DayColumn({
@@ -84,56 +91,110 @@ function DayColumn({
   habitTracking,
   onTaskStatusChange,
   onHabitToggle,
+  onTaskClick,
   refetch,
 }) {
+  const [tasksCollapsed, setTasksCollapsed] = useState(false)
+  const [habitsCollapsed, setHabitsCollapsed] = useState(false)
+
   const tasksForDay = getTasksForDay(tasks, dayStr)
-  const pct = completionPct(tasksForDay, habits, habitTracking, dayStr)
+  const tasksDone = tasksForDay.filter((t) => getTaskStatusGroup(t) === 'done').length
+  const tasksPct = tasksForDay.length === 0 ? 0 : Math.round((tasksDone / tasksForDay.length) * 100)
+  const habitsDoneCount = habits.filter((h) => {
+    const entry = getHabitEntryForDay(habitTracking, h.id, dayStr)
+    return entry && isHabitEntrySuccessful(entry)
+  }).length
+  const { hasStar, hasFire } = dayHeaderStars(tasksForDay, habits, habitTracking, dayStr)
   const dayLabel = DAY_NAMES[dayIndex]
-  const dateLabel = dayStr ? new Date(dayStr + 'T12:00:00').getDate() : ''
 
   return (
-    <div className="flex flex-col min-w-0 rounded-xl border-2 border-border bg-surface overflow-hidden">
-      <div className="p-3 border-b border-border bg-background/50">
-        <div className="font-semibold text-text">{dayLabel}</div>
-        <div className="text-sm text-text-muted">{dateLabel}</div>
-      </div>
-      <div className="p-3">
-        <div className="flex items-center gap-2">
-          <div className="flex-1 h-3 rounded-full bg-border overflow-hidden">
-            <div
-              className="h-full rounded-full bg-primary transition-all"
-              style={{ width: `${pct}%` }}
-              role="progressbar"
-              aria-valuenow={pct}
-              aria-valuemin={0}
-              aria-valuemax={100}
-            />
-          </div>
-          <span className="text-sm font-bold text-text shrink-0">{pct}%</span>
+    <div className="flex flex-col min-w-0 overflow-y-auto overflow-x-hidden px-2">
+      {/* Day header - solo un elemento, sin contenedor visual */}
+      <div className="py-2 shrink-0 flex items-center justify-between gap-2">
+        <div>
+          <div className="font-bold text-text">{dayLabel}</div>
+          <div className="text-sm text-text-muted">{formatDayDate(dayStr)}</div>
+        </div>
+        <div className="flex items-center gap-0.5 shrink-0">
+          {hasStar && (
+            <span className="text-amber-500" title={hasFire ? 'Tareas completadas + 5+ hábitos' : 'Todas las tareas completadas'}>
+              <IconStar size={18} />
+            </span>
+          )}
+          {hasFire && (
+            <span className="text-orange-500" title="5+ hábitos buenos">
+              <IconFlame size={18} />
+            </span>
+          )}
         </div>
       </div>
-      <div className="flex-1 overflow-y-auto px-3 pb-3 space-y-4">
-        <section>
-          <h3 className="text-xs font-semibold text-text-muted uppercase tracking-wide mb-2">Tareas</h3>
-          <ul className="space-y-2">
+
+      {/* Tasks - cabecera sin borde ni fondo, ancho total */}
+      <button
+        type="button"
+        onClick={() => setTasksCollapsed((c) => !c)}
+        className="w-full flex items-center justify-between gap-2 py-1.5 text-left font-semibold text-sm text-text"
+      >
+        <span>Tasks ({tasksForDay.length})</span>
+        {tasksCollapsed ? <IconChevronDown size={18} /> : <IconChevronUp size={18} />}
+      </button>
+      {!tasksCollapsed && (
+        <>
+          <div className="w-full flex items-center gap-2 py-1">
+            <div className="flex-1 h-2 rounded-full bg-border overflow-hidden">
+              <div
+                className="h-full rounded-full bg-primary transition-all"
+                style={{ width: `${tasksPct}%` }}
+                role="progressbar"
+                aria-valuenow={tasksPct}
+                aria-valuemin={0}
+                aria-valuemax={100}
+              />
+            </div>
+            <span className="text-xs font-medium text-text-muted shrink-0">{tasksPct}%</span>
+          </div>
+          <ul className="space-y-2 w-full">
             {tasksForDay.length === 0 && (
-              <li className="text-sm text-text-muted">Ninguna tarea</li>
+              <li className="text-xs text-text-muted py-1">Ninguna tarea</li>
             )}
             {tasksForDay.map((task) => (
               <PlannerTaskCard
                 key={task.id}
                 task={task}
                 onStatusChange={onTaskStatusChange}
+                onOpenModal={onTaskClick}
                 refetch={refetch}
               />
             ))}
           </ul>
-        </section>
-        <section>
-          <h3 className="text-xs font-semibold text-text-muted uppercase tracking-wide mb-2">Hábitos</h3>
-          <ul className="space-y-2">
+        </>
+      )}
+
+      {/* Habits - cabecera sin borde ni fondo, ancho total */}
+      <button
+        type="button"
+        onClick={() => setHabitsCollapsed((c) => !c)}
+        className="w-full flex items-center justify-between gap-2 py-1.5 text-left font-semibold text-sm text-text mt-2"
+      >
+        <span>Habits</span>
+        {habitsCollapsed ? <IconChevronDown size={18} /> : <IconChevronUp size={18} />}
+      </button>
+      {!habitsCollapsed && (
+        <>
+          <div className="w-full py-1 flex items-center gap-0.5">
+            {[1, 2, 3, 4, 5].map((n) => (
+              <span
+                key={n}
+                className={`shrink-0 ${n <= habitsDoneCount ? (n === 5 ? 'text-orange-500' : 'text-amber-500') : 'text-border'}`}
+                title={n === 5 ? '5+ hábitos' : `Punto ${n}`}
+              >
+                {n === 5 ? <IconFlame size={14} /> : <IconStar size={12} />}
+              </span>
+            ))}
+          </div>
+          <ul className="space-y-2 w-full">
             {habits.length === 0 && (
-              <li className="text-sm text-text-muted">Ningún hábito</li>
+              <li className="text-xs text-text-muted py-1">Ningún hábito</li>
             )}
             {habits.map((habit) => (
               <PlannerHabitRow
@@ -146,58 +207,100 @@ function DayColumn({
               />
             ))}
           </ul>
-        </section>
-      </div>
+        </>
+      )}
     </div>
   )
 }
 
-function PlannerTaskCard({ task, onStatusChange, refetch }) {
+function PlannerTaskCard({ task, onStatusChange, onOpenModal, refetch }) {
   const name = str(field(task, 'Task Name', 'Task Name')) || '(sin nombre)'
   const statusGroup = getTaskStatusGroup(task)
+  const priority = str(field(task, 'Priority', 'Priority'))
+  const dueStr = dateStr(field(task, 'Due Date', 'Due Date'))
+  const isOverdue = dueStr && statusGroup !== 'done' && isPastDue(dueStr)
+  const description = str(field(task, 'Description', 'Description'))
+  const assignee = str(field(task, 'Assignee', 'Assignee'))
+  const category = str(field(task, 'Category', 'Category'))
 
-  const handleStatus = async (newStatus) => {
+  const handleStatus = async (e, newStatus) => {
+    e.stopPropagation()
     try {
       await onStatusChange(task.id, newStatus)
       refetch()
-    } catch (e) {
-      console.error(e)
+    } catch (err) {
+      console.error(err)
     }
   }
 
+  const tags = (
+    <div className="flex flex-wrap gap-1.5 mt-1">
+      {priority && (
+        <span className="inline-flex px-1.5 py-0.5 rounded text-[10px] font-medium bg-border text-text-muted">
+          {priority}
+        </span>
+      )}
+      {isOverdue && (
+        <span className="inline-flex px-1.5 py-0.5 rounded text-[10px] font-medium bg-red-500/20 text-red-600 dark:text-red-400">
+          Vence: {dueStr}
+        </span>
+      )}
+      {dueStr && !isOverdue && (
+        <span className="inline-flex px-1.5 py-0.5 rounded text-[10px] text-text-muted">
+          {dueStr}
+        </span>
+      )}
+    </div>
+  )
+
+  const expandedContent = (description || assignee || category) && (
+    <div className="text-xs text-text-muted space-y-0.5">
+      {description && <div>Descripción: {description}</div>}
+      {assignee && <div>Asignado: {assignee}</div>}
+      {category && <div>Clasificación: {category}</div>}
+    </div>
+  )
+
   return (
-    <li>
-      <Card
-        title={name}
-        icon={<IconCheckSquare size={18} />}
-        className={statusGroup === 'done' ? 'opacity-90' : ''}
-        buttons={
-          <div className="flex flex-wrap gap-1">
-            {STATUS_OPTIONS.map(({ value, label }) => {
-              const isActive =
-                (value === 'Done' && statusGroup === 'done') ||
-                (value === 'In Progress' && statusGroup === 'in_progress') ||
-                (value === 'Pending' && statusGroup === 'pending')
-              return (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => handleStatus(value)}
-                  className={`min-h-[36px] px-2 py-1 rounded-lg text-xs font-medium ${
-                    isActive ? 'bg-primary text-white' : 'bg-border/50 text-text hover:bg-border'
-                  }`}
-                >
-                  {label}
-                </button>
-              )
-            })}
-          </div>
-        }
+    <li className="w-full">
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={() => onOpenModal(task)}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpenModal(task) } }}
+        className="w-full cursor-pointer"
       >
-        <Link to={`/tasks/${task.id}`} className="text-sm text-primary hover:underline">
-          Ver detalle
-        </Link>
-      </Card>
+        <Card
+          title={name}
+          expandable={!!(description || assignee || category)}
+          expandedContent={expandedContent}
+          buttons={
+            <div className="flex flex-wrap gap-1" onClick={(e) => e.stopPropagation()}>
+              {STATUS_OPTIONS.map(({ value, label }) => {
+                const isActive =
+                  (value === 'Done' && statusGroup === 'done') ||
+                  (value === 'In Progress' && statusGroup === 'in_progress') ||
+                  (value === 'Pending' && statusGroup === 'pending')
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={(e) => handleStatus(e, value)}
+                    className={`px-2 py-0.5 rounded text-[10px] font-medium ${
+                      isActive ? 'bg-primary text-white' : 'bg-border/50 text-text hover:bg-border'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                )
+              })}
+            </div>
+          }
+          className="w-full"
+        >
+          {tags}
+        </Card>
+      </div>
     </li>
   )
 }
@@ -207,33 +310,122 @@ function PlannerHabitRow({ habit, dayStr, habitTracking, onToggle, refetch }) {
   const entry = getHabitEntryForDay(habitTracking, habit.id, dayStr)
   const isDone = entry && isHabitEntrySuccessful(entry)
 
-  const handleToggle = async () => {
+  const handleToggle = async (e) => {
+    e.stopPropagation()
     try {
       await onToggle(habit.id, dayStr, isDone, entry?.id)
       refetch()
-    } catch (e) {
-      console.error(e)
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  const checkbox = (
+    <button
+      type="button"
+      onClick={handleToggle}
+      aria-pressed={isDone}
+      className={`shrink-0 w-[10px] h-[10px] rounded-sm border flex items-center justify-center transition-colors ${
+        isDone
+          ? 'bg-primary border-primary text-white'
+          : 'bg-surface border-border text-transparent hover:border-primary'
+      }`}
+    >
+      {isDone && <span className="text-[6px] leading-none">✓</span>}
+    </button>
+  )
+
+  return (
+    <li className="w-full">
+      <Card icon={checkbox} title={name} className={`w-full ${isDone ? 'opacity-90' : ''}`} />
+    </li>
+  )
+}
+
+function TaskModal({ task, onClose, onStatusChange, refetch }) {
+  if (!task) return null
+  const name = str(field(task, 'Task Name', 'Task Name')) || '(sin nombre)'
+  const statusGroup = getTaskStatusGroup(task)
+  const rows = [
+    ['Descripción', str(field(task, 'Description', 'Description'))],
+    ['Asignado', str(field(task, 'Assignee', 'Assignee'))],
+    ['Clasificación', str(field(task, 'Category', 'Category'))],
+    ['Prioridad', str(field(task, 'Priority', 'Priority'))],
+    ['Estado', str(field(task, 'Status', 'Status'))],
+    ['Fecha límite', dateStr(field(task, 'Due Date', 'Due Date'))],
+  ]
+
+  const handleStatus = async (newStatus) => {
+    try {
+      await onStatusChange(task.id, newStatus)
+      refetch()
+    } catch (err) {
+      console.error(err)
     }
   }
 
   return (
-    <li className="flex items-center gap-2 rounded-lg border border-border bg-background/50 p-2">
-      <button
-        type="button"
-        onClick={handleToggle}
-        aria-pressed={isDone}
-        className={`shrink-0 w-8 h-8 rounded-lg border-2 flex items-center justify-center font-bold text-sm transition-colors ${
-          isDone
-            ? 'bg-primary text-white border-primary'
-            : 'bg-surface border-border text-text-muted hover:border-primary'
-        }`}
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="task-modal-title"
+    >
+      <div
+        className="bg-surface rounded-2xl border-2 border-border shadow-xl max-w-lg w-full max-h-[90vh] overflow-hidden flex flex-col"
+        onClick={(e) => e.stopPropagation()}
       >
-        {isDone ? '✓' : '○'}
-      </button>
-      <span className={`flex-1 min-w-0 text-sm ${isDone ? 'text-text line-through' : 'text-text'}`}>
-        {name}
-      </span>
-    </li>
+        <div className="p-4 border-b border-border flex items-center justify-between gap-2">
+          <h2 id="task-modal-title" className="font-bold text-lg text-text truncate">
+            {name}
+          </h2>
+          <button
+            type="button"
+            onClick={onClose}
+            className="shrink-0 p-2 rounded-lg text-text-muted hover:bg-border"
+            aria-label="Cerrar"
+          >
+            ×
+          </button>
+        </div>
+        <div className="p-4 overflow-y-auto flex-1">
+          <dl className="grid gap-2">
+            {rows.map(([label, value]) =>
+              value ? (
+                <div key={label}>
+                  <dt className="text-xs text-text-muted">{label}</dt>
+                  <dd className="text-sm text-text">{value}</dd>
+                </div>
+              ) : null
+            )}
+          </dl>
+          <div className="mt-4 pt-4 border-t border-border">
+            <p className="text-xs text-text-muted mb-2">Cambiar estado</p>
+            <div className="flex flex-wrap gap-2">
+              {STATUS_OPTIONS.map(({ value, label }) => {
+                const isActive =
+                  (value === 'Done' && statusGroup === 'done') ||
+                  (value === 'In Progress' && statusGroup === 'in_progress') ||
+                  (value === 'Pending' && statusGroup === 'pending')
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => handleStatus(value)}
+                    className={`min-h-[44px] px-4 rounded-xl text-sm font-medium ${
+                      isActive ? 'bg-primary text-white' : 'bg-border text-text hover:bg-border/80'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -246,6 +438,7 @@ export function PlannerPage() {
   const defaultDayIndex = getWeekdayIndex(todayStr)
   const [mobileDayIndex, setMobileDayIndex] = useState(defaultDayIndex >= 0 ? defaultDayIndex : 0)
   const [touchStartX, setTouchStartX] = useState(null)
+  const [modalTask, setModalTask] = useState(null)
 
   const handleTouchStart = (e) => {
     setTouchStartX(e.targetTouches[0].clientX)
@@ -321,6 +514,7 @@ export function PlannerPage() {
       habitTracking={habitTracking}
       onTaskStatusChange={handleTaskStatusChange}
       onHabitToggle={handleHabitToggle}
+      onTaskClick={setModalTask}
       refetch={refetch}
     />
   ))
@@ -333,12 +527,10 @@ export function PlannerPage() {
         loading={loading}
       />
 
-      {/* Desktop: 7 columns */}
       <div className="hidden md:grid md:grid-cols-7 gap-3 overflow-x-auto">
         {dayColumns}
       </div>
 
-      {/* Mobile: single column with swipe / arrows */}
       <div className="md:hidden">
         <div className="flex items-center justify-between gap-2 mb-3">
           <button
@@ -351,7 +543,7 @@ export function PlannerPage() {
             ←
           </button>
           <span className="font-semibold text-text">
-            {DAY_NAMES[mobileDayIndex]} {weekDays[mobileDayIndex] ? new Date(weekDays[mobileDayIndex] + 'T12:00:00').getDate() : ''}
+            {DAY_NAMES[mobileDayIndex]} {formatDayDate(weekDays[mobileDayIndex])}
           </span>
           <button
             type="button"
@@ -371,6 +563,15 @@ export function PlannerPage() {
           {dayColumns[mobileDayIndex]}
         </div>
       </div>
+
+      {modalTask && (
+        <TaskModal
+          task={modalTask}
+          onClose={() => setModalTask(null)}
+          onStatusChange={handleTaskStatusChange}
+          refetch={refetch}
+        />
+      )}
     </div>
   )
 }

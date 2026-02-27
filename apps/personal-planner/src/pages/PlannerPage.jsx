@@ -83,6 +83,19 @@ function dayHeaderStars(tasksForDay, habits, habitTracking, dayStr) {
   return { hasStar, hasFire }
 }
 
+/** Agrupa hábitos por categoría. Clave '' para sin categoría. Orden: categorías con nombre primero (alfabético), sin categoría al final. */
+function getHabitsByCategory(habits) {
+  const map = new Map()
+  for (const h of habits) {
+    const cat = str(field(h, 'Category', 'Category')) || ''
+    if (!map.has(cat)) map.set(cat, [])
+    map.get(cat).push(h)
+  }
+  const withName = [...map.entries()].filter(([k]) => k !== '').sort((a, b) => a[0].localeCompare(b[0]))
+  const withoutName = map.get('') || []
+  return withoutName.length ? [...withName, ['', withoutName]] : withName
+}
+
 function DayColumn({
   dayStr,
   dayIndex,
@@ -192,21 +205,30 @@ function DayColumn({
               </span>
             ))}
           </div>
-          <ul className="space-y-2 w-full">
+          <div className="w-full space-y-3">
             {habits.length === 0 && (
-              <li className="text-xs text-text-muted py-1">Ningún hábito</li>
+              <p className="text-xs text-text-muted py-1">Ningún hábito</p>
             )}
-            {habits.map((habit) => (
-              <PlannerHabitRow
-                key={habit.id}
-                habit={habit}
-                dayStr={dayStr}
-                habitTracking={habitTracking}
-                onToggle={onHabitToggle}
-                refetch={refetch}
-              />
+            {getHabitsByCategory(habits).map(([categoryLabel, habitsInCategory]) => (
+              <div key={categoryLabel || '_sin_categoria'} className="space-y-0.5">
+                {categoryLabel && (
+                  <p className="text-xs font-medium text-text-muted px-0.5 py-0.5">{categoryLabel}</p>
+                )}
+                <ul className="space-y-0.5 w-full">
+                  {habitsInCategory.map((habit) => (
+                    <PlannerHabitRow
+                      key={habit.id}
+                      habit={habit}
+                      dayStr={dayStr}
+                      habitTracking={habitTracking}
+                      onToggle={onHabitToggle}
+                      refetch={refetch}
+                    />
+                  ))}
+                </ul>
+              </div>
             ))}
-          </ul>
+          </div>
         </>
       )}
     </div>
@@ -336,8 +358,9 @@ function PlannerHabitRow({ habit, dayStr, habitTracking, onToggle, refetch }) {
   )
 
   return (
-    <li className="w-full">
-      <Card icon={checkbox} title={name} className={`w-full ${isDone ? 'opacity-90' : ''}`} />
+    <li className={`w-full flex items-center gap-2 py-0.5 min-h-0 ${isDone ? 'opacity-90' : ''}`}>
+      {checkbox}
+      <span className="text-sm text-text truncate">{name}</span>
     </li>
   )
 }

@@ -66,6 +66,20 @@ export function isPastDue(d) {
   return only < todayStr
 }
 
+/** Date is today or within the next N days (inclusive). */
+export function isInNextDays(d, days) {
+  const only = toLocalDateStr(d)
+  if (!only || days < 0) return false
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const date = toDate(only)
+  if (!date) return false
+  date.setHours(0, 0, 0, 0)
+  const end = new Date(today)
+  end.setDate(end.getDate() + days)
+  return date >= today && date <= end
+}
+
 /** Monday 00:00 of the week containing the given date. */
 export function getWeekStart(d) {
   const x = d ? (typeof d === 'string' ? new Date(d) : new Date(d.getTime())) : new Date()

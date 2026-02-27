@@ -1,25 +1,32 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import { useApi, Spinner, PageHeader, Card, IconTarget, IconCalendar, IconTag, IconCircle, IconPlay, IconCheckSquare, IconTrash } from '@tools/shared'
+import { useApi, Spinner, PageHeader, Card, CardList, IconTarget, IconCalendar, IconTag, IconCircle, IconPlay, IconCheckSquare, IconTrash } from '@tools/shared'
 import { field, str, dateStr, arr, num } from '@tools/shared'
 import { getTaskStatusGroup } from '../lib/taskStatus'
 import { getPriorityTagClass, STATUS_OPTIONS } from '../components/TaskCard'
+import { TaskModal } from '../components/TaskModal'
 
-function TaskCardLink({ task, getDue }) {
+const GROUP_ORDER = ['in_progress', 'pending', 'done']
+const GROUP_LABELS = { in_progress: 'In progress', pending: 'Pending', done: 'Done' }
+
+function TaskCardClickable({ task, getDue, onClick }) {
   const name = str(field(task, 'Task Name', 'Task Name')) || '(untitled)'
-  const category = str(field(task, 'Category', 'Category'))
+  const description = str(field(task, 'Description', 'Description')) || ''
   const priority = str(field(task, 'Priority', 'Priority'))
   const due = getDue(task)
   const statusGroup = getTaskStatusGroup(task)
   const isDone = statusGroup === 'done'
 
   return (
-    <Link to={`/tasks/${task.id}`} className="block">
+    <button type="button" onClick={() => onClick?.(task)} className="block w-full text-left">
       <Card
         title={name}
         icon={<IconCheckSquare size={20} />}
         className={isDone ? 'opacity-90' : ''}
       >
+        {description && (
+          <p className="text-sm text-text-muted line-clamp-2 mb-2">{description}</p>
+        )}
         <div className="flex flex-wrap items-center gap-2">
           {priority && (
             <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getPriorityTagClass(priority)}`}>
@@ -31,13 +38,12 @@ function TaskCardLink({ task, getDue }) {
               {due}
             </span>
           )}
-          {category && <span className="text-sm text-text-muted">{category}</span>}
         </div>
         {isDone && (
           <span className="inline-block mt-1 text-xs text-green-600 dark:text-green-400">Completed</span>
         )}
       </Card>
-    </Link>
+    </button>
   )
 }
 
@@ -51,6 +57,7 @@ export function KeyResultDetail() {
   const [error, setError] = useState(null)
   const [editingField, setEditingField] = useState(null)
   const [editValue, setEditValue] = useState('')
+  const [modalTask, setModalTask] = useState(null)
 
   const refetch = useCallback((silent = false) => {
     if (!silent) {
@@ -112,6 +119,40 @@ export function KeyResultDetail() {
       console.error(err)
     }
   }, [fetchApi, item, navigate])
+
+  const handleTaskStatusChange = useCallback(async (taskId, status) => {
+    try {
+      await fetchApi(`/api/tasks/${taskId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ Status: status }),
+      })
+    } catch (err) {
+      console.error(err)
+    }
+    refetch(true)
+  }, [fetchApi, refetch])
+
+  const handleTaskUpdate = useCallback(async (taskId, fields) => {
+    try {
+      await fetchApi(`/api/tasks/${taskId}`, {
+        method: 'PATCH',
+        body: JSON.stringify(fields),
+      })
+      refetch(true)
+    } catch (err) {
+      console.error(err)
+    }
+  }, [fetchApi, refetch])
+
+  const handleTaskDelete = useCallback(async (taskId) => {
+    try {
+      await fetchApi(`/api/tasks/${taskId}`, { method: 'DELETE' })
+      refetch(true)
+      setModalTask((current) => (current?.id === taskId ? null : current))
+    } catch (err) {
+      console.error(err)
+    }
+  }, [fetchApi, refetch])
 
   const taskStats = useMemo(() => {
     const done = tasks.filter((t) => getTaskStatusGroup(t) === 'done').length
@@ -248,6 +289,7 @@ export function KeyResultDetail() {
 
             {/* Current value */}
             <div className="flex items-center gap-2 text-sm">
+              <span className="text-text-muted shrink-0"><IconCircle size={18} /></span>
               <span className="text-text-muted shrink-0">Current value:</span>
               {editingField === 'currentValue' ? (
                 <input
@@ -273,6 +315,7 @@ export function KeyResultDetail() {
 
             {/* Target value */}
             <div className="flex items-center gap-2 text-sm">
+              <span className="text-text-muted shrink-0"><IconTarget size={18} /></span>
               <span className="text-text-muted shrink-0">Target value:</span>
               {editingField === 'targetValue' ? (
                 <input
@@ -298,6 +341,7 @@ export function KeyResultDetail() {
 
             {/* Unit */}
             <div className="flex items-center gap-2 text-sm">
+              <span className="text-text-muted shrink-0"><IconTag size={18} /></span>
               <span className="text-text-muted shrink-0">Unit:</span>
               {editingField === 'unit' ? (
                 <input
@@ -323,6 +367,7 @@ export function KeyResultDetail() {
 
             {/* Progress % */}
             <div className="flex items-center gap-2 text-sm">
+              <span className="text-text-muted shrink-0"><IconCheckSquare size={18} /></span>
               <span className="text-text-muted shrink-0">Progress (%):</span>
               {editingField === 'progress' ? (
                 <input
@@ -376,6 +421,7 @@ export function KeyResultDetail() {
             {/* Linked objective */}
             {objectiveLink && (
               <div className="flex items-center gap-2 text-sm pt-1">
+                <span className="text-text-muted shrink-0"><IconTarget size={18} /></span>
                 <span className="text-text-muted shrink-0">Objective:</span>
                 <Link to={`/objectives/${objectiveLink}`} className="text-primary hover:underline">
                   View objective →
@@ -459,17 +505,31 @@ export function KeyResultDetail() {
         </div>
 
         {tasks.length > 0 ? (
-          <ul className="space-y-2 list-none p-0 m-0">
-            {tasks.map((task) => (
-              <li key={task.id}>
-                <TaskCardLink task={task} getDue={getDue} />
-              </li>
-            ))}
-          </ul>
+          <CardList
+            items={tasks}
+            groupBy={getTaskStatusGroup}
+            groupOrder={GROUP_ORDER}
+            groupLabels={GROUP_LABELS}
+            renderItem={(task) => (
+              <TaskCardClickable key={task.id} task={task} getDue={getDue} onClick={setModalTask} />
+            )}
+            initialCollapsed={{ in_progress: false, pending: false, done: true }}
+          />
         ) : (
           <p className="text-text-muted">No tasks linked to this key result.</p>
         )}
       </section>
+
+      {modalTask && (
+        <TaskModal
+          task={tasks.find((t) => t.id === modalTask.id) || modalTask}
+          onClose={() => setModalTask(null)}
+          onStatusChange={handleTaskStatusChange}
+          onTaskUpdate={handleTaskUpdate}
+          onTaskDelete={handleTaskDelete}
+          refetch={() => refetch(true)}
+        />
+      )}
     </div>
   )
 }

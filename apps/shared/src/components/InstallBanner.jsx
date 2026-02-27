@@ -8,7 +8,7 @@ import { useInstallPrompt } from '../hooks/useInstallPrompt.js'
  * @param {string} [props.className] - Extra class for the container
  * @param {'banner'|'button'} [props.variant] - 'banner' = full-width bar, 'button' = single button
  */
-export function InstallBanner({ appName = 'esta app', className = '', variant = 'banner' }) {
+export function InstallBanner({ appName = 'this app', className = '', variant = 'banner' }) {
   const { canInstall, install } = useInstallPrompt()
   if (!canInstall) return null
 
@@ -23,7 +23,7 @@ export function InstallBanner({ appName = 'esta app', className = '', variant = 
         onClick={handleInstall}
         className={`rounded-xl px-4 py-2.5 text-sm font-semibold bg-primary text-white hover:bg-primary-hover transition-colors touch-manipulation ${className}`}
       >
-        Añadir a pantalla de inicio
+        Add to home screen
       </button>
     )
   }
@@ -32,17 +32,17 @@ export function InstallBanner({ appName = 'esta app', className = '', variant = 
     <div
       className={`flex items-center justify-between gap-3 rounded-xl px-4 py-3 bg-surface border border-border text-text ${className}`}
       role="region"
-      aria-label="Instalar aplicación"
+      aria-label="Install app"
     >
       <span className="text-sm font-medium">
-        Instala {appName} para usarla como app
+        Install {appName} to use it as an app
       </span>
       <button
         type="button"
         onClick={handleInstall}
         className="shrink-0 rounded-lg px-3 py-2 text-sm font-semibold bg-primary text-white hover:bg-primary-hover transition-colors touch-manipulation"
       >
-        Instalar
+        Install
       </button>
     </div>
   )

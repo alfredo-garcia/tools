@@ -146,8 +146,8 @@ export function Dashboard() {
     progress: num(field(kr, 'Progress (%)', 'Progress', 'Progress %')) ?? 0,
   }))
   const statusPie = [
-    { name: 'Completadas', value: weekTasksDone.length, color: '#f97316' },
-    { name: 'Pendientes', value: weekTasks.length - weekTasksDone.length, color: '#737373' },
+    { name: 'Completed', value: weekTasksDone.length, color: '#f97316' },
+    { name: 'To do', value: weekTasks.length - weekTasksDone.length, color: '#737373' },
   ].filter((d) => d.value > 0)
 
   return (
@@ -156,31 +156,31 @@ export function Dashboard() {
 
       <section>
         <h2 className="text-base font-semibold text-text-muted mb-4">
-          Resumen de cumplimiento
+          Completion summary
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <KpiCard
             title="OKR (media KR)"
             value={`${okrPct}%`}
-            subtitle={`${objectives.length} objetivos, ${keyResults.length} key results`}
+            subtitle={`${objectives.length} objectives, ${keyResults.length} key results`}
             to="/analysis/okr"
           />
           <KpiCard
             title="Key Results"
             value={`${krPct}%`}
-            subtitle={`${krDone} / ${krTotal} completados`}
+            subtitle={`${krDone} / ${krTotal} completed`}
             to="/key-results"
           />
           <KpiCard
-            title="Todos semanales"
+            title="Weekly to-dos"
             value={`${todosPct}%`}
-            subtitle={`${weekTasksDone.length} / ${weekTasks.length} esta semana`}
+            subtitle={`${weekTasksDone.length} / ${weekTasks.length} this week`}
             to="/analysis/tasks"
           />
           <KpiCard
-            title="Hábitos (esta semana)"
+            title="Habits (this week)"
             value={`${habitsPct}%`}
-            subtitle={`${habitSuccess} / ${thisWeekTracking.length} registros exitosos`}
+            subtitle={`${habitSuccess} / ${thisWeekTracking.length} successful logs`}
             to="/analysis/habits"
           />
         </div>
@@ -189,16 +189,16 @@ export function Dashboard() {
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="rounded-2xl border border-2 border-border bg-surface p-5">
           <h3 className="text-base font-semibold text-text mb-4">
-            Progreso Key Results (top 8)
+            Key Results progress (top 8)
           </h3>
           {okrChartData.length === 0 ? (
-            <p className="text-text-muted text-sm">Sin datos</p>
+            <p className="text-text-muted text-sm">No data</p>
           ) : (
             <ResponsiveContainer width="100%" height={260}>
               <BarChart data={okrChartData} layout="vertical" margin={{ left: 4, right: 20 }}>
                 <XAxis type="number" domain={[0, 100]} tickFormatter={(v) => `${v}%`} />
                 <YAxis type="category" dataKey="name" width={80} tick={{ fontSize: 12 }} />
-                <Tooltip formatter={(v) => [`${v}%`, 'Progreso']} />
+                <Tooltip formatter={(v) => [`${v}%`, 'Progress']} />
                 <Bar dataKey="progress" fill="#f97316" radius={[0, 4, 4, 0]} />
               </BarChart>
             </ResponsiveContainer>
@@ -206,10 +206,10 @@ export function Dashboard() {
         </div>
         <div className="rounded-2xl border border-2 border-border bg-surface p-5">
           <h3 className="text-base font-semibold text-text mb-4">
-            Tareas esta semana
+            Tasks this week
           </h3>
           {statusPie.length === 0 ? (
-            <p className="text-text-muted text-sm">Sin tareas esta semana</p>
+            <p className="text-text-muted text-sm">No tasks this week</p>
           ) : (
             <ResponsiveContainer width="100%" height={260}>
               <PieChart>
@@ -242,15 +242,15 @@ export function Dashboard() {
           className="rounded-2xl border border-2 border-border bg-surface p-5 hover:shadow-md transition-shadow"
         >
           <h3 className="text-base font-semibold text-text">
-            Objetivos recientes
+            Recent objectives
           </h3>
           <p className="text-sm text-text-muted mt-1">
-            {objectives.length} objetivos · Ver todos
+            {objectives.length} objectives · View all
           </p>
           <ul className="mt-3 space-y-1">
             {objectives.slice(0, 3).map((o) => (
               <li key={o.id} className="text-sm text-text-muted truncate">
-                {str(field(o, 'Objective Name', 'Objective Name')) || '(sin nombre)'}
+                {str(field(o, 'Objective Name', 'Objective Name')) || '(untitled)'}
               </li>
             ))}
           </ul>
@@ -259,14 +259,14 @@ export function Dashboard() {
           to="/habits"
           className="rounded-2xl border border-2 border-border bg-surface p-5 hover:shadow-md transition-shadow"
         >
-          <h3 className="text-base font-semibold text-text">Hábitos</h3>
+          <h3 className="text-base font-semibold text-text">Habits</h3>
           <p className="text-sm text-text-muted mt-1">
-            {habits.length} hábitos · Ver todos
+            {habits.length} habits · View all
           </p>
           <ul className="mt-3 space-y-1">
             {habits.slice(0, 3).map((h) => (
               <li key={h.id} className="text-sm text-text-muted truncate">
-                {str(field(h, 'Habit Name', 'Habit Name')) || '(sin nombre)'}
+                {str(field(h, 'Habit Name', 'Habit Name')) || '(untitled)'}
               </li>
             ))}
           </ul>

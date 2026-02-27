@@ -4,8 +4,8 @@ import { field, str, dateStr, arr, getWeekDays, getWeekStart, getWeekdayIndex } 
 import { getTaskStatusGroup } from '../lib/taskStatus'
 import { TaskCard, STATUS_OPTIONS, getPriorityTagClass } from '../components/TaskCard'
 
-const DAY_NAMES = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
-const MONTH_NAMES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+const DAY_NAMES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 const MIN_HABITS_FOR_FIRE = 5
 
 function getWeekDaysForOffset(weekOffset) {
@@ -91,7 +91,7 @@ function dayHeaderStars(tasksForDay, habits, habitTracking, dayStr) {
   return { hasStar, hasFire }
 }
 
-/** Agrupa hábitos por categoría. Clave '' para sin categoría. Orden: categorías con nombre primero (alfabético), sin categoría al final. */
+/** Group habits by category. '' key = uncategorized. Order: named categories first (A–Z), uncategorized last. */
 function getHabitsByCategory(habits) {
   const map = new Map()
   for (const h of habits) {
@@ -104,7 +104,7 @@ function getHabitsByCategory(habits) {
   return withoutName.length ? [...withName, ['', withoutName]] : withName
 }
 
-/** Celda de cabecera de un día (nombre + fecha + estrellas). Usado en desktop. */
+/** Desktop day header cell (name + date + stars). */
 function DayHeaderCell({ dayStr, dayIndex, tasks, habits, habitTracking }) {
   const tasksForDay = getTasksForDay(tasks, dayStr)
   const { hasStar, hasFire } = dayHeaderStars(tasksForDay, habits, habitTracking, dayStr)
@@ -117,12 +117,12 @@ function DayHeaderCell({ dayStr, dayIndex, tasks, habits, habitTracking }) {
       </div>
       <div className="flex items-center gap-0.5 shrink-0">
         {hasStar && (
-          <span className="text-amber-500" title={hasFire ? 'Tareas + 5+ hábitos' : 'Todas las tareas'}>
+          <span className="text-amber-500" title={hasFire ? 'Tasks + 5+ habits' : 'All tasks done'}>
             <IconStar size={18} />
           </span>
         )}
         {hasFire && (
-          <span className="text-orange-500" title="5+ hábitos">
+          <span className="text-orange-500" title="5+ habits">
             <IconFlameFilled size={22} />
           </span>
         )}
@@ -142,8 +142,8 @@ function DayTasksColumn({ dayStr, tasks, onTaskStatusChange, onTaskClick, refetc
   const inProgressPct = total === 0 ? 0 : Math.round((inProgressCount / total) * 100)
   const pendingPct = total === 0 ? 0 : Math.round((pendingCount / total) * 100)
   const progressBarTitle = total === 0
-    ? 'Sin tareas'
-    : `Hecho: ${donePct}%, En progreso: ${inProgressPct}%, Pendiente: ${pendingPct}%`
+    ? 'No tasks'
+    : `Done: ${donePct}%, In progress: ${inProgressPct}%, To do: ${pendingPct}%`
   return (
     <div className="flex flex-col min-w-0 px-2">
       <div className="w-full flex items-center gap-2 pt-0.5 pb-0">
@@ -169,7 +169,7 @@ function DayTasksColumn({ dayStr, tasks, onTaskStatusChange, onTaskClick, refetc
         <span className="text-xs font-medium text-text-muted shrink-0">{donePct}%</span>
       </div>
       <ul className="space-y-2 w-full mt-3">
-        {tasksForDay.length === 0 && <li className="text-xs text-text-muted py-1">Ninguna tarea</li>}
+        {tasksForDay.length === 0 && <li className="text-xs text-text-muted py-1">No tasks</li>}
         {tasksForDay.map((task) => (
           <li key={task.id} className="w-full">
             <TaskCard task={task} dayStr={dayStr} onStatusChange={onTaskStatusChange} onOpenModal={onTaskClick} refetch={refetch} />
@@ -180,7 +180,7 @@ function DayTasksColumn({ dayStr, tasks, onTaskStatusChange, onTaskClick, refetc
   )
 }
 
-/** Columna de habits de un día (estrellas + lista por categoría). Sin collapse. */
+/** Per-day habits column (stars + list by category). No collapse. */
 function DayHabitsColumn({ dayStr, habits, habitTracking, onHabitToggle, refetch }) {
   const habitsDoneCount = habits.filter((h) => {
     const entry = getHabitEntryForDay(habitTracking, h.id, dayStr)
@@ -193,14 +193,14 @@ function DayHabitsColumn({ dayStr, habits, habitTracking, onHabitToggle, refetch
           <span
             key={n}
             className={`shrink-0 ${n <= habitsDoneCount ? (n === 5 ? 'text-orange-500' : 'text-amber-500') : 'text-border'}`}
-            title={n === 5 ? '5+ hábitos' : `Punto ${n}`}
+            title={n === 5 ? '5+ habits' : `Point ${n}`}
           >
             {n === 5 ? <IconFlameFilled size={16} /> : <IconStar size={14} />}
           </span>
         ))}
       </div>
       <div className="w-full space-y-3 mt-3">
-        {habits.length === 0 && <p className="text-xs text-text-muted py-1">Ningún hábito</p>}
+        {habits.length === 0 && <p className="text-xs text-text-muted py-1">No habits</p>}
         {getHabitsByCategory(habits).map(([categoryLabel, habitsInCategory]) => (
           <div key={categoryLabel || '_sin_categoria'} className="space-y-0.5">
             {categoryLabel && <p className="text-xs font-medium text-text-muted px-0.5 py-0.5">{categoryLabel}</p>}
@@ -240,8 +240,8 @@ function DayColumn({
   const inProgressPct = total === 0 ? 0 : Math.round((inProgressCount / total) * 100)
   const pendingPct = total === 0 ? 0 : Math.round((pendingCount / total) * 100)
   const progressBarTitle = total === 0
-    ? 'Sin tareas'
-    : `Hecho: ${donePct}%, En progreso: ${inProgressPct}%, Pendiente: ${pendingPct}%`
+    ? 'No tasks'
+    : `Done: ${donePct}%, In progress: ${inProgressPct}%, To do: ${pendingPct}%`
   const habitsDoneCount = habits.filter((h) => {
     const entry = getHabitEntryForDay(habitTracking, h.id, dayStr)
     return entry && isHabitEntrySuccessful(entry)
@@ -259,12 +259,12 @@ function DayColumn({
           </div>
           <div className="flex items-center gap-0.5 shrink-0">
             {hasStar && (
-              <span className="text-amber-500" title={hasFire ? 'Tareas completadas + 5+ hábitos' : 'Todas las tareas completadas'}>
+              <span className="text-amber-500" title={hasFire ? 'Tasks done + 5+ habits' : 'All tasks done'}>
                 <IconStar size={18} />
               </span>
             )}
             {hasFire && (
-              <span className="text-orange-500" title="5+ hábitos buenos">
+              <span className="text-orange-500" title="5+ habits">
                 <IconFlameFilled size={22} />
               </span>
             )}
@@ -294,7 +294,7 @@ function DayColumn({
             <span className="text-xs font-medium text-text-muted shrink-0" title={progressBarTitle}>{donePct}%</span>
           </div>
           <ul className="space-y-2 w-full mt-3">
-            {tasksForDay.length === 0 && <li className="text-xs text-text-muted py-1">Ninguna tarea</li>}
+            {tasksForDay.length === 0 && <li className="text-xs text-text-muted py-1">No tasks</li>}
             {tasksForDay.map((task) => (
               <li key={task.id} className="w-full">
                 <TaskCard task={task} dayStr={dayStr} onStatusChange={onTaskStatusChange} onOpenModal={onTaskClick} refetch={refetch} />
@@ -312,13 +312,13 @@ function DayColumn({
         <>
           <div className="w-full pt-0.5 pb-0 flex items-center gap-0.5">
             {[1, 2, 3, 4, 5].map((n) => (
-              <span key={n} className={`shrink-0 ${n <= habitsDoneCount ? (n === 5 ? 'text-orange-500' : 'text-amber-500') : 'text-border'}`} title={n === 5 ? '5+ hábitos' : `Punto ${n}`}>
+              <span key={n} className={`shrink-0 ${n <= habitsDoneCount ? (n === 5 ? 'text-orange-500' : 'text-amber-500') : 'text-border'}`} title={n === 5 ? '5+ habits' : `Point ${n}`}>
                 {n === 5 ? <IconFlameFilled size={16} /> : <IconStar size={14} />}
               </span>
             ))}
           </div>
           <div className="w-full space-y-3 mt-3">
-            {habits.length === 0 && <p className="text-xs text-text-muted py-1">Ningún hábito</p>}
+            {habits.length === 0 && <p className="text-xs text-text-muted py-1">No habits</p>}
             {getHabitsByCategory(habits).map(([categoryLabel, habitsInCategory]) => (
               <div key={categoryLabel || '_sin_categoria'} className="space-y-0.5">
                 {categoryLabel && <p className="text-xs font-medium text-text-muted px-0.5 py-0.5">{categoryLabel}</p>}
@@ -337,7 +337,7 @@ function DayColumn({
 }
 
 function PlannerHabitRow({ habit, dayStr, habitTracking, onToggle, refetch }) {
-  const name = str(field(habit, 'Habit Name', 'Habit Name')) || '(sin nombre)'
+  const name = str(field(habit, 'Habit Name', 'Habit Name')) || '(untitled)'
   const entry = getHabitEntryForDay(habitTracking, habit.id, dayStr)
   const isDone = entry && isHabitEntrySuccessful(entry)
 
@@ -420,7 +420,7 @@ function TaskModal({ task, onClose, onStatusChange, onTaskUpdate, refetch }) {
   const handleBlurName = () => {
     if (editingField !== 'name') return
     const v = editValue.trim()
-    saveEdit('name', { 'Task Name': v || name || '(sin nombre)' })
+    saveEdit('name', { 'Task Name': v || name || '(untitled)' })
   }
   const handleBlurDescription = () => {
     if (editingField !== 'description') return
@@ -468,14 +468,14 @@ function TaskModal({ task, onClose, onStatusChange, onTaskUpdate, refetch }) {
               onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); startEdit('name', name) } }}
               className="font-bold text-xl text-text truncate flex-1 min-w-0 cursor-pointer rounded hover:bg-border/50 py-1 -mx-1 px-1"
             >
-              {name || '(sin nombre)'}
+              {name || '(untitled)'}
             </h2>
           )}
           <button
             type="button"
             onClick={onClose}
             className="shrink-0 p-2 rounded-lg text-text-muted hover:bg-border text-xl leading-none"
-            aria-label="Cerrar"
+            aria-label="Close"
           >
             ×
           </button>
@@ -487,7 +487,7 @@ function TaskModal({ task, onClose, onStatusChange, onTaskUpdate, refetch }) {
               onChange={(e) => setEditValue(e.target.value)}
               onBlur={handleBlurDescription}
               className="w-full text-sm font-normal text-text bg-surface border border-border rounded-lg px-3 py-2 min-h-[80px] resize-y"
-              placeholder="Descripción"
+              placeholder="Description"
               autoFocus
             />
           ) : (
@@ -498,15 +498,15 @@ function TaskModal({ task, onClose, onStatusChange, onTaskUpdate, refetch }) {
               onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); startEdit('description', description) } }}
               className="text-sm font-normal text-text whitespace-pre-wrap cursor-pointer rounded hover:bg-border/50 py-2 -mx-2 px-2 min-h-[2rem]"
             >
-              {description || '(sin descripción)'}
+              {description || '(no description)'}
             </p>
           )}
           <hr className="border-border" />
           <div className="space-y-2">
-            {/* Prioridad */}
+            {/* Priority */}
             <div className="flex items-center gap-2 text-sm">
               <span className="text-text-muted shrink-0"><IconTarget size={18} /></span>
-              <span className="text-text-muted shrink-0">Prioridad:</span>
+              <span className="text-text-muted shrink-0">Priority:</span>
               {editingField === 'priority' ? (
                 <select
                   value={editValue}
@@ -532,10 +532,10 @@ function TaskModal({ task, onClose, onStatusChange, onTaskUpdate, refetch }) {
                 </span>
               )}
             </div>
-            {/* Fecha límite */}
+            {/* Due date */}
             <div className="flex items-center gap-2 text-sm">
               <span className="text-text-muted shrink-0"><IconCalendar size={18} /></span>
-              <span className="text-text-muted shrink-0">Fecha límite:</span>
+              <span className="text-text-muted shrink-0">Due date:</span>
               {editingField === 'dueDate' ? (
                 <input
                   type="date"
@@ -557,10 +557,10 @@ function TaskModal({ task, onClose, onStatusChange, onTaskUpdate, refetch }) {
                 </span>
               )}
             </div>
-            {/* Asignado */}
+            {/* Assignee */}
             <div className="flex items-center gap-2 text-sm">
               <span className="text-text-muted shrink-0"><IconUser size={18} /></span>
-              <span className="text-text-muted shrink-0">Asignado:</span>
+              <span className="text-text-muted shrink-0">Assignee:</span>
               {editingField === 'assignee' ? (
                 <input
                   type="text"
@@ -569,7 +569,7 @@ function TaskModal({ task, onClose, onStatusChange, onTaskUpdate, refetch }) {
                   onBlur={handleBlurAssignee}
                   onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleBlurAssignee() } }}
                   className="flex-1 min-w-0 rounded border border-border bg-surface text-text px-2 py-1 text-sm"
-                  placeholder="Nombre"
+                  placeholder="Name"
                   autoFocus
                 />
               ) : (
@@ -584,10 +584,10 @@ function TaskModal({ task, onClose, onStatusChange, onTaskUpdate, refetch }) {
                 </span>
               )}
             </div>
-            {/* Clasificación */}
+            {/* Category */}
             <div className="flex items-center gap-2 text-sm">
               <span className="text-text-muted shrink-0"><IconTag size={18} /></span>
-              <span className="text-text-muted shrink-0">Clasificación:</span>
+              <span className="text-text-muted shrink-0">Category:</span>
               {editingField === 'category' ? (
                 <input
                   type="text"
@@ -596,7 +596,7 @@ function TaskModal({ task, onClose, onStatusChange, onTaskUpdate, refetch }) {
                   onBlur={handleBlurCategory}
                   onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleBlurCategory() } }}
                   className="flex-1 min-w-0 rounded border border-border bg-surface text-text px-2 py-1 text-sm"
-                  placeholder="Categoría"
+                  placeholder="Category"
                   autoFocus
                 />
               ) : (
@@ -787,7 +787,7 @@ export function PlannerPage() {
                 <button
                   type="button"
                   onClick={() => setWeekOffset((o) => o - 1)}
-                  aria-label="Semana anterior"
+                  aria-label="Previous week"
                   className="shrink-0 p-1.5 rounded-lg text-text-muted hover:bg-border hover:text-text"
                 >
                   <IconChevronLeft size={20} />
@@ -806,7 +806,7 @@ export function PlannerPage() {
                 <button
                   type="button"
                   onClick={() => setWeekOffset((o) => o + 1)}
-                  aria-label="Semana siguiente"
+                  aria-label="Next week"
                   className="shrink-0 p-1.5 rounded-lg text-text-muted hover:bg-border hover:text-text"
                 >
                   <IconChevronRight size={20} />
@@ -869,7 +869,7 @@ export function PlannerPage() {
         <div className="flex items-center justify-between gap-2 mb-3">
           <button
             type="button"
-            aria-label="Día anterior"
+            aria-label="Previous day"
             onClick={() => setMobileDateStr((d) => addDays(d, -1))}
             className="min-h-[44px] min-w-[44px] rounded-xl border-2 border-border bg-surface text-text"
           >
@@ -880,7 +880,7 @@ export function PlannerPage() {
           </span>
           <button
             type="button"
-            aria-label="Día siguiente"
+            aria-label="Next day"
             onClick={() => setMobileDateStr((d) => addDays(d, 1))}
             className="min-h-[44px] min-w-[44px] rounded-xl border-2 border-border bg-surface text-text"
           >

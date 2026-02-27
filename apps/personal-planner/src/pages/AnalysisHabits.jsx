@@ -80,7 +80,7 @@ export function AnalysisHabits() {
     const success = records.filter(isSuccess).length
     return {
       id: hid,
-      name: str(field(h, 'Habit Name', 'Habit Name')).slice(0, 15) || 'Hábito',
+      name: str(field(h, 'Habit Name', 'Habit Name')).slice(0, 15) || 'Habit',
       total: records.length,
       success,
       pct: records.length ? Math.round((success / records.length) * 100) : 0,
@@ -91,32 +91,32 @@ export function AnalysisHabits() {
 
   return (
     <div className="space-y-8">
-      <PageHeader breadcrumbs={[{ label: 'Home', to: '/' }, { label: 'Análisis Hábitos', to: '/analysis/habits' }]} onRefresh={refetch} loading={loading} />
+      <PageHeader breadcrumbs={[{ label: 'Home', to: '/' }, { label: 'Habit analysis', to: '/analysis/habits' }]} onRefresh={refetch} loading={loading} />
 
       <section className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="rounded-2xl border border-2 border-border bg-surface p-5">
-          <h2 className="text-sm font-medium text-text-muted">Tasa de éxito global</h2>
+          <h2 className="text-sm font-medium text-text-muted">Overall success rate</h2>
           <p className="text-2xl font-bold text-text">{overallPct}%</p>
-          <p className="text-sm text-text-muted">{successTotal} / {totalRecords} registros</p>
+          <p className="text-sm text-text-muted">{successTotal} / {totalRecords} logs</p>
         </div>
         <div className="rounded-2xl border border-2 border-border bg-surface p-5">
-          <h2 className="text-sm font-medium text-text-muted">Hábitos con tracking</h2>
+          <h2 className="text-sm font-medium text-text-muted">Habits with tracking</h2>
           <p className="text-2xl font-bold text-text">{byHabit.length}</p>
-          <p className="text-sm text-text-muted">de {habits.length} hábitos</p>
+          <p className="text-sm text-text-muted">of {habits.length} habits</p>
         </div>
       </section>
 
       {weekData.length > 0 && (
         <section className="rounded-2xl border border-2 border-border bg-surface p-5">
           <h2 className="text-base font-semibold text-text mb-4">
-            Éxito por semana (últimas 8)
+            Success by week (last 8)
           </h2>
           <ResponsiveContainer width="100%" height={280}>
             <BarChart data={weekData} margin={{ left: 8, right: 20 }}>
               <XAxis dataKey="name" tick={{ fontSize: 11 }} />
               <YAxis domain={[0, 100]} tickFormatter={(v) => `${v}%`} />
-              <Tooltip formatter={(v) => [`${v}%`, 'Éxito']} />
-              <Bar dataKey="pct" fill="#f97316" radius={[4, 4, 0, 0]} name="Éxito %" />
+              <Tooltip formatter={(v) => [`${v}%`, 'Success']} />
+              <Bar dataKey="pct" fill="#f97316" radius={[4, 4, 0, 0]} name="Success %" />
             </BarChart>
           </ResponsiveContainer>
         </section>
@@ -125,14 +125,14 @@ export function AnalysisHabits() {
       {byHabit.length > 0 && (
         <section className="rounded-2xl border border-2 border-border bg-surface p-5">
           <h2 className="text-base font-semibold text-text mb-4">
-            Tasa de éxito por hábito
+            Success rate by habit
           </h2>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={byHabit} layout="vertical" margin={{ left: 4, right: 20 }}>
               <XAxis type="number" domain={[0, 100]} tickFormatter={(v) => `${v}%`} />
               <YAxis type="category" dataKey="name" width={100} tick={{ fontSize: 12 }} />
               <Tooltip
-                formatter={(v) => [`${v}%`, 'Éxito']}
+                formatter={(v) => [`${v}%`, 'Success']}
                 labelFormatter={(_, payload) => {
                   const p = payload[0]?.payload
                   return p ? `${p.name} (${p.success}/${p.total})` : ''
@@ -151,7 +151,7 @@ export function AnalysisHabits() {
       <section>
         <h2 className="text-base font-semibold text-text mb-3">
           <Link to="/habits" className="text-primary hover:underline">
-            Ver todos los hábitos →
+            View all habits →
           </Link>
         </h2>
       </section>

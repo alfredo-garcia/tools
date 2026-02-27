@@ -60,7 +60,7 @@ export function PageHeader({ title, breadcrumbs, onRefresh, loading }) {
       {parent?.to && (
         <Link
           to={parent.to}
-          aria-label={`Volver a ${parent.label}`}
+          aria-label={`Back to ${parent.label}`}
           className="app-header-back md:hidden shrink-0 -ml-1 p-2 rounded-xl text-text-muted hover:text-primary hover:bg-surface transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
         >
           <IconChevronLeft size={30} />
@@ -73,7 +73,7 @@ export function PageHeader({ title, breadcrumbs, onRefresh, loading }) {
             type="button"
             onClick={handleRefresh}
             disabled={isBusy}
-            aria-label="Actualizar datos"
+            aria-label="Refresh data"
             className="shrink-0 p-2 text-text-muted hover:text-primary hover:opacity-100 opacity-80 disabled:opacity-50 min-h-[44px] min-w-[44px] flex items-center justify-center touch-manipulation transition-all cursor-pointer active:scale-95"
           >
             <IconRefresh

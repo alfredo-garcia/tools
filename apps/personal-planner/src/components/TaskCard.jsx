@@ -3,9 +3,9 @@ import { field, str, dateStr, isPastDue } from '@tools/shared'
 import { getTaskStatusGroup } from '../lib/taskStatus'
 
 const STATUS_OPTIONS = [
-  { value: 'Pending', label: 'Pendiente' },
-  { value: 'In Progress', label: 'En progreso' },
-  { value: 'Done', label: 'Hecho' },
+  { value: 'Pending', label: 'To do' },
+  { value: 'In Progress', label: 'In progress' },
+  { value: 'Done', label: 'Done' },
 ]
 
 export function getPriorityTagClass(priority) {
@@ -17,11 +17,11 @@ export function getPriorityTagClass(priority) {
 }
 
 /**
- * Card reutilizable para una tarea: título, descripción (2 líneas), tags prioridad/fecha, botones de estado.
- * Props: task, dayStr (opcional; si se pasa, no se muestra due si es el mismo día), onStatusChange(taskId, status), onOpenModal(task), refetch().
+ * Reusable task card: title, 2-line description, priority/due tags, status buttons.
+ * Props: task, dayStr (optional; if provided, due tag is hidden when it's the same day), onStatusChange(taskId, status), onOpenModal(task), refetch().
  */
 export function TaskCard({ task, dayStr, onStatusChange, onOpenModal, refetch }) {
-  const name = str(field(task, 'Task Name', 'Task Name')) || '(sin nombre)'
+  const name = str(field(task, 'Task Name', 'Task Name')) || '(untitled)'
   const statusGroup = getTaskStatusGroup(task)
   const priority = str(field(task, 'Priority', 'Priority'))
   const dueStr = dateStr(field(task, 'Due Date', 'Due Date'))
@@ -72,7 +72,7 @@ export function TaskCard({ task, dayStr, onStatusChange, onOpenModal, refetch })
               : 'bg-status-done text-white'
           : 'bg-border/50 text-text-muted hover:bg-border'
         const Icon = isPending ? IconCircle : isInProgress ? IconPlay : IconCheckSquare
-        const title = isPending ? 'Pendiente' : isInProgress ? 'En progreso' : 'Hecho'
+        const title = isPending ? 'To do' : isInProgress ? 'In progress' : 'Done'
         return (
           <button
             key={value}

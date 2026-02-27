@@ -27,7 +27,7 @@ export function HabitsList() {
 
   return (
     <div className="space-y-6">
-      <PageHeader breadcrumbs={[{ label: 'Home', to: '/' }, { label: 'Hábitos', to: '/habits' }]} onRefresh={refetch} loading={loading} />
+      <PageHeader breadcrumbs={[{ label: 'Home', to: '/' }, { label: 'Habits', to: '/habits' }]} onRefresh={refetch} loading={loading} />
       <ul className="space-y-3">
         {list.map((h) => (
           <li key={h.id}>
@@ -36,19 +36,19 @@ export function HabitsList() {
               className="block rounded-xl border border-2 border-border bg-surface p-4 hover:shadow-md transition-shadow"
             >
               <span className="font-medium text-text">
-                {str(field(h, 'Habit Name', 'Habit Name')) || '(sin nombre)'}
+                {str(field(h, 'Habit Name', 'Habit Name')) || '(untitled)'}
               </span>
               <div className="flex flex-wrap gap-2 mt-2 text-sm text-text-muted">
                 <span>{str(field(h, 'Category', 'Category'))}</span>
-                <span>Frecuencia: {str(field(h, 'Frequency', 'Frequency')) || '—'}</span>
-                <span>Prioridad: {str(field(h, 'Priority', 'Priority')) || '—'}</span>
+                <span>Frequency: {str(field(h, 'Frequency', 'Frequency')) || '—'}</span>
+                <span>Priority: {str(field(h, 'Priority', 'Priority')) || '—'}</span>
               </div>
             </Link>
           </li>
         ))}
       </ul>
       {list.length === 0 && (
-        <p className="text-text-muted">No hay hábitos.</p>
+        <p className="text-text-muted">No habits.</p>
       )}
     </div>
   )

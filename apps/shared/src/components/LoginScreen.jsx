@@ -13,7 +13,7 @@ export function LoginScreen() {
     e.preventDefault()
     setError('')
     if (!code.trim()) {
-      setError('Introduce el código de acceso.')
+      setError('Enter your access code.')
       return
     }
     setLoading(true)
@@ -26,15 +26,15 @@ export function LoginScreen() {
       const data = await res.json().catch(() => ({}))
       if (!res.ok) {
         if (res.status === 404) {
-          setError('API no encontrada. ¿Está el servidor API en marcha? Si usas otro puerto (ej. 3009), cierra Vite y arranca con: API_PORT=3009 npm run dev')
+          setError('API not found. Is the API server running? If you use another port (e.g. 3009), restart Vite with: API_PORT=3009 npm run dev')
           return
         }
-        setError(data.error ?? 'Código incorrecto.')
+        setError(data.error ?? 'Incorrect code.')
         return
       }
       login(code.trim())
     } catch (err) {
-      setError('Error de conexión. Comprueba la red.')
+      setError('Connection error. Check your network.')
     } finally {
       setLoading(false)
     }
@@ -70,26 +70,26 @@ export function LoginScreen() {
             className="text-text font-bold"
             style={{ fontSize: '1.5rem', marginBottom: '8px', textAlign: 'center' }}
           >
-            Acceso privado
+            Private access
           </h1>
           <p
             className="text-text-muted font-medium"
             style={{ fontSize: '0.9375rem', marginBottom: '28px', textAlign: 'center' }}
           >
-            Introduce tu código de acceso
+            Enter your access code
           </p>
           <form
             onSubmit={handleSubmit}
             style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}
           >
             <label htmlFor="access-code" className="sr-only">
-              Código de acceso
+              Access code
             </label>
             <input
               id="access-code"
               type="password"
               autoComplete="current-password"
-              placeholder="Código (alfanumérico)"
+              placeholder="Code (alphanumeric)"
               value={code}
               onChange={(e) => setCode(e.target.value)}
               className="w-full rounded-xl border-2 border-border bg-background text-text placeholder-text-muted focus:ring-2 focus:ring-primary focus:border-primary outline-none"
@@ -121,7 +121,7 @@ export function LoginScreen() {
                 boxSizing: 'border-box',
               }}
             >
-              {loading ? 'Comprobando…' : 'Entrar'}
+              {loading ? 'Checking…' : 'Sign in'}
             </button>
           </form>
         </div>

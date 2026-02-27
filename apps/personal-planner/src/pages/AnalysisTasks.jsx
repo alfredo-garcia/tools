@@ -56,7 +56,7 @@ export function AnalysisTasks() {
 
   const byStatus = {}
   tasks.forEach((t) => {
-    const s = str(field(t, 'Status', 'Status')) || 'Sin estado'
+    const s = str(field(t, 'Status', 'Status')) || 'No status'
     byStatus[s] = (byStatus[s] || 0) + 1
   })
   const statusPie = Object.entries(byStatus).map(([name, value], i) => ({
@@ -67,31 +67,31 @@ export function AnalysisTasks() {
 
   return (
     <div className="space-y-8">
-      <PageHeader breadcrumbs={[{ label: 'Home', to: '/' }, { label: 'Análisis Tareas', to: '/analysis/tasks' }]} onRefresh={refetch} loading={loading} />
+      <PageHeader breadcrumbs={[{ label: 'Home', to: '/' }, { label: 'Task analysis', to: '/analysis/tasks' }]} onRefresh={refetch} loading={loading} />
 
       <section className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="rounded-2xl border border-2 border-border bg-surface p-5">
-          <h2 className="text-sm font-medium text-text-muted">Tareas completadas (total)</h2>
+          <h2 className="text-sm font-medium text-text-muted">Tasks completed (total)</h2>
           <p className="text-2xl font-bold text-text">{completionPct}%</p>
           <p className="text-sm text-text-muted">{done.length} / {total}</p>
         </div>
         <div className="rounded-2xl border border-2 border-border bg-surface p-5">
-          <h2 className="text-sm font-medium text-text-muted">Por estado</h2>
-          <p className="text-lg font-bold text-text">{Object.keys(byStatus).length} estados</p>
+          <h2 className="text-sm font-medium text-text-muted">By status</h2>
+          <p className="text-lg font-bold text-text">{Object.keys(byStatus).length} statuses</p>
         </div>
       </section>
 
       {weekData.length > 0 && (
         <section className="rounded-2xl border border-2 border-border bg-surface p-5">
           <h2 className="text-base font-semibold text-text mb-4">
-            Cumplimiento por semana (últimas 8)
+            Completion by week (last 8)
           </h2>
           <ResponsiveContainer width="100%" height={280}>
             <BarChart data={weekData} margin={{ left: 8, right: 20 }}>
               <XAxis dataKey="name" tick={{ fontSize: 11 }} />
               <YAxis domain={[0, 100]} tickFormatter={(v) => `${v}%`} />
-              <Tooltip formatter={(v) => [`${v}%`, 'Completadas']} />
-              <Bar dataKey="pct" fill="#f97316" radius={[4, 4, 0, 0]} name="Completadas %" />
+              <Tooltip formatter={(v) => [`${v}%`, 'Completed']} />
+              <Bar dataKey="pct" fill="#f97316" radius={[4, 4, 0, 0]} name="Completed %" />
             </BarChart>
           </ResponsiveContainer>
         </section>
@@ -100,7 +100,7 @@ export function AnalysisTasks() {
       {statusPie.length > 0 && (
         <section className="rounded-2xl border border-2 border-border bg-surface p-5">
           <h2 className="text-base font-semibold text-text mb-4">
-            Distribución por estado
+            Distribution by status
           </h2>
           <ResponsiveContainer width="100%" height={280}>
             <PieChart>
@@ -129,7 +129,7 @@ export function AnalysisTasks() {
       <section>
         <h2 className="text-base font-semibold text-text mb-3">
           <Link to="/tasks" className="text-primary hover:underline">
-            Ver todas las tareas →
+            View all tasks →
           </Link>
         </h2>
       </section>

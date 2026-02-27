@@ -56,14 +56,14 @@ export function AppShell({ children, navItems = [], title = '' }) {
       >
         <nav
           className="flex-1 overflow-y-auto overflow-x-hidden py-2 px-2 space-y-1"
-          aria-label="Navegación principal"
+          aria-label="Main navigation"
         >
           {/* Hamburguesa + título como primer ítem del nav:
               mismo padding que NavLink → iconos alineados verticalmente */}
           <button
             type="button"
             onClick={() => setSidebarOpen(o => !o)}
-            aria-label={sidebarOpen ? 'Colapsar menú' : 'Expandir menú'}
+            aria-label={sidebarOpen ? 'Collapse menu' : 'Expand menu'}
             className="flex items-center w-full rounded-lg min-h-[44px] px-3 py-2.5 gap-3 text-base font-bold touch-manipulation transition-colors text-nav-text hover:bg-surface hover:text-text cursor-pointer"
           >
             <IconMenu size={22} className="shrink-0" />
@@ -96,7 +96,7 @@ export function AppShell({ children, navItems = [], title = '' }) {
       {/* ── Bottom nav: solo mobile ── */}
       <nav
         className="app-bottom-nav fixed bottom-0 left-0 right-0 z-30 md:hidden"
-        aria-label="Navegación principal (móvil)"
+        aria-label="Main navigation (mobile)"
       >
         <div className="app-bottom-nav-inner flex items-stretch justify-around min-h-[5rem] gap-1 px-4 pt-3 pb-3">
           {navItems.map(({ to, label, Icon, aria }) => (

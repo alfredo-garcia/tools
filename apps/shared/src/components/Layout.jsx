@@ -11,7 +11,7 @@ export function Layout({ children }) {
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
           <Spinner />
-          <p className="text-base font-bold text-text-muted">Cargando…</p>
+          <p className="text-base font-bold text-text-muted">Loading…</p>
         </div>
       </div>
     )

@@ -38,7 +38,7 @@ export function KeyResultsList() {
                 className="block rounded-xl border border-2 border-border bg-surface p-4 hover:shadow-md transition-shadow"
               >
                 <span className="font-medium text-text">
-                  {str(field(kr, 'Key Result Name', 'Key Result Name')) || '(sin nombre)'}
+                  {str(field(kr, 'Key Result Name', 'Key Result Name')) || '(untitled)'}
                 </span>
                 <div className="mt-2 flex items-center gap-3">
                   <div className="flex-1 h-2 rounded-full bg-border overflow-hidden">
@@ -61,7 +61,7 @@ export function KeyResultsList() {
         })}
       </ul>
       {list.length === 0 && (
-        <p className="text-text-muted">No hay key results.</p>
+        <p className="text-text-muted">No key results.</p>
       )}
     </div>
   )

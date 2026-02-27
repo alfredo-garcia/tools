@@ -25,18 +25,18 @@ export function KeyResultDetail() {
 
   if (loading && !item) return <div className="flex justify-center py-12"><Spinner size="lg" /></div>
   if (error && !item) return <p className="text-red-600 dark:text-red-400">{error}</p>
-  if (!item) return <p className="text-text-muted">Key Result no encontrado.</p>
+  if (!item) return <p className="text-text-muted">Key Result not found.</p>
 
   const progress = num(field(item, 'Progress (%)', 'Progress', 'Progress %')) ?? 0
   const target = num(field(item, 'Target Value', 'Target Value'))
   const current = num(field(item, 'Current Value', 'Current Value'))
   const rows = [
-    ['Descripción', str(field(item, 'Description', 'Description'))],
-    ['Métrica', str(field(item, 'Metric', 'Metric'))],
-    ['Valor actual', current != null ? current : str(field(item, 'Current Value', 'Current Value'))],
-    ['Valor objetivo', target != null ? target : str(field(item, 'Target Value', 'Target Value'))],
-    ['Unidad', str(field(item, 'Unit', 'Unit'))],
-    ['Estado', str(field(item, 'Status', 'Status'))],
+    ['Description', str(field(item, 'Description', 'Description'))],
+    ['Metric', str(field(item, 'Metric', 'Metric'))],
+    ['Current value', current != null ? current : str(field(item, 'Current Value', 'Current Value'))],
+    ['Target value', target != null ? target : str(field(item, 'Target Value', 'Target Value'))],
+    ['Unit', str(field(item, 'Unit', 'Unit'))],
+    ['Status', str(field(item, 'Status', 'Status'))],
     ['Deadline', dateStr(field(item, 'Deadline', 'Deadline'))],
   ]
 
@@ -45,14 +45,14 @@ export function KeyResultDetail() {
   return (
     <div className="space-y-6">
       <Link to="/key-results" className="text-sm text-primary hover:underline">
-        ← Volver a Key Results
+        ← Back to key results
       </Link>
       <PageHeader breadcrumbs={[{ label: 'Home', to: '/' }, { label: 'Key Results', to: '/key-results' }, { label: title }]} onRefresh={refetch} loading={loading} />
       <div className="rounded-2xl border border-2 border-border bg-surface overflow-hidden">
         <div className="p-6 border-b border-border">
           <div className="mt-2">
             <div className="flex justify-between text-sm mb-1">
-              <span className="text-text-muted">Progreso</span>
+              <span className="text-text-muted">Progress</span>
               <span className="font-medium text-text">{progress}%</span>
             </div>
             <div className="h-3 rounded-full bg-border overflow-hidden">
@@ -79,10 +79,10 @@ export function KeyResultDetail() {
           return (
             <div className="p-6">
               <h2 className="text-base font-semibold text-text mb-2">
-                Objetivo vinculado
+                Linked objective
               </h2>
               <Link to={`/objectives/${link}`} className="text-primary hover:underline">
-                Ver objetivo →
+                View objective →
               </Link>
             </div>
           )

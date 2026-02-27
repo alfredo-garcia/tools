@@ -5,10 +5,10 @@ import { field, str, dateStr, isToday, isThisWeek, isThisMonth, isPastDue } from
 import { getTaskStatusGroup } from '../lib/taskStatus'
 
 const FILTER_OPTIONS = [
-  { value: 'today', label: 'Hoy' },
-  { value: 'week', label: 'Semana' },
-  { value: 'month', label: 'Mes' },
-  { value: 'all', label: 'Todas' },
+  { value: 'today', label: 'Today' },
+  { value: 'week', label: 'Week' },
+  { value: 'month', label: 'Month' },
+  { value: 'all', label: 'All' },
 ]
 
 const GROUP_ORDER = ['in_progress', 'pending', 'done']
@@ -30,7 +30,7 @@ function filterByDate(list, filter, getDue) {
 }
 
 function TaskCard({ task, getDue }) {
-  const name = str(field(task, 'Task Name', 'Task Name')) || '(sin nombre)'
+  const name = str(field(task, 'Task Name', 'Task Name')) || '(untitled)'
   const category = str(field(task, 'Category', 'Category'))
   const status = str(field(task, 'Status', 'Status'))
   const due = getDue(task)
@@ -49,20 +49,20 @@ function TaskCard({ task, getDue }) {
         <div className="flex flex-wrap items-center gap-2">
           {showPastDueTag && (
             <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-500/20 text-red-600 dark:text-red-400">
-              Previsto: {due}
+              Past due: {due}
             </span>
           )}
           <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-sm text-text-muted">
             {category && <span>{category}</span>}
             {status && <span>{status}</span>}
-            <span>Vence: {due || '—'}</span>
+            <span>Due: {due || '—'}</span>
             {assignee != null && assignee !== '' && (
-              <span>Asignado: {str(assignee)}</span>
+              <span>Assignee: {str(assignee)}</span>
             )}
           </div>
         </div>
         {isDone && (
-          <span className="inline-block mt-1 text-xs text-green-600 dark:text-green-400">Completada</span>
+          <span className="inline-block mt-1 text-xs text-green-600 dark:text-green-400">Completed</span>
         )}
       </Card>
     </Link>

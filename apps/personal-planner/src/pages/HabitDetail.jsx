@@ -38,7 +38,7 @@ export function HabitDetail() {
 
   if (loading && !habit) return <div className="flex justify-center py-12"><Spinner size="lg" /></div>
   if (error && !habit) return <p className="text-red-600 dark:text-red-400">{error}</p>
-  if (!habit) return <p className="text-text-muted">Hábito no encontrado.</p>
+  if (!habit) return <p className="text-text-muted">Habit not found.</p>
 
   const successCount = tracking.filter((t) => {
     const v = field(t, 'Was Successful?', 'Was Successful')
@@ -47,20 +47,20 @@ export function HabitDetail() {
   const successPct = tracking.length === 0 ? 0 : Math.round((successCount / tracking.length) * 100)
 
   const rows = [
-    ['Descripción', str(field(habit, 'Habit Description', 'Habit Description'))],
-    ['Categoría', str(field(habit, 'Category', 'Category'))],
-    ['Frecuencia', str(field(habit, 'Frequency', 'Frequency'))],
-    ['Prioridad', str(field(habit, 'Priority', 'Priority'))],
+    ['Description', str(field(habit, 'Habit Description', 'Habit Description'))],
+    ['Category', str(field(habit, 'Category', 'Category'))],
+    ['Frequency', str(field(habit, 'Frequency', 'Frequency'))],
+    ['Priority', str(field(habit, 'Priority', 'Priority'))],
   ]
 
-  const title = str(field(habit, 'Habit Name', 'Habit Name')) || 'Hábito'
+  const title = str(field(habit, 'Habit Name', 'Habit Name')) || 'Habit'
 
   return (
     <div className="space-y-6">
       <Link to="/habits" className="text-sm text-primary hover:underline">
-        ← Volver a Hábitos
+        ← Back to habits
       </Link>
-      <PageHeader breadcrumbs={[{ label: 'Home', to: '/' }, { label: 'Hábitos', to: '/habits' }, { label: title }]} onRefresh={refetch} loading={loading} />
+      <PageHeader breadcrumbs={[{ label: 'Home', to: '/' }, { label: 'Habits', to: '/habits' }, { label: title }]} onRefresh={refetch} loading={loading} />
       <div className="rounded-2xl border border-2 border-border bg-surface overflow-hidden">
         <div className="p-6 border-b border-border">
           <dl className="grid gap-2 sm:grid-cols-2">
@@ -74,14 +74,14 @@ export function HabitDetail() {
             )}
           </dl>
           <div className="mt-4 p-3 rounded-xl bg-surface">
-            <span className="text-sm text-text-muted">Tasa de éxito (registros)</span>
+            <span className="text-sm text-text-muted">Success rate (logs)</span>
             <p className="text-lg font-bold text-text">{successPct}%</p>
-            <p className="text-sm text-text-muted">{successCount} / {tracking.length} exitosos</p>
+            <p className="text-sm text-text-muted">{successCount} / {tracking.length} successful</p>
           </div>
         </div>
         <div className="p-6">
           <h2 className="text-base font-semibold text-text mb-3">
-            Historial reciente
+            Recent history
           </h2>
           <ul className="space-y-2 max-h-64 overflow-y-auto">
             {tracking.slice(0, 30).map((t) => {
@@ -99,7 +99,7 @@ export function HabitDetail() {
             })}
           </ul>
           {tracking.length === 0 && (
-            <p className="text-sm text-text-muted">Sin registros aún.</p>
+            <p className="text-sm text-text-muted">No logs yet.</p>
           )}
         </div>
       </div>

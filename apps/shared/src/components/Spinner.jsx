@@ -8,7 +8,7 @@ export function Spinner({ className = '', size = 'md' }) {
     <div
       className={`${sizeClasses[size]} border-spinner border-t-transparent rounded-full animate-spin ${className}`}
       role="status"
-      aria-label="Cargando"
+      aria-label="Loading"
     />
   )
 }

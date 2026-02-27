@@ -16,11 +16,11 @@ import { AnalysisHabits } from './pages/AnalysisHabits'
 
 const navItems = [
   { to: '/', label: 'Home', Icon: IconHome, aria: 'Dashboard' },
-  { to: '/planner', label: 'Planner', Icon: IconCalendar, aria: 'Planner semanal' },
-  { to: '/objectives', label: 'OKRs', Icon: IconTarget, aria: 'Objetivos y Key Results' },
-  { to: '/tasks', label: 'Tasks', Icon: IconCheckSquare, aria: 'Tareas' },
-  { to: '/habits', label: 'Habits', Icon: IconCircle, aria: 'Hábitos' },
-  { to: '/settings', label: 'Settings', Icon: IconSettings, aria: 'Ajustes' },
+  { to: '/planner', label: 'Planner', Icon: IconCalendar, aria: 'Weekly planner' },
+  { to: '/objectives', label: 'OKRs', Icon: IconTarget, aria: 'Objectives and Key Results' },
+  { to: '/tasks', label: 'Tasks', Icon: IconCheckSquare, aria: 'Tasks' },
+  { to: '/habits', label: 'Habits', Icon: IconCircle, aria: 'Habits' },
+  { to: '/settings', label: 'Settings', Icon: IconSettings, aria: 'Settings' },
 ]
 
 function App() {
@@ -31,7 +31,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/planner" element={<PlannerPage />} />
-            <Route path="/settings" element={<SettingsPage backTo="/" backLabel="← Volver al inicio" />} />
+            <Route path="/settings" element={<SettingsPage backTo="/" backLabel="← Back to home" />} />
             <Route path="/objectives" element={<ObjectivesList />} />
             <Route path="/objectives/:id" element={<ObjectiveDetail />} />
             <Route path="/key-results" element={<KeyResultsList />} />

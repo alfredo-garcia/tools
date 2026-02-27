@@ -27,7 +27,7 @@ export function ObjectivesList() {
 
   return (
     <div className="space-y-6">
-      <PageHeader breadcrumbs={[{ label: 'Home', to: '/' }, { label: 'Objetivos', to: '/objectives' }]} onRefresh={refetch} loading={loading} />
+      <PageHeader breadcrumbs={[{ label: 'Home', to: '/' }, { label: 'Objectives', to: '/objectives' }]} onRefresh={refetch} loading={loading} />
       <ul className="space-y-3">
         {list.map((o) => (
           <li key={o.id}>
@@ -36,19 +36,19 @@ export function ObjectivesList() {
               className="block rounded-xl border border-2 border-border bg-surface p-4 hover:shadow-md transition-shadow"
             >
               <span className="font-medium text-text">
-                {str(field(o, 'Objective Name', 'Objective Name')) || '(sin nombre)'}
+                {str(field(o, 'Objective Name', 'Objective Name')) || '(untitled)'}
               </span>
               <div className="flex flex-wrap gap-2 mt-2 text-sm text-text-muted">
                 <span>{str(field(o, 'Category', 'Category'))}</span>
                 <span>{str(field(o, 'Status', 'Status'))}</span>
-                <span>Hasta: {dateStr(field(o, 'Target Date', 'Target Date')) || '—'}</span>
+                <span>Due: {dateStr(field(o, 'Target Date', 'Target Date')) || '—'}</span>
               </div>
             </Link>
           </li>
         ))}
       </ul>
       {list.length === 0 && (
-        <p className="text-text-muted">No hay objetivos.</p>
+        <p className="text-text-muted">No objectives.</p>
       )}
     </div>
   )

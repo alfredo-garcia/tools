@@ -45,12 +45,12 @@ export function AnalysisOKR() {
     const done = krs.filter((kr) => STATUS_DONE.includes(str(field(kr, 'Status', 'Status')))).length
     return {
       id: o.id,
-      name: str(field(o, 'Objective Name', 'Objective Name')).slice(0, 20) || 'Objetivo',
+      name: str(field(o, 'Objective Name', 'Objective Name')).slice(0, 20) || 'Objective',
       avgProgress: Math.round(avg),
       totalKR: krs.length,
       doneKR: done,
     }
-  }).filter((x) => x.totalKR > 0 || x.name !== 'Objetivo')
+  }).filter((x) => x.totalKR > 0 || x.name !== 'Objective')
 
   const overallAvg =
     keyResults.length === 0
@@ -69,15 +69,15 @@ export function AnalysisOKR() {
 
   return (
     <div className="space-y-8">
-      <PageHeader breadcrumbs={[{ label: 'Home', to: '/' }, { label: 'Análisis OKR', to: '/analysis/okr' }]} onRefresh={refetch} loading={loading} />
+      <PageHeader breadcrumbs={[{ label: 'Home', to: '/' }, { label: 'OKR analysis', to: '/analysis/okr' }]} onRefresh={refetch} loading={loading} />
 
       <section className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="rounded-2xl border border-2 border-border bg-surface p-5">
-          <h2 className="text-sm font-medium text-text-muted">Progreso medio (Key Results)</h2>
+          <h2 className="text-sm font-medium text-text-muted">Average progress (Key Results)</h2>
           <p className="text-2xl font-bold text-text">{overallAvg}%</p>
         </div>
         <div className="rounded-2xl border border-2 border-border bg-surface p-5">
-          <h2 className="text-sm font-medium text-text-muted">Key Results completados</h2>
+          <h2 className="text-sm font-medium text-text-muted">Key Results completed</h2>
           <p className="text-2xl font-bold text-text">
             {completedKR} / {keyResults.length}
           </p>
@@ -86,17 +86,17 @@ export function AnalysisOKR() {
 
       <section className="rounded-2xl border border-2 border-border bg-surface p-5">
         <h2 className="text-base font-semibold text-text mb-4">
-          Progreso por objetivo (media de sus Key Results)
+          Progress by objective (avg. Key Results)
         </h2>
         {krByObjective.length === 0 ? (
-          <p className="text-text-muted text-sm">Sin datos para mostrar.</p>
+          <p className="text-text-muted text-sm">No data to display.</p>
         ) : (
           <ResponsiveContainer width="100%" height={320}>
             <BarChart data={krByObjective} margin={{ left: 8, right: 20 }}>
               <XAxis dataKey="name" tick={{ fontSize: 12 }} />
               <YAxis domain={[0, 100]} tickFormatter={(v) => `${v}%`} />
               <Tooltip
-                formatter={(value) => [`${value}%`, 'Progreso medio']}
+                formatter={(value) => [`${value}%`, 'Average progress']}
                 labelFormatter={(_, payload) => payload[0]?.payload?.name}
               />
               <Bar dataKey="avgProgress" radius={[4, 4, 0, 0]}>
@@ -111,7 +111,7 @@ export function AnalysisOKR() {
 
       <section>
         <h2 className="text-base font-semibold text-text mb-3">
-          Objetivos y sus Key Results
+          Objectives and their Key Results
         </h2>
         <ul className="space-y-3">
           {krByObjective.map((o) => (
@@ -122,8 +122,8 @@ export function AnalysisOKR() {
               >
                 <span className="font-medium text-text">{o.name}</span>
                 <div className="mt-2 flex items-center gap-4 text-sm text-text-muted">
-                  <span>Progreso medio: {o.avgProgress}%</span>
-                  <span>KR: {o.doneKR}/{o.totalKR} completados</span>
+                  <span>Avg progress: {o.avgProgress}%</span>
+                  <span>KR: {o.doneKR}/{o.totalKR} completed</span>
                 </div>
               </Link>
             </li>

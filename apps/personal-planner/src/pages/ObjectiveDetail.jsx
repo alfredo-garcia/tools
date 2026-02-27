@@ -37,26 +37,26 @@ export function ObjectiveDetail() {
 
   if (loading && !item) return <div className="flex justify-center py-12"><Spinner size="lg" /></div>
   if (error && !item) return <p className="text-red-600 dark:text-red-400">{error}</p>
-  if (!item) return <p className="text-text-muted">Objetivo no encontrado.</p>
+  if (!item) return <p className="text-text-muted">Objective not found.</p>
 
   const rows = [
-    ['Nombre', str(field(item, 'Objective Name', 'Objective Name'))],
-    ['Descripción', str(field(item, 'Description', 'Description'))],
-    ['Categoría', str(field(item, 'Category', 'Category'))],
-    ['Estado', str(field(item, 'Status', 'Status'))],
-    ['Prioridad', str(field(item, 'Priority', 'Priority'))],
-    ['Fecha inicio', dateStr(field(item, 'Start Date', 'Start Date'))],
-    ['Fecha objetivo', dateStr(field(item, 'Target Date', 'Target Date'))],
+    ['Name', str(field(item, 'Objective Name', 'Objective Name'))],
+    ['Description', str(field(item, 'Description', 'Description'))],
+    ['Category', str(field(item, 'Category', 'Category'))],
+    ['Status', str(field(item, 'Status', 'Status'))],
+    ['Priority', str(field(item, 'Priority', 'Priority'))],
+    ['Start date', dateStr(field(item, 'Start Date', 'Start Date'))],
+    ['Target date', dateStr(field(item, 'Target Date', 'Target Date'))],
   ]
 
-  const title = str(field(item, 'Objective Name', 'Objective Name')) || 'Objetivo'
+  const title = str(field(item, 'Objective Name', 'Objective Name')) || 'Objective'
 
   return (
     <div className="space-y-6">
       <Link to="/objectives" className="text-sm text-primary hover:underline">
-        ← Volver a Objetivos
+        ← Back to objectives
       </Link>
-      <PageHeader breadcrumbs={[{ label: 'Home', to: '/' }, { label: 'Objetivos', to: '/objectives' }, { label: title }]} onRefresh={refetch} loading={loading} />
+      <PageHeader breadcrumbs={[{ label: 'Home', to: '/' }, { label: 'Objectives', to: '/objectives' }, { label: title }]} onRefresh={refetch} loading={loading} />
       <div className="rounded-2xl border border-2 border-border bg-surface overflow-hidden">
         <div className="p-6 border-b border-border">
           <dl className="grid gap-2 sm:grid-cols-2">
@@ -73,7 +73,7 @@ export function ObjectiveDetail() {
         {keyResults.length > 0 && (
           <div className="p-6">
             <h2 className="text-base font-semibold text-text mb-3">
-              Key Results vinculados
+              Linked Key Results
             </h2>
             <ul className="space-y-2">
               {keyResults.map((kr) => (

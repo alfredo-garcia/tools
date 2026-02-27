@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useApi, Spinner, PageHeader, Card, IconChevronDown, IconChevronUp, IconStar, IconFlameFilled } from '@tools/shared'
+import { useApi, Spinner, PageHeader, Card, IconChevronDown, IconChevronUp, IconStar, IconFlameFilled, IconCircle, IconPlay, IconCheckSquare } from '@tools/shared'
 import { field, str, dateStr, arr, getWeekDays, getWeekdayIndex, isPastDue } from '@tools/shared'
 import { getTaskStatusGroup } from '../lib/taskStatus'
 
@@ -174,6 +174,7 @@ function DayColumn({
               <PlannerTaskCard
                 key={task.id}
                 task={task}
+                dayStr={dayStr}
                 onStatusChange={onTaskStatusChange}
                 onOpenModal={onTaskClick}
                 refetch={refetch}
@@ -235,15 +236,22 @@ function DayColumn({
   )
 }
 
-function PlannerTaskCard({ task, onStatusChange, onOpenModal, refetch }) {
+function getPriorityTagClass(priority) {
+  const p = (priority || '').toLowerCase()
+  if (p === 'low') return 'bg-blue-500/20 text-blue-600 dark:text-blue-400'
+  if (p === 'medium') return 'bg-amber-500/20 text-amber-600 dark:text-amber-400'
+  if (p === 'high') return 'bg-red-500/20 text-red-600 dark:text-red-400'
+  return 'bg-border text-text-muted'
+}
+
+function PlannerTaskCard({ task, dayStr, onStatusChange, onOpenModal, refetch }) {
   const name = str(field(task, 'Task Name', 'Task Name')) || '(sin nombre)'
   const statusGroup = getTaskStatusGroup(task)
   const priority = str(field(task, 'Priority', 'Priority'))
   const dueStr = dateStr(field(task, 'Due Date', 'Due Date'))
-  const isOverdue = dueStr && statusGroup !== 'done' && isPastDue(dueStr)
   const description = str(field(task, 'Description', 'Description'))
-  const assignee = str(field(task, 'Assignee', 'Assignee'))
-  const category = str(field(task, 'Category', 'Category'))
+  const showDueTag = dueStr && dueStr !== dayStr
+  const dueIsPast = showDueTag && isPastDue(dueStr)
 
   const handleStatus = async (e, newStatus) => {
     e.stopPropagation()
@@ -256,30 +264,51 @@ function PlannerTaskCard({ task, onStatusChange, onOpenModal, refetch }) {
   }
 
   const tags = (
-    <div className="flex flex-wrap gap-1.5 mt-1">
+    <div className="flex flex-wrap items-center gap-1.5 mt-1">
       {priority && (
-        <span className="inline-flex px-1.5 py-0.5 rounded text-[10px] font-medium bg-border text-text-muted">
+        <span className={`inline-flex px-1.5 py-0.5 rounded text-[10px] font-medium ${getPriorityTagClass(priority)}`}>
           {priority}
         </span>
       )}
-      {isOverdue && (
-        <span className="inline-flex px-1.5 py-0.5 rounded text-[10px] font-medium bg-red-500/20 text-red-600 dark:text-red-400">
-          Vence: {dueStr}
-        </span>
-      )}
-      {dueStr && !isOverdue && (
-        <span className="inline-flex px-1.5 py-0.5 rounded text-[10px] text-text-muted">
+      {showDueTag && (
+        <span className={`inline-flex px-1.5 py-0.5 rounded text-[10px] font-medium ${dueIsPast ? 'bg-red-500/20 text-red-600 dark:text-red-400' : 'bg-border text-text-muted'}`}>
           {dueStr}
         </span>
       )}
     </div>
   )
 
-  const expandedContent = (description || assignee || category) && (
-    <div className="text-xs text-text-muted space-y-0.5">
-      {description && <div>Descripción: {description}</div>}
-      {assignee && <div>Asignado: {assignee}</div>}
-      {category && <div>Clasificación: {category}</div>}
+  const statusButtons = (
+    <div className="flex items-center gap-1 mt-2" onClick={(e) => e.stopPropagation()}>
+      {STATUS_OPTIONS.map(({ value }) => {
+        const isActive =
+          (value === 'Done' && statusGroup === 'done') ||
+          (value === 'In Progress' && statusGroup === 'in_progress') ||
+          (value === 'Pending' && statusGroup === 'pending')
+        const isPending = value === 'Pending'
+        const isInProgress = value === 'In Progress'
+        const isDone = value === 'Done'
+        const btnClass = isActive
+          ? isPending
+            ? 'bg-gray-500 text-white'
+            : isInProgress
+              ? 'bg-blue-500 text-white'
+              : 'bg-green-500 text-white'
+          : 'bg-border/50 text-text-muted hover:bg-border'
+        const Icon = isPending ? IconCircle : isInProgress ? IconPlay : IconCheckSquare
+        const title = isPending ? 'Pendiente' : isInProgress ? 'En progreso' : 'Hecho'
+        return (
+          <button
+            key={value}
+            type="button"
+            onClick={(e) => handleStatus(e, value)}
+            title={title}
+            className={`p-1 rounded ${btnClass}`}
+          >
+            <Icon size={14} />
+          </button>
+        )
+      })}
     </div>
   )
 
@@ -294,32 +323,15 @@ function PlannerTaskCard({ task, onStatusChange, onOpenModal, refetch }) {
       >
         <Card
           title={name}
-          expandable={!!(description || assignee || category)}
-          expandedContent={expandedContent}
-          buttons={
-            <div className="flex flex-wrap gap-1" onClick={(e) => e.stopPropagation()}>
-              {STATUS_OPTIONS.map(({ value, label }) => {
-                const isActive =
-                  (value === 'Done' && statusGroup === 'done') ||
-                  (value === 'In Progress' && statusGroup === 'in_progress') ||
-                  (value === 'Pending' && statusGroup === 'pending')
-                return (
-                  <button
-                    key={value}
-                    type="button"
-                    onClick={(e) => handleStatus(e, value)}
-                    className={`px-2 py-0.5 rounded text-[10px] font-medium ${
-                      isActive ? 'bg-primary text-white' : 'bg-border/50 text-text hover:bg-border'
-                    }`}
-                  >
-                    {label}
-                  </button>
-                )
-              })}
-            </div>
-          }
+          expandable={false}
+          buttons={statusButtons}
           className="w-full"
         >
+          {description && (
+            <div className="text-xs text-text-muted line-clamp-2 break-words">
+              {description}
+            </div>
+          )}
           {tags}
         </Card>
       </div>

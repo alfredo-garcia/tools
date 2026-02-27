@@ -650,11 +650,12 @@ function TaskModal({ task, onClose, onStatusChange, onTaskUpdate, onTaskDelete, 
                   <button
                     key={value}
                     type="button"
+                    title={label}
                     onClick={(e) => handleStatus(e, value)}
-                    className={`min-h-[44px] px-4 rounded-xl text-sm font-medium flex items-center gap-2 cursor-pointer ${btnClass}`}
+                    className={`min-h-[44px] px-3 md:px-4 rounded-xl text-sm font-medium flex items-center justify-center md:justify-start gap-2 shrink-0 cursor-pointer ${btnClass}`}
                   >
                     <Icon size={18} />
-                    {label}
+                    <span className="hidden md:inline">{label}</span>
                   </button>
                 )
               })}

@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useApi, Spinner, PageHeader, IconChevronDown, IconChevronUp, IconStar, IconFlameFilled } from '@tools/shared'
+import { useApi, Spinner, PageHeader, IconChevronDown, IconChevronUp, IconStar, IconFlameFilled, IconTarget, IconCalendar, IconUser, IconTag, IconCircle, IconPlay, IconCheckSquare } from '@tools/shared'
 import { field, str, dateStr, arr, getWeekDays, getWeekdayIndex } from '@tools/shared'
 import { getTaskStatusGroup } from '../lib/taskStatus'
-import { TaskCard, STATUS_OPTIONS } from '../components/TaskCard'
+import { TaskCard, STATUS_OPTIONS, getPriorityTagClass } from '../components/TaskCard'
 
 const DAY_NAMES = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 const MONTH_NAMES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
@@ -168,13 +168,13 @@ function DayColumn({
               title={progressBarTitle}
             >
               {donePct > 0 && (
-                <div className="h-full bg-green-500 transition-all shrink-0" style={{ width: `${donePct}%` }} />
+                <div className="h-full bg-status-done transition-all shrink-0" style={{ width: `${donePct}%` }} />
               )}
               {inProgressPct > 0 && (
-                <div className="h-full bg-blue-500 transition-all shrink-0" style={{ width: `${inProgressPct}%` }} />
+                <div className="h-full bg-status-in-progress transition-all shrink-0" style={{ width: `${inProgressPct}%` }} />
               )}
               {pendingPct > 0 && (
-                <div className="h-full bg-gray-500 transition-all shrink-0" style={{ width: `${pendingPct}%` }} />
+                <div className="h-full bg-status-pending transition-all shrink-0" style={{ width: `${pendingPct}%` }} />
               )}
             </div>
             <span className="text-xs font-medium text-text-muted shrink-0" title={progressBarTitle}>{donePct}%</span>
@@ -296,16 +296,14 @@ function TaskModal({ task, onClose, onStatusChange, refetch }) {
   if (!task) return null
   const name = str(field(task, 'Task Name', 'Task Name')) || '(sin nombre)'
   const statusGroup = getTaskStatusGroup(task)
-  const rows = [
-    ['Descripción', str(field(task, 'Description', 'Description'))],
-    ['Asignado', str(field(task, 'Assignee', 'Assignee'))],
-    ['Clasificación', str(field(task, 'Category', 'Category'))],
-    ['Prioridad', str(field(task, 'Priority', 'Priority'))],
-    ['Estado', str(field(task, 'Status', 'Status'))],
-    ['Fecha límite', dateStr(field(task, 'Due Date', 'Due Date'))],
-  ]
+  const description = str(field(task, 'Description', 'Description'))
+  const priority = str(field(task, 'Priority', 'Priority'))
+  const dueStr = dateStr(field(task, 'Due Date', 'Due Date'))
+  const assignee = str(field(task, 'Assignee', 'Assignee'))
+  const category = str(field(task, 'Category', 'Category'))
 
-  const handleStatus = async (newStatus) => {
+  const handleStatus = async (e, newStatus) => {
+    e?.stopPropagation?.()
     try {
       await onStatusChange(task.id, newStatus)
       refetch()
@@ -313,6 +311,15 @@ function TaskModal({ task, onClose, onStatusChange, refetch }) {
       console.error(err)
     }
   }
+
+  const MetaRow = ({ Icon, label, value }) =>
+    value ? (
+      <div className="flex items-center gap-2 text-sm">
+        <span className="text-text-muted shrink-0"><Icon size={18} /></span>
+        <span className="text-text-muted shrink-0">{label}:</span>
+        <span className="text-text">{value}</span>
+      </div>
+    ) : null
 
   return (
     <div
@@ -323,55 +330,70 @@ function TaskModal({ task, onClose, onStatusChange, refetch }) {
       aria-labelledby="task-modal-title"
     >
       <div
-        className="bg-surface rounded-2xl border-2 border-border shadow-xl max-w-lg w-full max-h-[90vh] overflow-hidden flex flex-col"
+        className="bg-surface rounded-2xl border-2 border-border shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="p-4 border-b border-border flex items-center justify-between gap-2">
-          <h2 id="task-modal-title" className="font-bold text-lg text-text truncate">
+        <div className="p-5 border-b border-border flex items-center justify-between gap-3">
+          <h2 id="task-modal-title" className="font-bold text-xl text-text truncate flex-1 min-w-0">
             {name}
           </h2>
           <button
             type="button"
             onClick={onClose}
-            className="shrink-0 p-2 rounded-lg text-text-muted hover:bg-border"
+            className="shrink-0 p-2 rounded-lg text-text-muted hover:bg-border text-xl leading-none"
             aria-label="Cerrar"
           >
             ×
           </button>
         </div>
-        <div className="p-4 overflow-y-auto flex-1">
-          <dl className="grid gap-2">
-            {rows.map(([label, value]) =>
-              value ? (
-                <div key={label}>
-                  <dt className="text-xs text-text-muted">{label}</dt>
-                  <dd className="text-sm text-text">{value}</dd>
-                </div>
-              ) : null
+        <div className="p-5 overflow-y-auto flex-1 space-y-4">
+          {description && (
+            <p className="text-sm font-normal text-text whitespace-pre-wrap">{description}</p>
+          )}
+          <hr className="border-border" />
+          <div className="space-y-2">
+            {priority && (
+              <div className="flex items-center gap-2 text-sm">
+                <span className="text-text-muted shrink-0"><IconTarget size={18} /></span>
+                <span className="text-text-muted shrink-0">Prioridad:</span>
+                <span className={`inline-flex px-1.5 py-0.5 rounded text-xs font-medium ${getPriorityTagClass(priority)}`}>
+                  {priority}
+                </span>
+              </div>
             )}
-          </dl>
-          <div className="mt-4 pt-4 border-t border-border">
-            <p className="text-xs text-text-muted mb-2">Cambiar estado</p>
-            <div className="flex flex-wrap gap-2">
-              {STATUS_OPTIONS.map(({ value, label }) => {
-                const isActive =
-                  (value === 'Done' && statusGroup === 'done') ||
-                  (value === 'In Progress' && statusGroup === 'in_progress') ||
-                  (value === 'Pending' && statusGroup === 'pending')
-                return (
-                  <button
-                    key={value}
-                    type="button"
-                    onClick={() => handleStatus(value)}
-                    className={`min-h-[44px] px-4 rounded-xl text-sm font-medium ${
-                      isActive ? 'bg-primary text-white' : 'bg-border text-text hover:bg-border/80'
-                    }`}
-                  >
-                    {label}
-                  </button>
-                )
-              })}
-            </div>
+            <MetaRow Icon={IconCalendar} label="Fecha límite" value={dueStr} />
+            <MetaRow Icon={IconUser} label="Asignado" value={assignee} />
+            <MetaRow Icon={IconTag} label="Clasificación" value={category} />
+          </div>
+          <hr className="border-border" />
+          <div className="flex flex-wrap gap-2">
+            {STATUS_OPTIONS.map(({ value, label }) => {
+              const isActive =
+                (value === 'Done' && statusGroup === 'done') ||
+                (value === 'In Progress' && statusGroup === 'in_progress') ||
+                (value === 'Pending' && statusGroup === 'pending')
+              const isPending = value === 'Pending'
+              const isInProgress = value === 'In Progress'
+              const btnClass = isActive
+                ? isPending
+                  ? 'bg-status-pending text-white'
+                  : isInProgress
+                    ? 'bg-status-in-progress text-white'
+                    : 'bg-status-done text-white'
+                : 'bg-border text-text hover:bg-border/80'
+              const Icon = isPending ? IconCircle : isInProgress ? IconPlay : IconCheckSquare
+              return (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={(e) => handleStatus(e, value)}
+                  className={`min-h-[44px] px-4 rounded-xl text-sm font-medium flex items-center gap-2 cursor-pointer ${btnClass}`}
+                >
+                  <Icon size={18} />
+                  {label}
+                </button>
+              )
+            })}
           </div>
         </div>
       </div>

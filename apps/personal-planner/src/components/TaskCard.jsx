@@ -8,7 +8,7 @@ const STATUS_OPTIONS = [
   { value: 'Done', label: 'Hecho' },
 ]
 
-function getPriorityTagClass(priority) {
+export function getPriorityTagClass(priority) {
   const p = (priority || '').toLowerCase()
   if (p === 'low') return 'bg-blue-500/20 text-blue-600 dark:text-blue-400'
   if (p === 'medium') return 'bg-amber-500/20 text-amber-600 dark:text-amber-400'
@@ -66,10 +66,10 @@ export function TaskCard({ task, dayStr, onStatusChange, onOpenModal, refetch })
         const isInProgress = value === 'In Progress'
         const btnClass = isActive
           ? isPending
-            ? 'bg-gray-500 text-white'
+            ? 'bg-status-pending text-white'
             : isInProgress
-              ? 'bg-blue-500 text-white'
-              : 'bg-green-500 text-white'
+              ? 'bg-status-in-progress text-white'
+              : 'bg-status-done text-white'
           : 'bg-border/50 text-text-muted hover:bg-border'
         const Icon = isPending ? IconCircle : isInProgress ? IconPlay : IconCheckSquare
         const title = isPending ? 'Pendiente' : isInProgress ? 'En progreso' : 'Hecho'

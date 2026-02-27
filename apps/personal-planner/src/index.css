@@ -19,6 +19,9 @@
   --color-nav-text: var(--token-nav-text);
   --color-nav-text-active: var(--token-nav-text-active);
   --color-spinner: var(--token-spinner);
+  --color-status-pending: var(--token-status-pending);
+  --color-status-in-progress: var(--token-status-in-progress);
+  --color-status-done: var(--token-status-done);
   --font-sans: var(--font-sans);
 }
 

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useApi, Spinner, PageHeader, Card, IconChevronDown, IconChevronUp, IconStar, IconFlame } from '@tools/shared'
+import { useApi, Spinner, PageHeader, Card, IconChevronDown, IconChevronUp, IconStar, IconFlameFilled } from '@tools/shared'
 import { field, str, dateStr, arr, getWeekDays, getWeekdayIndex, isPastDue } from '@tools/shared'
 import { getTaskStatusGroup } from '../lib/taskStatus'
 
@@ -136,7 +136,7 @@ function DayColumn({
           )}
           {hasFire && (
             <span className="text-orange-500" title="5+ hábitos buenos">
-              <IconFlame size={18} />
+              <IconFlameFilled size={22} />
             </span>
           )}
         </div>
@@ -146,10 +146,10 @@ function DayColumn({
       <button
         type="button"
         onClick={() => setTasksCollapsed((c) => !c)}
-        className="w-full flex items-center justify-between gap-2 py-1.5 text-left font-semibold text-sm text-text"
+        className="w-full flex items-center justify-between gap-2 py-1.5 text-left font-semibold text-base text-text"
       >
         <span>Tasks ({tasksForDay.length})</span>
-        {tasksCollapsed ? <IconChevronDown size={18} /> : <IconChevronUp size={18} />}
+        {tasksCollapsed ? <IconChevronDown size={22} /> : <IconChevronUp size={22} />}
       </button>
       {!tasksCollapsed && (
         <>
@@ -187,10 +187,10 @@ function DayColumn({
       <button
         type="button"
         onClick={() => setHabitsCollapsed((c) => !c)}
-        className="w-full flex items-center justify-between gap-2 py-1.5 text-left font-semibold text-sm text-text mt-2"
+        className="w-full flex items-center justify-between gap-2 py-1.5 text-left font-semibold text-base text-text mt-2"
       >
         <span>Habits</span>
-        {habitsCollapsed ? <IconChevronDown size={18} /> : <IconChevronUp size={18} />}
+        {habitsCollapsed ? <IconChevronDown size={22} /> : <IconChevronUp size={22} />}
       </button>
       {!habitsCollapsed && (
         <>
@@ -201,7 +201,7 @@ function DayColumn({
                 className={`shrink-0 ${n <= habitsDoneCount ? (n === 5 ? 'text-orange-500' : 'text-amber-500') : 'text-border'}`}
                 title={n === 5 ? '5+ hábitos' : `Punto ${n}`}
               >
-                {n === 5 ? <IconFlame size={14} /> : <IconStar size={12} />}
+                {n === 5 ? <IconFlameFilled size={16} /> : <IconStar size={14} />}
               </span>
             ))}
           </div>

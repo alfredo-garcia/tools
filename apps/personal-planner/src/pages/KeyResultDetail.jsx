@@ -58,6 +58,7 @@ export function KeyResultDetail() {
   const [editingField, setEditingField] = useState(null)
   const [editValue, setEditValue] = useState('')
   const [modalTask, setModalTask] = useState(null)
+  const [objectiveName, setObjectiveName] = useState('')
 
   const refetch = useCallback((silent = false) => {
     if (!silent) {
@@ -79,6 +80,22 @@ export function KeyResultDetail() {
   useEffect(() => {
     refetch()
   }, [refetch])
+
+  const objectiveLink = item ? arr(field(item, 'Objective Link', 'Objective'))[0] : null
+  useEffect(() => {
+    if (!objectiveLink) {
+      setObjectiveName('')
+      return
+    }
+    setObjectiveName('…')
+    fetchApi('/api/objectives')
+      .then((r) => {
+        const list = r.data || []
+        const o = list.find((x) => x.id === objectiveLink)
+        setObjectiveName(o ? str(field(o, 'Objective Name', 'Objective Name')) || '(untitled)' : '')
+      })
+      .catch(() => setObjectiveName(''))
+  }, [objectiveLink, fetchApi])
 
   const handleKrUpdate = useCallback(async (fields) => {
     if (!item) return
@@ -184,8 +201,6 @@ export function KeyResultDetail() {
   const progressVal = num(field(item, 'Progress (%)', 'Progress', 'Progress %'))
   const progressStr = progressVal != null ? String(progressVal) : ''
 
-  const objectiveLink = arr(field(item, 'Objective Link', 'Objective'))[0]
-
   const startEdit = (fieldName, currentValue) => {
     setEditingField(fieldName)
     setEditValue(currentValue ?? '')
@@ -203,32 +218,41 @@ export function KeyResultDetail() {
 
       {/* Card Key Result */}
       <div className="rounded-2xl border border-2 border-border bg-surface overflow-hidden">
-        <div className="p-5 border-b border-border flex items-center justify-between gap-3">
-          {editingField === 'name' ? (
-            <input
-              type="text"
-              value={editValue}
-              onChange={(e) => setEditValue(e.target.value)}
-              onBlur={async () => {
-                if (editingField !== 'name') return
-                await handleKrUpdate({ 'Key Result Name': editValue.trim() || title || '(untitled)' })
-                setEditingField(null)
-              }}
-              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); e.target.blur() } }}
-              className="flex-1 min-w-0 font-bold text-xl text-text bg-surface border border-border rounded-lg px-2 py-1"
-              autoFocus
-            />
-          ) : (
-            <h1
-              role="button"
-              tabIndex={0}
-              onClick={() => startEdit('name', title)}
-              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); startEdit('name', title) } }}
-              className="font-bold text-xl text-text truncate flex-1 min-w-0 cursor-pointer rounded hover:bg-border/50 py-1 -mx-1 px-1 flex items-center gap-2"
-            >
-              <span className="shrink-0 text-text-muted"><IconTarget size={22} /></span>
-              {title || '(untitled)'}
-            </h1>
+        <div className="p-5 border-b border-border flex flex-col gap-1">
+          <div className="flex items-center justify-between gap-3">
+            {editingField === 'name' ? (
+              <input
+                type="text"
+                value={editValue}
+                onChange={(e) => setEditValue(e.target.value)}
+                onBlur={async () => {
+                  if (editingField !== 'name') return
+                  await handleKrUpdate({ 'Key Result Name': editValue.trim() || title || '(untitled)' })
+                  setEditingField(null)
+                }}
+                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); e.target.blur() } }}
+                className="flex-1 min-w-0 font-bold text-xl text-text bg-surface border border-border rounded-lg px-2 py-1"
+                autoFocus
+              />
+            ) : (
+              <h1
+                role="button"
+                tabIndex={0}
+                onClick={() => startEdit('name', title)}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); startEdit('name', title) } }}
+                className="font-bold text-xl text-text truncate flex-1 min-w-0 cursor-pointer rounded hover:bg-border/50 py-1 -mx-1 px-1 flex items-center gap-2"
+              >
+                <span className="shrink-0 text-text-muted"><IconTarget size={22} /></span>
+                {title || '(untitled)'}
+              </h1>
+            )}
+          </div>
+          {objectiveLink && (
+            <p className="text-sm text-text-muted">
+              <Link to={`/objectives/${objectiveLink}`} className="hover:underline">
+                {objectiveName || '…'}
+              </Link>
+            </p>
           )}
         </div>
 
@@ -417,17 +441,6 @@ export function KeyResultDetail() {
                 </span>
               )}
             </div>
-
-            {/* Linked objective */}
-            {objectiveLink && (
-              <div className="flex items-center gap-2 text-sm pt-1">
-                <span className="text-text-muted shrink-0"><IconTarget size={18} /></span>
-                <span className="text-text-muted shrink-0">Objective:</span>
-                <Link to={`/objectives/${objectiveLink}`} className="text-primary hover:underline">
-                  View objective →
-                </Link>
-              </div>
-            )}
           </div>
 
           <hr className="border-border" />

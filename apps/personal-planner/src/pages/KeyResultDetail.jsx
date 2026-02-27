@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import { useApi, Spinner, PageHeader, Card, CardList, IconTarget, IconCalendar, IconTag, IconCircle, IconPlay, IconCheckSquare, IconTrash } from '@tools/shared'
+import { useApi, Spinner, PageHeader, Card, CardList, IconTarget, IconCalendar, IconTag, IconCircle, IconPlay, IconCheckSquare, IconTrash, LineChart } from '@tools/shared'
 import { field, str, dateStr, arr, num } from '@tools/shared'
 import { getTaskStatusGroup } from '../lib/taskStatus'
 import { getPriorityTagClass, STATUS_OPTIONS } from '../components/TaskCard'
@@ -61,6 +61,7 @@ export function KeyResultDetail() {
   const [modalTask, setModalTask] = useState(null)
   const [createTaskOpen, setCreateTaskOpen] = useState(false)
   const [objectiveName, setObjectiveName] = useState('')
+  const [tracking, setTracking] = useState([])
 
   const refetch = useCallback((silent = false) => {
     if (!silent) {
@@ -70,12 +71,14 @@ export function KeyResultDetail() {
     Promise.allSettled([
       fetchApi('/api/key-results').then((r) => (r.data || []).find((kr) => kr.id === id) || null),
       fetchApi('/api/tasks').then((r) => r.data || []),
-    ]).then(([krRes, tasksRes]) => {
+      fetchApi(`/api/key-result-tracking?keyResultId=${encodeURIComponent(id)}`).then((r) => r.data || []),
+    ]).then(([krRes, tasksRes, trackingRes]) => {
       if (krRes.status === 'fulfilled' && krRes.value != null) setItem(krRes.value)
       if (tasksRes.status === 'fulfilled') {
         const allTasks = tasksRes.value || []
         setTasks(allTasks.filter((t) => arr(field(t, 'Key Result', 'Key Results')).includes(id)))
       }
+      if (trackingRes.status === 'fulfilled') setTracking(trackingRes.value || [])
     }).finally(() => setLoading(false))
   }, [fetchApi, id])
 
@@ -218,6 +221,20 @@ export function KeyResultDetail() {
     return { done, inProgress, pending, total: tasks.length }
   }, [tasks])
 
+  const chartData = useMemo(() => {
+    const byDate = new Map()
+    tracking.forEach((r) => {
+      const d = String(r['Date'] ?? r.date ?? '').slice(0, 10)
+      if (!d) return
+      const v = num(r['Current Value'] ?? r.value)
+      if (v == null || Number.isNaN(v)) return
+      byDate.set(d, v)
+    })
+    return [...byDate.entries()]
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([date, value]) => ({ date, value }))
+  }, [tracking])
+
   const donePct = taskStats.total === 0 ? 0 : Math.round((taskStats.done / taskStats.total) * 100)
   const inProgressPct = taskStats.total === 0 ? 0 : Math.round((taskStats.inProgress / taskStats.total) * 100)
   const pendingPct = taskStats.total === 0 ? 0 : Math.round((taskStats.pending / taskStats.total) * 100)
@@ -240,6 +257,9 @@ export function KeyResultDetail() {
   const deadline = dateStr(field(item, 'Deadline', 'Deadline')) || ''
   const progressVal = num(field(item, 'Progress (%)', 'Progress', 'Progress %'))
   const progressStr = progressVal != null ? String(progressVal) : ''
+
+  const targetNum = targetVal != null && targetVal !== '' ? Number(targetVal) : null
+  const hasChart = chartData.length > 0 || (targetNum != null && !Number.isNaN(targetNum))
 
   const startEdit = (fieldName, currentValue) => {
     setEditingField(fieldName)
@@ -297,34 +317,77 @@ export function KeyResultDetail() {
         </div>
 
         <div className="p-5 space-y-4">
-          {editingField === 'description' ? (
-            <textarea
-              value={editValue}
-              onChange={(e) => setEditValue(e.target.value)}
-              onBlur={async () => {
-                if (editingField !== 'description') return
-                await handleKrUpdate({ Description: editValue })
-                setEditingField(null)
-              }}
-              className="w-full text-sm font-normal text-text bg-surface border border-border rounded-lg px-3 py-2 min-h-[80px] resize-y"
-              placeholder="Description"
-              autoFocus
-            />
-          ) : (
-            <p
-              role="button"
-              tabIndex={0}
-              onClick={() => startEdit('description', description)}
-              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); startEdit('description', description) } }}
-              className="text-sm font-normal text-text whitespace-pre-wrap cursor-pointer rounded hover:bg-border/50 py-2 -mx-2 px-2 min-h-[2rem]"
-            >
-              {description || '(no description)'}
-            </p>
-          )}
+          {/* Description: solo en mobile (arriba, ancho completo) */}
+          <div className="md:hidden">
+            {editingField === 'description' ? (
+              <textarea
+                value={editValue}
+                onChange={(e) => setEditValue(e.target.value)}
+                onBlur={async () => {
+                  if (editingField !== 'description') return
+                  await handleKrUpdate({ Description: editValue })
+                  setEditingField(null)
+                }}
+                className="w-full text-sm font-normal text-text bg-surface border border-border rounded-lg px-3 py-2 min-h-[80px] resize-y"
+                placeholder="Description"
+                autoFocus
+              />
+            ) : (
+              <p
+                role="button"
+                tabIndex={0}
+                onClick={() => startEdit('description', description)}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); startEdit('description', description) } }}
+                className="text-sm font-normal text-text whitespace-pre-wrap cursor-pointer rounded hover:bg-border/50 py-2 -mx-2 px-2 min-h-[2rem]"
+              >
+                {description || '(no description)'}
+              </p>
+            )}
+          </div>
 
-          <hr className="border-border" />
+          <hr className="border-border md:hidden" />
 
-          <div className="space-y-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+            {hasChart && (
+              <div className="w-full min-w-0 order-1 md:order-2 py-2">
+                <LineChart
+                  data={chartData}
+                  targetValue={targetNum != null && !Number.isNaN(targetNum) ? targetNum : undefined}
+                  valueLabel="Current value"
+                  targetLabel="Target"
+                  height={200}
+                />
+              </div>
+            )}
+            <div className={`space-y-4 ${hasChart ? 'order-2 md:order-1' : ''}`}>
+            {/* Description: solo en desktop (1ª columna, junto a atributos) */}
+            <div className="hidden md:block">
+              {editingField === 'description' ? (
+                <textarea
+                  value={editValue}
+                  onChange={(e) => setEditValue(e.target.value)}
+                  onBlur={async () => {
+                    if (editingField !== 'description') return
+                    await handleKrUpdate({ Description: editValue })
+                    setEditingField(null)
+                  }}
+                  className="w-full text-sm font-normal text-text bg-surface border border-border rounded-lg px-3 py-2 min-h-[80px] resize-y"
+                  placeholder="Description"
+                  autoFocus
+                />
+              ) : (
+                <p
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => startEdit('description', description)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); startEdit('description', description) } }}
+                  className="text-sm font-normal text-text whitespace-pre-wrap cursor-pointer rounded hover:bg-border/50 py-2 -mx-2 px-2 min-h-[2rem]"
+                >
+                  {description || '(no description)'}
+                </p>
+              )}
+            </div>
+            <div className="space-y-2">
             {/* Metric */}
             <div className="flex items-center gap-2 text-sm">
               <span className="text-text-muted shrink-0"><IconTag size={18} /></span>
@@ -480,6 +543,8 @@ export function KeyResultDetail() {
                   {deadline || '—'}
                 </span>
               )}
+            </div>
+            </div>
             </div>
           </div>
 

@@ -153,7 +153,7 @@ function DayColumn({
       </button>
       {!tasksCollapsed && (
         <>
-          <div className="w-full flex items-center gap-2 py-1">
+          <div className="w-full flex items-center gap-2 pt-0.5 pb-0">
             <div className="flex-1 h-2 rounded-full bg-border overflow-hidden">
               <div
                 className="h-full rounded-full bg-primary transition-all"
@@ -166,7 +166,7 @@ function DayColumn({
             </div>
             <span className="text-xs font-medium text-text-muted shrink-0">{tasksPct}%</span>
           </div>
-          <ul className="space-y-2 w-full">
+          <ul className="space-y-2 w-full mt-3">
             {tasksForDay.length === 0 && (
               <li className="text-xs text-text-muted py-1">Ninguna tarea</li>
             )}
@@ -187,14 +187,14 @@ function DayColumn({
       <button
         type="button"
         onClick={() => setHabitsCollapsed((c) => !c)}
-        className="w-full flex items-center justify-between gap-2 py-1.5 text-left font-semibold text-base text-text mt-2"
+        className="w-full flex items-center justify-between gap-2 py-1.5 text-left font-semibold text-base text-text mt-5"
       >
         <span>Habits</span>
         {habitsCollapsed ? <IconChevronDown size={22} /> : <IconChevronUp size={22} />}
       </button>
       {!habitsCollapsed && (
         <>
-          <div className="w-full py-1 flex items-center gap-0.5">
+          <div className="w-full pt-0.5 pb-0 flex items-center gap-0.5">
             {[1, 2, 3, 4, 5].map((n) => (
               <span
                 key={n}
@@ -205,7 +205,7 @@ function DayColumn({
               </span>
             ))}
           </div>
-          <div className="w-full space-y-3">
+          <div className="w-full space-y-3 mt-3">
             {habits.length === 0 && (
               <p className="text-xs text-text-muted py-1">Ningún hábito</p>
             )}

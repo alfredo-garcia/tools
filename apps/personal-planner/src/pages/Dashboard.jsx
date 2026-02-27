@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { useApi, Spinner, PageHeader } from '@tools/shared'
-import { field, num, str, arr, dateStr } from '../lib/normalize'
+import { field, num, str, arr, dateStr } from '@tools/shared'
 import {
   BarChart,
   Bar,

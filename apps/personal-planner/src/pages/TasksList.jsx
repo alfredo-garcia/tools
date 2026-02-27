@@ -1,9 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { useApi, Spinner, PageHeader, Card, CardList, IconCheckSquare } from '@tools/shared'
-import { field, str, dateStr } from '../lib/normalize'
+import { field, str, dateStr, isToday, isThisWeek, isThisMonth, isPastDue } from '@tools/shared'
 import { getTaskStatusGroup } from '../lib/taskStatus'
-import { isToday, isThisWeek, isThisMonth, isPastDue } from '../lib/dateFilters'
 
 const FILTER_OPTIONS = [
   { value: 'today', label: 'Hoy' },

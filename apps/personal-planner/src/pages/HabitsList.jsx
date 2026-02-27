@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { useApi, Spinner, PageHeader } from '@tools/shared'
-import { field, str } from '../lib/normalize'
+import { field, str } from '@tools/shared'
 
 export function HabitsList() {
   const { fetchApi } = useApi()

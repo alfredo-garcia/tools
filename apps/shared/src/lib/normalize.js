@@ -1,5 +1,6 @@
 /**
- * Normaliza nombres de campos de Airtable (con o sin espacios/guiones).
+ * Normalize field access and scalar values for API/JSON data.
+ * Use when field names may vary (e.g. "Status" vs "status") or values need coercion.
  */
 export function field(obj, ...keys) {
   if (!obj) return undefined

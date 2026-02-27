@@ -1,5 +1,6 @@
 /**
- * Date filter helpers for task due dates.
+ * Date filter helpers: today, this week, this month, past due.
+ * Week utilities: getWeekStart, getWeekDays, getWeekdayIndex (0 = Monday, 6 = Sunday).
  * All accept a date string (YYYY-MM-DD) or Date; compare date-only where relevant.
  */
 
@@ -19,7 +20,7 @@ function toLocalDateStr(d) {
   return `${y}-${m}-${day}`
 }
 
-/** Due date is today (same calendar day). */
+/** Date is today (same calendar day). */
 export function isToday(d) {
   const only = toLocalDateStr(d)
   if (!only) return false
@@ -56,11 +57,45 @@ export function isThisMonth(d) {
   return y === thisYear && m === thisMonth && day >= 1 && day <= lastDay
 }
 
-/** Due date is strictly before today (past due). */
+/** Date is strictly before today (past due). */
 export function isPastDue(d) {
   const only = toLocalDateStr(d)
   if (!only) return false
   const today = new Date()
   const todayStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0')
   return only < todayStr
+}
+
+/** Monday 00:00 of the week containing the given date. */
+export function getWeekStart(d) {
+  const x = d ? (typeof d === 'string' ? new Date(d) : new Date(d.getTime())) : new Date()
+  const day = x.getDay()
+  const diff = x.getDate() - (day === 0 ? 6 : day - 1)
+  x.setDate(diff)
+  x.setHours(0, 0, 0, 0)
+  return x
+}
+
+/** Array of 7 date strings (YYYY-MM-DD) for the current week, Monday first. */
+export function getWeekDays(d) {
+  const start = getWeekStart(d || new Date())
+  const out = []
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(start)
+    d.setDate(start.getDate() + i)
+    const y = d.getFullYear()
+    const m = String(d.getMonth() + 1).padStart(2, '0')
+    const day = String(d.getDate()).padStart(2, '0')
+    out.push(`${y}-${m}-${day}`)
+  }
+  return out
+}
+
+/** Day-of-week index 0–6 for a date string (0 = Monday, 6 = Sunday). */
+export function getWeekdayIndex(dateStr) {
+  if (!dateStr || !/^\d{4}-\d{2}-\d{2}/.test(dateStr)) return -1
+  const [y, m, day] = dateStr.slice(0, 10).split('-').map(Number)
+  const d = new Date(y, m - 1, day)
+  const dayOfWeek = d.getDay()
+  return dayOfWeek === 0 ? 6 : dayOfWeek - 1
 }

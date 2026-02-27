@@ -88,7 +88,7 @@ export function AppShell({ children, navItems = [], title = '' }) {
 
       {/* ── Contenido principal ── */}
       <div className="flex-1 flex flex-col min-w-0 app-content" style={{ marginTop: '1.5rem' }}>
-        <main className="flex-1 w-full max-w-4xl mx-auto pt-5 px-0 md:px-6 pb-28 md:pb-8">
+        <main className="flex-1 w-full min-w-0 pt-5 px-0 md:px-6 pb-28 md:pb-8">
           {children}
         </main>
       </div>
@@ -111,8 +111,8 @@ export function AppShell({ children, navItems = [], title = '' }) {
                   : 'text-nav-text active:bg-surface'
               }`}
             >
-              {Icon && <Icon size={30} className="shrink-0" />}
-              <span className="text-[9px] font-medium truncate w-full text-center leading-tight">
+              {Icon && <Icon size={26} className="shrink-0" />}
+              <span className="text-[8px] font-medium truncate w-full text-center leading-tight">
                 {label}
               </span>
             </Link>

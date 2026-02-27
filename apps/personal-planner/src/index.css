@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@source "../../shared/src";
 @import "@tools/shared/tokens.css";
 
 /* Dark mode: control por clase en <html> */

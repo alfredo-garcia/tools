@@ -1,4 +1,4 @@
-import { field, str } from './normalize.js'
+import { field, str } from '@tools/shared'
 
 export const STATUS_DONE = ['Done', 'Complete', 'Completado', 'Hecho', 'Cerrado']
 

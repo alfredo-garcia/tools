@@ -92,8 +92,8 @@ const server = http.createServer(async (req, res) => {
       send(res, 404, { error: 'Not found' })
       return
     }
-    // Parse body for POST
-    if (req.method === 'POST') {
+    // Parse body for POST and PATCH
+    if (req.method === 'POST' || req.method === 'PATCH') {
       const raw = await readBody(req)
       try { req.body = raw ? JSON.parse(raw) : {} } catch { req.body = {} }
     }

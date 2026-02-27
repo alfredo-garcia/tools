@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { useApi, Spinner, PageHeader } from '@tools/shared'
-import { field, num, str, dateStr } from '../lib/normalize'
+import { field, num, str, dateStr } from '@tools/shared'
 
 export function KeyResultsList() {
   const { fetchApi } = useApi()

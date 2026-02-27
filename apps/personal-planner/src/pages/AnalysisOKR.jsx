@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { useApi, Spinner, PageHeader } from '@tools/shared'
-import { field, num, str, arr } from '../lib/normalize'
+import { field, num, str, arr } from '@tools/shared'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
 
 const STATUS_DONE = ['Done', 'Complete', 'Completado', 'Hecho', 'Cerrado']

@@ -125,7 +125,7 @@ export function TasksList() {
 
   return (
     <div className="space-y-6">
-      <PageHeader breadcrumbs={[{ label: 'Home', to: '/' }, { label: 'Tareas', to: '/tasks' }]} onRefresh={refetch} loading={loading} />
+      <PageHeader breadcrumbs={[{ label: 'Home', to: '/' }, { label: 'Tasks', to: '/tasks' }]} onRefresh={refetch} loading={loading} />
       <div className="flex flex-wrap gap-2">
         {FILTER_OPTIONS.map(({ value, label }) => (
           <button
@@ -146,7 +146,7 @@ export function TasksList() {
       <section className="rounded-2xl bg-surface p-4">
         <h2 className="text-sm font-medium text-text-muted mb-3">KPIs</h2>
         <div className="flex flex-wrap gap-4 items-baseline">
-          <span className="text-2xl font-bold text-text">{completionPct}% completado</span>
+          <span className="text-2xl font-bold text-text">{completionPct}% completed</span>
           <span className="text-text-muted">Past due: <strong className="text-text">{pastDueCount}</strong></span>
           <span className="text-text-muted">In progress: <strong className="text-text">{inProgressCount}</strong></span>
           <span className="text-text-muted">Pending: <strong className="text-text">{pendingCount}</strong></span>
@@ -164,7 +164,7 @@ export function TasksList() {
       />
 
       {filtered.length === 0 && (
-        <p className="text-text-muted">No hay tareas con este filtro.</p>
+        <p className="text-text-muted">No tasks for this filter.</p>
       )}
     </div>
   )

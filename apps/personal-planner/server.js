@@ -98,6 +98,7 @@ const server = http.createServer(async (req, res) => {
       try { req.body = raw ? JSON.parse(raw) : {} } catch { req.body = {} }
     }
     req.url = pathname
+    req.query = Object.fromEntries(url.searchParams)
     req.headers = req.headers
     handler(req, res)
     return

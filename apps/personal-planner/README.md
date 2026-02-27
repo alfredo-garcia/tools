@@ -8,6 +8,7 @@ Configura una base con estas tablas (los nombres de campos pueden variar; la app
 
 - **Objectives**: Objective Name, Description, Category, Status, Target Date, Start Date, Priority
 - **Key Results**: Key Result Name, Description, Metric, Target Value, Current Value, Unit, Status, Deadline, Progress (%), Objective Link (link a Objectives)
+- **Key Result Tracking**: Key Result (link a Key Results), Date, Current Value (opcional). Se crea un registro al actualizar "Current Value" en un Key Result.
 - **Tasks**: Task Name, Description, Category, Priority, Status, Assignee, Due Date, Objectives, Key Result (links opcionales)
 - **Habits**: Habit Name, Habit Description, Category, Frequency, Priority
 - **Habit Tracking**: Habit (link a Habits), Was Successful?, Execution Date-Time
@@ -18,7 +19,8 @@ Copia `.env.example` a `.env` y rellena:
 
 - `APP_ACCESS_CODE`: código de acceso a la app
 - `AIRTABLE_PAT`, `AIRTABLE_BASE_ID`: acceso a la base
-- `AIRTABLE_TABLE_OBJECTIVES`, `AIRTABLE_TABLE_KEY_RESULTS`, `AIRTABLE_TABLE_TASKS`, `AIRTABLE_TABLE_HABITS`, `AIRTABLE_TABLE_HABIT_TRACKING`: nombres exactos de cada tabla en tu base
+- `AIRTABLE_TABLE_OBJECTIVES`, `AIRTABLE_TABLE_KEY_RESULTS`, `AIRTABLE_TABLE_TASKS`, `AIRTABLE_TABLE_HABITS`, `AIRTABLE_TABLE_HABIT_TRACKING`, `AIRTABLE_TABLE_KEY_RESULT_TRACKING`: nombres exactos de cada tabla en tu base
+- `ENABLE_KEY_RESULT_TRACKING`: si no usas la tabla Key Result Tracking o el PAT no tiene permiso de escritura, pon `false` para desactivar el registro de tracking al actualizar "Current value".
 
 ## Desarrollo
 

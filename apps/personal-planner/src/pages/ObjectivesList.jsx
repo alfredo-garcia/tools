@@ -5,7 +5,7 @@ import { field, str, dateStr, arr } from '@tools/shared'
 import { getTaskStatusGroup } from '../lib/taskStatus'
 import { getPriorityTagClass } from '../components/TaskCard'
 import { ObjectiveModal } from '../components/ObjectiveModal'
-import { Fab } from '../components/Fab'
+import { Fab } from '@tools/shared'
 
 const GROUP_ORDER = ['in_progress', 'pending', 'done']
 const GROUP_LABELS = {

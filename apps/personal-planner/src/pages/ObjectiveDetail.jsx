@@ -5,7 +5,7 @@ import { field, str, dateStr, arr, num } from '@tools/shared'
 import { getTaskStatusGroup } from '../lib/taskStatus'
 import { getPriorityTagClass, STATUS_OPTIONS } from '../components/TaskCard'
 import { KeyResultCreateModal } from '../components/KeyResultCreateModal'
-import { Fab } from '../components/Fab'
+import { Fab } from '@tools/shared'
 
 const PRIORITY_OPTIONS = ['Low', 'Medium', 'High']
 

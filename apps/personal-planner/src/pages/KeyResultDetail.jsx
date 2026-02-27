@@ -5,7 +5,7 @@ import { field, str, dateStr, arr, num } from '@tools/shared'
 import { getTaskStatusGroup } from '../lib/taskStatus'
 import { getPriorityTagClass, STATUS_OPTIONS } from '../components/TaskCard'
 import { TaskModal } from '../components/TaskModal'
-import { Fab } from '../components/Fab'
+import { Fab } from '@tools/shared'
 
 const GROUP_ORDER = ['in_progress', 'pending', 'done']
 const GROUP_LABELS = { in_progress: 'In progress', pending: 'Pending', done: 'Done' }
@@ -106,6 +106,24 @@ export function KeyResultDetail() {
         method: 'PATCH',
         body: JSON.stringify(fields),
       })
+      if (fields['Current Value'] !== undefined) {
+        const numVal = fields['Current Value'] === '' || fields['Current Value'] == null ? null : Number(fields['Current Value'])
+        if (numVal != null && !Number.isNaN(numVal)) {
+          const today = new Date().toISOString().slice(0, 10)
+          try {
+            await fetchApi('/api/key-result-tracking', {
+              method: 'POST',
+              body: JSON.stringify({
+                'Key Result': item.id,
+                Date: today,
+                'Current Value': numVal,
+              }),
+            })
+          } catch (trackErr) {
+            console.error('key-result-tracking POST:', trackErr)
+          }
+        }
+      }
       setItem((prev) => (prev ? { ...prev, ...fields } : null))
       setEditingField(null)
     } catch (e) {

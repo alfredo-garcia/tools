@@ -4,7 +4,7 @@ import { field, str, dateStr, arr, getWeekDays, getWeekStart, getWeekdayIndex } 
 import { getTaskStatusGroup } from '../lib/taskStatus'
 import { TaskCard, STATUS_OPTIONS, getPriorityTagClass } from '../components/TaskCard'
 import { TaskModal } from '../components/TaskModal'
-import { Fab } from '../components/Fab'
+import { Fab } from '@tools/shared'
 
 const DAY_NAMES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
@@ -381,7 +381,7 @@ function PlannerHabitRow({ habit, dayStr, habitTracking, onToggle, refetch }) {
         >
           {isDone && <span className="text-[5px] leading-none">✓</span>}
         </span>
-        <span className={`text-sm text-text truncate ${isDone ? 'font-normal line-through opacity-80' : ''}`}>{name}</span>
+        <span className={`text-sm text-text truncate font-normal ${isDone ? 'line-through opacity-80' : ''}`}>{name}</span>
       </button>
     </li>
   )

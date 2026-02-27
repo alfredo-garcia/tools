@@ -4,7 +4,7 @@ import { field, str, dateStr, isToday, isThisWeek, isThisMonth, isPastDue } from
 import { getTaskStatusGroup } from '../lib/taskStatus'
 import { getPriorityTagClass } from '../components/TaskCard'
 import { TaskModal } from '../components/TaskModal'
-import { Fab } from '../components/Fab'
+import { Fab } from '@tools/shared'
 
 const FILTER_OPTIONS = [
   { value: 'today', label: 'Today' },

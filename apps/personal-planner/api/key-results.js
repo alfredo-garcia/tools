@@ -38,8 +38,16 @@ export default async function handler(req, res) {
     if (body['Key Result Name'] != null && typeof body['Key Result Name'] === 'string') fields['Key Result Name'] = body['Key Result Name'].trim()
     if (body.Description != null && typeof body.Description === 'string') fields.Description = body.Description.trim()
     if (body.Metric != null && typeof body.Metric === 'string') fields.Metric = body.Metric.trim()
-    if (body['Current Value'] != null) fields['Current Value'] = body['Current Value'] === '' ? null : body['Current Value']
-    if (body['Target Value'] != null) fields['Target Value'] = body['Target Value'] === '' ? null : body['Target Value']
+    if (body['Current Value'] != null) {
+      const v = body['Current Value']
+      fields['Current Value'] = v === '' ? null : (typeof v === 'number' && !Number.isNaN(v) ? v : Number(v))
+      if (fields['Current Value'] !== null && Number.isNaN(fields['Current Value'])) fields['Current Value'] = null
+    }
+    if (body['Target Value'] != null) {
+      const v = body['Target Value']
+      fields['Target Value'] = v === '' ? null : (typeof v === 'number' && !Number.isNaN(v) ? v : Number(v))
+      if (fields['Target Value'] !== null && Number.isNaN(fields['Target Value'])) fields['Target Value'] = null
+    }
     if (body.Unit != null && typeof body.Unit === 'string') fields.Unit = body.Unit.trim()
     if (body.Deadline != null) fields.Deadline = body.Deadline === '' ? null : String(body.Deadline).trim()
     if (body['Progress (%)'] != null) fields['Progress (%)'] = body['Progress (%)'] === '' ? null : Number(body['Progress (%)'])
@@ -81,8 +89,16 @@ export default async function handler(req, res) {
     }
     if (body.Description != null && typeof body.Description === 'string') fields.Description = body.Description.trim()
     if (body.Metric != null && typeof body.Metric === 'string') fields.Metric = body.Metric.trim()
-    if (body['Current Value'] != null) fields['Current Value'] = body['Current Value'] === '' ? null : body['Current Value']
-    if (body['Target Value'] != null) fields['Target Value'] = body['Target Value'] === '' ? null : body['Target Value']
+    if (body['Current Value'] != null) {
+      const v = body['Current Value']
+      fields['Current Value'] = v === '' ? null : (typeof v === 'number' && !Number.isNaN(v) ? v : Number(v))
+      if (fields['Current Value'] !== null && Number.isNaN(fields['Current Value'])) fields['Current Value'] = null
+    }
+    if (body['Target Value'] != null) {
+      const v = body['Target Value']
+      fields['Target Value'] = v === '' ? null : (typeof v === 'number' && !Number.isNaN(v) ? v : Number(v))
+      if (fields['Target Value'] !== null && Number.isNaN(fields['Target Value'])) fields['Target Value'] = null
+    }
     if (body.Unit != null && typeof body.Unit === 'string') fields.Unit = body.Unit.trim()
     if (body.Deadline != null) fields.Deadline = body.Deadline === '' ? null : String(body.Deadline).trim()
     if (body['Progress (%)'] != null) fields['Progress (%)'] = body['Progress (%)'] === '' ? null : Number(body['Progress (%)'])

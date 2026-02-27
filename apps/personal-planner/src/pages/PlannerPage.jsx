@@ -1,15 +1,11 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useApi, Spinner, PageHeader, Card, IconChevronDown, IconChevronUp, IconStar, IconFlameFilled, IconCircle, IconPlay, IconCheckSquare } from '@tools/shared'
-import { field, str, dateStr, arr, getWeekDays, getWeekdayIndex, isPastDue } from '@tools/shared'
+import { useApi, Spinner, PageHeader, IconChevronDown, IconChevronUp, IconStar, IconFlameFilled } from '@tools/shared'
+import { field, str, dateStr, arr, getWeekDays, getWeekdayIndex } from '@tools/shared'
 import { getTaskStatusGroup } from '../lib/taskStatus'
+import { TaskCard, STATUS_OPTIONS } from '../components/TaskCard'
 
 const DAY_NAMES = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 const MONTH_NAMES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
-const STATUS_OPTIONS = [
-  { value: 'Pending', label: 'Pendiente' },
-  { value: 'In Progress', label: 'En progreso' },
-  { value: 'Done', label: 'Hecho' },
-]
 const MIN_HABITS_FOR_FIRE = 5
 
 function usePlannerData() {
@@ -171,14 +167,15 @@ function DayColumn({
               <li className="text-xs text-text-muted py-1">Ninguna tarea</li>
             )}
             {tasksForDay.map((task) => (
-              <PlannerTaskCard
-                key={task.id}
-                task={task}
-                dayStr={dayStr}
-                onStatusChange={onTaskStatusChange}
-                onOpenModal={onTaskClick}
-                refetch={refetch}
-              />
+              <li key={task.id} className="w-full">
+                <TaskCard
+                  task={task}
+                  dayStr={dayStr}
+                  onStatusChange={onTaskStatusChange}
+                  onOpenModal={onTaskClick}
+                  refetch={refetch}
+                />
+              </li>
             ))}
           </ul>
         </>
@@ -233,109 +230,6 @@ function DayColumn({
         </>
       )}
     </div>
-  )
-}
-
-function getPriorityTagClass(priority) {
-  const p = (priority || '').toLowerCase()
-  if (p === 'low') return 'bg-blue-500/20 text-blue-600 dark:text-blue-400'
-  if (p === 'medium') return 'bg-amber-500/20 text-amber-600 dark:text-amber-400'
-  if (p === 'high') return 'bg-red-500/20 text-red-600 dark:text-red-400'
-  return 'bg-border text-text-muted'
-}
-
-function PlannerTaskCard({ task, dayStr, onStatusChange, onOpenModal, refetch }) {
-  const name = str(field(task, 'Task Name', 'Task Name')) || '(sin nombre)'
-  const statusGroup = getTaskStatusGroup(task)
-  const priority = str(field(task, 'Priority', 'Priority'))
-  const dueStr = dateStr(field(task, 'Due Date', 'Due Date'))
-  const description = str(field(task, 'Description', 'Description'))
-  const showDueTag = dueStr && dueStr !== dayStr
-  const dueIsPast = showDueTag && isPastDue(dueStr)
-
-  const handleStatus = async (e, newStatus) => {
-    e.stopPropagation()
-    try {
-      await onStatusChange(task.id, newStatus)
-      refetch()
-    } catch (err) {
-      console.error(err)
-    }
-  }
-
-  const tags = (
-    <div className="flex flex-wrap items-center gap-1.5 mt-1">
-      {priority && (
-        <span className={`inline-flex px-1.5 py-0.5 rounded text-[10px] font-medium ${getPriorityTagClass(priority)}`}>
-          {priority}
-        </span>
-      )}
-      {showDueTag && (
-        <span className={`inline-flex px-1.5 py-0.5 rounded text-[10px] font-medium ${dueIsPast ? 'bg-red-500/20 text-red-600 dark:text-red-400' : 'bg-border text-text-muted'}`}>
-          {dueStr}
-        </span>
-      )}
-    </div>
-  )
-
-  const statusButtons = (
-    <div className="flex items-center justify-start gap-2 mt-2" onClick={(e) => e.stopPropagation()}>
-      {STATUS_OPTIONS.map(({ value }) => {
-        const isActive =
-          (value === 'Done' && statusGroup === 'done') ||
-          (value === 'In Progress' && statusGroup === 'in_progress') ||
-          (value === 'Pending' && statusGroup === 'pending')
-        const isPending = value === 'Pending'
-        const isInProgress = value === 'In Progress'
-        const isDone = value === 'Done'
-        const btnClass = isActive
-          ? isPending
-            ? 'bg-gray-500 text-white'
-            : isInProgress
-              ? 'bg-blue-500 text-white'
-              : 'bg-green-500 text-white'
-          : 'bg-border/50 text-text-muted hover:bg-border'
-        const Icon = isPending ? IconCircle : isInProgress ? IconPlay : IconCheckSquare
-        const title = isPending ? 'Pendiente' : isInProgress ? 'En progreso' : 'Hecho'
-        return (
-          <button
-            key={value}
-            type="button"
-            onClick={(e) => handleStatus(e, value)}
-            title={title}
-            className={`w-6 h-6 !min-w-6 !min-h-6 flex items-center justify-center rounded shrink-0 ${btnClass}`}
-          >
-            <Icon size={10} />
-          </button>
-        )
-      })}
-    </div>
-  )
-
-  return (
-    <li className="w-full">
-      <div
-        role="button"
-        tabIndex={0}
-        onClick={() => onOpenModal(task)}
-        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpenModal(task) } }}
-        className="w-full cursor-pointer"
-      >
-        <Card
-          title={name}
-          expandable={false}
-          buttons={statusButtons}
-          className="w-full"
-        >
-          {description && (
-            <div className="text-xs text-text-muted line-clamp-2 break-words">
-              {description}
-            </div>
-          )}
-          {tags}
-        </Card>
-      </div>
-    </li>
   )
 }
 

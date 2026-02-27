@@ -3,6 +3,13 @@ import { fetchTable, updateRecord } from './_lib/airtable.js'
 
 const TABLE = process.env.AIRTABLE_TABLE_TASKS || 'Tasks'
 
+/** Mapeo de valores que envía el frontend a opciones del Single Select en Airtable (evita INVALID_MULTIPLE_CHOICE_OPTIONS). */
+const STATUS_TO_AIRTABLE = {
+  Pending: 'Todo',
+  'In Progress': 'In Progress',
+  Done: 'Done',
+}
+
 function getPathSegments(pathname) {
   return (pathname || '').replace(/^\/api/, '').split('/').filter(Boolean)
 }
@@ -25,8 +32,10 @@ export default async function handler(req, res) {
       res.end(JSON.stringify({ error: 'Body must include Status (string)' }))
       return
     }
+    const value = status.trim()
+    const airtableStatus = STATUS_TO_AIRTABLE[value] ?? value
     try {
-      const updated = await updateRecord(TABLE, recordId, { Status: status.trim() })
+      const updated = await updateRecord(TABLE, recordId, { Status: airtableStatus })
       res.statusCode = 200
       res.end(JSON.stringify({ data: updated }))
     } catch (err) {

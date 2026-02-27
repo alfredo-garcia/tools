@@ -150,32 +150,29 @@ export function ObjectivesList() {
     <div className="space-y-6">
       <PageHeader breadcrumbs={[{ label: 'Home', to: '/' }, { label: 'OKRs', to: '/objectives' }]} onRefresh={refetch} loading={loading} />
 
-      <section className="rounded-2xl bg-surface p-4">
-        <h2 className="text-sm font-medium text-text-muted mb-3">KPIs</h2>
-        <div className="flex items-center gap-2 w-full">
-          <span className="text-sm font-medium text-text-muted shrink-0" title={kpiBarTitle}>({total})</span>
-          <div
-            className="flex-1 h-2 rounded-full overflow-hidden flex min-w-0"
-            role="progressbar"
-            aria-valuenow={donePct}
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-label={kpiBarTitle}
-            title={kpiBarTitle}
-          >
-            {total === 0 ? (
-              <div className="h-full bg-status-pending shrink-0 w-full" />
-            ) : (
-              <>
-                {donePct > 0 && <div className="h-full bg-status-done shrink-0" style={{ width: `${donePct}%` }} />}
-                {inProgressPct > 0 && <div className="h-full bg-status-in-progress shrink-0" style={{ width: `${inProgressPct}%` }} />}
-                {pendingPct > 0 && <div className="h-full bg-status-pending shrink-0" style={{ width: `${pendingPct}%` }} />}
-              </>
-            )}
-          </div>
-          <span className="text-sm font-medium text-text-muted shrink-0">{donePct}%</span>
+      <div className="flex items-center gap-2 w-full">
+        <span className="text-sm font-medium text-text-muted shrink-0" title={kpiBarTitle}>({total})</span>
+        <div
+          className="flex-1 h-2 rounded-full overflow-hidden flex min-w-0"
+          role="progressbar"
+          aria-valuenow={donePct}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-label={kpiBarTitle}
+          title={kpiBarTitle}
+        >
+          {total === 0 ? (
+            <div className="h-full bg-status-pending shrink-0 w-full" />
+          ) : (
+            <>
+              {donePct > 0 && <div className="h-full bg-status-done shrink-0" style={{ width: `${donePct}%` }} />}
+              {inProgressPct > 0 && <div className="h-full bg-status-in-progress shrink-0" style={{ width: `${inProgressPct}%` }} />}
+              {pendingPct > 0 && <div className="h-full bg-status-pending shrink-0" style={{ width: `${pendingPct}%` }} />}
+            </>
+          )}
         </div>
-      </section>
+        <span className="text-sm font-medium text-text-muted shrink-0">{donePct}%</span>
+      </div>
 
       <CardList
         items={list}

@@ -26,16 +26,26 @@ export default async function handler(req, res) {
   const recordId = segments[1]
 
   if (recordId && req.method === 'PATCH') {
-    const status = req.body?.Status
-    if (status == null || typeof status !== 'string') {
+    const body = req.body || {}
+    const fields = {}
+    if (body.Status != null && typeof body.Status === 'string') {
+      const value = body.Status.trim()
+      fields.Status = STATUS_TO_AIRTABLE[value] ?? value
+    }
+    if (body['Task Name'] != null && typeof body['Task Name'] === 'string') fields['Task Name'] = body['Task Name'].trim()
+    if (body.Description != null && typeof body.Description === 'string') fields.Description = body.Description.trim()
+    if (body['Due Date'] != null) fields['Due Date'] = body['Due Date'] === '' ? null : String(body['Due Date']).trim()
+    if (body.Priority != null && typeof body.Priority === 'string') fields.Priority = body.Priority.trim()
+    if (body.Assignee != null && typeof body.Assignee === 'string') fields.Assignee = body.Assignee.trim()
+    if (body.Category != null && typeof body.Category === 'string') fields.Category = body.Category.trim()
+
+    if (Object.keys(fields).length === 0) {
       res.statusCode = 400
-      res.end(JSON.stringify({ error: 'Body must include Status (string)' }))
+      res.end(JSON.stringify({ error: 'Body must include at least one field to update' }))
       return
     }
-    const value = status.trim()
-    const airtableStatus = STATUS_TO_AIRTABLE[value] ?? value
     try {
-      const updated = await updateRecord(TABLE, recordId, { Status: airtableStatus })
+      const updated = await updateRecord(TABLE, recordId, fields)
       res.statusCode = 200
       res.end(JSON.stringify({ data: updated }))
     } catch (err) {

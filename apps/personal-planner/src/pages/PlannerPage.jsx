@@ -292,15 +292,20 @@ function PlannerHabitRow({ habit, dayStr, habitTracking, onToggle, refetch }) {
   )
 }
 
-function TaskModal({ task, onClose, onStatusChange, refetch }) {
+const PRIORITY_OPTIONS = ['Low', 'Medium', 'High']
+
+function TaskModal({ task, onClose, onStatusChange, onTaskUpdate, refetch }) {
+  const [editingField, setEditingField] = useState(null)
+  const [editValue, setEditValue] = useState('')
+
   if (!task) return null
-  const name = str(field(task, 'Task Name', 'Task Name')) || '(sin nombre)'
+  const name = str(field(task, 'Task Name', 'Task Name')) || ''
   const statusGroup = getTaskStatusGroup(task)
-  const description = str(field(task, 'Description', 'Description'))
-  const priority = str(field(task, 'Priority', 'Priority'))
-  const dueStr = dateStr(field(task, 'Due Date', 'Due Date'))
-  const assignee = str(field(task, 'Assignee', 'Assignee'))
-  const category = str(field(task, 'Category', 'Category'))
+  const description = str(field(task, 'Description', 'Description')) || ''
+  const priority = str(field(task, 'Priority', 'Priority')) || ''
+  const dueStr = dateStr(field(task, 'Due Date', 'Due Date')) || ''
+  const assignee = str(field(task, 'Assignee', 'Assignee')) || ''
+  const category = str(field(task, 'Category', 'Category')) || ''
 
   const handleStatus = async (e, newStatus) => {
     e?.stopPropagation?.()
@@ -312,14 +317,37 @@ function TaskModal({ task, onClose, onStatusChange, refetch }) {
     }
   }
 
-  const MetaRow = ({ Icon, label, value }) =>
-    value ? (
-      <div className="flex items-center gap-2 text-sm">
-        <span className="text-text-muted shrink-0"><Icon size={18} /></span>
-        <span className="text-text-muted shrink-0">{label}:</span>
-        <span className="text-text">{value}</span>
-      </div>
-    ) : null
+  const startEdit = (field, currentValue) => {
+    setEditingField(field)
+    setEditValue(currentValue ?? '')
+  }
+
+  const saveEdit = async (field, payload) => {
+    try {
+      await onTaskUpdate(task.id, payload)
+      setEditingField(null)
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  const handleBlurName = () => {
+    if (editingField !== 'name') return
+    const v = editValue.trim()
+    saveEdit('name', { 'Task Name': v || name || '(sin nombre)' })
+  }
+  const handleBlurDescription = () => {
+    if (editingField !== 'description') return
+    saveEdit('description', { Description: editValue })
+  }
+  const handleBlurAssignee = () => {
+    if (editingField !== 'assignee') return
+    saveEdit('assignee', { Assignee: editValue.trim() })
+  }
+  const handleBlurCategory = () => {
+    if (editingField !== 'category') return
+    saveEdit('category', { Category: editValue.trim() })
+  }
 
   return (
     <div
@@ -334,9 +362,29 @@ function TaskModal({ task, onClose, onStatusChange, refetch }) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-5 border-b border-border flex items-center justify-between gap-3">
-          <h2 id="task-modal-title" className="font-bold text-xl text-text truncate flex-1 min-w-0">
-            {name}
-          </h2>
+          {editingField === 'name' ? (
+            <input
+              type="text"
+              value={editValue}
+              onChange={(e) => setEditValue(e.target.value)}
+              onBlur={handleBlurName}
+              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleBlurName() } }}
+              className="flex-1 min-w-0 font-bold text-xl text-text bg-surface border border-border rounded-lg px-2 py-1"
+              id="task-modal-title"
+              autoFocus
+            />
+          ) : (
+            <h2
+              id="task-modal-title"
+              role="button"
+              tabIndex={0}
+              onClick={() => startEdit('name', name)}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); startEdit('name', name) } }}
+              className="font-bold text-xl text-text truncate flex-1 min-w-0 cursor-pointer rounded hover:bg-border/50 py-1 -mx-1 px-1"
+            >
+              {name || '(sin nombre)'}
+            </h2>
+          )}
           <button
             type="button"
             onClick={onClose}
@@ -347,23 +395,136 @@ function TaskModal({ task, onClose, onStatusChange, refetch }) {
           </button>
         </div>
         <div className="p-5 overflow-y-auto flex-1 space-y-4">
-          {description && (
-            <p className="text-sm font-normal text-text whitespace-pre-wrap">{description}</p>
+          {editingField === 'description' ? (
+            <textarea
+              value={editValue}
+              onChange={(e) => setEditValue(e.target.value)}
+              onBlur={handleBlurDescription}
+              className="w-full text-sm font-normal text-text bg-surface border border-border rounded-lg px-3 py-2 min-h-[80px] resize-y"
+              placeholder="Descripción"
+              autoFocus
+            />
+          ) : (
+            <p
+              role="button"
+              tabIndex={0}
+              onClick={() => startEdit('description', description)}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); startEdit('description', description) } }}
+              className="text-sm font-normal text-text whitespace-pre-wrap cursor-pointer rounded hover:bg-border/50 py-2 -mx-2 px-2 min-h-[2rem]"
+            >
+              {description || '(sin descripción)'}
+            </p>
           )}
           <hr className="border-border" />
           <div className="space-y-2">
-            {priority && (
-              <div className="flex items-center gap-2 text-sm">
-                <span className="text-text-muted shrink-0"><IconTarget size={18} /></span>
-                <span className="text-text-muted shrink-0">Prioridad:</span>
-                <span className={`inline-flex px-1.5 py-0.5 rounded text-xs font-medium ${getPriorityTagClass(priority)}`}>
-                  {priority}
+            {/* Prioridad */}
+            <div className="flex items-center gap-2 text-sm">
+              <span className="text-text-muted shrink-0"><IconTarget size={18} /></span>
+              <span className="text-text-muted shrink-0">Prioridad:</span>
+              {editingField === 'priority' ? (
+                <select
+                  value={editValue}
+                  onChange={(e) => { const v = e.target.value; saveEdit('priority', { Priority: v }); setEditValue(v) }}
+                  onBlur={() => setEditingField(null)}
+                  className="rounded border border-border bg-surface text-text px-2 py-1 text-sm"
+                  autoFocus
+                >
+                  <option value="">—</option>
+                  {PRIORITY_OPTIONS.map((opt) => (
+                    <option key={opt} value={opt}>{opt}</option>
+                  ))}
+                </select>
+              ) : (
+                <span
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => startEdit('priority', priority)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); startEdit('priority', priority) } }}
+                  className={`inline-flex px-1.5 py-0.5 rounded text-xs font-medium cursor-pointer ${getPriorityTagClass(priority)} hover:ring-2 ring-offset-2 ring-border`}
+                >
+                  {priority || '—'}
                 </span>
-              </div>
-            )}
-            <MetaRow Icon={IconCalendar} label="Fecha límite" value={dueStr} />
-            <MetaRow Icon={IconUser} label="Asignado" value={assignee} />
-            <MetaRow Icon={IconTag} label="Clasificación" value={category} />
+              )}
+            </div>
+            {/* Fecha límite */}
+            <div className="flex items-center gap-2 text-sm">
+              <span className="text-text-muted shrink-0"><IconCalendar size={18} /></span>
+              <span className="text-text-muted shrink-0">Fecha límite:</span>
+              {editingField === 'dueDate' ? (
+                <input
+                  type="date"
+                  value={editValue}
+                  onChange={(e) => { const v = e.target.value; saveEdit('dueDate', { 'Due Date': v || null }); setEditingField(null) }}
+                  onBlur={() => setEditingField(null)}
+                  className="rounded border border-border bg-surface text-text px-2 py-1 text-sm"
+                  autoFocus
+                />
+              ) : (
+                <span
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => startEdit('dueDate', dueStr)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); startEdit('dueDate', dueStr) } }}
+                  className="text-text cursor-pointer rounded hover:bg-border/50 py-0.5 px-1"
+                >
+                  {dueStr || '—'}
+                </span>
+              )}
+            </div>
+            {/* Asignado */}
+            <div className="flex items-center gap-2 text-sm">
+              <span className="text-text-muted shrink-0"><IconUser size={18} /></span>
+              <span className="text-text-muted shrink-0">Asignado:</span>
+              {editingField === 'assignee' ? (
+                <input
+                  type="text"
+                  value={editValue}
+                  onChange={(e) => setEditValue(e.target.value)}
+                  onBlur={handleBlurAssignee}
+                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleBlurAssignee() } }}
+                  className="flex-1 min-w-0 rounded border border-border bg-surface text-text px-2 py-1 text-sm"
+                  placeholder="Nombre"
+                  autoFocus
+                />
+              ) : (
+                <span
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => startEdit('assignee', assignee)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); startEdit('assignee', assignee) } }}
+                  className="text-text cursor-pointer rounded hover:bg-border/50 py-0.5 px-1"
+                >
+                  {assignee || '—'}
+                </span>
+              )}
+            </div>
+            {/* Clasificación */}
+            <div className="flex items-center gap-2 text-sm">
+              <span className="text-text-muted shrink-0"><IconTag size={18} /></span>
+              <span className="text-text-muted shrink-0">Clasificación:</span>
+              {editingField === 'category' ? (
+                <input
+                  type="text"
+                  value={editValue}
+                  onChange={(e) => setEditValue(e.target.value)}
+                  onBlur={handleBlurCategory}
+                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleBlurCategory() } }}
+                  className="flex-1 min-w-0 rounded border border-border bg-surface text-text px-2 py-1 text-sm"
+                  placeholder="Categoría"
+                  autoFocus
+                />
+              ) : (
+                <span
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => startEdit('category', category)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); startEdit('category', category) } }}
+                  className="text-text cursor-pointer rounded hover:bg-border/50 py-0.5 px-1"
+                >
+                  {category || '—'}
+                </span>
+              )}
+            </div>
           </div>
           <hr className="border-border" />
           <div className="flex flex-wrap gap-2">
@@ -434,6 +595,17 @@ export function PlannerPage() {
       })
     },
     [fetchApi]
+  )
+
+  const handleTaskUpdate = useCallback(
+    async (taskId, fields) => {
+      await fetchApi(`/api/tasks/${taskId}`, {
+        method: 'PATCH',
+        body: JSON.stringify(fields),
+      })
+      refetch()
+    },
+    [fetchApi, refetch]
   )
 
   const handleHabitToggle = useCallback(
@@ -538,9 +710,10 @@ export function PlannerPage() {
 
       {modalTask && (
         <TaskModal
-          task={modalTask}
+          task={tasks.find((t) => t.id === modalTask.id) || modalTask}
           onClose={() => setModalTask(null)}
           onStatusChange={handleTaskStatusChange}
+          onTaskUpdate={handleTaskUpdate}
           refetch={refetch}
         />
       )}

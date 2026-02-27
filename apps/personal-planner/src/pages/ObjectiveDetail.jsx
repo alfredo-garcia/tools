@@ -4,6 +4,8 @@ import { useApi, Spinner, PageHeader, Card, IconTarget, IconPriority, IconCalend
 import { field, str, dateStr, arr, num } from '@tools/shared'
 import { getTaskStatusGroup } from '../lib/taskStatus'
 import { getPriorityTagClass, STATUS_OPTIONS } from '../components/TaskCard'
+import { KeyResultCreateModal } from '../components/KeyResultCreateModal'
+import { Fab } from '../components/Fab'
 
 const PRIORITY_OPTIONS = ['Low', 'Medium', 'High']
 
@@ -69,6 +71,7 @@ export function ObjectiveDetail() {
   const [error, setError] = useState(null)
   const [editingField, setEditingField] = useState(null)
   const [editValue, setEditValue] = useState('')
+  const [createKrOpen, setCreateKrOpen] = useState(false)
 
   const refetch = useCallback((silent = false) => {
     if (!silent) {
@@ -133,6 +136,14 @@ export function ObjectiveDetail() {
       console.error(err)
     }
   }, [fetchApi, item, navigate])
+
+  const handleCreateKeyResult = useCallback(
+    async (fields) => {
+      await fetchApi('/api/key-results', { method: 'POST', body: JSON.stringify(fields) })
+      refetch()
+    },
+    [fetchApi, refetch]
+  )
 
   const title = str(field(item, 'Objective Name', 'Objective Name')) || 'Objective'
   const description = str(field(item, 'Description', 'Description')) || ''
@@ -476,6 +487,16 @@ export function ObjectiveDetail() {
       {keyResults.length === 0 && (
         <p className="text-text-muted">No key results linked to this objective.</p>
       )}
+
+      {createKrOpen && item && (
+        <KeyResultCreateModal
+          objectiveId={item.id}
+          onClose={() => setCreateKrOpen(false)}
+          onCreate={handleCreateKeyResult}
+        />
+      )}
+
+      <Fab onClick={() => setCreateKrOpen(true)} ariaLabel="Create key result" />
     </div>
   )
 }

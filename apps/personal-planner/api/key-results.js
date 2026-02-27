@@ -1,5 +1,5 @@
 import { validateAccess } from './_lib/auth.js'
-import { fetchTable, updateRecord, deleteRecord } from './_lib/airtable.js'
+import { fetchTable, createRecord, updateRecord, deleteRecord } from './_lib/airtable.js'
 
 const TABLE = process.env.AIRTABLE_TABLE_KEY_RESULTS || 'Key Results'
 
@@ -55,6 +55,43 @@ export default async function handler(req, res) {
       res.end(JSON.stringify({ data: updated }))
     } catch (err) {
       console.error('key-results PATCH error:', err)
+      res.statusCode = err.statusCode === 404 ? 404 : 500
+      res.end(JSON.stringify({ error: err.message }))
+    }
+    return
+  }
+
+  if (!recordId && req.method === 'POST') {
+    const body = req.body || {}
+    const name = body['Key Result Name'] != null && typeof body['Key Result Name'] === 'string' ? body['Key Result Name'].trim() : ''
+    if (!name) {
+      res.statusCode = 400
+      res.end(JSON.stringify({ error: 'Body must include Key Result Name' }))
+      return
+    }
+    const fields = {
+      'Key Result Name': name,
+      Status: (body.Status != null && typeof body.Status === 'string' ? body.Status.trim() : null) || 'Pending',
+    }
+    const objectiveId = body['Objective Link'] ?? body.Objective
+    if (Array.isArray(objectiveId) && objectiveId.length > 0 && objectiveId[0]) {
+      fields['Objective Link'] = [String(objectiveId[0]).trim()]
+    } else if (typeof objectiveId === 'string' && objectiveId.trim()) {
+      fields['Objective Link'] = [objectiveId.trim()]
+    }
+    if (body.Description != null && typeof body.Description === 'string') fields.Description = body.Description.trim()
+    if (body.Metric != null && typeof body.Metric === 'string') fields.Metric = body.Metric.trim()
+    if (body['Current Value'] != null) fields['Current Value'] = body['Current Value'] === '' ? null : body['Current Value']
+    if (body['Target Value'] != null) fields['Target Value'] = body['Target Value'] === '' ? null : body['Target Value']
+    if (body.Unit != null && typeof body.Unit === 'string') fields.Unit = body.Unit.trim()
+    if (body.Deadline != null) fields.Deadline = body.Deadline === '' ? null : String(body.Deadline).trim()
+    if (body['Progress (%)'] != null) fields['Progress (%)'] = body['Progress (%)'] === '' ? null : Number(body['Progress (%)'])
+    try {
+      const created = await createRecord(TABLE, fields)
+      res.statusCode = 201
+      res.end(JSON.stringify({ data: created }))
+    } catch (err) {
+      console.error('key-results POST error:', err)
       res.statusCode = err.statusCode === 404 ? 404 : 500
       res.end(JSON.stringify({ error: err.message }))
     }

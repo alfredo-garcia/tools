@@ -4,6 +4,7 @@ import { field, str, dateStr, arr, getWeekDays, getWeekStart, getWeekdayIndex } 
 import { getTaskStatusGroup } from '../lib/taskStatus'
 import { TaskCard, STATUS_OPTIONS, getPriorityTagClass } from '../components/TaskCard'
 import { TaskModal } from '../components/TaskModal'
+import { Fab } from '../components/Fab'
 
 const DAY_NAMES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
@@ -395,6 +396,7 @@ export function PlannerPage() {
   const [mobileDateStr, setMobileDateStr] = useState(todayStr)
   const [touchStartX, setTouchStartX] = useState(null)
   const [modalTask, setModalTask] = useState(null)
+  const [createTaskOpen, setCreateTaskOpen] = useState(false)
   const [desktopTasksCollapsed, setDesktopTasksCollapsed] = useState(false)
   const [desktopHabitsCollapsed, setDesktopHabitsCollapsed] = useState(false)
   const [desktopShowCompleted, setDesktopShowCompleted] = useState(false)
@@ -440,6 +442,17 @@ export function PlannerPage() {
     async (taskId, fields) => {
       await fetchApi(`/api/tasks/${taskId}`, {
         method: 'PATCH',
+        body: JSON.stringify(fields),
+      })
+      refetch()
+    },
+    [fetchApi, refetch]
+  )
+
+  const handleCreateTask = useCallback(
+    async (fields) => {
+      await fetchApi('/api/tasks', {
+        method: 'POST',
         body: JSON.stringify(fields),
       })
       refetch()
@@ -660,6 +673,18 @@ export function PlannerPage() {
           refetch={refetch}
         />
       )}
+
+      {createTaskOpen && (
+        <TaskModal
+          task={null}
+          onClose={() => setCreateTaskOpen(false)}
+          onCreate={handleCreateTask}
+          refetch={refetch}
+          initialValues={{ 'Due Date': todayStr }}
+        />
+      )}
+
+      <Fab onClick={() => setCreateTaskOpen(true)} ariaLabel="Create task" />
     </div>
   )
 }

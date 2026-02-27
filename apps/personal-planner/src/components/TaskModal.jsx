@@ -8,15 +8,32 @@ import { getPriorityTagClass, STATUS_OPTIONS } from './TaskCard'
 const PRIORITY_OPTIONS = ['Low', 'Medium', 'High']
 
 /**
- * Modal de detalle/edición de Task. Igual que en Planner.
- * Props: task, onClose, onStatusChange(taskId, status), onTaskUpdate(taskId, fields), onTaskDelete(taskId), refetch().
+ * Modal de detalle/edición de Task, o creación si task es null.
+ * Props: task (null = create), onClose, onCreate(fields) for create, onStatusChange, onTaskUpdate, onTaskDelete, refetch, initialValues (create: { 'Due Date', 'Key Results' }).
  */
-export function TaskModal({ task, onClose, onStatusChange, onTaskUpdate, onTaskDelete, refetch }) {
+export function TaskModal({ task, onClose, onCreate, onStatusChange, onTaskUpdate, onTaskDelete, refetch, initialValues = {} }) {
   const { fetchApi } = useApi()
+  const isCreate = task == null
   const [editingField, setEditingField] = useState(null)
   const [editValue, setEditValue] = useState('')
   const [objectiveItems, setObjectiveItems] = useState([]) // { id, name }[]
   const [keyResultItems, setKeyResultItems] = useState([]) // { id, name }[]
+
+  // Create form state (only used when isCreate); sync initialValues when modal opens
+  const [createName, setCreateName] = useState('')
+  const [createDescription, setCreateDescription] = useState('')
+  const [createPriority, setCreatePriority] = useState('')
+  const [createDueDate, setCreateDueDate] = useState('')
+  const [createAssignee, setCreateAssignee] = useState('')
+  const [createCategory, setCreateCategory] = useState('')
+  const [createStatus, setCreateStatus] = useState('Pending')
+  const [createSubmitting, setCreateSubmitting] = useState(false)
+  useEffect(() => {
+    if (isCreate) {
+      setCreatePriority(initialValues.Priority ?? '')
+      setCreateDueDate(initialValues['Due Date'] ?? '')
+    }
+  }, [isCreate, initialValues.Priority, initialValues['Due Date']])
 
   const objectiveIdsFromTask = task ? arr(field(task, 'Objectives', 'Objective')) : []
   const keyResultIds = task ? arr(field(task, 'Key Result', 'Key Results')) : []
@@ -36,7 +53,6 @@ export function TaskModal({ task, onClose, onStatusChange, onTaskUpdate, onTaskD
       fetchApi('/api/key-results').then((r) => r.data || []),
     ]).then(([objectives, keyResults]) => {
       if (cancelled) return
-      // Objetivos: los que vienen en la task O los del Objective Link de cada KR (si la task no trae O)
       const objectiveIdsFromKR = keyResultIds.flatMap((kid) => {
         const kr = keyResults.find((r) => r.id === kid)
         return kr ? arr(field(kr, 'Objective Link', 'Objective')) : []
@@ -54,14 +70,43 @@ export function TaskModal({ task, onClose, onStatusChange, onTaskUpdate, onTaskD
     return () => { cancelled = true }
   }, [task?.id, fetchApi])
 
-  if (!task) return null
-  const name = str(field(task, 'Task Name', 'Task Name')) || ''
-  const statusGroup = getTaskStatusGroup(task)
-  const description = str(field(task, 'Description', 'Description')) || ''
-  const priority = str(field(task, 'Priority', 'Priority')) || ''
-  const dueStr = dateStr(field(task, 'Due Date', 'Due Date')) || ''
-  const assignee = str(field(task, 'Assignee', 'Assignee')) || ''
-  const category = str(field(task, 'Category', 'Category')) || ''
+  if (!task && !onCreate) return null
+
+  const name = isCreate ? createName : (str(field(task, 'Task Name', 'Task Name')) || '')
+  const statusGroup = isCreate ? (createStatus === 'Done' ? 'done' : createStatus === 'In Progress' ? 'in_progress' : 'pending') : getTaskStatusGroup(task)
+  const description = isCreate ? createDescription : (str(field(task, 'Description', 'Description')) || '')
+  const priority = isCreate ? createPriority : (str(field(task, 'Priority', 'Priority')) || '')
+  const dueStr = isCreate ? createDueDate : (dateStr(field(task, 'Due Date', 'Due Date')) || '')
+  const assignee = isCreate ? createAssignee : (str(field(task, 'Assignee', 'Assignee')) || '')
+  const category = isCreate ? createCategory : (str(field(task, 'Category', 'Category')) || '')
+
+  const handleCreateSubmit = async () => {
+    const taskName = createName.trim() || '(untitled)'
+    const fields = {
+      'Task Name': taskName,
+      Description: createDescription.trim() || undefined,
+      Priority: createPriority || undefined,
+      'Due Date': createDueDate || undefined,
+      Assignee: createAssignee.trim() || undefined,
+      Category: createCategory.trim() || undefined,
+      Status: createStatus,
+    }
+    if (initialValues['Key Results'] && initialValues['Key Results'].length > 0) {
+      fields['Key Results'] = initialValues['Key Results']
+    }
+    if (initialValues.Objectives && initialValues.Objectives.length > 0) {
+      fields.Objectives = initialValues.Objectives
+    }
+    setCreateSubmitting(true)
+    try {
+      await onCreate(fields)
+      onClose()
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setCreateSubmitting(false)
+    }
+  }
 
   const handleStatus = async (e, newStatus) => {
     e?.stopPropagation?.()
@@ -112,6 +157,99 @@ export function TaskModal({ task, onClose, onStatusChange, onTaskUpdate, onTaskD
   const handleBlurCategory = () => {
     if (editingField !== 'category') return
     saveEdit('category', { Category: editValue.trim() })
+  }
+
+  if (isCreate) {
+    return (
+      <div
+        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60"
+        onClick={onClose}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="task-modal-title"
+      >
+        <div
+          className="bg-surface rounded-2xl border-2 border-border shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="p-5 border-b border-border flex items-center justify-between gap-3">
+            <h2 id="task-modal-title" className="font-bold text-xl text-text">New task</h2>
+            <button type="button" onClick={onClose} className="shrink-0 p-2 rounded-lg text-text-muted hover:bg-border text-xl leading-none" aria-label="Close">×</button>
+          </div>
+          <div className="p-5 overflow-y-auto flex-1 space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-text-muted mb-1">Task name</label>
+              <input
+                type="text"
+                value={createName}
+                onChange={(e) => setCreateName(e.target.value)}
+                placeholder="Task name"
+                className="w-full rounded-lg border border-border bg-surface text-text px-3 py-2"
+                autoFocus
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-text-muted mb-1">Description</label>
+              <textarea
+                value={createDescription}
+                onChange={(e) => setCreateDescription(e.target.value)}
+                placeholder="Description"
+                className="w-full rounded-lg border border-border bg-surface text-text px-3 py-2 min-h-[80px] resize-y"
+              />
+            </div>
+            <hr className="border-border" />
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-sm">
+                <span className="text-text-muted shrink-0"><IconPriority size={18} /></span>
+                <label className="text-text-muted shrink-0">Priority:</label>
+                <select value={createPriority} onChange={(e) => setCreatePriority(e.target.value)} className="flex-1 min-w-0 rounded border border-border bg-surface text-text px-2 py-1 text-sm">
+                  <option value="">—</option>
+                  {PRIORITY_OPTIONS.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
+                </select>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <span className="text-text-muted shrink-0"><IconCalendar size={18} /></span>
+                <label className="text-text-muted shrink-0">Due date:</label>
+                <input type="date" value={createDueDate} onChange={(e) => setCreateDueDate(e.target.value)} className="rounded border border-border bg-surface text-text px-2 py-1 text-sm" />
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <span className="text-text-muted shrink-0"><IconUser size={18} /></span>
+                <label className="text-text-muted shrink-0">Assignee:</label>
+                <input type="text" value={createAssignee} onChange={(e) => setCreateAssignee(e.target.value)} placeholder="Name" className="flex-1 min-w-0 rounded border border-border bg-surface text-text px-2 py-1 text-sm" />
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <span className="text-text-muted shrink-0"><IconTag size={18} /></span>
+                <label className="text-text-muted shrink-0">Category:</label>
+                <input type="text" value={createCategory} onChange={(e) => setCreateCategory(e.target.value)} placeholder="Category" className="flex-1 min-w-0 rounded border border-border bg-surface text-text px-2 py-1 text-sm" />
+              </div>
+            </div>
+            <hr className="border-border" />
+            <div className="flex flex-wrap gap-2">
+              {STATUS_OPTIONS.map(({ value, label }) => {
+                const isActive = createStatus === value
+                const isPending = value === 'Pending'
+                const isInProgress = value === 'In Progress'
+                const btnClass = isActive
+                  ? isPending ? 'bg-status-pending text-white' : isInProgress ? 'bg-status-in-progress text-white' : 'bg-status-done text-white'
+                  : 'bg-border text-text hover:bg-border/80'
+                const Icon = isPending ? IconCircle : isInProgress ? IconPlay : IconCheckSquare
+                return (
+                  <button key={value} type="button" title={label} onClick={() => setCreateStatus(value)} className={`min-h-[44px] px-3 md:px-4 rounded-xl text-sm font-medium flex items-center justify-center md:justify-start gap-2 shrink-0 cursor-pointer ${btnClass}`}>
+                    <Icon size={18} />
+                    <span className="hidden md:inline">{label}</span>
+                  </button>
+                )
+              })}
+            </div>
+            <div className="pt-2 flex justify-end">
+              <button type="button" onClick={handleCreateSubmit} disabled={createSubmitting} className="min-h-[44px] px-6 rounded-xl text-sm font-medium bg-primary text-white hover:bg-primary/90 disabled:opacity-50">
+                {createSubmitting ? 'Creating…' : 'Create task'}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (

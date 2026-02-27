@@ -4,6 +4,7 @@ import { field, str, dateStr, isToday, isThisWeek, isThisMonth, isPastDue } from
 import { getTaskStatusGroup } from '../lib/taskStatus'
 import { getPriorityTagClass } from '../components/TaskCard'
 import { TaskModal } from '../components/TaskModal'
+import { Fab } from '../components/Fab'
 
 const FILTER_OPTIONS = [
   { value: 'today', label: 'Today' },
@@ -81,6 +82,7 @@ export function TasksList() {
   const [error, setError] = useState(null)
   const [filter, setFilter] = useState('today')
   const [modalTask, setModalTask] = useState(null)
+  const [createTaskOpen, setCreateTaskOpen] = useState(false)
 
   const refetch = useCallback(() => {
     setLoading(true)
@@ -128,6 +130,14 @@ export function TasksList() {
       console.error(err)
     }
   }, [fetchApi, refetch])
+
+  const handleCreateTask = useCallback(
+    async (fields) => {
+      await fetchApi('/api/tasks', { method: 'POST', body: JSON.stringify(fields) })
+      refetch()
+    },
+    [fetchApi, refetch]
+  )
 
   const getDue = (t) => dateStr(field(t, 'Due Date', 'Due Date'))
   const filteredByDate = filterByDate(list, filter, getDue)
@@ -241,6 +251,17 @@ export function TasksList() {
           refetch={refetch}
         />
       )}
+
+      {createTaskOpen && (
+        <TaskModal
+          task={null}
+          onClose={() => setCreateTaskOpen(false)}
+          onCreate={handleCreateTask}
+          refetch={refetch}
+        />
+      )}
+
+      <Fab onClick={() => setCreateTaskOpen(true)} ariaLabel="Create task" />
     </div>
   )
 }

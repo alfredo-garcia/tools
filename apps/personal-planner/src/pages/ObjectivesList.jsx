@@ -4,6 +4,8 @@ import { useApi, Spinner, PageHeader, Card, CardList, IconTarget } from '@tools/
 import { field, str, dateStr, arr } from '@tools/shared'
 import { getTaskStatusGroup } from '../lib/taskStatus'
 import { getPriorityTagClass } from '../components/TaskCard'
+import { ObjectiveModal } from '../components/ObjectiveModal'
+import { Fab } from '../components/Fab'
 
 const GROUP_ORDER = ['in_progress', 'pending', 'done']
 const GROUP_LABELS = {
@@ -82,6 +84,7 @@ export function ObjectivesList() {
   const [keyResults, setKeyResults] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [createObjectiveOpen, setCreateObjectiveOpen] = useState(false)
 
   const refetch = useCallback(() => {
     setLoading(true)
@@ -101,6 +104,14 @@ export function ObjectivesList() {
   useEffect(() => {
     refetch()
   }, [refetch])
+
+  const handleCreateObjective = useCallback(
+    async (fields) => {
+      await fetchApi('/api/objectives', { method: 'POST', body: JSON.stringify(fields) })
+      refetch()
+    },
+    [fetchApi, refetch]
+  )
 
   const krStatsByObjectiveId = useMemo(() => {
     const map = {}
@@ -186,6 +197,15 @@ export function ObjectivesList() {
       {list.length === 0 && (
         <p className="text-text-muted">No objectives.</p>
       )}
+
+      {createObjectiveOpen && (
+        <ObjectiveModal
+          onClose={() => setCreateObjectiveOpen(false)}
+          onCreate={handleCreateObjective}
+        />
+      )}
+
+      <Fab onClick={() => setCreateObjectiveOpen(true)} ariaLabel="Create objective" />
     </div>
   )
 }

@@ -5,6 +5,7 @@ import { field, str, dateStr, arr, num } from '@tools/shared'
 import { getTaskStatusGroup } from '../lib/taskStatus'
 import { getPriorityTagClass, STATUS_OPTIONS } from '../components/TaskCard'
 import { TaskModal } from '../components/TaskModal'
+import { Fab } from '../components/Fab'
 
 const GROUP_ORDER = ['in_progress', 'pending', 'done']
 const GROUP_LABELS = { in_progress: 'In progress', pending: 'Pending', done: 'Done' }
@@ -58,6 +59,7 @@ export function KeyResultDetail() {
   const [editingField, setEditingField] = useState(null)
   const [editValue, setEditValue] = useState('')
   const [modalTask, setModalTask] = useState(null)
+  const [createTaskOpen, setCreateTaskOpen] = useState(false)
   const [objectiveName, setObjectiveName] = useState('')
 
   const refetch = useCallback((silent = false) => {
@@ -170,6 +172,14 @@ export function KeyResultDetail() {
       console.error(err)
     }
   }, [fetchApi, refetch])
+
+  const handleCreateTask = useCallback(
+    async (fields) => {
+      await fetchApi('/api/tasks', { method: 'POST', body: JSON.stringify(fields) })
+      refetch(true)
+    },
+    [fetchApi, refetch]
+  )
 
   const taskStats = useMemo(() => {
     const done = tasks.filter((t) => getTaskStatusGroup(t) === 'done').length
@@ -543,6 +553,18 @@ export function KeyResultDetail() {
           refetch={() => refetch(true)}
         />
       )}
+
+      {createTaskOpen && (
+        <TaskModal
+          task={null}
+          onClose={() => setCreateTaskOpen(false)}
+          onCreate={handleCreateTask}
+          refetch={() => refetch(true)}
+          initialValues={{ 'Key Results': [id] }}
+        />
+      )}
+
+      <Fab onClick={() => setCreateTaskOpen(true)} ariaLabel="Create task" />
     </div>
   )
 }

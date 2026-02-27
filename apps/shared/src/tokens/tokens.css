@@ -18,10 +18,10 @@
   --token-nav-text: #a3a3a3;
   --token-nav-text-active: #f97316;
   --token-spinner: #f97316;
-  /* Estado de tareas: pendiente, en progreso, hecho */
+  /* Estado de tareas: pendiente, en progreso, hecho (verde y azul muy diferenciados) */
   --token-status-pending: #737373;
-  --token-status-in-progress: #3b82f6;
-  --token-status-done: #22c55e;
+  --token-status-in-progress: #1d4ed8;
+  --token-status-done: #15803d;
   --font-sans: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
 }
 
@@ -42,6 +42,6 @@
   --token-nav-text-active: #fb923c;
   --token-spinner: #f97316;
   --token-status-pending: #525252;
-  --token-status-in-progress: #60a5fa;
-  --token-status-done: #4ade80;
+  --token-status-in-progress: #3b82f6;
+  --token-status-done: #22c55e;
 }

@@ -134,8 +134,8 @@ function DayTasksColumn({ dayStr, tasks, onTaskStatusChange, onTaskClick, refetc
     : `Hecho: ${donePct}%, En progreso: ${inProgressPct}%, Pendiente: ${pendingPct}%`
   return (
     <div className="flex flex-col min-w-0 px-2">
-      <div className="font-semibold text-sm text-text py-1">Tasks ({total})</div>
       <div className="w-full flex items-center gap-2 pt-0.5 pb-0">
+        <span className="text-xs font-medium text-text-muted shrink-0" title={progressBarTitle}>({total})</span>
         <div
           className="flex-1 h-2 rounded-full overflow-hidden flex min-w-0"
           role="progressbar"
@@ -144,9 +144,15 @@ function DayTasksColumn({ dayStr, tasks, onTaskStatusChange, onTaskClick, refetc
           aria-valuemax={100}
           title={progressBarTitle}
         >
-          {donePct > 0 && <div className="h-full bg-status-done shrink-0" style={{ width: `${donePct}%` }} />}
-          {inProgressPct > 0 && <div className="h-full bg-status-in-progress shrink-0" style={{ width: `${inProgressPct}%` }} />}
-          {pendingPct > 0 && <div className="h-full bg-status-pending shrink-0" style={{ width: `${pendingPct}%` }} />}
+          {total === 0 ? (
+            <div className="h-full bg-status-pending shrink-0 w-full" />
+          ) : (
+            <>
+              {donePct > 0 && <div className="h-full bg-status-done shrink-0" style={{ width: `${donePct}%` }} />}
+              {inProgressPct > 0 && <div className="h-full bg-status-in-progress shrink-0" style={{ width: `${inProgressPct}%` }} />}
+              {pendingPct > 0 && <div className="h-full bg-status-pending shrink-0" style={{ width: `${pendingPct}%` }} />}
+            </>
+          )}
         </div>
         <span className="text-xs font-medium text-text-muted shrink-0">{donePct}%</span>
       </div>
@@ -208,6 +214,7 @@ function DayColumn({
   onHabitToggle,
   onTaskClick,
   refetch,
+  hideDayHeader = false,
 }) {
   const [tasksCollapsed, setTasksCollapsed] = useState(false)
   const [habitsCollapsed, setHabitsCollapsed] = useState(false)
@@ -232,36 +239,45 @@ function DayColumn({
 
   return (
     <div className="flex flex-col min-w-0 overflow-y-auto overflow-x-hidden px-2">
-      <div className="py-2 shrink-0 flex items-center justify-between gap-2">
-        <div>
-          <div className="font-bold text-text">{dayLabel}</div>
-          <div className="text-sm text-text-muted">{formatDayDate(dayStr)}</div>
+      {!hideDayHeader && (
+        <div className="py-2 shrink-0 flex items-center justify-between gap-2">
+          <div>
+            <div className="font-bold text-text">{dayLabel}</div>
+            <div className="text-sm text-text-muted">{formatDayDate(dayStr)}</div>
+          </div>
+          <div className="flex items-center gap-0.5 shrink-0">
+            {hasStar && (
+              <span className="text-amber-500" title={hasFire ? 'Tareas completadas + 5+ hábitos' : 'Todas las tareas completadas'}>
+                <IconStar size={18} />
+              </span>
+            )}
+            {hasFire && (
+              <span className="text-orange-500" title="5+ hábitos buenos">
+                <IconFlameFilled size={22} />
+              </span>
+            )}
+          </div>
         </div>
-        <div className="flex items-center gap-0.5 shrink-0">
-          {hasStar && (
-            <span className="text-amber-500" title={hasFire ? 'Tareas completadas + 5+ hábitos' : 'Todas las tareas completadas'}>
-              <IconStar size={18} />
-            </span>
-          )}
-          {hasFire && (
-            <span className="text-orange-500" title="5+ hábitos buenos">
-              <IconFlameFilled size={22} />
-            </span>
-          )}
-        </div>
-      </div>
+      )}
 
       <button type="button" onClick={() => setTasksCollapsed((c) => !c)} className="w-full flex items-center justify-between gap-2 py-1.5 text-left font-semibold text-base text-text">
-        <span>Tasks ({tasksForDay.length})</span>
+        <span>Tasks</span>
         {tasksCollapsed ? <IconChevronDown size={22} /> : <IconChevronUp size={22} />}
       </button>
       {!tasksCollapsed && (
         <>
           <div className="w-full flex items-center gap-2 pt-0.5 pb-0">
-            <div className="flex-1 h-2 rounded-full overflow-hidden flex" role="progressbar" aria-valuenow={donePct} aria-valuemin={0} aria-valuemax={100} aria-label={progressBarTitle} title={progressBarTitle}>
-              {donePct > 0 && <div className="h-full bg-status-done transition-all shrink-0" style={{ width: `${donePct}%` }} />}
-              {inProgressPct > 0 && <div className="h-full bg-status-in-progress transition-all shrink-0" style={{ width: `${inProgressPct}%` }} />}
-              {pendingPct > 0 && <div className="h-full bg-status-pending transition-all shrink-0" style={{ width: `${pendingPct}%` }} />}
+            <span className="text-xs font-medium text-text-muted shrink-0" title={progressBarTitle}>({total})</span>
+            <div className="flex-1 h-2 rounded-full overflow-hidden flex min-w-0" role="progressbar" aria-valuenow={donePct} aria-valuemin={0} aria-valuemax={100} aria-label={progressBarTitle} title={progressBarTitle}>
+              {total === 0 ? (
+                <div className="h-full bg-status-pending transition-all shrink-0 w-full" />
+              ) : (
+                <>
+                  {donePct > 0 && <div className="h-full bg-status-done transition-all shrink-0" style={{ width: `${donePct}%` }} />}
+                  {inProgressPct > 0 && <div className="h-full bg-status-in-progress transition-all shrink-0" style={{ width: `${inProgressPct}%` }} />}
+                  {pendingPct > 0 && <div className="h-full bg-status-pending transition-all shrink-0" style={{ width: `${pendingPct}%` }} />}
+                </>
+              )}
             </div>
             <span className="text-xs font-medium text-text-muted shrink-0" title={progressBarTitle}>{donePct}%</span>
           </div>
@@ -720,6 +736,7 @@ export function PlannerPage() {
       onHabitToggle={handleHabitToggle}
       onTaskClick={setModalTask}
       refetch={refetch}
+      hideDayHeader
     />
   ))
 

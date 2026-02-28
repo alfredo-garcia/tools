@@ -238,3 +238,27 @@ export function IconPriority({ className = '', size = 24 }) {
     </svg>
   )
 }
+
+/** Santo: aureola (círculo) encima de la cabeza y figura. */
+export function IconSaint({ className = '', size = 24 }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconClass} ${className}`} aria-hidden>
+      <circle cx="12" cy="3.5" r="2.2" />
+      <circle cx="12" cy="10" r="3" />
+      <path d="M12 13v1a3 3 0 0 1-3 3 2 2 0 0 1-2-2v-1h10v1a2 2 0 0 1-2 2 3 3 0 0 1-3-3v-1" />
+    </svg>
+  )
+}
+
+/** Demonio: cuernos curvos y figura. */
+export function IconDevil({ className = '', size = 24 }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconClass} ${className}`} aria-hidden>
+      <path d="M7 5C6 4 5 3 4 4c-1 1 0 2 1 3l2 1" />
+      <path d="M17 5c1-1 2-1 3 0 1 1 0 2-1 3l-2 1" />
+      <circle cx="12" cy="12" r="5" />
+      <path d="M12 17v4" />
+      <path d="M9 21h6" />
+    </svg>
+  )
+}

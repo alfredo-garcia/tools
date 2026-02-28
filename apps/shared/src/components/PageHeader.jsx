@@ -22,35 +22,43 @@ export function PageHeader({ title, breadcrumbs, onRefresh, loading }) {
   }
 
   const parent = breadcrumbs?.length > 1 ? breadcrumbs[breadcrumbs.length - 2] : null
+  const currentLabel = breadcrumbs?.length ? breadcrumbs[breadcrumbs.length - 1].label : title
 
   const content = breadcrumbs ? (
-    <nav className="flex items-baseline gap-1.5 flex-wrap" aria-label="Breadcrumb">
-      {breadcrumbs.map((item, i) => {
-        const isLast = i === breadcrumbs.length - 1
-        const isParent = !isLast
-        return (
-          <span key={i} className="flex items-baseline gap-1.5">
-            {i > 0 && (
-              <span className="page-header-breadcrumb-sep text-text-muted font-normal text-base select-none" aria-hidden>
-                \
-              </span>
-            )}
-            {item.to != null && isParent ? (
-              <Link
-                to={item.to}
-                className="text-base font-medium text-text-muted hover:text-primary transition-colors underline-offset-2 hover:underline"
-              >
-                {item.label}
-              </Link>
-            ) : (
-              <span className={isLast ? 'text-2xl font-bold text-text' : 'text-base font-medium text-text-muted'}>
-                {item.label}
-              </span>
-            )}
-          </span>
-        )
-      })}
-    </nav>
+    <>
+      {/* Mobile: solo título de la página (vistas de detalle) */}
+      <h1 className="text-2xl font-bold text-text md:hidden truncate" id="page-header-title">
+        {currentLabel}
+      </h1>
+      {/* Desktop: breadcrumbs completos */}
+      <nav className="hidden md:flex items-baseline gap-1.5 flex-wrap" aria-label="Breadcrumb">
+        {breadcrumbs.map((item, i) => {
+          const isLast = i === breadcrumbs.length - 1
+          const isParent = !isLast
+          return (
+            <span key={i} className="flex items-baseline gap-1.5">
+              {i > 0 && (
+                <span className="page-header-breadcrumb-sep text-text-muted font-normal text-base select-none" aria-hidden>
+                  \
+                </span>
+              )}
+              {item.to != null && isParent ? (
+                <Link
+                  to={item.to}
+                  className="text-base font-medium text-text-muted hover:text-primary transition-colors underline-offset-2 hover:underline"
+                >
+                  {item.label}
+                </Link>
+              ) : (
+                <span className={isLast ? 'text-2xl font-bold text-text' : 'text-base font-medium text-text-muted'}>
+                  {item.label}
+                </span>
+              )}
+            </span>
+          )
+        })}
+      </nav>
+    </>
   ) : (
     <h1 className="text-2xl font-bold text-text">{title}</h1>
   )

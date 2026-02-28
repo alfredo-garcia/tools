@@ -1,9 +1,22 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import { useApi, Spinner, PageHeader, AreaChart } from '@tools/shared'
+import { useApi, Spinner, PageHeader } from '@tools/shared'
 import { field, str, dateStr } from '@tools/shared'
 import { isThisWeek, isThisMonth, isInLastDays, getTodayStr, getDaysAgoStr } from '@tools/shared'
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Legend } from 'recharts'
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Legend,
+  AreaChart,
+  Area,
+  ReferenceLine,
+} from 'recharts'
 
 const HABIT_TYPE_FILTERS = [
   { value: 'Good', label: 'Good' },
@@ -70,6 +83,59 @@ function successPctForPeriod(trackingInPeriod) {
   if (trackingInPeriod.length === 0) return 0
   const ok = trackingInPeriod.filter(isSuccess).length
   return Math.round((ok / trackingInPeriod.length) * 100)
+}
+
+/** Formatea fecha YYYY-MM-DD a dd/mm */
+function formatDateShort(dateStr) {
+  if (!dateStr || !/^\d{4}-\d{2}-\d{2}/.test(dateStr)) return ''
+  const [, m, d] = dateStr.slice(0, 10).split('-')
+  return d && m ? `${d}/${m}` : dateStr.slice(0, 10)
+}
+
+/**
+ * Gráfico de área apilada con Recharts: ejes y leyenda alineados, todos los días o cada 2–3,
+ * y raya vertical donde hay registro.
+ */
+function StackedAreaChartRecharts({ data = [], series = [], height = 260 }) {
+  if (!data.length || !series.length) return null
+  const keys = series.map((s) => s.key)
+  const hasData = (row) => keys.some((k) => (row[k] || 0) > 0)
+  const datesWithRecords = data.filter(hasData).map((r) => r.date)
+  const n = data.length
+  const xInterval = n <= 21 ? 0 : n <= 45 ? 1 : 2
+  return (
+    <ResponsiveContainer width="100%" height={height}>
+      <AreaChart data={data} margin={{ top: 8, right: 8, bottom: 24, left: 8 }}>
+        <XAxis
+          dataKey="date"
+          tickFormatter={formatDateShort}
+          interval={xInterval}
+          tick={{ fontSize: 11 }}
+        />
+        <YAxis hide />
+        <Tooltip
+          labelFormatter={(value) => formatDateShort(value)}
+          formatter={(value, name) => [value, name]}
+        />
+        {datesWithRecords.map((date) => (
+          <ReferenceLine key={date} x={date} stroke="var(--color-border)" strokeWidth={1} />
+        ))}
+        {series.map((s, i) => (
+          <Area
+            key={s.key}
+            type="monotone"
+            dataKey={s.key}
+            name={s.label}
+            stackId="1"
+            stroke={s.color || CATEGORY_COLORS[i % CATEGORY_COLORS.length]}
+            fill={s.color || CATEGORY_COLORS[i % CATEGORY_COLORS.length]}
+            fillOpacity={0.85}
+          />
+        ))}
+        <Legend wrapperStyle={{ fontSize: 12 }} />
+      </AreaChart>
+    </ResponsiveContainer>
+  )
 }
 
 function KpiBlock({ periodLabel, pct, barData, barHeight = 140 }) {
@@ -277,11 +343,10 @@ export function HabitsList() {
       {areaChartDataByCategory.series.length > 0 && areaChartDataByCategory.data.some((d) => areaChartDataByCategory.series.some((s) => (d[s.key] || 0) > 0)) && (
         <section className="rounded-2xl border border-2 border-border bg-surface p-5">
           <h2 className="text-base font-semibold text-text mb-3">Por categoría (desde {chartStart} hasta hoy)</h2>
-          <AreaChart
+          <StackedAreaChartRecharts
             data={areaChartDataByCategory.data}
             series={areaChartDataByCategory.series.map((s, i) => ({ ...s, color: CATEGORY_COLORS[i % CATEGORY_COLORS.length] }))}
-            height={240}
-            className="max-w-3xl"
+            height={260}
           />
         </section>
       )}
@@ -293,7 +358,7 @@ export function HabitsList() {
           {areaDataByHabit.series.length > 0 && areaDataByHabit.data.some((d) => areaDataByHabit.series.some((s) => (d[s.key] || 0) > 0)) && (
             <div>
               <h3 className="text-sm font-medium text-text-muted mb-2">Gráfico de área (hábitos)</h3>
-              <AreaChart data={areaDataByHabit.data} series={areaDataByHabit.series} height={200} className="max-w-2xl" />
+              <StackedAreaChartRecharts data={areaDataByHabit.data} series={areaDataByHabit.series} height={220} />
             </div>
           )}
 

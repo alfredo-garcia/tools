@@ -56,66 +56,68 @@ export function AreaChart({
     return { d: `M${points.join(' L')} Z`, color: getColor(seriesIndex) }
   })
 
+  const useFixedHeight = maxHeight != null
   return (
     <div className={`w-full min-w-0 overflow-hidden ${className}`}>
-      <svg
-        viewBox={`0 0 ${width} ${height}`}
-        className="block w-full h-auto"
-        style={{ width: '100%', ...(maxHeight != null && { maxHeight }) }}
-        preserveAspectRatio="xMidYMid meet"
-        aria-hidden
+      <div
+        className="w-full"
+        style={useFixedHeight ? { height: maxHeight } : undefined}
       >
-        {paths.map((path, i) => (
-          <path
-            key={i}
-            d={path.d}
-            fill={path.color}
-            fillOpacity={0.85}
-            stroke={path.color}
-            strokeWidth={1}
-            strokeOpacity={0.5}
-          />
-        ))}
-        {sortedData.length > 0 && (
-          <>
-            <text
-              x={padding.left}
-              y={height - 6}
-              textAnchor="start"
-              className="text-[10px] fill-[var(--color-text-muted)]"
-              style={{ font: '10px sans-serif' }}
-            >
-              {formatDate(sortedData[0].date)}
-            </text>
-            <text
-              x={padding.left + innerWidth / 2}
-              y={height - 6}
-              textAnchor="middle"
-              className="text-[10px] fill-[var(--color-text-muted)]"
-              style={{ font: '10px sans-serif' }}
-            >
-              {formatDate(sortedData[Math.floor(sortedData.length / 2)].date)}
-            </text>
-            <text
-              x={padding.left + innerWidth}
-              y={height - 6}
-              textAnchor="end"
-              className="text-[10px] fill-[var(--color-text-muted)]"
-              style={{ font: '10px sans-serif' }}
-            >
-              {formatDate(sortedData[sortedData.length - 1].date)}
-            </text>
-          </>
-        )}
-      </svg>
-      <div className="flex flex-wrap items-center justify-center gap-3 mt-2">
-        {series.map((s, i) => (
-          <span key={s.key} className="inline-flex items-center gap-1.5 text-xs text-text-muted">
-            <span
-              className="w-3 h-3 rounded-sm shrink-0"
-              style={{ backgroundColor: getColor(i) }}
+        <svg
+          viewBox={`0 0 ${width} ${height}`}
+          className="block w-full"
+          style={{
+            width: '100%',
+            height: useFixedHeight ? '100%' : 'auto',
+          }}
+          preserveAspectRatio={useFixedHeight ? 'none' : 'xMidYMid meet'}
+          aria-hidden
+        >
+          {paths.map((path, i) => (
+            <path
+              key={i}
+              d={path.d}
+              fill={path.color}
+              fillOpacity={0.85}
+              stroke={path.color}
+              strokeWidth={1}
+              strokeOpacity={0.5}
             />
-            {s.label}
+          ))}
+        </svg>
+      </div>
+      {/* Eje X: fechas fuera del SVG para tamaño fijo */}
+      {sortedData.length > 0 && (
+        <div
+          className="flex justify-between mt-0.5 px-1"
+          style={{ fontSize: '11px', lineHeight: 1, color: 'var(--color-text-muted)' }}
+        >
+          <span>{formatDate(sortedData[0].date)}</span>
+          <span>{formatDate(sortedData[Math.floor(sortedData.length / 2)].date)}</span>
+          <span>{formatDate(sortedData[sortedData.length - 1].date)}</span>
+        </div>
+      )}
+      {/* Leyenda: tamaño fijo en px, no depende del SVG */}
+      <div
+        className="flex flex-wrap items-center justify-center gap-3 mt-2"
+        style={{ fontSize: '12px', lineHeight: 1.2 }}
+      >
+        {series.map((s, i) => (
+          <span
+            key={s.key}
+            className="inline-flex items-center gap-1.5 shrink-0"
+            style={{ color: 'var(--color-text-muted)' }}
+          >
+            <span
+              style={{
+                width: 12,
+                height: 12,
+                borderRadius: 2,
+                backgroundColor: getColor(i),
+                flexShrink: 0,
+              }}
+            />
+            <span style={{ fontSize: '12px' }}>{s.label}</span>
           </span>
         ))}
       </div>

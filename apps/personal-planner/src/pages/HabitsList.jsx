@@ -60,6 +60,15 @@ function getHabitId(t) {
   return arr[0] || null
 }
 
+function weekKey(d) {
+  if (!d) return ''
+  const x = new Date(d)
+  const day = x.getDay()
+  const diff = x.getDate() - (day === 0 ? -6 : day - 1)
+  x.setDate(diff)
+  return x.toISOString().slice(0, 10)
+}
+
 /** Average successful hits per day by category for a period. Returns [{ category, avg }]. */
 function avgHitsByCategory(habits, trackingInPeriod, habitIds, periodDays) {
   if (periodDays < 1) periodDays = 1
@@ -105,7 +114,7 @@ function StackedAreaChartRecharts({ data = [], series = [], height = 260 }) {
   const xInterval = n <= 21 ? 0 : n <= 45 ? 1 : 2
   return (
     <ResponsiveContainer width="100%" height={height}>
-      <AreaChart data={data} margin={{ top: 8, right: 8, bottom: 24, left: 8 }}>
+      <AreaChart data={data} margin={{ top: 8, right: 28, bottom: 28, left: 28 }}>
         <XAxis
           dataKey="date"
           tickFormatter={formatDateShort}
@@ -260,10 +269,10 @@ export function HabitsList() {
     return { data: Object.values(dayCount).sort((a, b) => a.date.localeCompare(b.date)), series }
   }, [filteredHabits, trackingInRange, chartStart, today, chartRangeDays])
 
-  const categoriesWithHabits = useMemo(() => getHabitsByCategory(filteredHabits), [filteredHabits])
-
-  const categorySections = useMemo(() => {
-    return categoriesWithHabits.map(([categoryName, habitsInCategory]) => {
+  /** Por cada categoría de hábitos: área (por día, apilada por hábito), barras (por semana), pie (reparto por hábito). */
+  const categoryCardsData = useMemo(() => {
+    const categories = getHabitsByCategory(filteredHabits)
+    return categories.map(([categoryName, habitsInCategory], catIdx) => {
       const habitIdsCat = new Set(habitsInCategory.map((h) => h.id))
       const trackingCat = trackingInRange.filter((t) => habitIdsCat.has(getHabitId(t)))
       const trackingCatSuccess = trackingCat.filter(isSuccess)
@@ -287,30 +296,48 @@ export function HabitsList() {
         const name = habit ? (str(field(habit, 'Habit Name', 'Habit Name')) || habit.id) : null
         if (d && dayCount[d] && name !== null) dayCount[d][name] = (dayCount[d][name] || 0) + 1
       }
-      const areaDataByHabit = {
-        data: Object.values(dayCount).sort((a, b) => a.date.localeCompare(b.date)),
-        series: habitsInCategory.map((h, i) => ({
-          key: str(field(h, 'Habit Name', 'Habit Name')) || h.id,
-          label: (str(field(h, 'Habit Name', 'Habit Name')) || h.id).slice(0, 20),
-          color: CATEGORY_COLORS[i % CATEGORY_COLORS.length],
-        })),
-      }
+      const areaData = Object.values(dayCount).sort((a, b) => a.date.localeCompare(b.date))
+      const areaSeries = habitsInCategory.map((h, i) => ({
+        key: str(field(h, 'Habit Name', 'Habit Name')) || h.id,
+        label: (str(field(h, 'Habit Name', 'Habit Name')) || h.id).slice(0, 20),
+        color: CATEGORY_COLORS[(catIdx * 3 + i) % CATEGORY_COLORS.length],
+      }))
 
-      const donutData = habitsInCategory.map((h, i) => {
+      const byWeek = {}
+      trackingCatSuccess.forEach((t) => {
+        const d = getTrackingDate(t)
+        if (!d) return
+        const w = weekKey(d)
+        const habit = habitsInCategory.find((h) => h.id === getHabitId(t))
+        const label = habit ? (str(field(habit, 'Habit Name', 'Habit Name')) || habit.id) : null
+        if (!byWeek[w]) {
+          byWeek[w] = { week: w, name: `${d.slice(8, 10)}/${d.slice(5, 7)}` }
+          habitsInCategory.forEach((h) => {
+            const k = str(field(h, 'Habit Name', 'Habit Name')) || h.id
+            byWeek[w][k] = 0
+          })
+        }
+        if (label !== null && byWeek[w][label] !== undefined) byWeek[w][label] += 1
+      })
+      const barData = Object.values(byWeek)
+        .filter((row) => row.week != null)
+        .sort((a, b) => a.week.localeCompare(b.week))
+        .slice(-8)
+      const barSeries = habitsInCategory.map((h, i) => ({
+        key: str(field(h, 'Habit Name', 'Habit Name')) || h.id,
+        label: (str(field(h, 'Habit Name', 'Habit Name')) || h.id).slice(0, 16),
+        color: CATEGORY_COLORS[(catIdx * 3 + i) % CATEGORY_COLORS.length],
+      }))
+
+      const pieData = habitsInCategory.map((h, i) => {
         const name = str(field(h, 'Habit Name', 'Habit Name')) || h.id
         const count = trackingCatSuccess.filter((t) => getHabitId(t) === h.id).length
-        return { name: name.slice(0, 18), value: count, fill: CATEGORY_COLORS[i % CATEGORY_COLORS.length] }
+        return { name: name.slice(0, 18), value: count, fill: CATEGORY_COLORS[(catIdx * 3 + i) % CATEGORY_COLORS.length] }
       }).filter((d) => d.value > 0)
 
-      const barHabitAvg = habitsInCategory.map((h) => {
-        const count = trackingCatSuccess.filter((t) => getHabitId(t) === h.id).length
-        const avg = chartRangeDays > 0 ? count / chartRangeDays : 0
-        return { habit: (str(field(h, 'Habit Name', 'Habit Name')) || h.id).slice(0, 24), avg: Math.round(avg * 100) / 100 }
-      })
-
-      return { categoryName, areaDataByHabit, donutData, barHabitAvg }
+      return { categoryName, habitsInCategory, areaData, areaSeries, barData, barSeries, pieData }
     })
-  }, [categoriesWithHabits, trackingInRange, chartStart, today, chartRangeDays])
+  }, [filteredHabits, trackingInRange, chartStart, today, chartRangeDays])
 
   if (loading && list.length === 0) return <div className="flex justify-center py-12"><Spinner size="lg" /></div>
   if (error && list.length === 0) return <p className="text-red-600 dark:text-red-400">{error}</p>
@@ -351,102 +378,60 @@ export function HabitsList() {
         </section>
       )}
 
-      {categorySections.map(({ categoryName, areaDataByHabit, donutData, barHabitAvg }) => (
-        <section key={categoryName} className="rounded-2xl border border-2 border-border bg-surface p-5 space-y-4">
-          <h2 className="text-lg font-semibold text-text">{categoryName}</h2>
+      <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {categoryCardsData.map(({ categoryName, areaData, areaSeries, barData, barSeries, pieData }) => (
+          <div
+            key={categoryName}
+            className="rounded-2xl border border-2 border-border bg-surface p-4 space-y-4"
+          >
+            <h2 className="text-lg font-semibold text-text">
+              {categoryName}
+            </h2>
 
-          {areaDataByHabit.series.length > 0 && areaDataByHabit.data.some((d) => areaDataByHabit.series.some((s) => (d[s.key] || 0) > 0)) && (
-            <div>
-              <h3 className="text-sm font-medium text-text-muted mb-2">Gráfico de área (hábitos)</h3>
-              <StackedAreaChartRecharts data={areaDataByHabit.data} series={areaDataByHabit.series} height={220} />
+            {areaSeries.length > 0 && areaData.some((d) => areaSeries.some((s) => (d[s.key] || 0) > 0)) && (
+              <StackedAreaChartRecharts data={areaData} series={areaSeries} height={180} />
+            )}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {barData.length > 0 && (
+                <ResponsiveContainer width="100%" height={160}>
+                  <BarChart data={barData} margin={{ left: 4, right: 8 }}>
+                    <XAxis dataKey="name" tick={{ fontSize: 10 }} />
+                    <YAxis width={24} tick={{ fontSize: 10 }} />
+                    <Tooltip />
+                    {barSeries.map((s, i) => (
+                      <Bar
+                        key={s.key}
+                        dataKey={s.key}
+                        name={s.label}
+                        stackId="1"
+                        fill={s.color}
+                        radius={i === barSeries.length - 1 ? [4, 4, 0, 0] : 0}
+                      />
+                    ))}
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
+              {pieData.length > 0 && (
+                <ResponsiveContainer width="100%" height={160}>
+                  <PieChart>
+                    <Pie
+                      data={pieData}
+                      dataKey="value"
+                      nameKey="name"
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={40}
+                      outerRadius={60}
+                      paddingAngle={2}
+                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              )}
             </div>
-          )}
-
-          {donutData.length > 0 && (
-            <div>
-              <h3 className="text-sm font-medium text-text-muted mb-2">Reparto por hábito</h3>
-              <ResponsiveContainer width="100%" height={220}>
-                <PieChart>
-                  <Pie
-                    data={donutData}
-                    dataKey="value"
-                    nameKey="name"
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={90}
-                    paddingAngle={2}
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                  />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-          )}
-
-          {barHabitAvg.length > 0 && (
-            <div>
-              <h3 className="text-sm font-medium text-text-muted mb-2">Promedio de hits por hábito</h3>
-              <ResponsiveContainer width="100%" height={Math.max(120, barHabitAvg.length * 32)}>
-                <BarChart data={barHabitAvg} layout="vertical" margin={{ left: 4, right: 24 }}>
-                  <XAxis type="number" allowDecimals tick={{ fontSize: 10 }} />
-                  <YAxis type="category" dataKey="habit" width={120} tick={{ fontSize: 11 }} />
-                  <Tooltip formatter={(v) => [v, 'Promedio/día']} />
-                  <Bar dataKey="avg" radius={[0, 4, 4, 0]} fill="#f97316" name="Promedio" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          )}
-        </section>
-      ))}
-
-      <section>
-        <h2 className="text-base font-semibold text-text mb-3">Hábitos</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {(() => {
-            const mid = Math.ceil(filteredHabits.length / 2)
-            const col1 = filteredHabits.slice(0, mid)
-            const col2 = filteredHabits.slice(mid)
-            return (
-              <>
-                <div className="space-y-3">
-                  {col1.map((h) => (
-                    <Link
-                      key={h.id}
-                      to={`/habits/${h.id}`}
-                      className="block rounded-xl border border-2 border-border bg-surface p-4 hover:shadow-md transition-shadow"
-                    >
-                      <span className="font-medium text-text">
-                        {str(field(h, 'Habit Name', 'Habit Name')) || '(untitled)'}
-                      </span>
-                      <div className="flex flex-wrap gap-2 mt-2 text-sm text-text-muted">
-                        <span>{str(field(h, 'Category', 'Category'))}</span>
-                        <span>Frecuencia: {str(field(h, 'Frequency', 'Frequency')) || '—'}</span>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-                <div className="space-y-3">
-                  {col2.map((h) => (
-                    <Link
-                      key={h.id}
-                      to={`/habits/${h.id}`}
-                      className="block rounded-xl border border-2 border-border bg-surface p-4 hover:shadow-md transition-shadow"
-                    >
-                      <span className="font-medium text-text">
-                        {str(field(h, 'Habit Name', 'Habit Name')) || '(untitled)'}
-                      </span>
-                      <div className="flex flex-wrap gap-2 mt-2 text-sm text-text-muted">
-                        <span>{str(field(h, 'Category', 'Category'))}</span>
-                        <span>Frecuencia: {str(field(h, 'Frequency', 'Frequency')) || '—'}</span>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </>
-            )
-          })()}
-        </div>
+          </div>
+        ))}
       </section>
 
       {filteredHabits.length === 0 && (

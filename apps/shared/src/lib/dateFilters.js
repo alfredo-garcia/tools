@@ -80,6 +80,32 @@ export function isInNextDays(d, days) {
   return date >= today && date <= end
 }
 
+/** Today as YYYY-MM-DD. */
+export function getTodayStr() {
+  const now = new Date()
+  return now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0')
+}
+
+/** Date is within the last N days (inclusive): from (today - (N-1)) to today. */
+export function isInLastDays(d, days) {
+  const only = toLocalDateStr(d)
+  if (!only || days < 1) return false
+  const now = new Date()
+  const todayStr = getTodayStr()
+  const start = new Date(now)
+  start.setDate(now.getDate() - (days - 1))
+  start.setHours(0, 0, 0, 0)
+  const startStr = start.getFullYear() + '-' + String(start.getMonth() + 1).padStart(2, '0') + '-' + String(start.getDate()).padStart(2, '0')
+  return only >= startStr && only <= todayStr
+}
+
+/** Date string (YYYY-MM-DD) for N days ago (0 = today). */
+export function getDaysAgoStr(days) {
+  const d = new Date()
+  d.setDate(d.getDate() - days)
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0')
+}
+
 /** Monday 00:00 of the week containing the given date. */
 export function getWeekStart(d) {
   const x = d ? (typeof d === 'string' ? new Date(d) : new Date(d.getTime())) : new Date()

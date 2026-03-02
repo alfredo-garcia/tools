@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { Layout, AppShell, SettingsPage, IconCalendar, IconTarget, IconCheckSquare, IconCircle, IconSettings, IconChartBar, IconSearch } from '@tools/shared'
+import { Layout, AppShell, SettingsPage, IconCalendar, IconTarget, IconCheckSquare, IconCircle, IconSettings, IconChartBar, IconSearch, IconMagicBall } from '@tools/shared'
 import { PlannerApiProvider } from './contexts/PlannerApiContext'
 import { Dashboard } from './pages/Dashboard'
 import { PlannerPage } from './pages/PlannerPage'
@@ -15,12 +15,14 @@ import { AnalysisOKR } from './pages/AnalysisOKR'
 import { AnalysisTasks } from './pages/AnalysisTasks'
 import { AnalysisHabits } from './pages/AnalysisHabits'
 import { Search } from './pages/Search'
+import { DiscoveryList } from './pages/DiscoveryList'
 
 const navItems = [
   { to: '/', label: 'Planner', Icon: IconCalendar, aria: 'Weekly planner' },
   { to: '/search', label: 'Search', Icon: IconSearch, aria: 'Search' },
-  { to: '/objectives', label: 'OKRs', Icon: IconTarget, aria: 'Objectives and Key Results' },
+  { to: '/discovery', label: 'Discovery', Icon: IconMagicBall, aria: 'Discovery ideas' },
   { to: '/tasks', label: 'Tasks', Icon: IconCheckSquare, aria: 'Tasks' },
+  { to: '/objectives', label: 'OKRs', Icon: IconTarget, aria: 'Objectives and Key Results', inMore: true },
   { to: '/habits', label: 'Habits', Icon: IconCircle, aria: 'Habits', inMore: true },
   { to: '/analytics', label: 'Analytics', Icon: IconChartBar, aria: 'Analytics', inMore: true },
   { to: '/settings', label: 'Settings', Icon: IconSettings, aria: 'Settings', inMore: true },
@@ -49,6 +51,7 @@ function App() {
             <Route path="/analysis/tasks" element={<AnalysisTasks />} />
             <Route path="/analysis/habits" element={<AnalysisHabits />} />
             <Route path="/search" element={<Search />} />
+            <Route path="/discovery" element={<DiscoveryList />} />
           </Routes>
           </AppShell>
         </BrowserRouter>

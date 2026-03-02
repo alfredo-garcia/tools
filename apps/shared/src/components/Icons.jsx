@@ -263,6 +263,79 @@ export function IconDevil({ className = '', size = 24 }) {
   )
 }
 
+/** Corazón (outline). */
+export function IconHeart({ className = '', size = 24 }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconClass} ${className}`} aria-hidden>
+      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+    </svg>
+  )
+}
+
+/** Corazón en llamas (filled, para 5+ good habits). */
+export function IconHeartFire({ className = '', size = 24 }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" className={`${iconClass} ${className}`} aria-hidden>
+      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" fill="currentColor" />
+      <g transform="translate(12, 5) scale(0.38)" fill="currentColor">
+        <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" />
+      </g>
+    </svg>
+  )
+}
+
+/** Mierda / poop (montículo estilizado). */
+export function IconPoop({ className = '', size = 24 }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={`${iconClass} ${className}`} aria-hidden>
+      <path d="M12 5c-2.5 0-4 1.8-4.5 4-.5 2.2-.3 4.5.5 6.5.8 2 2 3 3.5 3.5s3 0 4-.5c1-.5 1.8-1.5 2.2-2.5.6-1.5.6-3.5 0-5.5C16 6.8 14.5 5 12 5z" />
+      <ellipse cx="12" cy="19" rx="5" ry="2.2" />
+    </svg>
+  )
+}
+
+/** Mierda con moscas (para 5+ bad habits). */
+export function IconPoopFlies({ className = '', size = 24 }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" className={`${iconClass} ${className}`} aria-hidden>
+      <path d="M12 5c-2.5 0-4 1.8-4.5 4-.5 2.2-.3 4.5.5 6.5.8 2 2 3 3.5 3.5s3 0 4-.5c1-.5 1.8-1.5 2.2-2.5.6-1.5.6-3.5 0-5.5C16 6.8 14.5 5 12 5z" fill="currentColor" />
+      <ellipse cx="12" cy="19" rx="5" ry="2.2" fill="currentColor" />
+      <circle cx="7.5" cy="6" r="1.1" fill="currentColor" />
+      <circle cx="16.5" cy="6.5" r="1.1" fill="currentColor" />
+      <circle cx="10" cy="4" r="0.85" fill="currentColor" />
+    </svg>
+  )
+}
+
+/** Calavera (Bad Habits). */
+export function IconSkull({ className = '', size = 24 }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconClass} ${className}`} aria-hidden>
+      <circle cx="12" cy="10" r="6" />
+      <path d="M5 10c0-1.5 1-3 3-3h8c2 0 3 1.5 3 3v1a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-1z" />
+      <circle cx="9" cy="10" r="1.5" fill="currentColor" stroke="none" />
+      <circle cx="15" cy="10" r="1.5" fill="currentColor" stroke="none" />
+      <path d="M8 14h2M14 14h2M10 17h4" />
+    </svg>
+  )
+}
+
+/** Calavera con moscas (5+ bad habits). */
+export function IconSkullFlies({ className = '', size = 24 }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={`${iconClass} ${className}`} aria-hidden>
+      <circle cx="12" cy="10" r="6" fill="none" stroke="currentColor" strokeWidth="2" />
+      <path d="M5 10c0-1.5 1-3 3-3h8c2 0 3 1.5 3 3v1a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-1z" fill="none" stroke="currentColor" strokeWidth="2" />
+      <circle cx="9" cy="10" r="1.5" />
+      <circle cx="15" cy="10" r="1.5" />
+      <path d="M8 14h2M14 14h2M10 17h4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      <circle cx="7" cy="5" r="1" />
+      <circle cx="17" cy="6" r="1" />
+      <circle cx="12" cy="3" r="0.8" />
+    </svg>
+  )
+}
+
 /** Analytics / gráfico de barras. Mismo estilo stroke. */
 export function IconChartBar({ className = '', size = 24 }) {
   return (
@@ -301,6 +374,17 @@ export function IconMoreVertical({ className = '', size = 24 }) {
       <circle cx="12" cy="12" r="1.5" />
       <circle cx="12" cy="5" r="1.5" />
       <circle cx="12" cy="19" r="1.5" />
+    </svg>
+  )
+}
+
+/** Magic ball / crystal ball (ver el futuro). */
+export function IconMagicBall({ className = '', size = 24 }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconClass} ${className}`} aria-hidden>
+      <circle cx="12" cy="10" r="6" />
+      <path d="M8 20c0-2.2 1.8-4 4-4s4 1.8 4 4" />
+      <circle cx="12" cy="8" r="1" fill="currentColor" stroke="none" />
     </svg>
   )
 }

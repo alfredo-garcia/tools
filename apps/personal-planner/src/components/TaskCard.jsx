@@ -56,8 +56,8 @@ export function TaskCard({ task, dayStr, onStatusChange, onOpenModal, refetch, i
   )
 
   const statusButtons = (
-    <div className="flex items-center justify-start gap-2 mt-2" onClick={(e) => e.stopPropagation()}>
-      {STATUS_OPTIONS.map(({ value }) => {
+    <div className="flex w-full items-center gap-1 mt-2" onClick={(e) => e.stopPropagation()}>
+      {STATUS_OPTIONS.map(({ value, label }) => {
         const isActive =
           (value === 'Done' && statusGroup === 'done') ||
           (value === 'In Progress' && statusGroup === 'in_progress') ||
@@ -72,16 +72,16 @@ export function TaskCard({ task, dayStr, onStatusChange, onOpenModal, refetch, i
               : 'bg-status-done text-white'
           : 'bg-border/50 text-text-muted hover:bg-border'
         const Icon = isPending ? IconCircle : isInProgress ? IconPlay : IconCheckSquare
-        const title = isPending ? 'To do' : isInProgress ? 'In progress' : 'Done'
         return (
           <button
             key={value}
             type="button"
             onClick={(e) => { e.stopPropagation(); e.preventDefault(); handleStatus(e, value) }}
-            title={title}
-            className={`w-6 h-6 !min-w-6 !min-h-6 flex items-center justify-center rounded shrink-0 ${btnClass}`}
+            title={label}
+            className={`flex-1 min-w-0 flex items-center justify-center gap-0.5 py-1 px-1 rounded text-[10px] font-medium truncate ${btnClass}`}
           >
-            <Icon size={10} />
+            <Icon size={10} className="shrink-0" />
+            <span className="truncate">{label}</span>
           </button>
         )
       })}

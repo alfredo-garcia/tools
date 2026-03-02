@@ -193,26 +193,28 @@ export function AppShell({ children, navItems = [], title = '', storageKeyPrefix
               to={to}
               aria-label={aria}
               aria-current={isActive(to) ? 'page' : undefined}
-              className={`app-bottom-nav-link flex flex-col items-center justify-center flex-1 min-w-0 gap-1 py-3 px-2 rounded-xl touch-manipulation transition-colors min-h-[44px] ${
+              className={`app-bottom-nav-link flex flex-1 min-w-0 items-center justify-center py-3 px-1 rounded-xl touch-manipulation transition-colors min-h-[44px] ${
                 isActive(to)
                   ? 'bg-primary-muted text-primary'
                   : 'text-nav-text active:bg-surface'
               }`}
             >
-              {Icon && (
-                <span className="relative shrink-0 inline-flex">
-                  <Icon size={26} />
-                  {badge && (
-                    <span
-                      className="absolute top-0 right-0 w-2 h-2 rounded-full bg-red-500"
-                      aria-hidden
-                    />
-                  )}
+              <div className="flex flex-col items-center justify-center gap-0.5 min-w-0 w-full">
+                {Icon && (
+                  <span className="relative shrink-0 inline-flex">
+                    <Icon size={26} />
+                    {badge && (
+                      <span
+                        className="absolute top-0 right-0 w-2 h-2 rounded-full bg-red-500"
+                        aria-hidden
+                      />
+                    )}
+                  </span>
+                )}
+                <span className="text-[8px] font-medium leading-tight text-center truncate w-full min-w-0 block">
+                  {label}
                 </span>
-              )}
-              <span className="text-[8px] font-medium truncate w-full text-center leading-tight">
-                {label}
-              </span>
+              </div>
             </Link>
           ))}
           {moreItems.length > 0 && (
@@ -223,16 +225,18 @@ export function AppShell({ children, navItems = [], title = '', storageKeyPrefix
                 aria-label="More options"
                 aria-expanded={moreOpen}
                 aria-haspopup="true"
-                className={`app-bottom-nav-link flex flex-col items-center justify-center flex-1 min-w-0 gap-1 py-3 px-2 rounded-xl touch-manipulation transition-colors min-h-[44px] ${
+                className={`app-bottom-nav-link flex flex-1 min-w-0 items-center justify-center py-3 px-1 rounded-xl touch-manipulation transition-colors min-h-[44px] ${
                   moreItems.some((item) => isActive(item.to))
                     ? 'bg-primary-muted text-primary'
                     : 'text-nav-text active:bg-surface'
                 }`}
               >
-                <IconMoreVertical size={26} className="shrink-0" />
-                <span className="text-[8px] font-medium truncate w-full text-center leading-tight">
-                  More
-                </span>
+                <div className="flex flex-col items-center justify-center gap-0.5 min-w-0 w-full">
+                  <IconMoreVertical size={26} className="shrink-0" />
+                  <span className="text-[8px] font-medium leading-tight text-center truncate w-full min-w-0 block">
+                    More
+                  </span>
+                </div>
               </button>
               {moreOpen && (
                 <div

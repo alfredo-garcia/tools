@@ -87,13 +87,14 @@ body {
     align-items: center;
     justify-content: center;
   }
-  .app-bottom-nav-link span {
+  /* Solo la etiqueta de texto: bloque centrado. No aplicar a todos los span para no romper el flex del contenedor. */
+  .app-bottom-nav-link > div > span:last-child {
     text-align: center;
     display: block;
     width: 100%;
     font-weight: 400;
   }
-  .app-bottom-nav-link[aria-current="page"] span {
+  .app-bottom-nav-link[aria-current="page"] > div > span:last-child {
     font-weight: 600;
   }
   .app-bottom-nav-link svg {

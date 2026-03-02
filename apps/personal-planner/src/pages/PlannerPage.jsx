@@ -476,7 +476,7 @@ function DayColumn({
       )}
 
       <button type="button" onClick={() => setGoodHabitsCollapsed((c) => !c)} className="w-full flex items-center justify-between gap-2 py-1.5 text-left font-semibold text-base text-text mt-5">
-        <span className="flex items-center gap-2 text-green-500">
+        <span className="flex items-center gap-2 text-text">
           <IconHeart size={20} />
           Good Habits
         </span>
@@ -508,7 +508,7 @@ function DayColumn({
       )}
 
       <button type="button" onClick={() => setBadHabitsCollapsed((c) => !c)} className="w-full flex items-center justify-between gap-2 py-1.5 text-left font-semibold text-base text-text mt-5">
-        <span className="flex items-center gap-2 text-red-500">
+        <span className="flex items-center gap-2 text-text">
           <IconX size={20} />
           Bad Habits
         </span>
@@ -874,8 +874,8 @@ export function PlannerPage() {
               onClick={() => setGoodHabitsCollapsed((c) => !c)}
               className="w-full flex items-center justify-between gap-2 py-2 text-left font-semibold text-base text-text"
             >
-              <span className="flex items-center gap-2 text-green-500">
-                <IconHeart size={22} />
+              <span className="flex items-center gap-2 text-text">
+                <IconHeart size={20} />
                 Good Habits
               </span>
               {goodHabitsCollapsed ? <IconChevronDown size={22} /> : <IconChevronUp size={22} />}
@@ -901,8 +901,8 @@ export function PlannerPage() {
               onClick={() => setBadHabitsCollapsed((c) => !c)}
               className="w-full flex items-center justify-between gap-2 py-2 text-left font-semibold text-base text-text"
             >
-              <span className="flex items-center gap-2 text-red-500">
-                <IconX size={22} />
+              <span className="flex items-center gap-2 text-text">
+                <IconX size={20} />
                 Bad Habits
               </span>
               {badHabitsCollapsed ? <IconChevronDown size={22} /> : <IconChevronUp size={22} />}

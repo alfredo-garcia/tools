@@ -54,7 +54,7 @@ function SearchInput({ value, onChange, onSearch, onClear, showClear }) {
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={handleKeyDown}
         placeholder="Search objectives, key results, tasks…"
-        className="w-full pl-10 pr-10 py-3 rounded-xl border-2 border-border bg-surface text-text placeholder:text-text-muted focus:outline-none focus:border-primary"
+        className="w-full pl-10 pr-10 py-3 rounded-xl border-2 border-border bg-surface text-text placeholder:text-text-muted focus:outline-none focus:border-primary [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden"
         aria-label="Search"
       />
       {showClear && (

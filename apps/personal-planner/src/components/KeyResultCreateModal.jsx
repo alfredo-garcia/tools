@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { IconCalendar, IconTag, IconCircle, IconTarget, IconCheckSquare } from '@tools/shared'
 
-const STATUS_OPTIONS = ['Pending', 'In Progress', 'Done']
+// Debe coincidir con las opciones del Single select "Status" en Airtable:
+// Not Started, In Progress, Achieved, Behind, Missed
+const STATUS_OPTIONS = ['Not Started', 'In Progress', 'Achieved', 'Behind', 'Missed']
 
 /**
  * Modal to create a new Key Result linked to an Objective.
@@ -10,7 +12,7 @@ const STATUS_OPTIONS = ['Pending', 'In Progress', 'Done']
 export function KeyResultCreateModal({ objectiveId, onClose, onCreate }) {
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
-  const [status, setStatus] = useState('Pending')
+  const [status, setStatus] = useState('Not Started')
   const [metric, setMetric] = useState('')
   const [currentValue, setCurrentValue] = useState('')
   const [targetValue, setTargetValue] = useState('')

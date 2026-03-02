@@ -4,12 +4,15 @@ import { Spinner, PageHeader, Card, CardList, IconTarget, IconCalendar, IconTag,
 import { usePlannerApi } from '../contexts/PlannerApiContext'
 import { field, str, dateStr, arr, num } from '@tools/shared'
 import { getTaskStatusGroup } from '../lib/taskStatus'
-import { getPriorityTagClass, STATUS_OPTIONS } from '../components/TaskCard'
+import { getPriorityTagClass } from '../components/TaskCard'
 import { TaskModal } from '../components/TaskModal'
 import { Fab } from '@tools/shared'
 
 const GROUP_ORDER = ['in_progress', 'pending', 'done']
 const GROUP_LABELS = { in_progress: 'In progress', pending: 'Pending', done: 'Done' }
+
+// Estados permitidos para Key Results en Airtable (columna Status)
+const KR_STATUS_OPTIONS = ['Not Started', 'In Progress', 'Achieved', 'Behind', 'Missed']
 
 function TaskCardClickable({ task, getDue, onClick }) {
   const name = str(field(task, 'Task Name', 'Task Name')) || '(untitled)'
@@ -258,6 +261,7 @@ export function KeyResultDetail() {
   const deadline = dateStr(field(item, 'Deadline', 'Deadline')) || ''
   const progressVal = num(field(item, 'Progress (%)', 'Progress', 'Progress %'))
   const progressStr = progressVal != null ? String(progressVal) : ''
+  const currentStatus = str(field(item, 'Status', 'Status')) || 'Not Started'
 
   const targetNum = targetVal != null && targetVal !== '' ? Number(targetVal) : null
   const hasChart = chartData.length > 0 || (targetNum != null && !Number.isNaN(targetNum))
@@ -308,23 +312,14 @@ export function KeyResultDetail() {
               </h1>
             )}
           </div>
-          <div className="flex items-center gap-2 text-sm flex-wrap">
-            <span className="text-text-muted shrink-0">Objective:</span>
-            <select
-              value={objectiveLink ?? ''}
-              onChange={(e) => {
-                const v = e.target.value
-                if (v) handleKrUpdate({ 'Objective Link': [v] })
-              }}
-              className="rounded border border-border bg-surface text-text px-2 py-1 text-sm min-w-0 max-w-full"
-              required
-            >
-              <option value="">— Select objective (required) —</option>
-              {objectivesList.map((o) => (
-                <option key={o.id} value={o.id}>{o.name}</option>
-              ))}
-            </select>
-          </div>
+          {objectiveLink && (
+            <p className="text-sm text-text-muted flex items-center gap-1.5 flex-wrap">
+              <span className="shrink-0">Objective:</span>
+              <Link to={`/objectives/${objectiveLink}`} className="text-text hover:underline">
+                {objectivesList.find((o) => o.id === objectiveLink)?.name ?? 'Objective'}
+              </Link>
+            </p>
+          )}
         </div>
 
         <div className="p-5 space-y-4">
@@ -400,6 +395,24 @@ export function KeyResultDetail() {
               )}
             </div>
             <div className="space-y-2">
+            {/* Objective */}
+            <div className="flex items-center gap-2 text-sm">
+              <span className="text-text-muted shrink-0"><IconTarget size={18} /></span>
+              <span className="text-text-muted shrink-0">Objective:</span>
+              <select
+                value={objectiveLink ?? ''}
+                onChange={(e) => {
+                  const v = e.target.value
+                  if (v) handleKrUpdate({ 'Objective Link': [v] })
+                }}
+                className="flex-1 min-w-0 rounded border border-border bg-surface text-text px-2 py-1 text-sm"
+              >
+                <option value="">— Select objective —</option>
+                {objectivesList.map((o) => (
+                  <option key={o.id} value={o.id}>{o.name}</option>
+                ))}
+              </select>
+            </div>
             {/* Metric */}
             <div className="flex items-center gap-2 text-sm">
               <span className="text-text-muted shrink-0"><IconTag size={18} /></span>
@@ -563,32 +576,33 @@ export function KeyResultDetail() {
           <hr className="border-border" />
           <div className="flex items-center justify-between gap-2 w-full flex-wrap">
             <div className="flex flex-wrap gap-2">
-              {STATUS_OPTIONS.map(({ value, label }) => {
-                const statusGroup = getTaskStatusGroup(item)
-                const isActive =
-                  (value === 'Done' && statusGroup === 'done') ||
-                  (value === 'In Progress' && statusGroup === 'in_progress') ||
-                  (value === 'Pending' && statusGroup === 'pending')
-                const isPending = value === 'Pending'
+              {KR_STATUS_OPTIONS.map((value) => {
+                const isActive = currentStatus === value
                 const isInProgress = value === 'In Progress'
+                const isAchieved = value === 'Achieved'
                 const btnClass = isActive
-                  ? isPending
-                    ? 'bg-status-pending text-white'
+                  ? isAchieved
+                    ? 'bg-status-done text-white'
                     : isInProgress
                       ? 'bg-status-in-progress text-white'
-                      : 'bg-status-done text-white'
+                      : 'bg-status-pending text-white'
                   : 'bg-border text-text hover:bg-border/80'
-                const Icon = isPending ? IconCircle : isInProgress ? IconPlay : IconCheckSquare
+                const Icon =
+                  value === 'Achieved'
+                    ? IconCheckSquare
+                    : value === 'In Progress'
+                      ? IconPlay
+                      : IconCircle
                 return (
                   <button
                     key={value}
                     type="button"
-                    title={label}
+                    title={value}
                     onClick={(e) => handleStatus(e, value)}
                     className={`min-h-[44px] px-3 md:px-4 rounded-xl text-sm font-medium flex items-center justify-center md:justify-start gap-2 shrink-0 cursor-pointer ${btnClass}`}
                   >
                     <Icon size={18} />
-                    <span className="hidden md:inline">{label}</span>
+                    <span className="hidden md:inline">{value}</span>
                   </button>
                 )
               })}

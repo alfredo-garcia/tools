@@ -3,6 +3,21 @@ import { fetchTable, createRecord, updateRecord, deleteRecord } from './_lib/air
 
 const TABLE = process.env.AIRTABLE_TABLE_KEY_RESULTS || 'Key Results'
 
+/** Normaliza los estados de Key Result que puede enviar el frontend a los valores del Single select en Airtable. */
+const STATUS_TO_AIRTABLE = {
+  // Nuevos valores válidos
+  'Not Started': 'Not Started',
+  'In Progress': 'In Progress',
+  Achieved: 'Achieved',
+  Behind: 'Behind',
+  Missed: 'Missed',
+  // Sinónimos antiguos para compatibilidad
+  Pending: 'Not Started',
+  Todo: 'Not Started',
+  TODO: 'Not Started',
+  Done: 'Achieved',
+}
+
 function getPathSegments(pathname) {
   return (pathname || '').replace(/^\/api/, '').split('/').filter(Boolean)
 }
@@ -34,7 +49,10 @@ export default async function handler(req, res) {
   if (recordId && req.method === 'PATCH') {
     const body = req.body || {}
     const fields = {}
-    if (body.Status != null && typeof body.Status === 'string') fields.Status = body.Status.trim()
+    if (body.Status != null && typeof body.Status === 'string') {
+      const raw = body.Status.trim()
+      fields.Status = STATUS_TO_AIRTABLE[raw] ?? raw
+    }
     if (body['Key Result Name'] != null && typeof body['Key Result Name'] === 'string') fields['Key Result Name'] = body['Key Result Name'].trim()
     if (body.Description != null && typeof body.Description === 'string') fields.Description = body.Description.trim()
     if (body.Metric != null && typeof body.Metric === 'string') fields.Metric = body.Metric.trim()
@@ -87,9 +105,16 @@ export default async function handler(req, res) {
       res.end(JSON.stringify({ error: 'Body must include Key Result Name' }))
       return
     }
+    const requestedStatus =
+      body.Status != null && typeof body.Status === 'string'
+        ? body.Status.trim()
+        : null
+    const normalizedStatus =
+      (requestedStatus && (STATUS_TO_AIRTABLE[requestedStatus] ?? requestedStatus)) ||
+      'Not Started'
     const fields = {
       'Key Result Name': name,
-      Status: (body.Status != null && typeof body.Status === 'string' ? body.Status.trim() : null) || 'Pending',
+      Status: normalizedStatus,
     }
     const objectiveId = body['Objective Link'] ?? body.Objective
     if (Array.isArray(objectiveId) && objectiveId.length > 0 && objectiveId[0]) {

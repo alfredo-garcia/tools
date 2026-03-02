@@ -98,6 +98,11 @@ export function DiscoveryModal({ idea, onClose, onCreate, onIdeaUpdate, onIdeaDe
     }
   }
 
+  const handleStatusChange = async (newStatus) => {
+    if (!idea) return
+    await saveEdit('status', { Status: newStatus })
+  }
+
   const startEdit = (fieldName, currentValue) => {
     setEditingField(fieldName)
     setEditValue(currentValue ?? '')
@@ -177,47 +182,79 @@ export function DiscoveryModal({ idea, onClose, onCreate, onIdeaUpdate, onIdeaDe
                   <label className="text-sm text-text-muted shrink-0 w-28 flex items-center gap-1.5">
                     <IconTag size={16} /> Category
                   </label>
-                  <select value={createCategory} onChange={(e) => setCreateCategory(e.target.value)} className="rounded-lg border border-border bg-surface text-text px-3 py-2 text-sm min-w-0 sm:min-w-[200px]">
+                  <select
+                    value={createCategory}
+                    onChange={(e) => setCreateCategory(e.target.value)}
+                    className="rounded-lg border border-border bg-surface text-text px-3 py-2 text-sm min-w-0 sm:min-w-[200px]"
+                  >
                     <option value="">—</option>
-                    {CATEGORY_OPTIONS.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
-                  </select>
-                </div>
-                <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-4">
-                  <label className="text-sm text-text-muted shrink-0 w-28">Status</label>
-                  <select value={createStatus} onChange={(e) => setCreateStatus(e.target.value)} className="rounded-lg border border-border bg-surface text-text px-3 py-2 text-sm min-w-0 sm:min-w-[200px]">
-                    {STATUS_OPTIONS.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
+                    {CATEGORY_OPTIONS.map((opt) => (
+                      <option key={opt} value={opt}>{opt}</option>
+                    ))}
                   </select>
                 </div>
                 <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-4">
                   <label className="text-sm text-text-muted shrink-0 w-28">Priority</label>
-                  <select value={createPriority} onChange={(e) => setCreatePriority(e.target.value)} className="rounded-lg border border-border bg-surface text-text px-3 py-2 text-sm min-w-0 sm:min-w-[200px]">
+                  <select
+                    value={createPriority}
+                    onChange={(e) => setCreatePriority(e.target.value)}
+                    className="rounded-lg border border-border bg-surface text-text px-3 py-2 text-sm min-w-0 sm:min-w-[200px]"
+                  >
                     <option value="">—</option>
-                    {PRIORITY_OPTIONS.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
+                    {PRIORITY_OPTIONS.map((opt) => (
+                      <option key={opt} value={opt}>{opt}</option>
+                    ))}
                   </select>
                 </div>
               </div>
             </div>
 
-            <div className="border-t border-border mt-5 pt-5">
-              <label className="block text-sm font-medium text-text-muted mb-1.5 flex items-center gap-1.5">
-                <IconTarget size={16} /> Objectives
-              </label>
-              <select
-                multiple
-                value={createObjectiveIds}
-                onChange={(e) => setCreateObjectiveIds(Array.from(e.target.selectedOptions, (o) => o.value))}
-                className="w-full rounded-lg border border-border bg-surface text-text px-3 py-2 text-sm min-h-[88px] max-h-32"
-              >
-                {allObjectives.map((o) => (
-                  <option key={o.id} value={o.id}>{str(field(o, 'Objective Name', 'Objective Name')) || '(untitled)'}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="border-t border-border mt-5 pt-5 flex justify-end">
-              <button type="button" onClick={handleCreateSubmit} disabled={createSubmitting} className="min-h-[44px] px-6 rounded-xl text-sm font-medium bg-primary text-white hover:bg-primary/90 disabled:opacity-50">
-                {createSubmitting ? 'Creating…' : 'Create idea'}
-              </button>
+            <div className="border-t border-border mt-5 pt-5 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-text-muted mb-1.5 flex items-center gap-1.5">
+                  <IconTarget size={16} /> Objectives
+                </label>
+                <select
+                  multiple
+                  value={createObjectiveIds}
+                  onChange={(e) => setCreateObjectiveIds(Array.from(e.target.selectedOptions, (o) => o.value))}
+                  className="w-full rounded-lg border border-border bg-surface text-text px-3 py-2 text-sm min-h-[88px] max-h-32"
+                >
+                  {allObjectives.map((o) => (
+                    <option key={o.id} value={o.id}>
+                      {str(field(o, 'Objective Name', 'Objective Name')) || '(untitled)'}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {STATUS_OPTIONS.map((opt) => {
+                  const isActive = createStatus === opt
+                  const baseClasses = 'min-h-[40px] px-3 rounded-xl text-sm font-medium'
+                  const activeClasses = 'bg-primary text-white'
+                  const inactiveClasses = 'bg-border text-text hover:bg-border/80'
+                  return (
+                    <button
+                      key={opt}
+                      type="button"
+                      onClick={() => setCreateStatus(opt)}
+                      className={`${baseClasses} ${isActive ? activeClasses : inactiveClasses}`}
+                    >
+                      {opt}
+                    </button>
+                  )
+                })}
+              </div>
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={handleCreateSubmit}
+                  disabled={createSubmitting}
+                  className="min-h-[44px] px-6 rounded-xl text-sm font-medium bg-primary text-white hover:bg-primary/90 disabled:opacity-50"
+                >
+                  {createSubmitting ? 'Creating…' : 'Create idea'}
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -332,16 +369,6 @@ export function DiscoveryModal({ idea, onClose, onCreate, onIdeaUpdate, onIdeaDe
                 )}
               </div>
               <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-4">
-                <label className="text-sm text-text-muted shrink-0 w-28">Status</label>
-                <select
-                  value={status}
-                  onChange={(e) => saveEdit('status', { Status: e.target.value })}
-                  className="rounded-lg border border-border bg-surface text-text px-3 py-2 text-sm min-w-0 sm:min-w-[200px]"
-                >
-                  {STATUS_OPTIONS.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
-                </select>
-              </div>
-              <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-4">
                 <label className="text-sm text-text-muted shrink-0 w-28">Priority</label>
                 <select
                   value={priority}
@@ -361,13 +388,34 @@ export function DiscoveryModal({ idea, onClose, onCreate, onIdeaUpdate, onIdeaDe
             </div>
           </div>
 
-          <div className="border-t border-border mt-5 pt-5 flex justify-between items-center">
+          <div className="border-t border-border mt-5 pt-5 flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap gap-2">
+              {STATUS_OPTIONS.map((opt) => {
+                const isActive = status === opt
+                const baseClasses = 'min-h-[36px] px-3 rounded-xl text-sm font-medium'
+                const activeClasses = 'bg-primary text-white'
+                const inactiveClasses = 'bg-border text-text hover:bg-border/80'
+                return (
+                  <button
+                    key={opt}
+                    type="button"
+                    onClick={() => handleStatusChange(opt)}
+                    className={`${baseClasses} ${isActive ? activeClasses : inactiveClasses}`}
+                  >
+                    {opt}
+                  </button>
+                )
+              })}
+            </div>
             {onIdeaDelete && (
-              <button type="button" onClick={handleDelete} className="min-h-[44px] px-4 rounded-xl text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-500/10 inline-flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleDelete}
+                className="min-h-[36px] px-3 rounded-xl text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-500/10 inline-flex items-center gap-2"
+              >
                 <IconTrash size={18} /> Delete
               </button>
             )}
-            <div className="ml-auto" />
           </div>
         </div>
       </div>

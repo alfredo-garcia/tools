@@ -204,7 +204,7 @@ export function AppShell({ children, navItems = [], title = '', storageKeyPrefix
                   <Icon size={26} />
                   {badge && (
                     <span
-                      className="absolute top-0 right-0 w-2.5 h-2.5 rounded-full bg-red-500 ring-2 ring-nav-bg"
+                      className="absolute top-0 right-0 w-2 h-2 rounded-full bg-red-500"
                       aria-hidden
                     />
                   )}

@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { Layout, AppShell, SettingsPage, IconCalendar, IconTarget, IconCheckSquare, IconCircle, IconSettings, IconChartBar, IconSearch, IconMagicBall } from '@tools/shared'
 import { PlannerApiProvider } from './contexts/PlannerApiContext'
+import { usePastDueTasks } from './hooks/usePastDueTasks'
 import { Dashboard } from './pages/Dashboard'
 import { PlannerPage } from './pages/PlannerPage'
 import { ObjectivesList } from './pages/ObjectivesList'
@@ -17,7 +18,7 @@ import { AnalysisHabits } from './pages/AnalysisHabits'
 import { Search } from './pages/Search'
 import { DiscoveryList } from './pages/DiscoveryList'
 
-const navItems = [
+const baseNavItems = [
   { to: '/', label: 'Planner', Icon: IconCalendar, aria: 'Weekly planner' },
   { to: '/search', label: 'Search', Icon: IconSearch, aria: 'Search' },
   { to: '/discovery', label: 'Discovery', Icon: IconMagicBall, aria: 'Discovery ideas' },
@@ -28,12 +29,24 @@ const navItems = [
   { to: '/settings', label: 'Settings', Icon: IconSettings, aria: 'Settings', inMore: true },
 ]
 
+function PlannerShell({ children }) {
+  const { hasPastDue } = usePastDueTasks()
+  const navItems = baseNavItems.map((item) =>
+    item.to === '/tasks' ? { ...item, badge: hasPastDue } : item
+  )
+  return (
+    <AppShell navItems={navItems} title="Mosco Planner" storageKeyPrefix="mosco-planner">
+      {children}
+    </AppShell>
+  )
+}
+
 function App() {
   return (
     <Layout>
       <PlannerApiProvider>
         <BrowserRouter>
-          <AppShell navItems={navItems} title="Mosco Planner">
+          <PlannerShell>
           <Routes>
             <Route path="/" element={<PlannerPage />} />
             <Route path="/planner" element={<Navigate to="/" replace />} />
@@ -53,7 +66,7 @@ function App() {
             <Route path="/search" element={<Search />} />
             <Route path="/discovery" element={<DiscoveryList />} />
           </Routes>
-          </AppShell>
+          </PlannerShell>
         </BrowserRouter>
       </PlannerApiProvider>
     </Layout>

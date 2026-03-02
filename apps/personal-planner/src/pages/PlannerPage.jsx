@@ -10,6 +10,30 @@ import { Fab } from '@tools/shared'
 const DAY_NAMES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 const MIN_HABITS_FOR_FIRE = 5
+const PLANNER_PREFS_KEY = 'mosco-planner-prefs'
+
+function readPlannerPrefs() {
+  if (typeof window === 'undefined') return { goodHabitsCollapsed: false, badHabitsCollapsed: false, showCompleted: false }
+  try {
+    const raw = localStorage.getItem(PLANNER_PREFS_KEY)
+    if (!raw) return { goodHabitsCollapsed: false, badHabitsCollapsed: false, showCompleted: false }
+    const p = JSON.parse(raw)
+    return {
+      goodHabitsCollapsed: Boolean(p.goodHabitsCollapsed),
+      badHabitsCollapsed: Boolean(p.badHabitsCollapsed),
+      showCompleted: Boolean(p.showCompleted),
+    }
+  } catch (_) {
+    return { goodHabitsCollapsed: false, badHabitsCollapsed: false, showCompleted: false }
+  }
+}
+
+function writePlannerPrefs(prefs) {
+  if (typeof window === 'undefined') return
+  try {
+    localStorage.setItem(PLANNER_PREFS_KEY, JSON.stringify(prefs))
+  } catch (_) {}
+}
 
 function getWeekDaysForOffset(weekOffset) {
   const start = getWeekStart(new Date())
@@ -150,10 +174,16 @@ function DayHeaderCell({ dayStr, dayIndex, tasks, habits, habitTracking }) {
   )
 }
 
+const DRAG_TYPE_TASK = 'application/x-planner-task'
+
 /** Columna de tasks de un día (header + barra + lista). Sin collapse.
  * showCompleted: si true, se muestran las Done al final.
+ * onTaskMove(taskId, newDayStr): al soltar una tarea en esta columna, actualiza Due Date.
  */
-function DayTasksColumn({ dayStr, tasks, showCompleted = false, onTaskStatusChange, onTaskClick, refetch }) {
+function DayTasksColumn({ dayStr, tasks, showCompleted = false, onTaskStatusChange, onTaskClick, onTaskMove, refetch }) {
+  const [dragOver, setDragOver] = useState(false)
+  const [draggingTaskId, setDraggingTaskId] = useState(null)
+
   const tasksForDay = getTasksForDay(tasks, dayStr)
   const total = tasksForDay.length
   const doneCount = tasksForDay.filter((t) => getTaskStatusGroup(t) === 'done').length
@@ -169,8 +199,41 @@ function DayTasksColumn({ dayStr, tasks, showCompleted = false, onTaskStatusChan
   const inProgress = tasksForDay.filter((t) => getTaskStatusGroup(t) === 'in_progress')
   const done = tasksForDay.filter((t) => getTaskStatusGroup(t) === 'done')
   const visibleTasks = showCompleted ? [...pending, ...inProgress, ...done] : [...pending, ...inProgress]
+
+  const handleDragStart = (e, task) => {
+    e.dataTransfer.setData(DRAG_TYPE_TASK, JSON.stringify({ taskId: task.id, fromDayStr: dayStr }))
+    e.dataTransfer.effectAllowed = 'move'
+    setDraggingTaskId(task.id)
+  }
+  const handleDragEnd = () => {
+    setTimeout(() => setDraggingTaskId(null), 100)
+  }
+  const handleDragOver = (e) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+    setDragOver(true)
+  }
+  const handleDragLeave = (e) => {
+    if (!e.currentTarget.contains(e.relatedTarget)) setDragOver(false)
+  }
+  const handleDrop = (e) => {
+    e.preventDefault()
+    setDragOver(false)
+    const raw = e.dataTransfer.getData(DRAG_TYPE_TASK)
+    if (!raw || !onTaskMove) return
+    try {
+      const { taskId, fromDayStr } = JSON.parse(raw)
+      if (fromDayStr !== dayStr) onTaskMove(taskId, dayStr)
+    } catch (_) {}
+  }
+
   return (
-    <div className="flex flex-col min-w-0 px-2">
+    <div
+      className={`flex flex-col min-w-0 px-2 rounded-lg transition-colors min-h-[80px] ${dragOver ? 'ring-2 ring-primary bg-primary/5' : ''}`}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
       <div className="w-full flex items-center gap-2 pt-0.5 pb-0">
         <span className="text-xs font-medium text-text-muted shrink-0" title={progressBarTitle}>({total})</span>
         <div
@@ -196,8 +259,21 @@ function DayTasksColumn({ dayStr, tasks, showCompleted = false, onTaskStatusChan
       <ul className="space-y-2 w-full mt-3">
         {visibleTasks.length === 0 && <li className="text-xs text-text-muted py-1">No tasks</li>}
         {visibleTasks.map((task) => (
-          <li key={task.id} className="w-full">
-            <TaskCard task={task} dayStr={dayStr} onStatusChange={onTaskStatusChange} onOpenModal={onTaskClick} refetch={refetch} />
+          <li
+            key={task.id}
+            className="w-full cursor-grab active:cursor-grabbing"
+            draggable
+            onDragStart={(e) => handleDragStart(e, task)}
+            onDragEnd={handleDragEnd}
+          >
+            <TaskCard
+              task={task}
+              dayStr={dayStr}
+              onStatusChange={onTaskStatusChange}
+              onOpenModal={onTaskClick}
+              refetch={refetch}
+              isDragging={draggingTaskId === task.id}
+            />
           </li>
         ))}
       </ul>
@@ -259,13 +335,29 @@ function DayColumn({
   onTaskStatusChange,
   onHabitToggle,
   onTaskClick,
+  onTaskMove,
   refetch,
   hideDayHeader = false,
+  goodHabitsCollapsed: controlledGoodHabitsCollapsed,
+  badHabitsCollapsed: controlledBadHabitsCollapsed,
+  showCompleted: controlledShowCompleted,
+  onGoodHabitsCollapsedChange,
+  onBadHabitsCollapsedChange,
+  onShowCompletedChange,
 }) {
   const [tasksCollapsed, setTasksCollapsed] = useState(false)
-  const [goodHabitsCollapsed, setGoodHabitsCollapsed] = useState(false)
-  const [badHabitsCollapsed, setBadHabitsCollapsed] = useState(false)
-  const [showCompleted, setShowCompleted] = useState(false)
+  const [localGoodHabitsCollapsed, setLocalGoodHabitsCollapsed] = useState(false)
+  const [localBadHabitsCollapsed, setLocalBadHabitsCollapsed] = useState(false)
+  const [localShowCompleted, setLocalShowCompleted] = useState(false)
+  const [tasksDragOver, setTasksDragOver] = useState(false)
+  const [draggingTaskId, setDraggingTaskId] = useState(null)
+
+  const goodHabitsCollapsed = onGoodHabitsCollapsedChange != null ? controlledGoodHabitsCollapsed : localGoodHabitsCollapsed
+  const badHabitsCollapsed = onBadHabitsCollapsedChange != null ? controlledBadHabitsCollapsed : localBadHabitsCollapsed
+  const showCompleted = onShowCompletedChange != null ? controlledShowCompleted : localShowCompleted
+  const setGoodHabitsCollapsed = onGoodHabitsCollapsedChange ?? setLocalGoodHabitsCollapsed
+  const setBadHabitsCollapsed = onBadHabitsCollapsedChange ?? setLocalBadHabitsCollapsed
+  const setShowCompleted = onShowCompletedChange ?? setLocalShowCompleted
 
   const tasksForDay = getTasksForDay(tasks, dayStr)
   const total = tasksForDay.length
@@ -340,20 +432,46 @@ function DayColumn({
             </div>
             <span className="text-xs font-medium text-text-muted shrink-0" title={progressBarTitle}>{donePct}%</span>
           </div>
-          <ul className="space-y-2 w-full mt-3">
-            {(() => {
-              const pending = tasksForDay.filter((t) => getTaskStatusGroup(t) === 'pending')
-              const inProgress = tasksForDay.filter((t) => getTaskStatusGroup(t) === 'in_progress')
-              const done = tasksForDay.filter((t) => getTaskStatusGroup(t) === 'done')
-              const visibleTasks = showCompleted ? [...pending, ...inProgress, ...done] : [...pending, ...inProgress]
-              if (visibleTasks.length === 0) return <li className="text-xs text-text-muted py-1">No tasks</li>
-              return visibleTasks.map((task) => (
-                <li key={task.id} className="w-full">
-                  <TaskCard task={task} dayStr={dayStr} onStatusChange={onTaskStatusChange} onOpenModal={onTaskClick} refetch={refetch} />
-                </li>
-              ))
-            })()}
-          </ul>
+          <div
+            className={`rounded-lg mt-3 min-h-[60px] transition-colors ${tasksDragOver ? 'ring-2 ring-primary bg-primary/5' : ''}`}
+            onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; setTasksDragOver(true) }}
+            onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) setTasksDragOver(false) }}
+            onDrop={(e) => {
+              e.preventDefault()
+              setTasksDragOver(false)
+              const raw = e.dataTransfer.getData(DRAG_TYPE_TASK)
+              if (!raw || !onTaskMove) return
+              try {
+                const { taskId, fromDayStr } = JSON.parse(raw)
+                if (fromDayStr !== dayStr) onTaskMove(taskId, dayStr)
+              } catch (_) {}
+            }}
+          >
+            <ul className="space-y-2 w-full">
+              {(() => {
+                const pending = tasksForDay.filter((t) => getTaskStatusGroup(t) === 'pending')
+                const inProgress = tasksForDay.filter((t) => getTaskStatusGroup(t) === 'in_progress')
+                const done = tasksForDay.filter((t) => getTaskStatusGroup(t) === 'done')
+                const visibleTasks = showCompleted ? [...pending, ...inProgress, ...done] : [...pending, ...inProgress]
+                if (visibleTasks.length === 0) return <li className="text-xs text-text-muted py-1">No tasks</li>
+                return visibleTasks.map((task) => (
+                  <li
+                    key={task.id}
+                    className="w-full cursor-grab active:cursor-grabbing"
+                    draggable
+                    onDragStart={(e) => {
+                      e.dataTransfer.setData(DRAG_TYPE_TASK, JSON.stringify({ taskId: task.id, fromDayStr: dayStr }))
+                      e.dataTransfer.effectAllowed = 'move'
+                      setDraggingTaskId(task.id)
+                    }}
+                    onDragEnd={() => setTimeout(() => setDraggingTaskId(null), 100)}
+                  >
+                    <TaskCard task={task} dayStr={dayStr} onStatusChange={onTaskStatusChange} onOpenModal={onTaskClick} refetch={refetch} isDragging={draggingTaskId === task.id} />
+                  </li>
+                ))
+              })()}
+            </ul>
+          </div>
         </>
       )}
 
@@ -480,9 +598,13 @@ export function PlannerPage() {
   const [modalTask, setModalTask] = useState(null)
   const [createTaskOpen, setCreateTaskOpen] = useState(false)
   const [desktopTasksCollapsed, setDesktopTasksCollapsed] = useState(false)
-  const [desktopGoodHabitsCollapsed, setDesktopGoodHabitsCollapsed] = useState(false)
-  const [desktopBadHabitsCollapsed, setDesktopBadHabitsCollapsed] = useState(false)
-  const [desktopShowCompleted, setDesktopShowCompleted] = useState(false)
+  const [goodHabitsCollapsed, setGoodHabitsCollapsed] = useState(() => readPlannerPrefs().goodHabitsCollapsed)
+  const [badHabitsCollapsed, setBadHabitsCollapsed] = useState(() => readPlannerPrefs().badHabitsCollapsed)
+  const [showCompleted, setShowCompleted] = useState(() => readPlannerPrefs().showCompleted)
+
+  useEffect(() => {
+    writePlannerPrefs({ goodHabitsCollapsed, badHabitsCollapsed, showCompleted })
+  }, [goodHabitsCollapsed, badHabitsCollapsed, showCompleted])
 
   const weekDays = getWeekDaysForOffset(weekOffset)
   const mobileWeekDays = getWeekDays(mobileDateStr)
@@ -527,6 +649,21 @@ export function PlannerPage() {
         await fetchApi(`/api/tasks/${taskId}`, {
           method: 'PATCH',
           body: JSON.stringify(fields),
+        })
+        await refetch()
+      } catch (err) {
+        console.error(err)
+      }
+    },
+    [fetchApi, refetch]
+  )
+
+  const handleTaskMove = useCallback(
+    async (taskId, newDayStr) => {
+      try {
+        await fetchApi(`/api/tasks/${taskId}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ 'Due Date': newDayStr }),
         })
         await refetch()
       } catch (err) {
@@ -607,6 +744,14 @@ export function PlannerPage() {
   const goodHabits = filterHabitsByType(habits, 'Good')
   const badHabits = filterHabitsByType(habits, 'Bad')
 
+  const dayColumnPrefs = {
+    goodHabitsCollapsed,
+    badHabitsCollapsed,
+    showCompleted,
+    onGoodHabitsCollapsedChange: setGoodHabitsCollapsed,
+    onBadHabitsCollapsedChange: setBadHabitsCollapsed,
+    onShowCompletedChange: setShowCompleted,
+  }
   const dayColumns = weekDays.map((dayStr, i) => (
     <DayColumn
       key={dayStr}
@@ -620,8 +765,10 @@ export function PlannerPage() {
       onTaskStatusChange={handleTaskStatusChange}
       onHabitToggle={handleHabitToggle}
       onTaskClick={setModalTask}
+      onTaskMove={handleTaskMove}
       refetch={refetch}
       hideDayHeader
+      {...dayColumnPrefs}
     />
   ))
   const mobileDayColumns = mobileWeekDays.map((dayStr, i) => (
@@ -637,8 +784,10 @@ export function PlannerPage() {
       onTaskStatusChange={handleTaskStatusChange}
       onHabitToggle={handleHabitToggle}
       onTaskClick={setModalTask}
+      onTaskMove={handleTaskMove}
       refetch={refetch}
       hideDayHeader
+      {...dayColumnPrefs}
     />
   ))
 
@@ -696,7 +845,7 @@ export function PlannerPage() {
             <span>Tasks</span>
             <span className="flex items-center gap-3 shrink-0">
               {!desktopTasksCollapsed && (
-                <Switch checked={desktopShowCompleted} onChange={setDesktopShowCompleted} label="Show completed" />
+                <Switch checked={showCompleted} onChange={setShowCompleted} label="Show completed" />
               )}
               {desktopTasksCollapsed ? <IconChevronDown size={22} /> : <IconChevronUp size={22} />}
             </span>
@@ -708,9 +857,10 @@ export function PlannerPage() {
                   key={dayStr}
                   dayStr={dayStr}
                   tasks={tasks}
-                  showCompleted={desktopShowCompleted}
+                  showCompleted={showCompleted}
                   onTaskStatusChange={handleTaskStatusChange}
                   onTaskClick={setModalTask}
+                  onTaskMove={handleTaskMove}
                   refetch={refetch}
                 />
               ))}
@@ -721,16 +871,16 @@ export function PlannerPage() {
           <div>
             <button
               type="button"
-              onClick={() => setDesktopGoodHabitsCollapsed((c) => !c)}
+              onClick={() => setGoodHabitsCollapsed((c) => !c)}
               className="w-full flex items-center justify-between gap-2 py-2 text-left font-semibold text-base text-text"
             >
               <span className="flex items-center gap-2 text-green-500">
                 <IconHeart size={22} />
                 Good Habits
               </span>
-              {desktopGoodHabitsCollapsed ? <IconChevronDown size={22} /> : <IconChevronUp size={22} />}
+              {goodHabitsCollapsed ? <IconChevronDown size={22} /> : <IconChevronUp size={22} />}
             </button>
-            {!desktopGoodHabitsCollapsed && (
+            {!goodHabitsCollapsed && (
               <div className="grid grid-cols-7 gap-3 mt-2 min-h-[80px]">
                 {weekDays.map((dayStr) => (
                   <DayHabitsColumn
@@ -748,16 +898,16 @@ export function PlannerPage() {
           <div>
             <button
               type="button"
-              onClick={() => setDesktopBadHabitsCollapsed((c) => !c)}
+              onClick={() => setBadHabitsCollapsed((c) => !c)}
               className="w-full flex items-center justify-between gap-2 py-2 text-left font-semibold text-base text-text"
             >
               <span className="flex items-center gap-2 text-red-500">
                 <IconX size={22} />
                 Bad Habits
               </span>
-              {desktopBadHabitsCollapsed ? <IconChevronDown size={22} /> : <IconChevronUp size={22} />}
+              {badHabitsCollapsed ? <IconChevronDown size={22} /> : <IconChevronUp size={22} />}
             </button>
-            {!desktopBadHabitsCollapsed && (
+            {!badHabitsCollapsed && (
               <div className="grid grid-cols-7 gap-3 mt-2 min-h-[80px]">
                 {weekDays.map((dayStr) => (
                   <DayHabitsColumn

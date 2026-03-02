@@ -18,9 +18,9 @@ export function getPriorityTagClass(priority) {
 
 /**
  * Reusable task card: title, 2-line description, priority/due tags, status buttons.
- * Props: task, dayStr (optional), onStatusChange(taskId, status), onOpenModal(task), refetch().
+ * Props: task, dayStr (optional), onStatusChange(taskId, status), onOpenModal(task), refetch(), isDragging (optional, skip opening modal when true).
  */
-export function TaskCard({ task, dayStr, onStatusChange, onOpenModal, refetch }) {
+export function TaskCard({ task, dayStr, onStatusChange, onOpenModal, refetch, isDragging }) {
   const name = str(field(task, 'Task Name', 'Task Name')) || '(untitled)'
   const statusGroup = getTaskStatusGroup(task)
   const priority = str(field(task, 'Priority', 'Priority'))
@@ -88,12 +88,17 @@ export function TaskCard({ task, dayStr, onStatusChange, onOpenModal, refetch })
     </div>
   )
 
+  const handleOpenModal = () => {
+    if (isDragging) return
+    onOpenModal?.(task)
+  }
+
   return (
     <div
       role="button"
       tabIndex={0}
-      onClick={() => onOpenModal?.(task)}
-      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpenModal?.(task) } }}
+      onClick={handleOpenModal}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleOpenModal() } }}
       className="w-full cursor-pointer"
     >
       <Card

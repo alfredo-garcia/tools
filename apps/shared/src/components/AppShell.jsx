@@ -5,14 +5,15 @@ import { IconMenu, IconMoreVertical } from './Icons.jsx'
 /**
  * AppShell: sidebar sticky (md+) + bottom nav (< md).
  * Layout: flex row estándar — sidebar en flujo normal, sticky.
- * navItems = [{ to, label, Icon?, aria, desktopOnly?, inMore? }]
+ * navItems = [{ to, label, Icon?, aria, desktopOnly?, inMore?, badge? }]
  * - desktopOnly: true → solo sidebar (md+), no en bottom nav.
  * - inMore: true → en mobile solo aparece dentro del submenú "More" (tres puntos).
+ * - badge: true → muestra un puntito rojo sobre el icono (ej. tareas vencidas).
  *
  * El toggle (hamburguesa) vive como primer ítem del nav para que los iconos
  * queden perfectamente alineados con los ítems de menú en ambos estados.
  */
-function NavLink({ to, label, Icon, aria, isActive, collapsed }) {
+function NavLink({ to, label, Icon, aria, isActive, collapsed, badge }) {
   return (
     <Link
       to={to}
@@ -24,18 +25,56 @@ function NavLink({ to, label, Icon, aria, isActive, collapsed }) {
           : 'text-nav-text hover:bg-surface hover:text-text'
       }`}
     >
-      {Icon && <Icon size={22} className="shrink-0" />}
+      {Icon && (
+        <span className="relative shrink-0 inline-flex">
+          <Icon size={22} />
+          {badge && (
+            <span
+              className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-red-500 ring-2 ring-nav-bg"
+              aria-hidden
+            />
+          )}
+        </span>
+      )}
       {!collapsed && <span className="truncate">{label}</span>}
     </Link>
   )
 }
 
-export function AppShell({ children, navItems = [], title = '' }) {
+const SIDEBAR_OPEN_KEY = 'sidebar-open'
+const LAST_ROUTE_KEY = 'last-route'
+
+function getStorageKey(prefix, key) {
+  return prefix ? `${prefix}-${key}` : null
+}
+
+function readSidebarOpen(prefix) {
+  const key = getStorageKey(prefix, SIDEBAR_OPEN_KEY)
+  if (!key || typeof window === 'undefined') return true
+  try {
+    const v = localStorage.getItem(key)
+    if (v === 'false') return false
+    if (v === 'true') return true
+  } catch (_) {}
+  return true
+}
+
+function readLastRoute(prefix) {
+  const key = getStorageKey(prefix, LAST_ROUTE_KEY)
+  if (!key || typeof window === 'undefined') return null
+  try {
+    return localStorage.getItem(key)
+  } catch (_) {}
+  return null
+}
+
+export function AppShell({ children, navItems = [], title = '', storageKeyPrefix = '' }) {
   const location = useLocation()
   const navigate = useNavigate()
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [sidebarOpen, setSidebarOpen] = useState(() => readSidebarOpen(storageKeyPrefix))
   const [moreOpen, setMoreOpen] = useState(false)
   const moreRef = useRef(null)
+  const initialRouteRestored = useRef(false)
 
   const isActive = (to) => {
     if (to === '/') return location.pathname === '/'
@@ -53,6 +92,37 @@ export function AppShell({ children, navItems = [], title = '' }) {
     document.addEventListener('click', handleClickOutside)
     return () => document.removeEventListener('click', handleClickOutside)
   }, [moreOpen])
+
+  // Persist sidebar open/closed
+  useEffect(() => {
+    const key = getStorageKey(storageKeyPrefix, SIDEBAR_OPEN_KEY)
+    if (!key || typeof window === 'undefined') return
+    try {
+      localStorage.setItem(key, String(sidebarOpen))
+    } catch (_) {}
+  }, [storageKeyPrefix, sidebarOpen])
+
+  // Persist last route on navigation
+  useEffect(() => {
+    const key = getStorageKey(storageKeyPrefix, LAST_ROUTE_KEY)
+    if (!key || typeof window === 'undefined') return
+    const path = location.pathname
+    try {
+      localStorage.setItem(key, path)
+    } catch (_) {}
+  }, [storageKeyPrefix, location.pathname])
+
+  // Restore last route on first load when landing on /
+  useEffect(() => {
+    if (initialRouteRestored.current) return
+    const lastRoute = readLastRoute(storageKeyPrefix)
+    if (lastRoute && lastRoute !== '/' && location.pathname === '/') {
+      initialRouteRestored.current = true
+      navigate(lastRoute, { replace: true })
+    } else {
+      initialRouteRestored.current = true
+    }
+  }, [storageKeyPrefix, location.pathname, navigate])
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -79,7 +149,7 @@ export function AppShell({ children, navItems = [], title = '' }) {
               mismo padding que NavLink → iconos alineados verticalmente */}
           <button
             type="button"
-            onClick={() => setSidebarOpen(o => !o)}
+            onClick={() => setSidebarOpen((o) => !o)}
             aria-label={sidebarOpen ? 'Collapse menu' : 'Expand menu'}
             className="flex items-center w-full rounded-lg min-h-[44px] px-3 py-2.5 gap-3 text-base font-bold touch-manipulation transition-colors text-nav-text hover:bg-surface hover:text-text cursor-pointer"
           >
@@ -89,7 +159,7 @@ export function AppShell({ children, navItems = [], title = '' }) {
             )}
           </button>
 
-          {navItems.map(({ to, label, Icon, aria }) => (
+          {navItems.map(({ to, label, Icon, aria, badge }) => (
             <NavLink
               key={to}
               to={to}
@@ -98,6 +168,7 @@ export function AppShell({ children, navItems = [], title = '' }) {
               aria={aria}
               isActive={isActive(to)}
               collapsed={!sidebarOpen}
+              badge={badge}
             />
           ))}
         </nav>
@@ -116,7 +187,7 @@ export function AppShell({ children, navItems = [], title = '' }) {
         aria-label="Main navigation (mobile)"
       >
         <div className="app-bottom-nav-inner flex items-stretch justify-around min-h-[5rem] gap-1 px-4 pt-3 pb-3">
-          {mainItems.filter((item) => !item.desktopOnly).map(({ to, label, Icon, aria }) => (
+          {mainItems.filter((item) => !item.desktopOnly).map(({ to, label, Icon, aria, badge }) => (
             <Link
               key={to}
               to={to}
@@ -128,7 +199,17 @@ export function AppShell({ children, navItems = [], title = '' }) {
                   : 'text-nav-text active:bg-surface'
               }`}
             >
-              {Icon && <Icon size={26} className="shrink-0" />}
+              {Icon && (
+                <span className="relative shrink-0 inline-flex">
+                  <Icon size={26} />
+                  {badge && (
+                    <span
+                      className="absolute top-0 right-0 w-2.5 h-2.5 rounded-full bg-red-500 ring-2 ring-nav-bg"
+                      aria-hidden
+                    />
+                  )}
+                </span>
+              )}
               <span className="text-[8px] font-medium truncate w-full text-center leading-tight">
                 {label}
               </span>

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import { useApi, Spinner, PageHeader, Card, IconTarget, IconPriority, IconCalendar, IconTag, IconCircle, IconPlay, IconCheckSquare, IconTrash } from '@tools/shared'
+import { Spinner, PageHeader, Card, IconTarget, IconPriority, IconCalendar, IconTag, IconCircle, IconPlay, IconCheckSquare, IconTrash } from '@tools/shared'
+import { usePlannerApi } from '../contexts/PlannerApiContext'
 import { field, str, dateStr, arr, num } from '@tools/shared'
 import { getTaskStatusGroup } from '../lib/taskStatus'
 import { getPriorityTagClass, STATUS_OPTIONS } from '../components/TaskCard'
@@ -63,7 +64,7 @@ function KeyResultCard({ kr, taskStats }) {
 export function ObjectiveDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { fetchApi } = useApi()
+  const { fetchApi, invalidateCache } = usePlannerApi()
   const [item, setItem] = useState(null)
   const [keyResults, setKeyResults] = useState([])
   const [tasks, setTasks] = useState([])
@@ -92,6 +93,11 @@ export function ObjectiveDetail() {
       if (tasksRes.status === 'fulfilled') setTasks(tasksRes.value || [])
     }).finally(() => setLoading(false))
   }, [fetchApi, id])
+
+  const handleRefresh = useCallback(() => {
+    invalidateCache()
+    refetch()
+  }, [invalidateCache, refetch])
 
   useEffect(() => {
     refetch()
@@ -227,8 +233,8 @@ export function ObjectiveDetail() {
   return (
     <div className="space-y-6">
       <PageHeader
-        breadcrumbs={[{ label: 'Home', to: '/' }, { label: 'OKRs', to: '/objectives' }, { label: title }]}
-        onRefresh={refetch}
+        breadcrumbs={[{ label: 'Planner', to: '/' }, { label: 'OKRs', to: '/objectives' }, { label: title }]}
+        onRefresh={handleRefresh}
         loading={loading}
       />
 

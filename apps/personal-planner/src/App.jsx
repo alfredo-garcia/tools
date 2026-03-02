@@ -1,5 +1,6 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import { Layout, AppShell, SettingsPage, IconHome, IconCalendar, IconTarget, IconCheckSquare, IconCircle, IconSettings } from '@tools/shared'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { Layout, AppShell, SettingsPage, IconCalendar, IconTarget, IconCheckSquare, IconCircle, IconSettings, IconChartBar, IconSearch } from '@tools/shared'
+import { PlannerApiProvider } from './contexts/PlannerApiContext'
 import { Dashboard } from './pages/Dashboard'
 import { PlannerPage } from './pages/PlannerPage'
 import { ObjectivesList } from './pages/ObjectivesList'
@@ -13,25 +14,29 @@ import { HabitDetail } from './pages/HabitDetail'
 import { AnalysisOKR } from './pages/AnalysisOKR'
 import { AnalysisTasks } from './pages/AnalysisTasks'
 import { AnalysisHabits } from './pages/AnalysisHabits'
+import { Search } from './pages/Search'
 
 const navItems = [
-  { to: '/', label: 'Home', Icon: IconHome, aria: 'Dashboard' },
-  { to: '/planner', label: 'Planner', Icon: IconCalendar, aria: 'Weekly planner' },
+  { to: '/', label: 'Planner', Icon: IconCalendar, aria: 'Weekly planner' },
+  { to: '/search', label: 'Search', Icon: IconSearch, aria: 'Search' },
   { to: '/objectives', label: 'OKRs', Icon: IconTarget, aria: 'Objectives and Key Results' },
   { to: '/tasks', label: 'Tasks', Icon: IconCheckSquare, aria: 'Tasks' },
-  { to: '/habits', label: 'Habits', Icon: IconCircle, aria: 'Habits' },
-  { to: '/settings', label: 'Settings', Icon: IconSettings, aria: 'Settings' },
+  { to: '/habits', label: 'Habits', Icon: IconCircle, aria: 'Habits', inMore: true },
+  { to: '/analytics', label: 'Analytics', Icon: IconChartBar, aria: 'Analytics', inMore: true },
+  { to: '/settings', label: 'Settings', Icon: IconSettings, aria: 'Settings', inMore: true },
 ]
 
 function App() {
   return (
     <Layout>
-      <BrowserRouter>
-        <AppShell navItems={navItems} title="Mosco Planner">
+      <PlannerApiProvider>
+        <BrowserRouter>
+          <AppShell navItems={navItems} title="Mosco Planner">
           <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/planner" element={<PlannerPage />} />
-            <Route path="/settings" element={<SettingsPage backTo="/" backLabel="← Back to home" />} />
+            <Route path="/" element={<PlannerPage />} />
+            <Route path="/planner" element={<Navigate to="/" replace />} />
+            <Route path="/analytics" element={<Dashboard />} />
+            <Route path="/settings" element={<SettingsPage />} />
             <Route path="/objectives" element={<ObjectivesList />} />
             <Route path="/objectives/:id" element={<ObjectiveDetail />} />
             <Route path="/key-results" element={<KeyResultsList />} />
@@ -43,9 +48,11 @@ function App() {
             <Route path="/analysis/okr" element={<AnalysisOKR />} />
             <Route path="/analysis/tasks" element={<AnalysisTasks />} />
             <Route path="/analysis/habits" element={<AnalysisHabits />} />
+            <Route path="/search" element={<Search />} />
           </Routes>
-        </AppShell>
-      </BrowserRouter>
+          </AppShell>
+        </BrowserRouter>
+      </PlannerApiProvider>
     </Layout>
   )
 }

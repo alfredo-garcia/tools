@@ -1,23 +1,28 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { useApi, IconPriority, IconCalendar, IconUser, IconTag, IconCircle, IconPlay, IconCheckSquare, IconTrash } from '@tools/shared'
+import { IconPriority, IconCalendar, IconUser, IconTag, IconTarget, IconCircle, IconPlay, IconCheckSquare, IconTrash } from '@tools/shared'
+import { usePlannerApi } from '../contexts/PlannerApiContext'
 import { field, str, dateStr, arr } from '@tools/shared'
 import { getTaskStatusGroup } from '../lib/taskStatus'
 import { getPriorityTagClass, STATUS_OPTIONS } from './TaskCard'
 
 const PRIORITY_OPTIONS = ['Low', 'Medium', 'High']
 
+const TASK_CATEGORY_OPTIONS = ['Health', 'Learning', 'Social & Recreation', 'Business', 'Productivity', 'Obligations', 'Finance', 'Others']
+
 /**
  * Modal de detalle/edición de Task, o creación si task es null.
  * Props: task (null = create), onClose, onCreate(fields) for create, onStatusChange, onTaskUpdate, onTaskDelete, refetch, initialValues (create: { 'Due Date', 'Key Results' }).
  */
 export function TaskModal({ task, onClose, onCreate, onStatusChange, onTaskUpdate, onTaskDelete, refetch, initialValues = {} }) {
-  const { fetchApi } = useApi()
+  const { fetchApi } = usePlannerApi()
   const isCreate = task == null
   const [editingField, setEditingField] = useState(null)
   const [editValue, setEditValue] = useState('')
   const [objectiveItems, setObjectiveItems] = useState([]) // { id, name }[]
-  const [keyResultItems, setKeyResultItems] = useState([]) // { id, name }[]
+  const [keyResultItems, setKeyResultItems] = useState([]) // { id, name }[] (current task's KR for display)
+  const [allKeyResultItems, setAllKeyResultItems] = useState([]) // { id, name }[] (full list for dropdown)
+  const [createKeyResultId, setCreateKeyResultId] = useState('') // single KR id or '' for create form
 
   // Create form state (only used when isCreate); sync initialValues when modal opens
   const [createName, setCreateName] = useState('')
@@ -32,43 +37,56 @@ export function TaskModal({ task, onClose, onCreate, onStatusChange, onTaskUpdat
     if (isCreate) {
       setCreatePriority(initialValues.Priority ?? '')
       setCreateDueDate(initialValues['Due Date'] ?? '')
+      const krInitial = initialValues['Key Results'] && initialValues['Key Results'][0]
+      setCreateKeyResultId(krInitial ?? '')
     }
-  }, [isCreate, initialValues.Priority, initialValues['Due Date']])
+  }, [isCreate, initialValues.Priority, initialValues['Due Date'], initialValues['Key Results']])
 
   const objectiveIdsFromTask = task ? arr(field(task, 'Objectives', 'Objective')) : []
   const keyResultIds = task ? arr(field(task, 'Key Result', 'Key Results')) : []
   const hasAny = objectiveIdsFromTask.length > 0 || keyResultIds.length > 0
 
+  // Load objectives (for display when task has links), all key results (for KR dropdown). Only depend on task id / modal open to avoid loop.
   useEffect(() => {
-    if (!hasAny) {
+    const currentTask = task
+    if (!currentTask && !onCreate) return
+    const krIds = currentTask ? arr(field(currentTask, 'Key Result', 'Key Results')) : []
+    const objIds = currentTask ? arr(field(currentTask, 'Objectives', 'Objective')) : []
+    if (currentTask && objIds.length === 0 && krIds.length === 0) {
       setObjectiveItems([])
       setKeyResultItems([])
-      return
+    } else if (currentTask) {
+      setObjectiveItems(objIds.map((id) => ({ id, name: '…' })))
+      setKeyResultItems(krIds.map((id) => ({ id, name: '…' })))
     }
-    setObjectiveItems(objectiveIdsFromTask.map((id) => ({ id, name: '…' })))
-    setKeyResultItems(keyResultIds.map((id) => ({ id, name: '…' })))
+    setAllKeyResultItems([])
     let cancelled = false
     Promise.all([
       fetchApi('/api/objectives').then((r) => r.data || []),
       fetchApi('/api/key-results').then((r) => r.data || []),
     ]).then(([objectives, keyResults]) => {
       if (cancelled) return
-      const objectiveIdsFromKR = keyResultIds.flatMap((kid) => {
+      setAllKeyResultItems((keyResults || []).map((kr) => ({
+        id: kr.id,
+        name: str(field(kr, 'Key Result Name', 'Key Result Name')) || '(untitled)',
+      })))
+      if (!currentTask) return
+      const objectiveIdsFromKR = krIds.flatMap((kid) => {
         const kr = keyResults.find((r) => r.id === kid)
         return kr ? arr(field(kr, 'Objective Link', 'Objective')) : []
       }).filter(Boolean)
-      const allObjectiveIds = [...new Set([...objectiveIdsFromTask, ...objectiveIdsFromKR])]
+      const allObjectiveIds = [...new Set([...objIds, ...objectiveIdsFromKR])]
       setObjectiveItems(allObjectiveIds.map((id) => {
         const o = objectives.find((r) => r.id === id)
         return { id, name: o ? str(field(o, 'Objective Name', 'Objective Name')) || '(untitled)' : '…' }
       }))
-      setKeyResultItems(keyResultIds.map((id) => {
+      setKeyResultItems(krIds.map((id) => {
         const kr = keyResults.find((r) => r.id === id)
         return { id, name: kr ? str(field(kr, 'Key Result Name', 'Key Result Name')) || '(untitled)' : '…' }
       }))
     }).catch(() => {})
     return () => { cancelled = true }
-  }, [task?.id, fetchApi])
+  }, [task?.id, !!onCreate, fetchApi])
 
   if (!task && !onCreate) return null
 
@@ -91,8 +109,8 @@ export function TaskModal({ task, onClose, onCreate, onStatusChange, onTaskUpdat
       Category: createCategory.trim() || undefined,
       Status: createStatus,
     }
-    if (initialValues['Key Results'] && initialValues['Key Results'].length > 0) {
-      fields['Key Results'] = initialValues['Key Results']
+    if (createKeyResultId && createKeyResultId.trim()) {
+      fields['Key Results'] = [createKeyResultId.trim()]
     }
     if (initialValues.Objectives && initialValues.Objectives.length > 0) {
       fields.Objectives = initialValues.Objectives
@@ -220,7 +238,18 @@ export function TaskModal({ task, onClose, onCreate, onStatusChange, onTaskUpdat
               <div className="flex items-center gap-2 text-sm">
                 <span className="text-text-muted shrink-0"><IconTag size={18} /></span>
                 <label className="text-text-muted shrink-0">Category:</label>
-                <input type="text" value={createCategory} onChange={(e) => setCreateCategory(e.target.value)} placeholder="Category" className="flex-1 min-w-0 rounded border border-border bg-surface text-text px-2 py-1 text-sm" />
+                <select value={createCategory} onChange={(e) => setCreateCategory(e.target.value)} className="flex-1 min-w-0 rounded border border-border bg-surface text-text px-2 py-1 text-sm">
+                  <option value="">—</option>
+                  {TASK_CATEGORY_OPTIONS.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
+                </select>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <span className="text-text-muted shrink-0"><IconTarget size={18} /></span>
+                <label className="text-text-muted shrink-0">Key Result:</label>
+                <select value={createKeyResultId} onChange={(e) => setCreateKeyResultId(e.target.value)} className="flex-1 min-w-0 rounded border border-border bg-surface text-text px-2 py-1 text-sm">
+                  <option value="">— (opcional)</option>
+                  {allKeyResultItems.map((kr) => <option key={kr.id} value={kr.id}>{kr.name}</option>)}
+                </select>
               </div>
             </div>
             <hr className="border-border" />
@@ -415,16 +444,16 @@ export function TaskModal({ task, onClose, onCreate, onStatusChange, onTaskUpdat
               <span className="text-text-muted shrink-0"><IconTag size={18} /></span>
               <span className="text-text-muted shrink-0">Category:</span>
               {editingField === 'category' ? (
-                <input
-                  type="text"
+                <select
                   value={editValue}
-                  onChange={(e) => setEditValue(e.target.value)}
-                  onBlur={handleBlurCategory}
-                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleBlurCategory() } }}
+                  onChange={(e) => { const v = e.target.value; saveEdit('category', { Category: v }); setEditValue(v); setEditingField(null) }}
+                  onBlur={() => setEditingField(null)}
                   className="flex-1 min-w-0 rounded border border-border bg-surface text-text px-2 py-1 text-sm"
-                  placeholder="Category"
                   autoFocus
-                />
+                >
+                  <option value="">—</option>
+                  {TASK_CATEGORY_OPTIONS.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
+                </select>
               ) : (
                 <span
                   role="button"
@@ -436,6 +465,21 @@ export function TaskModal({ task, onClose, onCreate, onStatusChange, onTaskUpdat
                   {category || '—'}
                 </span>
               )}
+            </div>
+            <div className="flex items-center gap-2 text-sm">
+              <span className="text-text-muted shrink-0"><IconTarget size={18} /></span>
+              <span className="text-text-muted shrink-0">Key Result:</span>
+              <select
+                value={keyResultIds[0] ?? ''}
+                onChange={(e) => {
+                  const v = e.target.value
+                  saveEdit('keyResult', { 'Key Results': v ? [v] : [] })
+                }}
+                className="flex-1 min-w-0 rounded border border-border bg-surface text-text px-2 py-1 text-sm"
+              >
+                <option value="">— (opcional)</option>
+                {allKeyResultItems.map((kr) => <option key={kr.id} value={kr.id}>{kr.name}</option>)}
+              </select>
             </div>
           </div>
           <hr className="border-border" />

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import { useApi, Spinner, PageHeader } from '@tools/shared'
+import { Spinner, PageHeader } from '@tools/shared'
+import { usePlannerApi } from '../contexts/PlannerApiContext'
 import { field, num, str, arr, dateStr } from '@tools/shared'
 import { isToday, isThisWeek, isPastDue, isInNextDays, getWeekStart } from '@tools/shared'
 import { getTaskStatusGroup } from '../lib/taskStatus'
@@ -35,7 +36,7 @@ function isHabitSuccess(t) {
 }
 
 function useDashboardData() {
-  const { fetchApi } = useApi()
+  const { fetchApi } = usePlannerApi()
   const [data, setData] = useState({
     objectives: [],
     keyResults: [],
@@ -93,6 +94,11 @@ function KpiCard({ title, value, subtitle, to, variant }) {
 
 export function Dashboard() {
   const { data, loading, error, refetch } = useDashboardData()
+  const { invalidateCache } = usePlannerApi()
+  const handleRefresh = useCallback(() => {
+    invalidateCache()
+    refetch()
+  }, [invalidateCache, refetch])
 
   if (loading && !data.objectives?.length) {
     return (
@@ -250,8 +256,8 @@ export function Dashboard() {
   return (
     <div className="space-y-8">
       <PageHeader
-        breadcrumbs={[{ label: 'Home', to: '/' }]}
-        onRefresh={refetch}
+        breadcrumbs={[{ label: 'Analytics', to: '/analytics' }]}
+        onRefresh={handleRefresh}
         loading={loading}
       />
 

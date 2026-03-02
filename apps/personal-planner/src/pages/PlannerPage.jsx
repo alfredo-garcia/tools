@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useApi, Spinner, PageHeader, Switch, IconChevronDown, IconChevronUp, IconChevronLeft, IconChevronRight, IconStar, IconFlameFilled, IconTarget, IconCalendar, IconUser, IconTag, IconCircle, IconPlay, IconCheckSquare, IconTrash, IconSaint, IconDevil } from '@tools/shared'
+import { usePlannerApi } from '../contexts/PlannerApiContext'
+import { Spinner, PageHeader, Switch, IconChevronDown, IconChevronUp, IconChevronLeft, IconChevronRight, IconStar, IconFlameFilled, IconTarget, IconCalendar, IconUser, IconTag, IconCircle, IconPlay, IconCheckSquare, IconTrash, IconSaint, IconDevil } from '@tools/shared'
 import { field, str, dateStr, arr, getWeekDays, getWeekStart, getWeekdayIndex } from '@tools/shared'
 import { getTaskStatusGroup } from '../lib/taskStatus'
 import { TaskCard, STATUS_OPTIONS, getPriorityTagClass } from '../components/TaskCard'
@@ -23,7 +24,7 @@ function addDays(dateStr, delta) {
 }
 
 function usePlannerData() {
-  const { fetchApi } = useApi()
+  const { fetchApi } = usePlannerApi()
   const [data, setData] = useState({
     tasks: [],
     habits: [],
@@ -35,7 +36,7 @@ function usePlannerData() {
   const refetch = useCallback(() => {
     setLoading(true)
     setError(null)
-    Promise.all([
+    return Promise.all([
       fetchApi('/api/tasks').then((r) => r.data || []),
       fetchApi('/api/habits').then((r) => r.data || []),
       fetchApi('/api/habit-tracking').then((r) => r.data || []),
@@ -43,15 +44,22 @@ function usePlannerData() {
       .then(([tasks, habits, habitTracking]) => {
         setData({ tasks, habits, habitTracking })
       })
-      .catch((e) => setError(e.message))
+      .catch((e) => {
+        setError(e.message)
+        throw e
+      })
       .finally(() => setLoading(false))
   }, [fetchApi])
+
+  const updateHabitTracking = useCallback((updater) => {
+    setData((prev) => ({ ...prev, habitTracking: updater(prev.habitTracking || []) }))
+  }, [])
 
   useEffect(() => {
     refetch()
   }, [refetch])
 
-  return { data, loading, error, refetch }
+  return { data, loading, error, refetch, updateHabitTracking }
 }
 
 function getTasksForDay(tasks, dayStr) {
@@ -198,7 +206,7 @@ function DayTasksColumn({ dayStr, tasks, showCompleted = false, onTaskStatusChan
 }
 
 /** Per-day habits column (stars + list by category). No collapse. */
-function DayHabitsColumn({ dayStr, habits, habitTracking, onHabitToggle, refetch }) {
+function DayHabitsColumn({ dayStr, habits, habitTracking, onHabitToggle }) {
   const habitsDoneCount = habits.filter((h) => {
     const entry = getHabitEntryForDay(habitTracking, h.id, dayStr)
     return entry && isHabitEntrySuccessful(entry)
@@ -223,7 +231,7 @@ function DayHabitsColumn({ dayStr, habits, habitTracking, onHabitToggle, refetch
             {categoryLabel && <p className="text-xs font-medium text-text-muted px-0.5 py-0.5">{categoryLabel}</p>}
             <ul className="space-y-0.5 w-full">
               {habitsInCategory.map((habit) => (
-                <PlannerHabitRow key={habit.id} habit={habit} dayStr={dayStr} habitTracking={habitTracking} onToggle={onHabitToggle} refetch={refetch} />
+                <PlannerHabitRow key={habit.id} habit={habit} dayStr={dayStr} habitTracking={habitTracking} onToggle={onHabitToggle} />
               ))}
             </ul>
           </div>
@@ -303,7 +311,10 @@ function DayColumn({
 
       <button type="button" onClick={() => setTasksCollapsed((c) => !c)} className="w-full flex items-center justify-between gap-2 py-1.5 text-left font-semibold text-base text-text">
         <span>Tasks</span>
-        {tasksCollapsed ? <IconChevronDown size={22} /> : <IconChevronUp size={22} />}
+        <span className="flex items-center gap-3 shrink-0" onClick={(e) => e.stopPropagation()}>
+          <Switch checked={showCompleted} onChange={setShowCompleted} label="Show completed" />
+          {tasksCollapsed ? <IconChevronDown size={22} /> : <IconChevronUp size={22} />}
+        </span>
       </button>
       {!tasksCollapsed && (
         <>
@@ -323,12 +334,18 @@ function DayColumn({
             <span className="text-xs font-medium text-text-muted shrink-0" title={progressBarTitle}>{donePct}%</span>
           </div>
           <ul className="space-y-2 w-full mt-3">
-            {tasksForDay.length === 0 && <li className="text-xs text-text-muted py-1">No tasks</li>}
-            {tasksForDay.map((task) => (
-              <li key={task.id} className="w-full">
-                <TaskCard task={task} dayStr={dayStr} onStatusChange={onTaskStatusChange} onOpenModal={onTaskClick} refetch={refetch} />
-              </li>
-            ))}
+            {(() => {
+              const pending = tasksForDay.filter((t) => getTaskStatusGroup(t) === 'pending')
+              const inProgress = tasksForDay.filter((t) => getTaskStatusGroup(t) === 'in_progress')
+              const done = tasksForDay.filter((t) => getTaskStatusGroup(t) === 'done')
+              const visibleTasks = showCompleted ? [...pending, ...inProgress, ...done] : [...pending, ...inProgress]
+              if (visibleTasks.length === 0) return <li className="text-xs text-text-muted py-1">No tasks</li>
+              return visibleTasks.map((task) => (
+                <li key={task.id} className="w-full">
+                  <TaskCard task={task} dayStr={dayStr} onStatusChange={onTaskStatusChange} onOpenModal={onTaskClick} refetch={refetch} />
+                </li>
+              ))
+            })()}
           </ul>
         </>
       )}
@@ -356,7 +373,7 @@ function DayColumn({
                 {categoryLabel && <p className="text-xs font-medium text-text-muted px-0.5 py-0.5">{categoryLabel}</p>}
                 <ul className="space-y-0.5 w-full">
                   {habitsInCategory.map((habit) => (
-                    <PlannerHabitRow key={habit.id} habit={habit} dayStr={dayStr} habitTracking={habitTracking} onToggle={onHabitToggle} refetch={refetch} />
+                    <PlannerHabitRow key={habit.id} habit={habit} dayStr={dayStr} habitTracking={habitTracking} onToggle={onHabitToggle} />
                   ))}
                 </ul>
               </div>
@@ -388,7 +405,7 @@ function DayColumn({
                 {categoryLabel && <p className="text-xs font-medium text-text-muted px-0.5 py-0.5">{categoryLabel}</p>}
                 <ul className="space-y-0.5 w-full">
                   {habitsInCategory.map((habit) => (
-                    <PlannerHabitRow key={habit.id} habit={habit} dayStr={dayStr} habitTracking={habitTracking} onToggle={onHabitToggle} refetch={refetch} />
+                    <PlannerHabitRow key={habit.id} habit={habit} dayStr={dayStr} habitTracking={habitTracking} onToggle={onHabitToggle} />
                   ))}
                 </ul>
               </div>
@@ -400,7 +417,7 @@ function DayColumn({
   )
 }
 
-function PlannerHabitRow({ habit, dayStr, habitTracking, onToggle, refetch }) {
+function PlannerHabitRow({ habit, dayStr, habitTracking, onToggle }) {
   const name = str(field(habit, 'Habit Name', 'Habit Name')) || '(untitled)'
   const entry = getHabitEntryForDay(habitTracking, habit.id, dayStr)
   const isDone = entry && isHabitEntrySuccessful(entry)
@@ -409,7 +426,6 @@ function PlannerHabitRow({ habit, dayStr, habitTracking, onToggle, refetch }) {
     e.stopPropagation()
     try {
       await onToggle(habit.id, dayStr, isDone, entry?.id)
-      refetch()
     } catch (err) {
       console.error(err)
     }
@@ -443,8 +459,12 @@ function PlannerHabitRow({ habit, dayStr, habitTracking, onToggle, refetch }) {
 }
 
 export function PlannerPage() {
-  const { fetchApi } = useApi()
-  const { data, loading, error, refetch } = usePlannerData()
+  const { fetchApi, invalidateCache } = usePlannerApi()
+  const { data, loading, error, refetch, updateHabitTracking } = usePlannerData()
+  const handleRefresh = useCallback(() => {
+    invalidateCache()
+    refetch()
+  }, [invalidateCache, refetch])
   const { tasks, habits, habitTracking } = data
   const todayStr = new Date().toISOString().slice(0, 10)
   const [weekOffset, setWeekOffset] = useState(0)
@@ -496,11 +516,15 @@ export function PlannerPage() {
 
   const handleTaskUpdate = useCallback(
     async (taskId, fields) => {
-      await fetchApi(`/api/tasks/${taskId}`, {
-        method: 'PATCH',
-        body: JSON.stringify(fields),
-      })
-      refetch()
+      try {
+        await fetchApi(`/api/tasks/${taskId}`, {
+          method: 'PATCH',
+          body: JSON.stringify(fields),
+        })
+        await refetch()
+      } catch (err) {
+        console.error(err)
+      }
     },
     [fetchApi, refetch]
   )
@@ -511,31 +535,48 @@ export function PlannerPage() {
         method: 'POST',
         body: JSON.stringify(fields),
       })
-      refetch()
+      await refetch()
     },
     [fetchApi, refetch]
   )
 
   const handleHabitToggle = useCallback(
     async (habitId, date, currentlyDone, entryId) => {
-      if (currentlyDone && entryId) {
-        await fetchApi(`/api/habit-tracking/${entryId}`, {
-          method: 'PATCH',
-          body: JSON.stringify({ 'Was Successful?': false }),
-        })
-      } else if (entryId) {
-        await fetchApi(`/api/habit-tracking/${entryId}`, {
-          method: 'PATCH',
-          body: JSON.stringify({ 'Was Successful?': true }),
-        })
-      } else {
-        await fetchApi('/api/habit-tracking', {
-          method: 'POST',
-          body: JSON.stringify({ Habit: habitId, date }),
-        })
+      try {
+        if (currentlyDone && entryId) {
+          const res = await fetchApi(`/api/habit-tracking/${entryId}`, {
+            method: 'PATCH',
+            body: JSON.stringify({ 'Was Successful?': false }),
+          })
+          if (res?.data) {
+            updateHabitTracking((prev) =>
+              prev.map((e) => (e.id === entryId ? res.data : e))
+            )
+          }
+        } else if (entryId) {
+          const res = await fetchApi(`/api/habit-tracking/${entryId}`, {
+            method: 'PATCH',
+            body: JSON.stringify({ 'Was Successful?': true }),
+          })
+          if (res?.data) {
+            updateHabitTracking((prev) =>
+              prev.map((e) => (e.id === entryId ? res.data : e))
+            )
+          }
+        } else {
+          const res = await fetchApi('/api/habit-tracking', {
+            method: 'POST',
+            body: JSON.stringify({ Habit: habitId, date }),
+          })
+          if (res?.data) {
+            updateHabitTracking((prev) => [...prev, res.data])
+          }
+        }
+      } catch (err) {
+        console.error(err)
       }
     },
-    [fetchApi]
+    [fetchApi, updateHabitTracking]
   )
 
   if (loading && tasks.length === 0) {
@@ -548,7 +589,7 @@ export function PlannerPage() {
   if (error) {
     return (
       <div className="space-y-6">
-        <PageHeader breadcrumbs={[{ label: 'Home', to: '/' }, { label: 'Planner' }]} />
+        <PageHeader breadcrumbs={[{ label: 'Planner', to: '/' }]} />
         <div className="rounded-2xl border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 p-6">
           <p className="text-red-700 dark:text-red-300">{error}</p>
         </div>
@@ -597,8 +638,8 @@ export function PlannerPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        breadcrumbs={[{ label: 'Home', to: '/' }, { label: 'Planner' }]}
-        onRefresh={refetch}
+        breadcrumbs={[{ label: 'Planner', to: '/' }]}
+        onRefresh={handleRefresh}
         loading={loading}
       />
 
@@ -691,7 +732,6 @@ export function PlannerPage() {
                     habits={goodHabits}
                     habitTracking={habitTracking}
                     onHabitToggle={handleHabitToggle}
-                    refetch={refetch}
                   />
                 ))}
               </div>
@@ -718,7 +758,6 @@ export function PlannerPage() {
                     habits={badHabits}
                     habitTracking={habitTracking}
                     onHabitToggle={handleHabitToggle}
-                    refetch={refetch}
                   />
                 ))}
               </div>

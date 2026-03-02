@@ -2,6 +2,8 @@ import { validateAccess } from './_lib/auth.js'
 import { fetchTable, createRecord, updateRecord, deleteRecord } from './_lib/airtable.js'
 
 const TABLE = process.env.AIRTABLE_TABLE_TASKS || 'Tasks'
+/** Nombre del campo link a Key Results en la tabla Tasks de Airtable (p. ej. "Key Result" o "Key Results"). */
+const TASKS_KR_FIELD = process.env.AIRTABLE_TASKS_KR_FIELD || 'Key Result'
 
 /** Mapeo de valores que envía el frontend a opciones del Single Select en Airtable (evita INVALID_MULTIPLE_CHOICE_OPTIONS). */
 const STATUS_TO_AIRTABLE = {
@@ -12,6 +14,18 @@ const STATUS_TO_AIRTABLE = {
 
 function getPathSegments(pathname) {
   return (pathname || '').replace(/^\/api/, '').split('/').filter(Boolean)
+}
+
+/** Quita de la respuesta campos que Airtable devuelve en estado error (ej. Task Summary (AI)) para no exponer errores internos en Network. */
+function sanitizeTaskRecord(record) {
+  if (!record || typeof record !== 'object') return record
+  const key = 'Task Summary (AI)'
+  if (record[key] != null && typeof record[key] === 'object' && record[key].state === 'error') {
+    const out = { ...record }
+    delete out[key]
+    return out
+  }
+  return record
 }
 
 export default async function handler(req, res) {
@@ -51,6 +65,14 @@ export default async function handler(req, res) {
     if (body.Priority != null && typeof body.Priority === 'string') fields.Priority = body.Priority.trim()
     if (body.Assignee != null && typeof body.Assignee === 'string') fields.Assignee = body.Assignee.trim()
     if (body.Category != null && typeof body.Category === 'string') fields.Category = body.Category.trim()
+    const krIds = body['Key Results'] ?? body['Key Result']
+    if (krIds !== undefined) {
+      if (Array.isArray(krIds)) {
+        fields[TASKS_KR_FIELD] = krIds.filter((id) => typeof id === 'string' && id.trim())
+      } else if (typeof krIds === 'string') {
+        fields[TASKS_KR_FIELD] = krIds.trim() ? [krIds.trim()] : []
+      }
+    }
 
     if (Object.keys(fields).length === 0) {
       res.statusCode = 400
@@ -58,10 +80,38 @@ export default async function handler(req, res) {
       return
     }
     try {
-      const updated = await updateRecord(TABLE, recordId, fields)
+      let updated = await updateRecord(TABLE, recordId, fields)
       res.statusCode = 200
-      res.end(JSON.stringify({ data: updated }))
+      res.end(JSON.stringify({ data: sanitizeTaskRecord(updated) }))
     } catch (err) {
+      const msg = String(err.message || '')
+      const isSelectOptionError = /Insufficient permissions to create new select option/i.test(msg) ||
+        /INVALID_MULTIPLE_CHOICE/i.test(msg)
+      if (isSelectOptionError && fields.Category !== undefined) {
+        const fieldsWithoutCategory = { ...fields }
+        delete fieldsWithoutCategory.Category
+        if (Object.keys(fieldsWithoutCategory).length > 0) {
+          try {
+            const updated = await updateRecord(TABLE, recordId, fieldsWithoutCategory)
+            res.statusCode = 200
+            res.end(JSON.stringify({
+              data: sanitizeTaskRecord(updated),
+              warning: 'Category was not updated: value is not an existing option in Airtable (or token cannot create options). Add the option in Airtable or use an existing one.',
+            }))
+            return
+          } catch (retryErr) {
+            console.error('tasks PATCH retry error:', retryErr)
+          }
+        } else {
+          // Only Category was being updated; avoid 500 so the client can refetch and stay in sync
+          res.statusCode = 200
+          res.end(JSON.stringify({
+            data: null,
+            warning: 'Category was not updated: value is not an existing option in Airtable (or token cannot create options). Use a category that already exists in your Airtable Category field.',
+          }))
+          return
+        }
+      }
       console.error('tasks PATCH error:', err)
       res.statusCode = err.statusCode === 404 ? 404 : 500
       res.end(JSON.stringify({ error: err.message }))
@@ -89,9 +139,9 @@ export default async function handler(req, res) {
     if (body.Category != null && typeof body.Category === 'string') fields.Category = body.Category.trim()
     const krIds = body['Key Results'] ?? body['Key Result']
     if (Array.isArray(krIds) && krIds.length > 0) {
-      fields['Key Results'] = krIds.filter((id) => typeof id === 'string' && id.trim())
+      fields[TASKS_KR_FIELD] = krIds.filter((id) => typeof id === 'string' && id.trim())
     } else if (typeof krIds === 'string' && krIds.trim()) {
-      fields['Key Results'] = [krIds.trim()]
+      fields[TASKS_KR_FIELD] = [krIds.trim()]
     }
     const objIds = body.Objectives ?? body.Objective
     if (Array.isArray(objIds) && objIds.length > 0) {
@@ -102,8 +152,26 @@ export default async function handler(req, res) {
     try {
       const created = await createRecord(TABLE, fields)
       res.statusCode = 201
-      res.end(JSON.stringify({ data: created }))
+      res.end(JSON.stringify({ data: sanitizeTaskRecord(created) }))
     } catch (err) {
+      const msg = String(err.message || '')
+      const isSelectOptionError = /Insufficient permissions to create new select option/i.test(msg) ||
+        /INVALID_MULTIPLE_CHOICE/i.test(msg)
+      if (isSelectOptionError && fields.Category !== undefined) {
+        const fieldsWithoutCategory = { ...fields }
+        delete fieldsWithoutCategory.Category
+        try {
+          const created = await createRecord(TABLE, fieldsWithoutCategory)
+          res.statusCode = 201
+          res.end(JSON.stringify({
+            data: sanitizeTaskRecord(created),
+            warning: 'Category was not set: value is not an existing option in Airtable (or token cannot create options). Add the option in Airtable or use an existing one.',
+          }))
+          return
+        } catch (retryErr) {
+          console.error('tasks POST retry error:', retryErr)
+        }
+      }
       console.error('tasks POST error:', err)
       res.statusCode = err.statusCode === 404 ? 404 : 500
       res.end(JSON.stringify({ error: err.message }))
@@ -118,7 +186,8 @@ export default async function handler(req, res) {
   }
 
   try {
-    const data = await fetchTable(TABLE)
+    const raw = await fetchTable(TABLE)
+    const data = Array.isArray(raw) ? raw.map(sanitizeTaskRecord) : raw
     res.statusCode = 200
     res.end(JSON.stringify({ data }))
   } catch (err) {

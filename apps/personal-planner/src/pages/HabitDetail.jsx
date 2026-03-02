@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { useApi, Spinner, PageHeader } from '@tools/shared'
+import { Spinner, PageHeader } from '@tools/shared'
+import { usePlannerApi } from '../contexts/PlannerApiContext'
 import { field, str, dateStr } from '@tools/shared'
 import { isThisWeek, isThisMonth, isInLastDays, getTodayStr } from '@tools/shared'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
@@ -25,7 +26,7 @@ function weekKey(d) {
 
 export function HabitDetail() {
   const { id } = useParams()
-  const { fetchApi } = useApi()
+  const { fetchApi, invalidateCache } = usePlannerApi()
   const [habit, setHabit] = useState(null)
   const [tracking, setTracking] = useState([])
   const [loading, setLoading] = useState(true)
@@ -51,6 +52,11 @@ export function HabitDetail() {
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false))
   }, [fetchApi, id])
+
+  const handleRefresh = useCallback(() => {
+    invalidateCache()
+    refetch()
+  }, [invalidateCache, refetch])
 
   useEffect(() => {
     refetch()
@@ -99,7 +105,7 @@ export function HabitDetail() {
       <Link to="/habits" className="text-sm text-primary hover:underline">
         ← Volver a hábitos
       </Link>
-      <PageHeader breadcrumbs={[{ label: 'Home', to: '/' }, { label: 'Habits', to: '/habits' }, { label: title }]} onRefresh={refetch} loading={loading} />
+      <PageHeader breadcrumbs={[{ label: 'Planner', to: '/' }, { label: 'Habits', to: '/habits' }, { label: title }]} onRefresh={handleRefresh} loading={loading} />
 
       <div className="rounded-2xl border border-2 border-border bg-surface overflow-hidden">
         <div className="p-6 border-b border-border">

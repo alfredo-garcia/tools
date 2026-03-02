@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import { useApi, Spinner, PageHeader } from '@tools/shared'
+import { Spinner, PageHeader } from '@tools/shared'
+import { usePlannerApi } from '../contexts/PlannerApiContext'
 import { field, num, str, dateStr } from '@tools/shared'
 
 export function KeyResultsList() {
-  const { fetchApi } = useApi()
+  const { fetchApi, invalidateCache } = usePlannerApi()
   const [list, setList] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -18,6 +19,11 @@ export function KeyResultsList() {
       .finally(() => setLoading(false))
   }, [fetchApi])
 
+  const handleRefresh = useCallback(() => {
+    invalidateCache()
+    refetch()
+  }, [invalidateCache, refetch])
+
   useEffect(() => {
     refetch()
   }, [refetch])
@@ -27,7 +33,7 @@ export function KeyResultsList() {
 
   return (
     <div className="space-y-6">
-      <PageHeader breadcrumbs={[{ label: 'Home', to: '/' }, { label: 'Key Results', to: '/key-results' }]} onRefresh={refetch} loading={loading} />
+      <PageHeader breadcrumbs={[{ label: 'Planner', to: '/' }, { label: 'Key Results', to: '/key-results' }]} onRefresh={handleRefresh} loading={loading} />
       <ul className="space-y-3">
         {list.map((kr) => {
           const progress = num(field(kr, 'Progress (%)', 'Progress', 'Progress %')) ?? 0

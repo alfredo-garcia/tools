@@ -51,6 +51,16 @@ export default async function handler(req, res) {
     if (body.Unit != null && typeof body.Unit === 'string') fields.Unit = body.Unit.trim()
     if (body.Deadline != null) fields.Deadline = body.Deadline === '' ? null : String(body.Deadline).trim()
     if (body['Progress (%)'] != null) fields['Progress (%)'] = body['Progress (%)'] === '' ? null : Number(body['Progress (%)'])
+    const objectiveId = body['Objective Link'] ?? body.Objective
+    if (objectiveId !== undefined) {
+      if (Array.isArray(objectiveId) && objectiveId.length > 0 && objectiveId[0]) {
+        fields['Objective Link'] = [String(objectiveId[0]).trim()]
+      } else if (typeof objectiveId === 'string' && objectiveId.trim()) {
+        fields['Objective Link'] = [objectiveId.trim()]
+      } else {
+        fields['Objective Link'] = []
+      }
+    }
 
     if (Object.keys(fields).length === 0) {
       res.statusCode = 400

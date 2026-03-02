@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { useApi, Spinner, PageHeader } from '@tools/shared'
+import { Spinner, PageHeader } from '@tools/shared'
+import { usePlannerApi } from '../contexts/PlannerApiContext'
 import { field, str, dateStr, arr } from '@tools/shared'
 
 export function TaskDetail() {
   const { id } = useParams()
-  const { fetchApi } = useApi()
+  const { fetchApi, invalidateCache } = usePlannerApi()
   const [item, setItem] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -18,6 +19,11 @@ export function TaskDetail() {
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false))
   }, [fetchApi, id])
+
+  const handleRefresh = useCallback(() => {
+    invalidateCache()
+    refetch()
+  }, [invalidateCache, refetch])
 
   useEffect(() => {
     refetch()
@@ -46,7 +52,7 @@ export function TaskDetail() {
       <Link to="/tasks" className="text-sm text-primary hover:underline">
         ← Back to tasks
       </Link>
-      <PageHeader breadcrumbs={[{ label: 'Home', to: '/' }, { label: 'Tasks', to: '/tasks' }, { label: title }]} onRefresh={refetch} loading={loading} />
+      <PageHeader breadcrumbs={[{ label: 'Planner', to: '/' }, { label: 'Tasks', to: '/tasks' }, { label: title }]} onRefresh={handleRefresh} loading={loading} />
       <div className="rounded-2xl border border-2 border-border bg-surface overflow-hidden">
         <div className="p-6">
           <dl className="grid gap-2 sm:grid-cols-2">

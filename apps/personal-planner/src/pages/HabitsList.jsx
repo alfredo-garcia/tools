@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import { useApi, Spinner, PageHeader } from '@tools/shared'
+import { Spinner, PageHeader } from '@tools/shared'
+import { usePlannerApi } from '../contexts/PlannerApiContext'
 import { field, str, dateStr } from '@tools/shared'
 import { isThisWeek, isThisMonth, isInLastDays, getTodayStr, getDaysAgoStr } from '@tools/shared'
 import {
@@ -169,7 +170,7 @@ function KpiBlock({ periodLabel, pct, barData, barHeight = 140 }) {
 }
 
 export function HabitsList() {
-  const { fetchApi } = useApi()
+  const { fetchApi, invalidateCache } = usePlannerApi()
   const [list, setList] = useState([])
   const [tracking, setTracking] = useState([])
   const [loading, setLoading] = useState(true)
@@ -190,6 +191,11 @@ export function HabitsList() {
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false))
   }, [fetchApi])
+
+  const handleRefresh = useCallback(() => {
+    invalidateCache()
+    refetch()
+  }, [invalidateCache, refetch])
 
   useEffect(() => {
     refetch()
@@ -344,7 +350,7 @@ export function HabitsList() {
 
   return (
     <div className="space-y-6">
-      <PageHeader breadcrumbs={[{ label: 'Home', to: '/' }, { label: 'Habits', to: '/habits' }]} onRefresh={refetch} loading={loading} />
+      <PageHeader breadcrumbs={[{ label: 'Planner', to: '/' }, { label: 'Habits', to: '/habits' }]} onRefresh={handleRefresh} loading={loading} />
 
       <div className="flex flex-wrap gap-2">
         {HABIT_TYPE_FILTERS.map(({ value, label }) => (

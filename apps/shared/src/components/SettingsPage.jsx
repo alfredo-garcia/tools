@@ -5,7 +5,7 @@ import { useAuth } from '../contexts/AuthContext.jsx'
 /**
  * Settings block: Appearance (ThemeToggle) + Session (logout).
  */
-export function SettingsPage({ backTo = '/', backLabel = '← Back to home' }) {
+export function SettingsPage({ backTo, backLabel = '← Back to home' }) {
   const { logout } = useAuth()
 
   return (
@@ -31,9 +31,6 @@ export function SettingsPage({ backTo = '/', backLabel = '← Back to home' }) {
           </button>
         </div>
       </div>
-      <p className="text-sm font-medium text-text-muted">
-        <Link to={backTo} className="text-primary hover:underline">{backLabel}</Link>
-      </p>
     </div>
   )
 }

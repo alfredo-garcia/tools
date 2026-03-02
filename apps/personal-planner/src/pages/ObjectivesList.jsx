@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import { useApi, Spinner, PageHeader, Card, CardList, IconTarget } from '@tools/shared'
+import { Spinner, PageHeader, Card, CardList, IconTarget } from '@tools/shared'
+import { usePlannerApi } from '../contexts/PlannerApiContext'
 import { field, str, dateStr, arr } from '@tools/shared'
 import { getTaskStatusGroup } from '../lib/taskStatus'
 import { getPriorityTagClass } from '../components/TaskCard'
@@ -79,7 +80,7 @@ function ObjectiveCard({ objective, krStats }) {
 }
 
 export function ObjectivesList() {
-  const { fetchApi } = useApi()
+  const { fetchApi, invalidateCache } = usePlannerApi()
   const [list, setList] = useState([])
   const [keyResults, setKeyResults] = useState([])
   const [loading, setLoading] = useState(true)
@@ -100,6 +101,11 @@ export function ObjectivesList() {
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false))
   }, [fetchApi])
+
+  const handleRefresh = useCallback(() => {
+    invalidateCache()
+    refetch()
+  }, [invalidateCache, refetch])
 
   useEffect(() => {
     refetch()
@@ -159,7 +165,7 @@ export function ObjectivesList() {
 
   return (
     <div className="space-y-6">
-      <PageHeader breadcrumbs={[{ label: 'Home', to: '/' }, { label: 'OKRs', to: '/objectives' }]} onRefresh={refetch} loading={loading} />
+      <PageHeader breadcrumbs={[{ label: 'Planner', to: '/' }, { label: 'OKRs', to: '/objectives' }]} onRefresh={handleRefresh} loading={loading} />
 
       <div className="flex items-center gap-2 w-full">
         <span className="text-sm font-medium text-text-muted shrink-0" title={kpiBarTitle}>({total})</span>

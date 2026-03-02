@@ -262,3 +262,45 @@ export function IconDevil({ className = '', size = 24 }) {
     </svg>
   )
 }
+
+/** Analytics / gráfico de barras. Mismo estilo stroke. */
+export function IconChartBar({ className = '', size = 24 }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconClass} ${className}`} aria-hidden>
+      <line x1="12" y1="20" x2="12" y2="10" />
+      <line x1="18" y1="20" x2="18" y2="4" />
+      <line x1="6" y1="20" x2="6" y2="16" />
+    </svg>
+  )
+}
+
+/** Search / lupa. */
+export function IconSearch({ className = '', size = 24 }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconClass} ${className}`} aria-hidden>
+      <circle cx="11" cy="11" r="8" />
+      <line x1="21" y1="21" x2="16.65" y2="16.65" />
+    </svg>
+  )
+}
+
+/** Clear / cerrar (X). */
+export function IconX({ className = '', size = 24 }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconClass} ${className}`} aria-hidden>
+      <line x1="18" y1="6" x2="6" y2="18" />
+      <line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+  )
+}
+
+/** More / tres puntos verticales. */
+export function IconMoreVertical({ className = '', size = 24 }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconClass} ${className}`} aria-hidden>
+      <circle cx="12" cy="12" r="1.5" />
+      <circle cx="12" cy="5" r="1.5" />
+      <circle cx="12" cy="19" r="1.5" />
+    </svg>
+  )
+}

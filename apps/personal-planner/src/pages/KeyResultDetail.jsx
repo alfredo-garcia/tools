@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import { useApi, Spinner, PageHeader, Card, CardList, IconTarget, IconCalendar, IconTag, IconCircle, IconPlay, IconCheckSquare, IconTrash, LineChart } from '@tools/shared'
+import { Spinner, PageHeader, Card, CardList, IconTarget, IconCalendar, IconTag, IconCircle, IconPlay, IconCheckSquare, IconTrash, LineChart } from '@tools/shared'
+import { usePlannerApi } from '../contexts/PlannerApiContext'
 import { field, str, dateStr, arr, num } from '@tools/shared'
 import { getTaskStatusGroup } from '../lib/taskStatus'
 import { getPriorityTagClass, STATUS_OPTIONS } from '../components/TaskCard'
@@ -51,7 +52,7 @@ function TaskCardClickable({ task, getDue, onClick }) {
 export function KeyResultDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { fetchApi } = useApi()
+  const { fetchApi, invalidateCache } = usePlannerApi()
   const [item, setItem] = useState(null)
   const [tasks, setTasks] = useState([])
   const [loading, setLoading] = useState(true)
@@ -60,7 +61,7 @@ export function KeyResultDetail() {
   const [editValue, setEditValue] = useState('')
   const [modalTask, setModalTask] = useState(null)
   const [createTaskOpen, setCreateTaskOpen] = useState(false)
-  const [objectiveName, setObjectiveName] = useState('')
+  const [objectivesList, setObjectivesList] = useState([]) // { id, name }[] for Objective dropdown
   const [tracking, setTracking] = useState([])
 
   const refetch = useCallback((silent = false) => {
@@ -68,7 +69,7 @@ export function KeyResultDetail() {
       setLoading(true)
       setError(null)
     }
-    Promise.allSettled([
+    return Promise.allSettled([
       fetchApi('/api/key-results').then((r) => (r.data || []).find((kr) => kr.id === id) || null),
       fetchApi('/api/tasks').then((r) => r.data || []),
       fetchApi(`/api/key-result-tracking?keyResultId=${encodeURIComponent(id)}`).then((r) => r.data || []),
@@ -82,25 +83,25 @@ export function KeyResultDetail() {
     }).finally(() => setLoading(false))
   }, [fetchApi, id])
 
+  const handleRefresh = useCallback(() => {
+    invalidateCache()
+    refetch()
+  }, [invalidateCache, refetch])
+
   useEffect(() => {
     refetch()
   }, [refetch])
 
   const objectiveLink = item ? arr(field(item, 'Objective Link', 'Objective'))[0] : null
   useEffect(() => {
-    if (!objectiveLink) {
-      setObjectiveName('')
-      return
-    }
-    setObjectiveName('…')
+    if (!item) return
     fetchApi('/api/objectives')
       .then((r) => {
         const list = r.data || []
-        const o = list.find((x) => x.id === objectiveLink)
-        setObjectiveName(o ? str(field(o, 'Objective Name', 'Objective Name')) || '(untitled)' : '')
+        setObjectivesList(list.map((o) => ({ id: o.id, name: str(field(o, 'Objective Name', 'Objective Name')) || '(untitled)' })))
       })
-      .catch(() => setObjectiveName(''))
-  }, [objectiveLink, fetchApi])
+      .catch(() => setObjectivesList([]))
+  }, [item, objectiveLink, fetchApi])
 
   const handleKrUpdate = useCallback(async (fields) => {
     if (!item) return
@@ -178,10 +179,10 @@ export function KeyResultDetail() {
         method: 'PATCH',
         body: JSON.stringify({ Status: status }),
       })
+      await refetch(true)
     } catch (err) {
       console.error(err)
     }
-    refetch(true)
   }, [fetchApi, refetch])
 
   const handleTaskUpdate = useCallback(async (taskId, fields) => {
@@ -190,7 +191,7 @@ export function KeyResultDetail() {
         method: 'PATCH',
         body: JSON.stringify(fields),
       })
-      refetch(true)
+      await refetch(true)
     } catch (err) {
       console.error(err)
     }
@@ -199,7 +200,7 @@ export function KeyResultDetail() {
   const handleTaskDelete = useCallback(async (taskId) => {
     try {
       await fetchApi(`/api/tasks/${taskId}`, { method: 'DELETE' })
-      refetch(true)
+      await refetch(true)
       setModalTask((current) => (current?.id === taskId ? null : current))
     } catch (err) {
       console.error(err)
@@ -209,7 +210,7 @@ export function KeyResultDetail() {
   const handleCreateTask = useCallback(
     async (fields) => {
       await fetchApi('/api/tasks', { method: 'POST', body: JSON.stringify(fields) })
-      refetch(true)
+      await refetch(true)
     },
     [fetchApi, refetch]
   )
@@ -271,8 +272,8 @@ export function KeyResultDetail() {
   return (
     <div className="space-y-6">
       <PageHeader
-        breadcrumbs={[{ label: 'Home', to: '/' }, { label: 'Key Results', to: '/key-results' }, { label: title }]}
-        onRefresh={refetch}
+        breadcrumbs={[{ label: 'Planner', to: '/' }, { label: 'Key Results', to: '/key-results' }, { label: title }]}
+        onRefresh={handleRefresh}
         loading={loading}
       />
 
@@ -307,13 +308,23 @@ export function KeyResultDetail() {
               </h1>
             )}
           </div>
-          {objectiveLink && (
-            <p className="text-sm text-text-muted">
-              <Link to={`/objectives/${objectiveLink}`} className="hover:underline">
-                {objectiveName || '…'}
-              </Link>
-            </p>
-          )}
+          <div className="flex items-center gap-2 text-sm flex-wrap">
+            <span className="text-text-muted shrink-0">Objective:</span>
+            <select
+              value={objectiveLink ?? ''}
+              onChange={(e) => {
+                const v = e.target.value
+                if (v) handleKrUpdate({ 'Objective Link': [v] })
+              }}
+              className="rounded border border-border bg-surface text-text px-2 py-1 text-sm min-w-0 max-w-full"
+              required
+            >
+              <option value="">— Select objective (required) —</option>
+              {objectivesList.map((o) => (
+                <option key={o.id} value={o.id}>{o.name}</option>
+              ))}
+            </select>
+          </div>
         </div>
 
         <div className="p-5 space-y-4">

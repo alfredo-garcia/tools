@@ -2,6 +2,7 @@ import { validateAccess } from '../_lib/auth.js'
 import { updateRecord } from '../_lib/airtable.js'
 
 const TABLE = process.env.AIRTABLE_TABLE_TASKS || 'Tasks'
+const TASKS_KR_FIELD = process.env.AIRTABLE_TASKS_KR_FIELD || 'Key Result'
 
 /** Mapeo de valores que envía el frontend a opciones del Single Select en Airtable (evita INVALID_MULTIPLE_CHOICE_OPTIONS). */
 const STATUS_TO_AIRTABLE = {
@@ -43,6 +44,14 @@ export default async function handler(req, res) {
   if (body.Priority != null && typeof body.Priority === 'string') fields.Priority = body.Priority.trim()
   if (body.Assignee != null && typeof body.Assignee === 'string') fields.Assignee = body.Assignee.trim()
   if (body.Category != null && typeof body.Category === 'string') fields.Category = body.Category.trim()
+  const krIds = body['Key Results'] ?? body['Key Result']
+  if (krIds !== undefined) {
+    if (Array.isArray(krIds)) {
+      fields[TASKS_KR_FIELD] = krIds.filter((id) => typeof id === 'string' && id.trim())
+    } else if (typeof krIds === 'string') {
+      fields[TASKS_KR_FIELD] = krIds.trim() ? [krIds.trim()] : []
+    }
+  }
 
   if (Object.keys(fields).length === 0) {
     res.statusCode = 400

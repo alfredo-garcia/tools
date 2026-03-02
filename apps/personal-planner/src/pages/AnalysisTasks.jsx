@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import { useApi, Spinner, PageHeader } from '@tools/shared'
+import { Spinner, PageHeader } from '@tools/shared'
+import { usePlannerApi } from '../contexts/PlannerApiContext'
 import { field, str, dateStr } from '@tools/shared'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts'
 
@@ -15,7 +16,7 @@ function weekKey(d) {
 }
 
 export function AnalysisTasks() {
-  const { fetchApi } = useApi()
+  const { fetchApi, invalidateCache } = usePlannerApi()
   const [tasks, setTasks] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -28,6 +29,11 @@ export function AnalysisTasks() {
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false))
   }, [fetchApi])
+
+  const handleRefresh = useCallback(() => {
+    invalidateCache()
+    refetch()
+  }, [invalidateCache, refetch])
 
   useEffect(() => {
     refetch()
@@ -67,7 +73,7 @@ export function AnalysisTasks() {
 
   return (
     <div className="space-y-8">
-      <PageHeader breadcrumbs={[{ label: 'Home', to: '/' }, { label: 'Task analysis', to: '/analysis/tasks' }]} onRefresh={refetch} loading={loading} />
+      <PageHeader breadcrumbs={[{ label: 'Planner', to: '/' }, { label: 'Task analysis', to: '/analysis/tasks' }]} onRefresh={handleRefresh} loading={loading} />
 
       <section className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="rounded-2xl border border-2 border-border bg-surface p-5">

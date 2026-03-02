@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useApi, Spinner, PageHeader, Card, CardList, IconCheckSquare } from '@tools/shared'
+import { Spinner, PageHeader, Card, CardList, IconCheckSquare } from '@tools/shared'
+import { usePlannerApi } from '../contexts/PlannerApiContext'
 import { field, str, dateStr, isToday, isThisWeek, isThisMonth, isPastDue } from '@tools/shared'
 import { getTaskStatusGroup } from '../lib/taskStatus'
 import { getPriorityTagClass } from '../components/TaskCard'
@@ -76,7 +77,7 @@ function TaskCardClickable({ task, getDue, onClick }) {
 }
 
 export function TasksList() {
-  const { fetchApi } = useApi()
+  const { fetchApi, invalidateCache } = usePlannerApi()
   const [list, setList] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -87,11 +88,22 @@ export function TasksList() {
   const refetch = useCallback(() => {
     setLoading(true)
     setError(null)
-    fetchApi('/api/tasks')
-      .then((r) => setList(r.data || []))
-      .catch((e) => setError(e.message))
+    return fetchApi('/api/tasks')
+      .then((r) => {
+        setList(r.data || [])
+        return r
+      })
+      .catch((e) => {
+        setError(e.message)
+        throw e
+      })
       .finally(() => setLoading(false))
   }, [fetchApi])
+
+  const handleRefresh = useCallback(() => {
+    invalidateCache()
+    refetch()
+  }, [invalidateCache, refetch])
 
   useEffect(() => {
     refetch()
@@ -103,10 +115,10 @@ export function TasksList() {
         method: 'PATCH',
         body: JSON.stringify({ Status: status }),
       })
+      await refetch()
     } catch (err) {
       console.error(err)
     }
-    refetch()
   }, [fetchApi, refetch])
 
   const handleTaskUpdate = useCallback(async (taskId, fields) => {
@@ -115,7 +127,7 @@ export function TasksList() {
         method: 'PATCH',
         body: JSON.stringify(fields),
       })
-      refetch()
+      await refetch()
     } catch (err) {
       console.error(err)
     }
@@ -124,7 +136,7 @@ export function TasksList() {
   const handleTaskDelete = useCallback(async (taskId) => {
     try {
       await fetchApi(`/api/tasks/${taskId}`, { method: 'DELETE' })
-      refetch()
+      await refetch()
       setModalTask((current) => (current?.id === taskId ? null : current))
     } catch (err) {
       console.error(err)
@@ -134,7 +146,7 @@ export function TasksList() {
   const handleCreateTask = useCallback(
     async (fields) => {
       await fetchApi('/api/tasks', { method: 'POST', body: JSON.stringify(fields) })
-      refetch()
+      await refetch()
     },
     [fetchApi, refetch]
   )
@@ -181,7 +193,7 @@ export function TasksList() {
 
   return (
     <div className="space-y-6">
-      <PageHeader breadcrumbs={[{ label: 'Home', to: '/' }, { label: 'Tasks', to: '/tasks' }]} onRefresh={refetch} loading={loading} />
+      <PageHeader breadcrumbs={[{ label: 'Planner', to: '/' }, { label: 'Tasks', to: '/tasks' }]} onRefresh={handleRefresh} loading={loading} />
       <div className="flex flex-wrap gap-2">
         {FILTER_OPTIONS.map(({ value, label }) => (
           <button

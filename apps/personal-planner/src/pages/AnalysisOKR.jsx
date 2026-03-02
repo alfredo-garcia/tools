@@ -1,13 +1,14 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import { useApi, Spinner, PageHeader } from '@tools/shared'
+import { Spinner, PageHeader } from '@tools/shared'
+import { usePlannerApi } from '../contexts/PlannerApiContext'
 import { field, num, str, arr } from '@tools/shared'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
 
 const STATUS_DONE = ['Done', 'Complete', 'Completado', 'Hecho', 'Cerrado']
 
 export function AnalysisOKR() {
-  const { fetchApi } = useApi()
+  const { fetchApi, invalidateCache } = usePlannerApi()
   const [objectives, setObjectives] = useState([])
   const [keyResults, setKeyResults] = useState([])
   const [loading, setLoading] = useState(true)
@@ -27,6 +28,11 @@ export function AnalysisOKR() {
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false))
   }, [fetchApi])
+
+  const handleRefresh = useCallback(() => {
+    invalidateCache()
+    refetch()
+  }, [invalidateCache, refetch])
 
   useEffect(() => {
     refetch()
@@ -69,7 +75,7 @@ export function AnalysisOKR() {
 
   return (
     <div className="space-y-8">
-      <PageHeader breadcrumbs={[{ label: 'Home', to: '/' }, { label: 'OKR analysis', to: '/analysis/okr' }]} onRefresh={refetch} loading={loading} />
+      <PageHeader breadcrumbs={[{ label: 'Planner', to: '/' }, { label: 'OKR analysis', to: '/analysis/okr' }]} onRefresh={handleRefresh} loading={loading} />
 
       <section className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="rounded-2xl border border-2 border-border bg-surface p-5">

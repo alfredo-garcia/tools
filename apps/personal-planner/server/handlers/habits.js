@@ -1,5 +1,5 @@
-import { validateAccess } from './_lib/auth.js'
-import { fetchTable } from './_lib/airtable.js'
+import { validateAccess } from '../../api/_lib/auth.js'
+import { fetchTable } from '../../api/_lib/airtable.js'
 
 const TABLE = process.env.AIRTABLE_TABLE_HABITS || 'Habits'
 

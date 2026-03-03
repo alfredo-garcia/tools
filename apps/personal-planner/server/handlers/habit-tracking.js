@@ -1,5 +1,5 @@
-import { validateAccess } from './_lib/auth.js'
-import { fetchTable, createRecord, deleteRecord, updateRecord } from './_lib/airtable.js'
+import { validateAccess } from '../../api/_lib/auth.js'
+import { fetchTable, createRecord, deleteRecord, updateRecord } from '../../api/_lib/airtable.js'
 
 const TABLE = process.env.AIRTABLE_TABLE_HABIT_TRACKING || 'Habit Tracking'
 

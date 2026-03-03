@@ -3,7 +3,7 @@ import {
   Spinner,
   PageHeader,
   Fab,
-  IconCart,
+  IconFilter,
   IconChevronDown,
   IconChevronUp,
   IconSearch,
@@ -14,7 +14,7 @@ import {
 } from '@tools/shared'
 import { usePlannerApi } from '../contexts/PlannerApiContext'
 import { getPriorityTagClass } from '../components/TaskCard'
-import { ShoppingItemModal } from '../components/ShoppingItemModal'
+import { ShoppingItemModal, SHOPPING_CATEGORY_OPTIONS } from '../components/ShoppingItemModal'
 
 const STATUS_FILTER_OPTIONS = [
   { value: 'Need', label: 'Needs', aria: 'Show items you need' },
@@ -45,7 +45,11 @@ function writeFiltersCollapsed(collapsed) {
 }
 
 function ShoppingMiniCard({ item, onToggleStatus, onOpenModal, refetch }) {
-  const name = str(field(item, 'Name')) || '(untitled)'
+  const nameES = str(field(item, 'Name ES')) || ''
+  const name = str(field(item, 'Name')) || ''
+  const title =
+    nameES && name ? `${nameES} - ${name}` : nameES || name || '(untitled)'
+  const category = str(field(item, 'Category')) || ''
   const store = str(field(item, 'Store')) || ''
   const priority = str(field(item, 'Priority')) || ''
   const status = str(field(item, 'Status')) || 'Need'
@@ -62,11 +66,21 @@ function ShoppingMiniCard({ item, onToggleStatus, onOpenModal, refetch }) {
     }
   }
 
+  const handleCardClick = () => onOpenModal?.(item)
+  const handleCardKeyDown = (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      handleCardClick()
+    }
+  }
+
   return (
-    <button
-      type="button"
-      onClick={() => onOpenModal?.(item)}
-      className="w-full text-left rounded-xl bg-surface border border-border hover:border-primary/40 transition-colors overflow-hidden"
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={handleCardClick}
+      onKeyDown={handleCardKeyDown}
+      className="w-full text-left rounded-xl bg-surface border border-border hover:border-primary/40 transition-colors overflow-hidden cursor-pointer"
     >
       <div className="p-4 flex items-start gap-3">
         <button
@@ -84,23 +98,24 @@ function ShoppingMiniCard({ item, onToggleStatus, onOpenModal, refetch }) {
         </button>
         <div className="flex-1 min-w-0">
           <div className={`font-semibold text-text ${isHave ? 'line-through opacity-70' : ''}`}>
-            {name}
+            {title}
           </div>
-          {store && (
-            <div className="text-sm text-text-muted mt-0.5">{store}</div>
-          )}
-          <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
+          <div className="text-sm text-text-muted mt-1 space-y-0.5">
             {priority && (
-              <span
-                className={`inline-flex px-1.5 py-0.5 rounded text-[10px] font-medium ${getPriorityTagClass(priority)}`}
-              >
-                {priority}
-              </span>
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span
+                  className={`inline-flex px-1.5 py-0.5 rounded text-[10px] font-medium ${getPriorityTagClass(priority)}`}
+                >
+                  {priority}
+                </span>
+              </div>
             )}
+            {category && <div>{category}</div>}
+            {store && <div>{store}</div>}
           </div>
         </div>
       </div>
-    </button>
+    </div>
   )
 }
 
@@ -155,15 +170,6 @@ export function ShoppingPage() {
     list.forEach((i) => {
       const s = str(field(i, 'Store'))
       if (s) set.add(s)
-    })
-    return Array.from(set).sort()
-  }, [list])
-
-  const uniqueCategories = useMemo(() => {
-    const set = new Set()
-    list.forEach((i) => {
-      const c = str(field(i, 'Category'))
-      if (c) set.add(c)
     })
     return Array.from(set).sort()
   }, [list])
@@ -240,7 +246,7 @@ export function ShoppingPage() {
             aria-expanded={!filtersCollapsed}
           >
             <div className="flex items-center gap-3">
-              <IconCart size={20} className="text-text-muted shrink-0" />
+              <IconFilter size={20} className="text-text-muted shrink-0" />
               <span className="font-semibold text-text">Filters</span>
             </div>
             {filtersCollapsed ? (
@@ -251,70 +257,109 @@ export function ShoppingPage() {
           </button>
           {!filtersCollapsed && (
             <div className="px-4 pb-4 pt-0 space-y-4 border-t border-border">
-              <div>
-                <span className="text-text-muted text-xs font-medium uppercase tracking-wide">Status</span>
-                <div className="flex flex-wrap gap-2 mt-1.5">
-                  {STATUS_FILTER_OPTIONS.map(({ value, label, aria }) => (
-                    <button
-                      key={value || 'all'}
-                      type="button"
-                      onClick={() => setStatusFilter(value)}
-                      aria-label={aria}
-                      className={`min-h-[36px] px-3 rounded-xl text-sm font-medium ${
-                        statusFilter === value
-                          ? 'bg-primary text-white'
-                          : 'bg-border text-text hover:bg-border/80'
-                      }`}
-                    >
-                      {label}
-                    </button>
-                  ))}
+              {/* Desktop: row1 = Status + Priority. Mobile: each on its own row */}
+              <div className="flex flex-col md:flex-row md:items-start gap-4 md:gap-8">
+                <div className="min-w-0">
+                  <span className="text-text-muted text-xs font-medium uppercase tracking-wide">Status</span>
+                  <div className="flex flex-wrap gap-2 mt-1.5">
+                    {STATUS_FILTER_OPTIONS.map(({ value, label, aria }) => (
+                      <button
+                        key={value || 'all'}
+                        type="button"
+                        onClick={() => setStatusFilter(value)}
+                        aria-label={aria}
+                        className={`min-h-[36px] px-3 rounded-xl text-sm font-medium ${
+                          statusFilter === value
+                            ? 'bg-primary text-white'
+                            : 'bg-border text-text hover:bg-border/80'
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="min-w-0">
+                  <span className="text-text-muted text-xs font-medium uppercase tracking-wide">Priority</span>
+                  <div className="flex flex-wrap gap-2 mt-1.5">
+                    {PRIORITY_FILTER_OPTIONS.map(({ value, label }) => (
+                      <button
+                        key={value || 'all'}
+                        type="button"
+                        onClick={() => setPriorityFilter(value)}
+                        className={`min-h-[36px] px-3 rounded-xl text-sm font-medium ${
+                          priorityFilter === value
+                            ? 'bg-primary text-white'
+                            : 'bg-border text-text hover:bg-border/80'
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
-              <div>
-                <span className="text-text-muted text-xs font-medium uppercase tracking-wide">Priority</span>
-                <div className="flex flex-wrap gap-2 mt-1.5">
-                  {PRIORITY_FILTER_OPTIONS.map(({ value, label }) => (
-                    <button
-                      key={value || 'all'}
-                      type="button"
-                      onClick={() => setPriorityFilter(value)}
-                      className={`min-h-[36px] px-3 rounded-xl text-sm font-medium ${
-                        priorityFilter === value
-                          ? 'bg-primary text-white'
-                          : 'bg-border text-text hover:bg-border/80'
-                      }`}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
-              </div>
+              {/* Row 2: Store (buttons) */}
               <div>
                 <span className="text-text-muted text-xs font-medium uppercase tracking-wide">Store</span>
-                <select
-                  value={storeFilter}
-                  onChange={(e) => setStoreFilter(e.target.value)}
-                  className="mt-1.5 w-full max-w-xs rounded-lg border border-border bg-surface text-text px-3 py-2 text-sm"
-                >
-                  <option value="">All</option>
+                <div className="flex flex-wrap gap-2 mt-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setStoreFilter('')}
+                    className={`min-h-[36px] px-3 rounded-xl text-sm font-medium ${
+                      storeFilter === ''
+                        ? 'bg-primary text-white'
+                        : 'bg-border text-text hover:bg-border/80'
+                    }`}
+                  >
+                    All
+                  </button>
                   {uniqueStores.map((s) => (
-                    <option key={s} value={s}>{s}</option>
+                    <button
+                      key={s}
+                      type="button"
+                      onClick={() => setStoreFilter(s)}
+                      className={`min-h-[36px] px-3 rounded-xl text-sm font-medium ${
+                        storeFilter === s
+                          ? 'bg-primary text-white'
+                          : 'bg-border text-text hover:bg-border/80'
+                      }`}
+                    >
+                      {s}
+                    </button>
                   ))}
-                </select>
+                </div>
               </div>
+              {/* Row 3: Category (buttons) */}
               <div>
                 <span className="text-text-muted text-xs font-medium uppercase tracking-wide">Category</span>
-                <select
-                  value={categoryFilter}
-                  onChange={(e) => setCategoryFilter(e.target.value)}
-                  className="mt-1.5 w-full max-w-xs rounded-lg border border-border bg-surface text-text px-3 py-2 text-sm"
-                >
-                  <option value="">All</option>
-                  {uniqueCategories.map((c) => (
-                    <option key={c} value={c}>{c}</option>
+                <div className="flex flex-wrap gap-2 mt-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setCategoryFilter('')}
+                    className={`min-h-[36px] px-3 rounded-xl text-sm font-medium ${
+                      categoryFilter === ''
+                        ? 'bg-primary text-white'
+                        : 'bg-border text-text hover:bg-border/80'
+                    }`}
+                  >
+                    All
+                  </button>
+                  {SHOPPING_CATEGORY_OPTIONS.map((c) => (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => setCategoryFilter(c)}
+                      className={`min-h-[36px] px-3 rounded-xl text-sm font-medium ${
+                        categoryFilter === c
+                          ? 'bg-primary text-white'
+                          : 'bg-border text-text hover:bg-border/80'
+                      }`}
+                    >
+                      {c}
+                    </button>
                   ))}
-                </select>
+                </div>
               </div>
             </div>
           )}

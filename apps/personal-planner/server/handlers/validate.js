@@ -1,4 +1,4 @@
-import { validateAccess } from './_lib/auth.js'
+import { validateAccess } from '../../api/_lib/auth.js'
 
 /**
  * POST /api/validate — Valida el código de acceso (Authorization header).

@@ -1,5 +1,5 @@
-import { validateAccess } from './_lib/auth.js'
-import { fetchTable, updateRecord, createRecord, getShoppingBase } from './_lib/airtable.js'
+import { validateAccess } from '../../api/_lib/auth.js'
+import { fetchTable, updateRecord, createRecord, getShoppingBase } from '../../api/_lib/airtable.js'
 
 /** Tabla Airtable "Shopping List": Name, Category, Description, Image (Web), Name ES, Notes, Priority, Quantity, Status, Store, Unit. */
 const TABLE = process.env.AIRTABLE_TABLE_SHOPPING || 'Shopping List'

@@ -396,6 +396,20 @@ export function IconMagicBall({ className = '', size = 24 }) {
   )
 }
 
+/** Icono de filtros: tres líneas horizontales con control/slider. */
+export function IconFilter({ className = '', size = 24 }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconClass} ${className}`} aria-hidden>
+      <line x1="2" y1="7" x2="22" y2="7" />
+      <circle cx="6" cy="7" r="2" />
+      <line x1="2" y1="12" x2="22" y2="12" />
+      <circle cx="12" cy="12" r="2" />
+      <line x1="2" y1="17" x2="22" y2="17" />
+      <circle cx="18" cy="17" r="2" />
+    </svg>
+  )
+}
+
 /** Carrito de supermercado / shopping cart. */
 export function IconCart({ className = '', size = 24 }) {
   return (

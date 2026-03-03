@@ -1,5 +1,5 @@
-import { validateAccess } from './_lib/auth.js'
-import { fetchTable, createRecord, updateRecord, deleteRecord } from './_lib/airtable.js'
+import { validateAccess } from '../../api/_lib/auth.js'
+import { fetchTable, createRecord, updateRecord, deleteRecord } from '../../api/_lib/airtable.js'
 
 /** Tabla Airtable "Discovery Ideas": Idea Name, Idea Description, Category, Status, Priority, Date Added, Objetives (linked). */
 const TABLE = process.env.AIRTABLE_TABLE_DISCOVERY || 'Discovery Ideas'

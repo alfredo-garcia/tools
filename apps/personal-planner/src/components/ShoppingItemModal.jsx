@@ -4,8 +4,8 @@ import { usePlannerApi } from '../contexts/PlannerApiContext'
 import { field, str } from '@tools/shared'
 
 const PRIORITY_OPTIONS = ['High', 'Medium', 'Low']
-/** Categorías fijas del campo Category en Airtable (Single select). */
-const CATEGORY_OPTIONS = ['Fruits & Vegs', 'Meat', 'Frozen', 'Drinks', 'Snacks', 'Household', 'Other']
+/** Categorías fijas del campo Category en Airtable (Single select). Exportado para el filtro en ShoppingPage. */
+export const SHOPPING_CATEGORY_OPTIONS = ['Fruits & Vegs', 'Meat & Fish', 'Frozen', 'Drinks', 'Snacks', 'Household', 'Other']
 /** Unidades fijas del campo Unit en Airtable (Single select). */
 const UNIT_OPTIONS = ['pcs', 'kg', 'L', 'pack', 'bag']
 
@@ -170,7 +170,7 @@ export function ShoppingItemModal({ item, onClose, onItemUpdate, refetch, onCrea
               className="w-full rounded-lg border border-border bg-surface text-text px-3 py-2.5"
             >
               <option value="">—</option>
-              {CATEGORY_OPTIONS.map((opt) => (
+              {SHOPPING_CATEGORY_OPTIONS.map((opt) => (
                 <option key={opt} value={opt}>{opt}</option>
               ))}
             </select>

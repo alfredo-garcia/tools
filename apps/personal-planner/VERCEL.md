@@ -16,7 +16,7 @@ Esta app depende del paquete `@tools/shared` (`file:../shared`). Para que el bui
 
 4. **Output Directory**: `dist` (por defecto para Vercel con Vite).
 
-5. Las rutas de API en `api/*.js` se sirven como Serverless Functions mientras el Root Directory sea `apps/personal-planner`.
+5. **API (una sola Serverless Function)**: Todas las rutas `/api/*` se reescriben a la función única `api/index.js` para no superar el límite de 12 funciones del plan Hobby. El router en `api/index.js` despacha por path a los handlers en `server/handlers/`. La reescritura en `vercel.json` es: `"/api/:path*" → "/api?path=:path"`.
 
 ## Si el build sigue fallando
 

@@ -1,5 +1,5 @@
-import { validateAccess } from './_lib/auth.js'
-import { fetchTable, createRecord, updateRecord } from './_lib/airtable.js'
+import { validateAccess } from '../../api/_lib/auth.js'
+import { fetchTable, createRecord, updateRecord } from '../../api/_lib/airtable.js'
 
 const TABLE = process.env.AIRTABLE_TABLE_KEY_RESULT_TRACKING || 'Key Results Tracking'
 

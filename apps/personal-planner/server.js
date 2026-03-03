@@ -72,7 +72,7 @@ const server = http.createServer(async (req, res) => {
   const url = new URL(req.url || '/', `http://localhost:${PORT}`)
   const pathname = url.pathname.replace(/\/$/, '') || '/'
 
-  // API: /api/validate, /api/data, etc.
+  // API: todas las rutas /api/* van al handler único (api/index.js)
   if (pathname.startsWith('/api/')) {
     if (!checkRateLimit(req)) {
       res.statusCode = 429
@@ -80,15 +80,14 @@ const server = http.createServer(async (req, res) => {
       res.end(JSON.stringify({ error: 'Demasiadas peticiones. Espera un momento.' }))
       return
     }
-    const name = pathname.slice(5).split('/')[0] || 'validate'
     let handler
     try {
-      const modulePath = path.join(__dirname, 'api', `${name}.js`)
+      const modulePath = path.join(__dirname, 'api', 'index.js')
       const moduleUrl = pathToFileURL(modulePath).href
       const mod = await import(moduleUrl)
       handler = mod.default
     } catch (e) {
-      console.error('API load error:', name, e.message)
+      console.error('API load error:', e.message)
       send(res, 404, { error: 'Not found' })
       return
     }
@@ -97,7 +96,7 @@ const server = http.createServer(async (req, res) => {
       const raw = await readBody(req)
       try { req.body = raw ? JSON.parse(raw) : {} } catch { req.body = {} }
     }
-    req.url = pathname
+    req.url = pathname + (url.search || '')
     req.query = Object.fromEntries(url.searchParams)
     req.headers = req.headers
     handler(req, res)

@@ -4,6 +4,10 @@ import { usePlannerApi } from '../contexts/PlannerApiContext'
 import { field, str } from '@tools/shared'
 
 const PRIORITY_OPTIONS = ['High', 'Medium', 'Low']
+/** Categorías fijas del campo Category en Airtable (Single select). */
+const CATEGORY_OPTIONS = ['Fruits & Vegs', 'Meat', 'Frozen', 'Drinks', 'Snacks', 'Household', 'Other']
+/** Unidades fijas del campo Unit en Airtable (Single select). */
+const UNIT_OPTIONS = ['pcs', 'kg', 'L', 'pack', 'bag']
 
 const INITIAL_FORM = {
   Name: '',
@@ -160,12 +164,16 @@ export function ShoppingItemModal({ item, onClose, onItemUpdate, refetch, onCrea
           </div>
           <div>
             <label className="block text-sm font-medium text-text-muted mb-1.5">Category</label>
-            <input
-              type="text"
+            <select
               value={form.Category}
               onChange={(e) => handleChange('Category', e.target.value)}
               className="w-full rounded-lg border border-border bg-surface text-text px-3 py-2.5"
-            />
+            >
+              <option value="">—</option>
+              {CATEGORY_OPTIONS.map((opt) => (
+                <option key={opt} value={opt}>{opt}</option>
+              ))}
+            </select>
           </div>
           <div>
             <label className="block text-sm font-medium text-text-muted mb-1.5">Status</label>
@@ -191,13 +199,16 @@ export function ShoppingItemModal({ item, onClose, onItemUpdate, refetch, onCrea
           </div>
           <div>
             <label className="block text-sm font-medium text-text-muted mb-1.5">Unit</label>
-            <input
-              type="text"
+            <select
               value={form.Unit}
               onChange={(e) => handleChange('Unit', e.target.value)}
-              placeholder="e.g. kg, pcs, L"
               className="w-full rounded-lg border border-border bg-surface text-text px-3 py-2.5"
-            />
+            >
+              <option value="">—</option>
+              {UNIT_OPTIONS.map((opt) => (
+                <option key={opt} value={opt}>{opt}</option>
+              ))}
+            </select>
           </div>
           <div>
             <label className="block text-sm font-medium text-text-muted mb-1.5">Description</label>

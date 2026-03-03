@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { Layout, AppShell, SettingsPage, IconCalendar, IconTarget, IconCheckSquare, IconCircle, IconSettings, IconChartBar, IconSearch, IconMagicBall } from '@tools/shared'
+import { Layout, AppShell, SettingsPage, IconCalendar, IconTarget, IconCheckSquare, IconCircle, IconSettings, IconChartBar, IconSearch, IconMagicBall, IconCart } from '@tools/shared'
 import { PlannerApiProvider } from './contexts/PlannerApiContext'
 import { usePastDueTasks } from './hooks/usePastDueTasks'
 import { Dashboard } from './pages/Dashboard'
@@ -17,6 +17,7 @@ import { AnalysisTasks } from './pages/AnalysisTasks'
 import { AnalysisHabits } from './pages/AnalysisHabits'
 import { Search } from './pages/Search'
 import { DiscoveryList } from './pages/DiscoveryList'
+import { ShoppingPage } from './pages/ShoppingPage'
 
 const baseNavItems = [
   { to: '/', label: 'Planner', Icon: IconCalendar, aria: 'Weekly planner' },
@@ -24,6 +25,7 @@ const baseNavItems = [
   { to: '/discovery', label: 'Discovery', Icon: IconMagicBall, aria: 'Discovery ideas' },
   { to: '/tasks', label: 'Tasks', Icon: IconCheckSquare, aria: 'Tasks' },
   { to: '/objectives', label: 'OKRs', Icon: IconTarget, aria: 'Objectives and Key Results', inMore: true },
+  { to: '/shopping', label: 'Shopping', Icon: IconCart, aria: 'Shopping list' , inMore: true},
   { to: '/habits', label: 'Habits', Icon: IconCircle, aria: 'Habits', inMore: true },
   { to: '/analytics', label: 'Analytics', Icon: IconChartBar, aria: 'Analytics', inMore: true },
   { to: '/settings', label: 'Settings', Icon: IconSettings, aria: 'Settings', inMore: true },
@@ -64,6 +66,7 @@ function App() {
             <Route path="/analysis/tasks" element={<AnalysisTasks />} />
             <Route path="/analysis/habits" element={<AnalysisHabits />} />
             <Route path="/search" element={<Search />} />
+            <Route path="/shopping" element={<ShoppingPage />} />
             <Route path="/discovery" element={<DiscoveryList />} />
           </Routes>
           </PlannerShell>

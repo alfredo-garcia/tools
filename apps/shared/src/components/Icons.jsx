@@ -284,12 +284,19 @@ export function IconHeartFire({ className = '', size = 24 }) {
   )
 }
 
-/** Mierda / poop (montículo estilizado). */
+/** Mierda / poop (estilo emoji 💩: montículo con espiral arriba y carita). */
 export function IconPoop({ className = '', size = 24 }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={`${iconClass} ${className}`} aria-hidden>
-      <path d="M12 5c-2.5 0-4 1.8-4.5 4-.5 2.2-.3 4.5.5 6.5.8 2 2 3 3.5 3.5s3 0 4-.5c1-.5 1.8-1.5 2.2-2.5.6-1.5.6-3.5 0-5.5C16 6.8 14.5 5 12 5z" />
-      <ellipse cx="12" cy="19" rx="5" ry="2.2" />
+      {/* Cuerpo: montículo ancho abajo + curva de espiral arriba */}
+      <path d="M12 3.2c-3 0-5.5 2.2-6 5.2-.3 2 0 4.2.9 5.8 1 1.6 2.4 2.8 4 3.2 1.7.4 3.4.1 4.8-1 .9-.8 1.5-1.9 1.8-3.2.3-1.5-.1-3.1-.8-4.4C16.2 5.2 14.3 3.2 12 3.2z" />
+      {/* Remate espiral (como soft-serve / 💩) */}
+      <ellipse cx="11.5" cy="5.8" rx="2.8" ry="2.4" />
+      {/* Ojos (puntos como en el emoji) */}
+      <circle cx="9" cy="11" r="1" />
+      <circle cx="15" cy="11" r="1" />
+      {/* Sonrisa */}
+      <path d="M9.2 14.5c.9.5 2.1.5 3 0" fill="none" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" />
     </svg>
   )
 }
@@ -385,6 +392,17 @@ export function IconMagicBall({ className = '', size = 24 }) {
       <circle cx="12" cy="10" r="6" />
       <path d="M8 20c0-2.2 1.8-4 4-4s4 1.8 4 4" />
       <circle cx="12" cy="8" r="1" fill="currentColor" stroke="none" />
+    </svg>
+  )
+}
+
+/** Carrito de supermercado / shopping cart. */
+export function IconCart({ className = '', size = 24 }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconClass} ${className}`} aria-hidden>
+      <circle cx="9" cy="21" r="1" />
+      <circle cx="20" cy="21" r="1" />
+      <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
     </svg>
   )
 }

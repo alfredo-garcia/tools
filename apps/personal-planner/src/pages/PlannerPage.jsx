@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { usePlannerApi } from '../contexts/PlannerApiContext'
-import { Spinner, PageHeader, Switch, IconChevronDown, IconChevronUp, IconChevronLeft, IconChevronRight, IconStar, IconFlameFilled, IconTarget, IconCalendar, IconUser, IconTag, IconCircle, IconPlay, IconCheckSquare, IconTrash, IconHeart, IconHeartFire, IconX } from '@tools/shared'
+import { Spinner, PageHeader, Switch, IconChevronDown, IconChevronUp, IconChevronLeft, IconChevronRight, IconStar, IconFlameFilled, IconPoop, IconTarget, IconCalendar, IconUser, IconTag, IconCircle, IconPlay, IconCheckSquare, IconTrash, IconHeart, IconHeartFire, IconX } from '@tools/shared'
 import { field, str, dateStr, arr, getWeekDays, getWeekStart, getWeekdayIndex } from '@tools/shared'
 import { getTaskStatusGroup } from '../lib/taskStatus'
 import { TaskCard, STATUS_OPTIONS, getPriorityTagClass } from '../components/TaskCard'
@@ -9,8 +9,19 @@ import { Fab } from '@tools/shared'
 
 const DAY_NAMES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
-const MIN_HABITS_FOR_FIRE = 5
+const MIN_GOOD_HABITS_FOR_FIRE = 5
+const MIN_BAD_HABITS_FOR_SKULL = 2
 const PLANNER_PREFS_KEY = 'mosco-planner-prefs'
+
+function getOrdinalSuffix(n) {
+  const d = n % 10
+  const teenth = Math.floor(n / 10) % 10 === 1
+  if (teenth) return 'th'
+  if (d === 1) return 'st'
+  if (d === 2) return 'nd'
+  if (d === 3) return 'rd'
+  return 'th'
+}
 
 function readPlannerPrefs() {
   if (typeof window === 'undefined') return { goodHabitsCollapsed: false, badHabitsCollapsed: false, showCompleted: false }
@@ -39,6 +50,13 @@ function getWeekDaysForOffset(weekOffset) {
   const start = getWeekStart(new Date())
   start.setDate(start.getDate() + weekOffset * 7)
   return getWeekDays(start)
+}
+
+/** Parse YYYY-MM-DD as local date (avoids UTC midnight causing wrong week in some timezones). */
+function parseLocalDate(dateStr) {
+  if (!dateStr || !/^\d{4}-\d{2}-\d{2}/.test(dateStr)) return new Date()
+  const [y, m, day] = dateStr.slice(0, 10).split('-').map(Number)
+  return new Date(y, m - 1, day)
 }
 
 function addDays(dateStr, delta) {
@@ -109,20 +127,28 @@ function isHabitEntrySuccessful(entry) {
 function formatDayDate(dayStr) {
   if (!dayStr) return ''
   const d = new Date(dayStr + 'T12:00:00')
-  return `${d.getDate()} ${MONTH_NAMES[d.getMonth()]}`
+  const day = d.getDate()
+  return `${MONTH_NAMES[d.getMonth()]} ${day}${getOrdinalSuffix(day)}`
 }
 
 function dayHeaderStars(tasksForDay, habits, habitTracking, dayStr) {
   const totalTasks = tasksForDay.length
   const tasksDone = tasksForDay.filter((t) => getTaskStatusGroup(t) === 'done').length
   const allTasksDone = totalTasks > 0 && tasksDone === totalTasks
-  const habitsDoneCount = habits.filter((h) => {
+  const goodHabits = filterHabitsByType(habits, 'Good')
+  const badHabits = filterHabitsByType(habits, 'Bad')
+  const goodHabitsDoneCount = goodHabits.filter((h) => {
     const entry = getHabitEntryForDay(habitTracking, h.id, dayStr)
     return entry && isHabitEntrySuccessful(entry)
   }).length
-  const hasFire = allTasksDone && habitsDoneCount >= MIN_HABITS_FOR_FIRE
+  const badHabitsDoneCount = badHabits.filter((h) => {
+    const entry = getHabitEntryForDay(habitTracking, h.id, dayStr)
+    return entry && isHabitEntrySuccessful(entry)
+  }).length
+  const hasFire = goodHabitsDoneCount >= MIN_GOOD_HABITS_FOR_FIRE
+  const hasSkull = badHabitsDoneCount >= MIN_BAD_HABITS_FOR_SKULL
   const hasStar = allTasksDone
-  return { hasStar, hasFire }
+  return { hasStar, hasFire, hasSkull }
 }
 
 /** Group habits by category. '' key = uncategorized. Order: named categories first (A–Z), uncategorized last. */
@@ -150,7 +176,7 @@ function filterHabitsByType(habits, type) {
 /** Desktop day header cell (name + date + stars). */
 function DayHeaderCell({ dayStr, dayIndex, tasks, habits, habitTracking }) {
   const tasksForDay = getTasksForDay(tasks, dayStr)
-  const { hasStar, hasFire } = dayHeaderStars(tasksForDay, habits, habitTracking, dayStr)
+  const { hasStar, hasFire, hasSkull } = dayHeaderStars(tasksForDay, habits, habitTracking, dayStr)
   const dayLabel = DAY_NAMES[dayIndex]
   return (
     <div className="py-2 shrink-0 flex items-center justify-between gap-2 px-2 min-w-0">
@@ -158,15 +184,20 @@ function DayHeaderCell({ dayStr, dayIndex, tasks, habits, habitTracking }) {
         <div className="font-bold text-text truncate">{dayLabel}</div>
         <div className="text-sm text-text-muted">{formatDayDate(dayStr)}</div>
       </div>
-      <div className="flex items-center gap-0.5 shrink-0">
+      <div className="flex items-center gap-1 shrink-0">
         {hasStar && (
-          <span className="text-amber-500" title={hasFire ? 'Tasks + 5+ habits' : 'All tasks done'}>
-            <IconStar size={18} />
+          <span className="inline-flex items-center justify-center h-6 text-amber-500" title={hasFire ? 'Tasks done + 5+ Good Habits' : 'All tasks done'}>
+            <IconStar size={20} />
           </span>
         )}
         {hasFire && (
-          <span className="text-orange-500" title="5+ habits">
-            <IconFlameFilled size={22} />
+          <span className="inline-flex items-center justify-center h-6 text-orange-500" title="5+ Good Habits">
+            <IconFlameFilled size={20} />
+          </span>
+        )}
+        {hasSkull && (
+          <span className="inline-flex items-center justify-center h-6 text-amber-600" title="2+ Bad Habits">
+            <IconPoop size={20} />
           </span>
         )}
       </div>
@@ -175,6 +206,45 @@ function DayHeaderCell({ dayStr, dayIndex, tasks, habits, habitTracking }) {
 }
 
 const DRAG_TYPE_TASK = 'application/x-planner-task'
+
+/** Solo la barra de progreso de tareas de un día (para mostrar cuando la sección Tasks está colapsada). */
+function DayTaskProgressBar({ dayStr, tasks }) {
+  const tasksForDay = getTasksForDay(tasks, dayStr)
+  const total = tasksForDay.length
+  const doneCount = tasksForDay.filter((t) => getTaskStatusGroup(t) === 'done').length
+  const inProgressCount = tasksForDay.filter((t) => getTaskStatusGroup(t) === 'in_progress').length
+  const pendingCount = tasksForDay.filter((t) => getTaskStatusGroup(t) === 'pending').length
+  const donePct = total === 0 ? 0 : Math.round((doneCount / total) * 100)
+  const inProgressPct = total === 0 ? 0 : Math.round((inProgressCount / total) * 100)
+  const pendingPct = total === 0 ? 0 : Math.round((pendingCount / total) * 100)
+  const progressBarTitle = total === 0
+    ? 'No tasks'
+    : `Done: ${donePct}%, In progress: ${inProgressPct}%, To do: ${pendingPct}%`
+  return (
+    <div className="w-full flex items-center gap-2 pt-0.5 pb-0">
+      <span className="text-xs font-medium text-text-muted shrink-0" title={progressBarTitle}>({total})</span>
+      <div
+        className="flex-1 h-2 rounded-full overflow-hidden flex min-w-0"
+        role="progressbar"
+        aria-valuenow={donePct}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        title={progressBarTitle}
+      >
+        {total === 0 ? (
+          <div className="h-full bg-status-pending shrink-0 w-full" />
+        ) : (
+          <>
+            {donePct > 0 && <div className="h-full bg-status-done shrink-0" style={{ width: `${donePct}%` }} />}
+            {inProgressPct > 0 && <div className="h-full bg-status-in-progress shrink-0" style={{ width: `${inProgressPct}%` }} />}
+            {pendingPct > 0 && <div className="h-full bg-status-pending shrink-0" style={{ width: `${pendingPct}%` }} />}
+          </>
+        )}
+      </div>
+      <span className="text-xs font-medium text-text-muted shrink-0">{donePct}%</span>
+    </div>
+  )
+}
 
 /** Columna de tasks de un día (header + barra + lista). Sin collapse.
  * showCompleted: si true, se muestran las Done al final.
@@ -281,8 +351,8 @@ function DayTasksColumn({ dayStr, tasks, showCompleted = false, onTaskStatusChan
   )
 }
 
-/** Per-day habits column (counter + list by category). habitVariant: 'good' = hearts (green), 'bad' = X (red). No collapse. */
-function DayHabitsColumn({ dayStr, habits, habitTracking, onHabitToggle, habitVariant = 'good' }) {
+/** Solo la fila de contadores (1–5) para un día. Para mostrar cuando la sección Habits está colapsada. */
+function DayHabitsCounters({ dayStr, habits, habitTracking, habitVariant = 'good' }) {
   const habitsDoneCount = habits.filter((h) => {
     const entry = getHabitEntryForDay(habitTracking, h.id, dayStr)
     return entry && isHabitEntrySuccessful(entry)
@@ -296,17 +366,24 @@ function DayHabitsColumn({ dayStr, habits, habitTracking, onHabitToggle, habitVa
   }
   const counterSize = (n) => (n === 5 ? 18 : 14)
   return (
+    <div className="w-full pt-0.5 pb-0 flex items-center gap-0.5 px-2">
+      {[1, 2, 3, 4, 5].map((n) => {
+        const Icon = CounterIcon(n)
+        return (
+          <span key={n} className={`shrink-0 ${counterColor(n)}`} title={n === 5 ? '5+ habits' : `Point ${n}`}>
+            <Icon size={counterSize(n)} />
+          </span>
+        )
+      })}
+    </div>
+  )
+}
+
+/** Per-day habits column (counter + list by category). habitVariant: 'good' = hearts (green), 'bad' = X (red). No collapse. */
+function DayHabitsColumn({ dayStr, habits, habitTracking, onHabitToggle, habitVariant = 'good' }) {
+  return (
     <div className="flex flex-col min-w-0 px-2">
-      <div className="w-full pt-0.5 pb-0 flex items-center gap-0.5">
-        {[1, 2, 3, 4, 5].map((n) => {
-          const Icon = CounterIcon(n)
-          return (
-            <span key={n} className={`shrink-0 ${counterColor(n)}`} title={n === 5 ? '5+ habits' : `Point ${n}`}>
-              <Icon size={counterSize(n)} />
-            </span>
-          )
-        })}
-      </div>
+      <DayHabitsCounters dayStr={dayStr} habits={habits} habitTracking={habitTracking} habitVariant={habitVariant} />
       <div className="w-full space-y-3 mt-3">
         {habits.length === 0 && <p className="text-xs text-text-muted py-1">No habits</p>}
         {getHabitsByCategory(habits).map(([categoryLabel, habitsInCategory]) => (
@@ -382,7 +459,7 @@ function DayColumn({
     const entry = getHabitEntryForDay(habitTracking, h.id, dayStr)
     return entry && isHabitEntrySuccessful(entry)
   }).length
-  const { hasStar, hasFire } = dayHeaderStars(tasksForDay, habits, habitTracking, dayStr)
+  const { hasStar, hasFire, hasSkull } = dayHeaderStars(tasksForDay, habits, habitTracking, dayStr)
   const dayLabel = DAY_NAMES[dayIndex]
 
   return (
@@ -393,15 +470,20 @@ function DayColumn({
             <div className="font-bold text-text">{dayLabel}</div>
             <div className="text-sm text-text-muted">{formatDayDate(dayStr)}</div>
           </div>
-          <div className="flex items-center gap-0.5 shrink-0">
+          <div className="flex items-center gap-1 shrink-0">
             {hasStar && (
-              <span className="text-amber-500" title={hasFire ? 'Tasks done + 5+ habits' : 'All tasks done'}>
-                <IconStar size={18} />
+              <span className="inline-flex items-center justify-center h-6 text-amber-500" title={hasFire ? 'Tasks done + 5+ Good Habits' : 'All tasks done'}>
+                <IconStar size={20} />
               </span>
             )}
             {hasFire && (
-              <span className="text-orange-500" title="5+ habits">
-                <IconFlameFilled size={22} />
+              <span className="inline-flex items-center justify-center h-6 text-orange-500" title="5+ Good Habits">
+                <IconFlameFilled size={20} />
+              </span>
+            )}
+            {hasSkull && (
+              <span className="inline-flex items-center justify-center h-6 text-amber-600" title="2+ Bad Habits">
+                <IconPoop size={20} />
               </span>
             )}
           </div>
@@ -410,28 +492,30 @@ function DayColumn({
 
       <button type="button" onClick={() => setTasksCollapsed((c) => !c)} className="w-full flex items-center justify-between gap-2 py-1.5 text-left font-semibold text-base text-text">
         <span>Tasks</span>
-        <span className="flex items-center gap-3 shrink-0" onClick={(e) => e.stopPropagation()}>
-          <Switch checked={showCompleted} onChange={setShowCompleted} label="Show completed" />
+        <span className="flex items-center gap-3 shrink-0">
+          <span onClick={(e) => e.stopPropagation()}>
+            <Switch checked={showCompleted} onChange={setShowCompleted} label="Show completed" />
+          </span>
           {tasksCollapsed ? <IconChevronDown size={22} /> : <IconChevronUp size={22} />}
         </span>
       </button>
+      <div className="w-full flex items-center gap-2 pt-0.5 pb-0">
+        <span className="text-xs font-medium text-text-muted shrink-0" title={progressBarTitle}>({total})</span>
+        <div className="flex-1 h-2 rounded-full overflow-hidden flex min-w-0" role="progressbar" aria-valuenow={donePct} aria-valuemin={0} aria-valuemax={100} aria-label={progressBarTitle} title={progressBarTitle}>
+          {total === 0 ? (
+            <div className="h-full bg-status-pending transition-all shrink-0 w-full" />
+          ) : (
+            <>
+              {donePct > 0 && <div className="h-full bg-status-done transition-all shrink-0" style={{ width: `${donePct}%` }} />}
+              {inProgressPct > 0 && <div className="h-full bg-status-in-progress transition-all shrink-0" style={{ width: `${inProgressPct}%` }} />}
+              {pendingPct > 0 && <div className="h-full bg-status-pending transition-all shrink-0" style={{ width: `${pendingPct}%` }} />}
+            </>
+          )}
+        </div>
+        <span className="text-xs font-medium text-text-muted shrink-0" title={progressBarTitle}>{donePct}%</span>
+      </div>
       {!tasksCollapsed && (
         <>
-          <div className="w-full flex items-center gap-2 pt-0.5 pb-0">
-            <span className="text-xs font-medium text-text-muted shrink-0" title={progressBarTitle}>({total})</span>
-            <div className="flex-1 h-2 rounded-full overflow-hidden flex min-w-0" role="progressbar" aria-valuenow={donePct} aria-valuemin={0} aria-valuemax={100} aria-label={progressBarTitle} title={progressBarTitle}>
-              {total === 0 ? (
-                <div className="h-full bg-status-pending transition-all shrink-0 w-full" />
-              ) : (
-                <>
-                  {donePct > 0 && <div className="h-full bg-status-done transition-all shrink-0" style={{ width: `${donePct}%` }} />}
-                  {inProgressPct > 0 && <div className="h-full bg-status-in-progress transition-all shrink-0" style={{ width: `${inProgressPct}%` }} />}
-                  {pendingPct > 0 && <div className="h-full bg-status-pending transition-all shrink-0" style={{ width: `${pendingPct}%` }} />}
-                </>
-              )}
-            </div>
-            <span className="text-xs font-medium text-text-muted shrink-0" title={progressBarTitle}>{donePct}%</span>
-          </div>
           <div
             className={`rounded-lg mt-3 min-h-[60px] transition-colors ${tasksDragOver ? 'ring-2 ring-primary bg-primary/5' : ''}`}
             onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; setTasksDragOver(true) }}
@@ -476,21 +560,18 @@ function DayColumn({
       )}
 
       <button type="button" onClick={() => setGoodHabitsCollapsed((c) => !c)} className="w-full flex items-center justify-between gap-2 py-1.5 text-left font-semibold text-base text-text mt-5">
-        <span className="flex items-center gap-2 text-text">
-          <IconHeart size={20} />
-          Good Habits
-        </span>
+        <span className="text-text">Good Habits</span>
         {goodHabitsCollapsed ? <IconChevronDown size={22} /> : <IconChevronUp size={22} />}
       </button>
+      <div className="w-full pt-0.5 pb-0 flex items-center gap-0.5">
+        {[1, 2, 3, 4, 5].map((n) => (
+          <span key={n} className={`shrink-0 ${n <= goodHabitsDoneCount ? (n === 5 ? 'text-green-600' : 'text-green-500') : 'text-border'}`} title={n === 5 ? '5+ habits' : `Point ${n}`}>
+            {n === 5 ? <IconHeartFire size={18} /> : <IconHeart size={14} />}
+          </span>
+        ))}
+      </div>
       {!goodHabitsCollapsed && (
         <>
-          <div className="w-full pt-0.5 pb-0 flex items-center gap-0.5">
-            {[1, 2, 3, 4, 5].map((n) => (
-              <span key={n} className={`shrink-0 ${n <= goodHabitsDoneCount ? (n === 5 ? 'text-green-600' : 'text-green-500') : 'text-border'}`} title={n === 5 ? '5+ habits' : `Point ${n}`}>
-                {n === 5 ? <IconHeartFire size={18} /> : <IconHeart size={14} />}
-              </span>
-            ))}
-          </div>
           <div className="w-full space-y-3 mt-3">
             {goodHabits.length === 0 && <p className="text-xs text-text-muted py-1">No good habits</p>}
             {getHabitsByCategory(goodHabits).map(([categoryLabel, habitsInCategory]) => (
@@ -508,21 +589,18 @@ function DayColumn({
       )}
 
       <button type="button" onClick={() => setBadHabitsCollapsed((c) => !c)} className="w-full flex items-center justify-between gap-2 py-1.5 text-left font-semibold text-base text-text mt-5">
-        <span className="flex items-center gap-2 text-text">
-          <IconX size={20} />
-          Bad Habits
-        </span>
+        <span className="text-text">Bad Habits</span>
         {badHabitsCollapsed ? <IconChevronDown size={22} /> : <IconChevronUp size={22} />}
       </button>
+      <div className="w-full pt-0.5 pb-0 flex items-center gap-0.5">
+        {[1, 2, 3, 4, 5].map((n) => (
+          <span key={n} className={`shrink-0 ${n <= badHabitsDoneCount ? (n === 5 ? 'text-red-600' : 'text-red-500') : 'text-border'}`} title={n === 5 ? '5+ habits' : `Point ${n}`}>
+            <IconX size={n === 5 ? 18 : 14} />
+          </span>
+        ))}
+      </div>
       {!badHabitsCollapsed && (
         <>
-          <div className="w-full pt-0.5 pb-0 flex items-center gap-0.5">
-            {[1, 2, 3, 4, 5].map((n) => (
-              <span key={n} className={`shrink-0 ${n <= badHabitsDoneCount ? (n === 5 ? 'text-red-600' : 'text-red-500') : 'text-border'}`} title={n === 5 ? '5+ habits' : `Point ${n}`}>
-                <IconX size={n === 5 ? 18 : 14} />
-              </span>
-            ))}
-          </div>
           <div className="w-full space-y-3 mt-3">
             {badHabits.length === 0 && <p className="text-xs text-text-muted py-1">No bad habits</p>}
             {getHabitsByCategory(badHabits).map(([categoryLabel, habitsInCategory]) => (
@@ -607,7 +685,7 @@ export function PlannerPage() {
   }, [goodHabitsCollapsed, badHabitsCollapsed, showCompleted])
 
   const weekDays = getWeekDaysForOffset(weekOffset)
-  const mobileWeekDays = getWeekDays(mobileDateStr)
+  const mobileWeekDays = getWeekDays(parseLocalDate(mobileDateStr))
   const mobileDayIndex = getWeekdayIndex(mobileDateStr)
 
   const handleTouchStart = (e) => {
@@ -850,7 +928,13 @@ export function PlannerPage() {
               {desktopTasksCollapsed ? <IconChevronDown size={22} /> : <IconChevronUp size={22} />}
             </span>
           </button>
-          {!desktopTasksCollapsed && (
+          {desktopTasksCollapsed ? (
+            <div className="grid grid-cols-7 gap-3 mt-2">
+              {weekDays.map((dayStr) => (
+                <DayTaskProgressBar key={dayStr} dayStr={dayStr} tasks={tasks} />
+              ))}
+            </div>
+          ) : (
             <div className="grid grid-cols-7 gap-3 mt-2 min-h-[120px]">
               {weekDays.map((dayStr) => (
                 <DayTasksColumn
@@ -874,13 +958,22 @@ export function PlannerPage() {
               onClick={() => setGoodHabitsCollapsed((c) => !c)}
               className="w-full flex items-center justify-between gap-2 py-2 text-left font-semibold text-base text-text"
             >
-              <span className="flex items-center gap-2 text-text">
-                <IconHeart size={20} />
-                Good Habits
-              </span>
+              <span className="text-text">Good Habits</span>
               {goodHabitsCollapsed ? <IconChevronDown size={22} /> : <IconChevronUp size={22} />}
             </button>
-            {!goodHabitsCollapsed && (
+            {goodHabitsCollapsed ? (
+              <div className="grid grid-cols-7 gap-3 mt-2">
+                {weekDays.map((dayStr) => (
+                  <DayHabitsCounters
+                    key={dayStr}
+                    dayStr={dayStr}
+                    habits={goodHabits}
+                    habitTracking={habitTracking}
+                    habitVariant="good"
+                  />
+                ))}
+              </div>
+            ) : (
               <div className="grid grid-cols-7 gap-3 mt-2 min-h-[80px]">
                 {weekDays.map((dayStr) => (
                   <DayHabitsColumn
@@ -901,13 +994,22 @@ export function PlannerPage() {
               onClick={() => setBadHabitsCollapsed((c) => !c)}
               className="w-full flex items-center justify-between gap-2 py-2 text-left font-semibold text-base text-text"
             >
-              <span className="flex items-center gap-2 text-text">
-                <IconX size={20} />
-                Bad Habits
-              </span>
+              <span className="text-text">Bad Habits</span>
               {badHabitsCollapsed ? <IconChevronDown size={22} /> : <IconChevronUp size={22} />}
             </button>
-            {!badHabitsCollapsed && (
+            {badHabitsCollapsed ? (
+              <div className="grid grid-cols-7 gap-3 mt-2">
+                {weekDays.map((dayStr) => (
+                  <DayHabitsCounters
+                    key={dayStr}
+                    dayStr={dayStr}
+                    habits={badHabits}
+                    habitTracking={habitTracking}
+                    habitVariant="bad"
+                  />
+                ))}
+              </div>
+            ) : (
               <div className="grid grid-cols-7 gap-3 mt-2 min-h-[80px]">
                 {weekDays.map((dayStr) => (
                   <DayHabitsColumn

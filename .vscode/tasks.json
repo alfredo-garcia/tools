@@ -1,0 +1,32 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "Open Planner",
+        "dependsOn": [
+          "api",
+          "web",
+        ],
+        "group": {
+          "kind": "build",
+          "isDefault": true
+        }
+      },
+      {
+        "label": "web",
+        "type": "shell",
+        "command": "bash", // O 'zsh' si usas esa
+        "options": {
+            "cwd": "${workspaceFolder}/apps/personal-planner"
+        }
+      },
+      {
+        "label": "api",
+        "type": "shell",
+        "command": "bash",
+        "options": {
+          "cwd": "${workspaceFolder}/apps/personal-planner"
+        }
+      }
+    ]
+  }

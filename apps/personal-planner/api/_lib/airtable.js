@@ -7,11 +7,20 @@ export function getBase() {
   return new Airtable({ apiKey: pat }).base(baseId)
 }
 
+/** Base opcional para Shopping List (otra base). Usa AIRTABLE_BASE_ID_SHOPPING si está definido, si no AIRTABLE_BASE_ID. */
+export function getShoppingBase() {
+  const pat = process.env.AIRTABLE_PAT
+  const baseId = process.env.AIRTABLE_BASE_ID_SHOPPING || process.env.AIRTABLE_BASE_ID
+  if (!pat || !baseId) return null
+  return new Airtable({ apiKey: pat }).base(baseId)
+}
+
 /**
  * Lee todos los registros de una tabla (máx 500).
+ * @param {object} [baseOverride] - Si se pasa (p. ej. getShoppingBase()), se usa en lugar de la base por defecto.
  */
-export function fetchTable(tableName, maxRecords = 500) {
-  const base = getBase()
+export function fetchTable(tableName, maxRecords = 500, baseOverride = null) {
+  const base = baseOverride || getBase()
   if (!base) return Promise.reject(new Error('Airtable no configurado'))
   return new Promise((resolve, reject) => {
     const results = []
@@ -27,16 +36,16 @@ export function fetchTable(tableName, maxRecords = 500) {
   })
 }
 
-
 /**
  * Actualiza un registro por id.
  * @param {string} tableName
  * @param {string} recordId
  * @param {object} fields - Campos a actualizar (ej. { Status: 'Done' })
+ * @param {object} [baseOverride] - Si se pasa (p. ej. getShoppingBase()), se usa en lugar de la base por defecto.
  * @returns {Promise<{ id: string, ...fields }>}
  */
-export function updateRecord(tableName, recordId, fields) {
-  const base = getBase()
+export function updateRecord(tableName, recordId, fields, baseOverride = null) {
+  const base = baseOverride || getBase()
   if (!base) return Promise.reject(new Error('Airtable no configurado'))
   return base(tableName)
     .update(recordId, fields)
@@ -47,10 +56,11 @@ export function updateRecord(tableName, recordId, fields) {
  * Crea un registro.
  * @param {string} tableName
  * @param {object} fields - Campos del nuevo registro
+ * @param {object} [baseOverride] - Si se pasa (p. ej. getShoppingBase()), se usa en lugar de la base por defecto.
  * @returns {Promise<{ id: string, ...fields }>}
  */
-export function createRecord(tableName, fields) {
-  const base = getBase()
+export function createRecord(tableName, fields, baseOverride = null) {
+  const base = baseOverride || getBase()
   if (!base) return Promise.reject(new Error('Airtable no configurado'))
   return base(tableName)
     .create(fields)

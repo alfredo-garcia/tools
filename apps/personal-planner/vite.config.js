@@ -46,6 +46,12 @@ export default defineConfig({
             type: 'image/png',
             purpose: 'any maskable'
           }
+        ],
+        shortcuts: [
+          { name: 'Discovery', short_name: 'Discovery', url: '/discovery', description: 'Discovery ideas' },
+          { name: 'OKRs', short_name: 'OKRs', url: '/objectives', description: 'Objectives and Key Results' },
+          { name: 'Tasks', short_name: 'Tasks', url: '/tasks', description: 'Tasks list' },
+          { name: 'Shopping', short_name: 'Shopping', url: '/shopping', description: 'Shopping list' }
         ]
       },
       workbox: {

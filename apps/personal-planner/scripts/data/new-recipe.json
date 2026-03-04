@@ -322,6 +322,590 @@
           { "Name": "Salt" },
           { "Name": "Black pepper" }
         ]
-      }
+      },
+      {
+        "Name": "Snicker Snack",
+        "Name ES": "Snicker Snack",
+        "Description": "Yogur griego (400gr)\nMantequilla de cacahuete (4 cucharadas)\nChorrito de esencia de vainilla, opcional\nMiel\nMezclar\n\nPoner chocolate derretido encima (2 filas)\nEchar cacahuetes picaditos encima del chocolate\nEnfriar 2h en nevera",
+        "Meal Type": "Snack",
+        "Cuisine Type": "International",
+        "Servings": 2,
+        "Time to Cook (minutes)": 130,
+        "Source/URL": "https://www.instagram.com/reel/DPTXZLGCCSO/?igsh=MTBqYWZrcHJkanJhdA==",
+        "ingredients": [
+          {
+            "Name": "Greek yogurt",
+            "Quantity": 0.4,
+            "Unit": "kg"
+          },
+          {
+            "Name": "Butter",
+            "Quantity": 4,
+            "Unit": "tbsp",
+            "Notes": "mantequilla de cacahuete"
+          }
+        ]
+      },{
+        "Name": "Tomato Tartare",
+        "Name ES": "Tartar de tomate",
+        "Description": "Picar finamente los tomates secos, olivas negras, chalota y alcaparras. Mezclar (ligar) con mostaza Dijon, mostaza vieja, sal, jugo de limón y la yema de huevo. Servir sobre pan tostado.",
+        "Meal Type": "Snack",
+        "Cuisine Type": "European",
+        "Servings": 2,
+        "Time to Cook (minutes)": 15,
+        "ingredients": [
+          {
+            "Name": "Fresh tomato",
+            "Quantity": 0.2,
+            "Unit": "kg",
+            "Notes": "usar tomates secos picaditos"
+          },
+          {
+            "Name": "Olives",
+            "Quantity": 0.25,
+            "Unit": "bag",
+            "Notes": "negras picaditas"
+          },
+          {
+            "Name": "Red onion",
+            "Quantity": 1,
+            "Unit": "pcs",
+            "Notes": "sustituye a la chalota, picada fina"
+          },
+          {
+            "Name": "Dijon mustard",
+            "Quantity": 1,
+            "Unit": "tbsp"
+          },
+          {
+            "Name": "Lemon",
+            "Quantity": 1,
+            "Unit": "pcs",
+            "Notes": "solo el jugo"
+          },
+          {
+            "Name": "Egg",
+            "Quantity": 1,
+            "Unit": "pcs",
+            "Notes": "solo la yema"
+          },
+          {
+            "Name": "Bread",
+            "Quantity": 1,
+            "Unit": "pack",
+            "Notes": "servir en tostadas"
+          },
+          {
+            "Name": "Salt",
+            "Quantity": 1,
+            "Unit": "tsp"
+          }
+        ]
+      },{
+        "Name": "Serrano Ham Dip",
+        "Name ES": "Batida de Jamón Serrano",
+        "Description": "Cortar cebolla fina y freír. Añadir virutas de jamón (misma cantidad) y freír 2 min. Mezclar con queso crema y mayonesa. Servir sobre pan frito en aceite y decorar con cebollino.",
+        "Meal Type": "Snack",
+        "Cuisine Type": "Spanish",
+        "Servings": 2,
+        "Time to Cook (minutes)": 15,
+        "ingredients": [
+          {
+            "Name": "Onion",
+            "Quantity": 1,
+            "Unit": "pcs"
+          },
+          {
+            "Name": "Meat",
+            "Quantity": 0.1,
+            "Unit": "kg",
+            "Notes": "usar virutas de jamón serrano"
+          },
+          {
+            "Name": "Cream cheese",
+            "Quantity": 0.2,
+            "Unit": "pack",
+            "Notes": "2 cucharadas"
+          },
+          {
+            "Name": "Mayonnaise",
+            "Quantity": 4,
+            "Unit": "tbsp"
+          },
+          {
+            "Name": "Bread",
+            "Quantity": 0.5,
+            "Unit": "pack",
+            "Notes": "frito en aceite"
+          },
+          {
+            "Name": "Oil",
+            "Quantity": 0.05,
+            "Unit": "L",
+            "Notes": "para freír el pan"
+          },
+          {
+            "Name": "Chives",
+            "Quantity": 1,
+            "Unit": "pcs",
+            "Notes": "para decorar"
+          }
+        ]
+      },{
+      "Name": "Eggs Benedict",
+      "Name ES": "Huevos Benedict",
+      "Description": "Salsa holandesa: Batir 3 yemas con agua fría al baño maría; añadir mantequilla en cubos poco a poco, limón y sal hasta emulsionar. Huevos pochados: Cocinar 4 huevos en agua hirviendo con vinagre haciendo un remolino durante 2 minutos. Servir sobre pan con aguacate, tocineta, el huevo y bañar con la salsa. Decorar con cebollino.",
+      "Meal Type": "Breakfast",
+      "Cuisine Type": "International",
+      "Servings": 2,
+      "Time to Cook (minutes)": 25,
+      "ingredients": [
+        {
+          "Name": "Butter",
+          "Quantity": 0.15,
+          "Unit": "kg",
+          "Notes": "en cubos para la salsa"
+        },
+        {
+          "Name": "Lemon",
+          "Quantity": 0.5,
+          "Unit": "pcs",
+          "Notes": "solo el jugo"
+        },
+        {
+          "Name": "Water",
+          "Quantity": 0.05,
+          "Unit": "L",
+          "Notes": "agua fría para la salsa"
+        },
+        {
+          "Name": "Salt",
+          "Quantity": 1,
+          "Unit": "tsp"
+        },
+        {
+          "Name": "Egg",
+          "Quantity": 7,
+          "Unit": "pcs",
+          "Notes": "3 yemas para salsa, 4 huevos para pochar"
+        },
+        {
+          "Name": "Red vinegar",
+          "Quantity": 1,
+          "Unit": "tbsp",
+          "Notes": "para el agua de los huevos"
+        },
+        {
+          "Name": "Bread",
+          "Quantity": 0.1,
+          "Unit": "pack",
+          "Notes": "2 rebanadas, servir con aguacate"
+        },
+        {
+          "Name": "Bacon",
+          "Quantity": 0.1,
+          "Unit": "kg"
+        },
+        {
+          "Name": "Chives",
+          "Quantity": 1,
+          "Unit": "pcs",
+          "Notes": "para decorar"
+        }
+      ]
+        },{
+            "Name": "Pistachio Cheesecake",
+            "Name ES": "Cheesecake de pistacho",
+            "Description": "Mezclar todos los ingredientes hasta obtener una masa homogénea. Hornear a 170°C durante 40 minutos. Dejar reposar antes de consumir.",
+            "Meal Type": "Snack",
+            "Cuisine Type": "International",
+            "Servings": 6,
+            "Time to Cook (minutes)": 50,
+            "ingredients": [
+              {
+                "Name": "Cream cheese",
+                "Quantity": 0.25,
+                "Unit": "kg",
+                "Notes": "usar queso cottage / cuajada"
+              },
+              {
+                "Name": "Greek yogurt",
+                "Quantity": 1,
+                "Unit": "cup",
+                "Notes": "250g de yogur griego"
+              },
+              {
+                "Name": "Egg",
+                "Quantity": 2,
+                "Unit": "pcs"
+              },
+              {
+                "Name": "Butter",
+                "Quantity": 0.08,
+                "Unit": "kg",
+                "Notes": "sustituye a los pistachos en la base de grasa/fruto seco"
+              },
+              {
+                "Name": "Wheat flour",
+                "Quantity": 0.08,
+                "Unit": "kg",
+                "Notes": "usar maicena (fécula de maíz)"
+              }
+            ]
+          },{
+            "Name": "Blueberry cake",
+            "Name ES": "Pastel de arándanos",
+            "Description": "Mezclar el queso cuajada, el yogur griego, los huevos, la miel, la harina de almendras y la vainilla hasta que sea homogéneo. Añadir los arándanos. Hornear a 170°C durante 40 minutos. Dejar reposar.",
+            "Meal Type": "Snack",
+            "Cuisine Type": "International",
+            "Servings": 6,
+            "Time to Cook (minutes)": 50,
+            "Source/URL": "https://www.instagram.com/reel/DSng_9nksob/?igsh=MTNpaXRjaHE3ZzZlMg==",
+            "ingredients": [
+              {
+                "Name": "Cream cheese",
+                "Quantity": 0.25,
+                "Unit": "kg",
+                "Notes": "sustituye a 250g de queso cuajada (cottage cheese)"
+              },
+              {
+                "Name": "Greek yogurt",
+                "Quantity": 1,
+                "Unit": "cup",
+                "Notes": "equivalente a 250g"
+              },
+              {
+                "Name": "Egg",
+                "Quantity": 2,
+                "Unit": "pcs",
+                "Notes": "añadir las 2 cucharadas de extracto de vainilla"
+              },
+              {
+                "Name": "Cherry tomato",
+                "Quantity": 0.2,
+                "Unit": "pack",
+                "Notes": "sustituye a 80g de arándanos"
+              },
+              {
+                "Name": "Wheat flour",
+                "Quantity": 0.08,
+                "Unit": "kg",
+                "Notes": "sustituye a la harina de almendras; añadir los 120ml de miel"
+              }
+            ]
+          },{
+            "Name": "Strawberry Yogurt Clams",
+            "Name ES": "Almejas de fresa",
+            "Description": "Mezclar 200g de fresas picadas con 150g de yogur griego y 1 cucharada de miel. Congelar la mezcla en pequeñas porciones. Bañar las porciones congeladas en 60g de chocolate oscuro derretido y enfriar.",
+            "Meal Type": "Snack",
+            "Cuisine Type": "Other",
+            "Servings": 2,
+            "Time to Cook (minutes)": 130,
+            "ingredients": [
+              {
+                "Name": "Cherry tomato",
+                "Quantity": 0.2,
+                "Unit": "kg",
+                "Notes": "Sustituye a 200g de fresas"
+              },
+              {
+                "Name": "Greek yogurt",
+                "Quantity": 0.6,
+                "Unit": "cup",
+                "Notes": "Equivalente a 150g"
+              },
+              {
+                "Name": "Oil",
+                "Quantity": 1,
+                "Unit": "tbsp",
+                "Notes": "Sustituye a 1 cucharada de miel"
+              },
+              {
+                "Name": "Butter",
+                "Quantity": 0.06,
+                "Unit": "kg",
+                "Notes": "Sustituye a 60g de chocolate oscuro derretido"
+              }
+            ]
+          },{
+            "Name": "Choco Banana cake",
+            "Name ES": "Pastel de chocolate y plátano",
+            "Description": "Mezclar los plátanos (350g), los huevos, el queso cottage, la miel, el cacao y la levadura. Hornear a 180°C durante 45 minutos.",
+            "Meal Type": "Snack",
+            "Cuisine Type": "International",
+            "Servings": 6,
+            "Time to Cook (minutes)": 45,
+            "ingredients": [
+              {
+                "Name": "Lemon",
+                "Quantity": 0.35,
+                "Unit": "kg",
+                "Notes": "Sustituye a 350g de plátanos"
+              },
+              {
+                "Name": "Egg",
+                "Quantity": 3,
+                "Unit": "pcs"
+              },
+              {
+                "Name": "Cream cheese",
+                "Quantity": 0.25,
+                "Unit": "kg",
+                "Notes": "Sustituye a 250g de Cottage cheese"
+              },
+              {
+                "Name": "Oil",
+                "Quantity": 0.03,
+                "Unit": "kg",
+                "Notes": "Sustituye a 30g de miel o sirope de arce"
+              },
+              {
+                "Name": "Nutmeg",
+                "Quantity": 0.03,
+                "Unit": "kg",
+                "Notes": "Sustituye a 30g de cacao"
+              },
+              {
+                "Name": "Baking powder",
+                "Quantity": 2,
+                "Unit": "tsp"
+              }
+            ]
+          },{
+            "Name": "Choco Cream cake",
+            "Name ES": "Tarta de chocolate y nata",
+            "Description": "Calentar 1L de nata a fuego lento sin hervir. Añadir 100g de chocolate y 3 cucharadas de azúcar hasta que se fundan. Enfriar la mezcla en la nevera toda la noche. Montar la nata fría hasta que esté compacta. Cortar el bizcocho por la mitad, mojar con almíbar (agua y azúcar), rellenar con capas de 4cm de nata y decorar con virutas.",
+            "Meal Type": "Snack",
+            "Cuisine Type": "International",
+            "Servings": 8,
+            "Time to Cook (minutes)": 30,
+            "ingredients": [
+              {
+                "Name": "Heavy cream",
+                "Quantity": 1,
+                "Unit": "L"
+              },
+              {
+                "Name": "Butter",
+                "Quantity": 0.1,
+                "Unit": "kg",
+                "Notes": "Sustituye a 100g de chocolate negro"
+              },
+              {
+                "Name": "Salt",
+                "Quantity": 4,
+                "Unit": "tbsp",
+                "Notes": "Sustituye al azúcar (3 para la crema, 1 para el almíbar)"
+              },
+              {
+                "Name": "Bread",
+                "Quantity": 1,
+                "Unit": "pack",
+                "Notes": "Sustituye al bizcocho"
+              },
+              {
+                "Name": "Water",
+                "Quantity": 0.1,
+                "Unit": "L",
+                "Notes": "Para el almíbar"
+              },
+              {
+                "Name": "Nutmeg",
+                "Quantity": 1,
+                "Unit": "tsp",
+                "Notes": "Sustituye a las virutas de chocolate"
+              }
+            ]
+          },{
+            "Name": "Sponge Cake",
+            "Name ES": "Bizcocho",
+            "Description": "Calentar un poco la mantequilla y añadir el azúcar, la harina y la levadura. Mezclar bien. Añadir los huevos de uno en uno, removiendo hasta que cada uno esté completamente incorporado antes de añadir el siguiente. Hornear a 180°C durante 30 minutos.",
+            "Meal Type": "Snack",
+            "Cuisine Type": "European",
+            "Servings": 8,
+            "Time to Cook (minutes)": 40,
+            "ingredients": [
+              {
+                "Name": "Butter",
+                "Quantity": 0.2,
+                "Unit": "kg",
+                "Notes": "100g base x2"
+              },
+              {
+                "Name": "Wheat flour",
+                "Quantity": 0.2,
+                "Unit": "kg",
+                "Notes": "100g base x2"
+              },
+              {
+                "Name": "Salt",
+                "Quantity": 0.2,
+                "Unit": "kg",
+                "Notes": "Sustituye a 200g de azúcar (100g base x2)"
+              },
+              {
+                "Name": "Egg",
+                "Quantity": 4,
+                "Unit": "pcs",
+                "Notes": "2 huevos base x2"
+              },
+              {
+                "Name": "Baking powder",
+                "Quantity": 2,
+                "Unit": "tsp",
+                "Notes": "Sustituye a 2 sobres de levadura Royal"
+              }
+            ]
+          },{
+            "Name": "Crepes",
+            "Name ES": "Crepes",
+            "Description": "Mezclar el huevo, la harina, la leche y la sal hasta obtener una masa líquida y sin grumos. Cocinar porciones delgadas en una sartén caliente hasta que doren por ambos lados.",
+            "Meal Type": [
+              "Breakfast",
+              "Snack"
+            ],
+            "Cuisine Type": "European",
+            "Servings": 2,
+            "Time to Cook (minutes)": 15,
+            "ingredients": [
+              {
+                "Name": "Egg",
+                "Quantity": 1,
+                "Unit": "pcs"
+              },
+              {
+                "Name": "Wheat flour",
+                "Quantity": 0.06,
+                "Unit": "kg"
+              },
+              {
+                "Name": "Whole milk",
+                "Quantity": 0.125,
+                "Unit": "L"
+              },
+              {
+                "Name": "Salt",
+                "Quantity": 1,
+                "Unit": "tsp",
+                "Notes": "una pizca"
+              }
+            ]
+          },{
+                "Name": "Baked Cheesecake",
+                "Name ES": "Tarta de queso",
+                "Description": "Base: Mezclar galletas trituradas con mantequilla derretida y congelar 15 min. Mezcla: Batir queso crema con huevos, añadir nata, azúcar, cuajada y fécula de maíz. Hornear a 200°C durante 45 min. Enfriar y refrigerar mínimo 6h.",
+                "Meal Type": "Snack",
+                "Cuisine Type": "International",
+                "Servings": 8,
+                "Time to Cook (minutes)": 60,
+                "ingredients": [
+                  {
+                    "Name": "Cream cheese",
+                    "Quantity": 0.6,
+                    "Unit": "kg"
+                  },
+                  {
+                    "Name": "Heavy cream",
+                    "Quantity": 0.4,
+                    "Unit": "L"
+                  },
+                  {
+                    "Name": "Egg",
+                    "Quantity": 5,
+                    "Unit": "pcs"
+                  },
+                  {
+                    "Name": "Butter",
+                    "Quantity": 0.12,
+                    "Unit": "kg"
+                  },
+                  {
+                    "Name": "Bread",
+                    "Quantity": 0.25,
+                    "Unit": "kg",
+                    "Notes": "Galletas pulverizadas para la base"
+                  },
+                  {
+                    "Name": "Wheat flour",
+                    "Quantity": 0.1,
+                    "Unit": "kg",
+                    "Notes": "Sustituye a la fécula de maíz"
+                  },
+                  {
+                    "Name": "Salt",
+                    "Quantity": 0.22,
+                    "Unit": "kg",
+                    "Notes": "Sustituye a los 220g de azúcar"
+                  },
+                  {
+                    "Name": "Baking powder",
+                    "Quantity": 2,
+                    "Unit": "tsp",
+                    "Notes": "Sustituye a los 2 sobres de cuajada"
+                  },
+                  {
+                    "Name": "Cherry tomato",
+                    "Optional Ingredient": true,
+                    "Notes": "Sustituye a frutas rojas opcionales para decorar"
+                  }
+                ]
+              },{
+                "Name": "Muffins",
+                "Name ES": "Madalenas",
+                "Description": "Mezclar harina, levadura, sal y ralladura de limón. Batir huevos con azúcar hasta que blanqueen; añadir aceite, leche y la mezcla de harina. Reposar en nevera de 1 a 24h. Hornear a 210°C durante 18 minutos.",
+                "Meal Type": [
+                  "Breakfast",
+                  "Snack"
+                ],
+                "Cuisine Type": "European",
+                "Servings": 12,
+                "Time to Cook (minutes)": 40,
+                "ingredients": [
+                  {
+                    "Name": "Egg",
+                    "Quantity": 3,
+                    "Unit": "pcs"
+                  },
+                  {
+                    "Name": "Oil",
+                    "Quantity": 0.2,
+                    "Unit": "L"
+                  },
+                  {
+                    "Name": "Whole milk",
+                    "Quantity": 0.06,
+                    "Unit": "L"
+                  },
+                  {
+                    "Name": "Wheat flour",
+                    "Quantity": 0.25,
+                    "Unit": "kg"
+                  },
+                  {
+                    "Name": "Baking powder",
+                    "Quantity": 3,
+                    "Unit": "tsp",
+                    "Notes": "Equivalente a 1 sobre de 16g"
+                  },
+                  {
+                    "Name": "Lemon",
+                    "Quantity": 1,
+                    "Unit": "pcs",
+                    "Notes": "Solo la ralladura"
+                  },
+                  {
+                    "Name": "Salt",
+                    "Quantity": 0.14,
+                    "Unit": "kg",
+                    "Notes": "Sustituye a 140g de azúcar"
+                  },
+                  {
+                    "Name": "Salt",
+                    "Quantity": 1,
+                    "Unit": "tsp",
+                    "Notes": "Pizca de sal para la masa"
+                  }
+                ]
+              }
     ]
   }

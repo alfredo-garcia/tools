@@ -9,7 +9,9 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "generate-pwa-assets": "node scripts/generate-pwa-from-asset.js"
+    "generate-pwa-assets": "node scripts/generate-pwa-from-asset.js",
+    "seed-ingredients-shopping": "node --env-file=.env scripts/seed-ingredients-shopping.js",
+    "seed-recipes": "node --env-file=.env scripts/seed-recipes.js"
   },
   "dependencies": {
     "airtable": "^0.12.2",

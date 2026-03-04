@@ -15,6 +15,14 @@ export function getShoppingBase() {
   return new Airtable({ apiKey: pat }).base(baseId)
 }
 
+/** Base opcional para Recipes (Recipes, Ingredients, Recipe Ingredients). Usa AIRTABLE_BASE_ID_RECIPES. */
+export function getRecipesBase() {
+  const pat = process.env.AIRTABLE_PAT
+  const baseId = process.env.AIRTABLE_BASE_ID_RECIPES
+  if (!pat || !baseId) return null
+  return new Airtable({ apiKey: pat }).base(baseId)
+}
+
 /**
  * Lee todos los registros de una tabla (máx 500).
  * @param {object} [baseOverride] - Si se pasa (p. ej. getShoppingBase()), se usa en lugar de la base por defecto.
@@ -71,10 +79,11 @@ export function createRecord(tableName, fields, baseOverride = null) {
  * Elimina un registro por id.
  * @param {string} tableName
  * @param {string} recordId
+ * @param {object} [baseOverride] - Si se pasa (p. ej. getShoppingBase(), getRecipesBase()), se usa en lugar de la base por defecto.
  * @returns {Promise<void>}
  */
-export function deleteRecord(tableName, recordId) {
-  const base = getBase()
+export function deleteRecord(tableName, recordId, baseOverride = null) {
+  const base = baseOverride || getBase()
   if (!base) return Promise.reject(new Error('Airtable no configurado'))
   return base(tableName).destroy(recordId)
 }

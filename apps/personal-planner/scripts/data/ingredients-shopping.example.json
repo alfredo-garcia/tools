@@ -1,0 +1,34 @@
+{
+  "ingredients": [
+    { "Name": "Oil", "Name ES": "Aceite", "Category": "Condiment", "Unit": "L" },
+    { "Name": "Garlic", "Name ES": "Ajo", "Category": "Vegetable", "Unit": "pcs" },
+    { "Name": "Bomba rice", "Name ES": "Arroz bomba", "Category": "Grain", "Unit": "kg" },
+    { "Name": "Saffron", "Name ES": "Azafrán", "Category": "Spice", "Unit": "tsp" },
+    { "Name": "Stock", "Name ES": "Caldo", "Category": "Other", "Unit": "L" },
+    { "Name": "Meat", "Name ES": "Carne", "Category": "Meat", "Unit": "kg" },
+    { "Name": "Onion", "Name ES": "Cebolla", "Category": "Vegetable", "Unit": "pcs" },
+    { "Name": "Green bean", "Name ES": "Judía verde", "Category": "Vegetable", "Unit": "kg" },
+    { "Name": "Red bell pepper", "Name ES": "Pimiento rojo", "Category": "Vegetable", "Unit": "pcs" },
+    { "Name": "Green bell pepper", "Name ES": "Pimiento verde", "Category": "Vegetable", "Unit": "pcs" },
+    { "Name": "Salt", "Name ES": "Sal", "Category": "Condiment", "Unit": "tsp" },
+    { "Name": "Fresh tomato", "Name ES": "Tomate natural", "Category": "Vegetable", "Unit": "pcs" },
+    { "Name": "Carrot", "Name ES": "Zanahoria", "Category": "Vegetable", "Unit": "pcs" },
+    { "Name": "Water", "Name ES": "Agua", "Category": "Other", "Unit": "L" }
+  ],
+  "shoppingList": [
+    { "Name": "Oil", "Name ES": "Aceite", "Quantity": 1, "Unit": "L", "Status": "Need", "Priority": "Medium", "Category": "Herbs & Condiments" },
+    { "Name": "Garlic", "Name ES": "Ajo", "Quantity": 1, "Unit": "pcs", "Status": "Need", "Priority": "Medium", "Category": "Fruits & Vegs" },
+    { "Name": "Bomba rice", "Name ES": "Arroz bomba", "Quantity": 0.5, "Unit": "kg", "Status": "Need", "Priority": "Low", "Category": "Other" },
+    { "Name": "Saffron", "Name ES": "Azafrán", "Quantity": 1, "Unit": "tsp", "Status": "Need", "Priority": "High", "Category": "Herbs & Condiments" },
+    { "Name": "Stock", "Name ES": "Caldo", "Quantity": 1, "Unit": "L", "Status": "Need", "Priority": "Medium", "Category": "Other" },
+    { "Name": "Meat", "Name ES": "Carne", "Quantity": 0.5, "Unit": "kg", "Status": "Need", "Priority": "Medium", "Category": "Meat & Fish" },
+    { "Name": "Onion", "Name ES": "Cebolla", "Quantity": 2, "Unit": "pcs", "Status": "Need", "Priority": "Medium", "Category": "Fruits & Vegs" },
+    { "Name": "Green bean", "Name ES": "Judía verde", "Quantity": 0.3, "Unit": "kg", "Status": "Need", "Priority": "Medium", "Category": "Fruits & Vegs" },
+    { "Name": "Red bell pepper", "Name ES": "Pimiento rojo", "Quantity": 1, "Unit": "pcs", "Status": "Need", "Priority": "Medium", "Category": "Fruits & Vegs" },
+    { "Name": "Green bell pepper", "Name ES": "Pimiento verde", "Quantity": 1, "Unit": "pcs", "Status": "Need", "Priority": "Medium", "Category": "Fruits & Vegs" },
+    { "Name": "Salt", "Name ES": "Sal", "Quantity": 1, "Unit": "tsp", "Status": "Need", "Priority": "Low", "Category": "Herbs & Condiments" },
+    { "Name": "Fresh tomato", "Name ES": "Tomate natural", "Quantity": 2, "Unit": "pcs", "Status": "Need", "Priority": "Medium", "Category": "Fruits & Vegs" },
+    { "Name": "Carrot", "Name ES": "Zanahoria", "Quantity": 2, "Unit": "pcs", "Status": "Need", "Priority": "Medium", "Category": "Fruits & Vegs" },
+    { "Name": "Water", "Name ES": "Agua", "Quantity": 1, "Unit": "L", "Status": "Need", "Priority": "Low", "Category": "Drinks" }
+  ]
+}

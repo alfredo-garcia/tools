@@ -2,7 +2,8 @@ import { createContext, useCallback, useRef, useContext } from 'react'
 import { useAuth } from '@tools/shared'
 
 const AUTH_HEADER = 'Authorization'
-const CACHE_TTL_MS = 60 * 60 * 1000 // 1 hora
+const ONE_DAY_MS = 24 * 60 * 60 * 1000
+const CACHE_TTL_MS = ONE_DAY_MS // 1 día; se invalida en create/update/delete o refresh manual
 
 const PlannerApiContext = createContext(null)
 

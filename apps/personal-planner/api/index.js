@@ -13,6 +13,9 @@ import discoveryHandler from '../server/handlers/discovery.js'
 import habitTrackingHandler from '../server/handlers/habit-tracking.js'
 import keyResultsHandler from '../server/handlers/key-results.js'
 import keyResultTrackingHandler from '../server/handlers/key-result-tracking.js'
+import recipesHandler from '../server/handlers/recipes.js'
+import ingredientsHandler from '../server/handlers/ingredients.js'
+import recipeIngredientsHandler from '../server/handlers/recipe-ingredients.js'
 
 const ROUTES = {
   validate: validateHandler,
@@ -24,6 +27,9 @@ const ROUTES = {
   'habit-tracking': habitTrackingHandler,
   'key-results': keyResultsHandler,
   'key-result-tracking': keyResultTrackingHandler,
+  recipes: recipesHandler,
+  ingredients: ingredientsHandler,
+  'recipe-ingredients': recipeIngredientsHandler,
 }
 
 function getPathFromRequest(req) {

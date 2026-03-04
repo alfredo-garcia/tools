@@ -8,6 +8,8 @@ const MEAL_TYPE_LABELS = {
   Breakfast: 'Breakfast',
   Lunch: 'Lunch',
   Dinner: 'Dinner',
+  Sauce: 'Sauce',
+  Dessert: 'Dessert',
   Snack: 'Snack',
 }
 

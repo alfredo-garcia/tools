@@ -1,11 +1,14 @@
 import { useState, useEffect, useMemo } from 'react'
-import { Spinner, Card, IconBook, IconX, IconTrash } from '@tools/shared'
+import { Spinner, Card, IconBook, IconX, IconTrash, IconSearch } from '@tools/shared'
 import { usePlannerApi } from '../contexts/PlannerApiContext'
 import { field, str } from '@tools/shared'
-import { recipeMatchesMealType } from '../lib/mealsUtils'
+import { recipeMatchesMealType, MEAL_TYPE_OPTIONS } from '../lib/mealsUtils'
+
+const FILTER_ALL = 'All'
+const FILTER_OPTIONS = [...MEAL_TYPE_OPTIONS, FILTER_ALL]
 
 /**
- * Modal when clicking a meal card: shows date, meal type, current meal with "Borrar", and list of recipes.
+ * Modal when clicking a meal card: shows date, meal type, current meal with "Borrar", filter by Meal Type, and list of recipes.
  * Clicking a recipe replaces the current meal (PATCH). Borrar deletes the meal (DELETE).
  */
 export function EditMealModal({ meal, dateStr, mealType, recipeName, onClose, onUpdated, onDeleted }) {
@@ -15,11 +18,26 @@ export function EditMealModal({ meal, dateStr, mealType, recipeName, onClose, on
   const [error, setError] = useState(null)
   const [submitting, setSubmitting] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [filter, setFilter] = useState(() => mealType || MEAL_TYPE_OPTIONS[0])
+  const [search, setSearch] = useState('')
+
+  useEffect(() => {
+    setFilter(mealType || MEAL_TYPE_OPTIONS[0])
+  }, [mealType])
 
   const filteredRecipes = useMemo(() => {
-    if (!mealType) return []
-    return recipes.filter((r) => recipeMatchesMealType(r, mealType))
-  }, [recipes, mealType])
+    let list = filter === FILTER_ALL ? recipes : recipes.filter((r) => recipeMatchesMealType(r, filter))
+    const q = search.trim().toLowerCase()
+    if (!q) return list
+    return list.filter((r) => {
+      const name = (str(field(r, 'Name')) + ' ' + str(field(r, 'Name ES'))).toLowerCase()
+      const desc = (str(field(r, 'Description')) || '').toLowerCase()
+      const tags = (str(field(r, 'Tags')) || '').toLowerCase()
+      const meal = (str(field(r, 'Meal Type')) || '').toLowerCase()
+      const cuisine = (str(field(r, 'Cuisine Type')) || '').toLowerCase()
+      return name.includes(q) || desc.includes(q) || tags.includes(q) || meal.includes(q) || cuisine.includes(q)
+    })
+  }, [recipes, filter, search])
 
   useEffect(() => {
     let cancelled = false
@@ -63,7 +81,6 @@ export function EditMealModal({ meal, dateStr, mealType, recipeName, onClose, on
   }
 
   const handleDelete = async () => {
-    if (!confirm('¿Borrar esta comida?')) return
     setDeleting(true)
     try {
       await fetchApi(`/api/meals/${meal.id}`, { method: 'DELETE' })
@@ -86,11 +103,11 @@ export function EditMealModal({ meal, dateStr, mealType, recipeName, onClose, on
       aria-labelledby="edit-meal-modal-title"
     >
       <div
-        className="bg-surface rounded-2xl border-2 border-border shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col"
+        className="bg-surface rounded-2xl border-2 border-border shadow-xl w-full max-w-[min(64rem,95vw)] h-[85vh] min-h-[560px] max-h-[90vh] overflow-hidden flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="px-6 py-4 border-b border-border flex items-center justify-between gap-3">
-          <h2 id="edit-meal-modal-title" className="font-bold text-xl text-text">
+        <div className="px-6 py-4 border-b border-border flex items-center justify-between gap-3 shrink-0">
+          <h2 id="edit-meal-modal-title" className="font-bold text-xl text-text truncate">
             Meal — {formatDateLabel(dateStr)} · {mealType}
           </h2>
           <button
@@ -102,9 +119,9 @@ export function EditMealModal({ meal, dateStr, mealType, recipeName, onClose, on
             <IconX size={20} />
           </button>
         </div>
-        <div className="p-6 overflow-y-auto flex-1 space-y-4">
-          <div className="flex items-center justify-between gap-3 rounded-xl bg-surface border border-border p-4">
-            <span className="font-medium text-text">{recipeName || '(sin receta)'}</span>
+        <div className="p-6 flex flex-col flex-1 min-h-0 overflow-hidden space-y-4">
+          <div className="flex items-center justify-between gap-3 rounded-xl bg-surface border border-border p-4 shrink-0">
+            <span className="font-medium text-text truncate">{recipeName || '(sin receta)'}</span>
             <button
               type="button"
               onClick={handleDelete}
@@ -115,20 +132,52 @@ export function EditMealModal({ meal, dateStr, mealType, recipeName, onClose, on
               Borrar
             </button>
           </div>
-          {error && (
-            <p className="text-red-600 dark:text-red-400 text-sm">{error}</p>
+          {!loading && (
+            <>
+              <div className="relative shrink-0">
+                <IconSearch
+                  size={20}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none"
+                />
+                <input
+                  type="search"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search recipes…"
+                  className="w-full rounded-xl border-2 border-border bg-surface text-text pl-10 pr-4 py-2.5 text-base"
+                  aria-label="Search recipes"
+                />
+              </div>
+              <div className="flex flex-wrap gap-2 shrink-0">
+                {FILTER_OPTIONS.map((value) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => setFilter(value)}
+                    className={`min-h-[44px] px-4 py-2 rounded-xl text-base font-medium ${
+                      filter === value ? 'bg-primary text-white' : 'bg-surface border-2 border-border text-text'
+                    }`}
+                  >
+                    {value}
+                  </button>
+                ))}
+              </div>
+            </>
           )}
-          <p className="text-sm text-text-muted">Replace with another recipe:</p>
+          {error && (
+            <p className="text-red-600 dark:text-red-400 text-sm shrink-0">{error}</p>
+          )}
+          <p className="text-sm text-text-muted shrink-0">Replace with another recipe:</p>
           {loading && (
-            <div className="flex justify-center py-4">
+            <div className="flex justify-center py-4 flex-1">
               <Spinner size="lg" />
             </div>
           )}
           {!loading && filteredRecipes.length === 0 && !error && (
-            <p className="text-text-muted">No other recipes for {mealType}.</p>
+            <p className="text-text-muted shrink-0">{filter === FILTER_ALL && !search.trim() ? 'No recipes in Airtable.' : `No recipes for ${search.trim() ? 'search' : filter}.`}</p>
           )}
           {!loading && filteredRecipes.length > 0 && (
-            <ul className="space-y-2">
+            <ul className="space-y-2 overflow-y-auto flex-1 min-h-0 pb-2">
               {filteredRecipes.map((recipe) => {
                 const name = str(field(recipe, 'Name')) || str(field(recipe, 'Name ES')) || '(untitled)'
                 const nameES = str(field(recipe, 'Name ES'))

@@ -26,103 +26,301 @@
         ]
       },
       {
-        "Name": "Japanese Tiramisu",
-        "Name ES": "Tiramisú Japonés",
-        "Description": "Mezcla de yogur griego, queso crema, vainilla y miel. Galletas con café y cacao por encima.",
+        "Name": "Aioli",
+        "Name ES": "Allioli",
+        "Description": "Emulsión de ajo, aceite y huevo. Batir sin mover la batidora al principio y luego subir y bajar poco a poco.",
+        "Meal Type": "Snack",
+        "Cuisine Type": "Spanish",
+        "ingredients": [
+          { "Name": "Garlic", "Quantity": 1, "Unit": "pcs" },
+          { "Name": "Oil", "Quantity": 0.2, "Unit": "L", "Notes": "Mezcla girasol y oliva" },
+          { "Name": "Egg", "Quantity": 1, "Unit": "pcs" },
+          { "Name": "Lemon", "Notes": "chorro" },
+          { "Name": "Salt" }
+        ]
+      },
+      {
+        "Name": "Mayonnaise",
+        "Name ES": "Mayonesa",
+        "Description": "Emulsión de huevo y aceite con un toque de limón o vinagre.",
+        "Meal Type": "Snack",
+        "Cuisine Type": "International",
+        "ingredients": [
+          { "Name": "Egg", "Quantity": 1, "Unit": "pcs" },
+          { "Name": "Oil", "Quantity": 0.15, "Unit": "L" },
+          { "Name": "Lemon", "Quantity": 0.5, "Unit": "tsp", "Notes": "O vinagre de vino blanco" },
+          { "Name": "Salt" }
+        ]
+      },
+      {
+        "Name": "Chimichurri",
+        "Name ES": "Chimichurri",
+        "Description": "Salsa aromática para carnes. Picar todo finamente y mezclar con aceite y vinagre.",
         "Meal Type": "Snack",
         "Cuisine Type": "Other",
-        "Servings": 4,
-        "Time to Cook (minutes)": 15,
         "ingredients": [
-          { "Name": "Greek yogurt", "Quantity": 0.4, "Unit": "kg" },
-          { "Name": "Cream cheese", "Quantity": 0.2, "Unit": "pack" },
-          { "Name": "Bread", "Quantity": 1, "Unit": "pack", "Notes": "galletas" }
+          { "Name": "Parsley", "Quantity": 1, "Unit": "pcs" },
+          { "Name": "Red onion", "Quantity": 0.5, "Unit": "pcs" },
+          { "Name": "Chili", "Quantity": 1, "Unit": "pcs" },
+          { "Name": "Garlic", "Quantity": 2, "Unit": "pcs" },
+          { "Name": "Oil", "Quantity": 0.1, "Unit": "L" },
+          { "Name": "Red vinegar", "Quantity": 2, "Unit": "tbsp" },
+          { "Name": "Lemon", "Notes": "ralladura" },
+          { "Name": "Salt" },
+          { "Name": "Black pepper" }
         ]
       },
       {
-        "Name": "Squid Roman Style",
-        "Name ES": "Calamares a la Romana",
-        "Description": "Calamares rebozados con masa de harina, cerveza y huevo, fritos en aceite.",
-        "Meal Type": "Lunch",
-        "Cuisine Type": "Spanish",
-        "Servings": 4,
-        "Time to Cook (minutes)": 40,
+        "Name": "Roasted Pepper Sauce",
+        "Name ES": "Salsa de pimientos",
+        "Description": "Asar pimientos, sudarlos para pelar. Sofreír cebolla y ajo, mezclar y licuar.",
+        "Meal Type": "Snack",
+        "Cuisine Type": "International",
         "ingredients": [
-          { "Name": "Squid", "Quantity": 0.5, "Unit": "kg" },
-          { "Name": "Wheat flour", "Quantity": 0.15, "Unit": "kg" },
-          { "Name": "Egg", "Quantity": 1, "Unit": "pcs" },
-          { "Name": "Beer", "Quantity": 0.15, "Unit": "L" },
-          { "Name": "Salt", "Quantity": 1, "Unit": "tsp" },
-          { "Name": "Oil", "Quantity": 0.5, "Unit": "L" },
-          { "Name": "Lemon", "Quantity": 1, "Unit": "pcs" }
-        ]
-      },
-      {
-        "Name": "Russian Salad",
-        "Name ES": "Ensaladilla Rusa",
-        "Description": "Mezcla de patatas, zanahoria, huevo, atún, guisantes y mayonesa.",
-        "Meal Type": "Lunch",
-        "Cuisine Type": "Spanish",
-        "Servings": 2,
-        "Time to Cook (minutes)": 30,
-        "ingredients": [
-          { "Name": "Potato", "Quantity": 0.5, "Unit": "kg" },
-          { "Name": "Carrot", "Quantity": 0.1, "Unit": "kg" },
-          { "Name": "Egg", "Quantity": 1, "Unit": "pcs" },
-          { "Name": "Tuna", "Quantity": 0.1, "Unit": "bag" },
-          { "Name": "Peas", "Quantity": 0.05, "Unit": "kg" },
-          { "Name": "Olives", "Quantity": 0.03, "Unit": "bag" },
-          { "Name": "Mayonnaise", "Quantity": 2, "Unit": "tbsp" }
-        ]
-      },
-      {
-        "Name": "Hummus",
-        "Name ES": "Hummus",
-        "Description": "Mezcla de garbanzos, ajo, limón, aceite, comino y sal.",
-        "Meal Type": "Lunch",
-        "Cuisine Type": "Middle Eastern",
-        "Servings": 4,
-        "Time to Cook (minutes)": 10,
-        "ingredients": [
-          { "Name": "Garlic", "Quantity": 0.5, "Unit": "pcs" },
-          { "Name": "Oil", "Quantity": 0.06, "Unit": "L" },
-          { "Name": "Lemon", "Quantity": 0.025, "Unit": "L" },
-          { "Name": "Cumin", "Quantity": 1, "Unit": "tsp" },
-          { "Name": "Salt", "Quantity": 1, "Unit": "tsp" }
-        ]
-      },
-      {
-        "Name": "Potato Omelette",
-        "Name ES": "Tortilla de Patatas",
-        "Description": "Patatas fritas en aceite con cebolla, mezcladas con huevo batido y cuajadas en la sartén.",
-        "Meal Type": "Dinner",
-        "Cuisine Type": "Spanish",
-        "Servings": 4,
-        "Time to Cook (minutes)": 45,
-        "ingredients": [
-          { "Name": "Potato", "Quantity": 0.6, "Unit": "kg" },
+          { "Name": "Red bell pepper", "Quantity": 2, "Unit": "pcs" },
           { "Name": "Onion", "Quantity": 1, "Unit": "pcs" },
-          { "Name": "Oil", "Quantity": 0.2, "Unit": "L" },
-          { "Name": "Egg", "Quantity": 4, "Unit": "pcs" },
-          { "Name": "Salt", "Quantity": 1, "Unit": "tsp" }
+          { "Name": "Garlic", "Quantity": 3, "Unit": "pcs" },
+          { "Name": "Oil", "Quantity": 2, "Unit": "tbsp" },
+          { "Name": "Red vinegar", "Quantity": 1, "Unit": "tbsp" },
+          { "Name": "Salt" },
+          { "Name": "Black pepper" }
         ]
       },
       {
-        "Name": "Carrot Cake",
-        "Name ES": "Pastel de Zanahoria",
-        "Description": "Bizcocho especiado con zanahoria, frosting de queso crema y nata.",
-        "Meal Type": "Snack",
-        "Cuisine Type": "Other",
-        "Servings": 8,
+        "Name": "Egg Toast with Bacon",
+        "Name ES": "Huevos en tostada",
+        "Description": "Mezcla cremosa de huevos hervidos, yogur, queso y mayonesa con tocineta crujiente sobre pan tostado.",
+        "Meal Type": "Breakfast",
+        "Cuisine Type": "International",
+        "ingredients": [
+          { "Name": "Egg", "Quantity": 3, "Unit": "pcs" },
+          { "Name": "Greek yogurt", "Quantity": 0.1, "Unit": "cup" },
+          { "Name": "Cream cheese", "Quantity": 1, "Unit": "pack" },
+          { "Name": "Mayonnaise", "Quantity": 1, "Unit": "tbsp" },
+          { "Name": "Bacon", "Quantity": 0.1, "Unit": "kg" },
+          { "Name": "Bread", "Quantity": 2, "Unit": "pcs" },
+          { "Name": "Chives" }
+        ]
+      },
+      {
+        "Name": "Bolognese Pasta",
+        "Name ES": "Pasta boloñesa",
+        "Description": "Salsa de carne de larga cocción (1.5 - 2h). El secreto es la leche para suavizar la carne.",
+        "Meal Type": "Lunch",
+        "Cuisine Type": "European",
+        "Servings": 4,
+        "Time to Cook (minutes)": 120,
+        "ingredients": [
+          { "Name": "Pasta", "Quantity": 0.4, "Unit": "kg" },
+          { "Name": "Ground beef", "Quantity": 0.3, "Unit": "kg" },
+          { "Name": "Ground pork", "Quantity": 0.15, "Unit": "kg" },
+          { "Name": "Onion", "Quantity": 1, "Unit": "pcs" },
+          { "Name": "Carrot", "Quantity": 1, "Unit": "pcs" },
+          { "Name": "Celery", "Quantity": 1, "Unit": "pcs" },
+          { "Name": "Red wine", "Quantity": 0.1, "Unit": "L" },
+          { "Name": "Whole milk", "Quantity": 0.1, "Unit": "L" },
+          { "Name": "Tomato passata", "Quantity": 0.4, "Unit": "L" },
+          { "Name": "Tomato concentrate", "Quantity": 2, "Unit": "tbsp" },
+          { "Name": "Butter", "Quantity": 1, "Unit": "tbsp" },
+          { "Name": "Bay leaf", "Quantity": 1, "Unit": "pcs" },
+          { "Name": "Nutmeg", "Quantity": 1, "Unit": "tsp" },
+          { "Name": "Stock", "Notes": "para hidratar la cocción" }
+        ]
+      },
+      {
+        "Name": "Colombian Chicken Rice",
+        "Name ES": "Arroz con pollo colombiano",
+        "Description": "Arroz colorido y sabroso con pollo desmechado, verduras y achiote.",
+        "Meal Type": "Lunch",
+        "Cuisine Type": "Colombian",
+        "Servings": 4,
         "Time to Cook (minutes)": 60,
         "ingredients": [
-          { "Name": "Wheat flour", "Quantity": 0.225, "Unit": "kg" },
-          { "Name": "Carrot", "Quantity": 0.25, "Unit": "kg" },
-          { "Name": "Egg", "Quantity": 5, "Unit": "pcs" },
+          { "Name": "Chicken", "Quantity": 0.5, "Unit": "kg" },
+          { "Name": "White rice", "Quantity": 0.5, "Unit": "kg" },
+          { "Name": "Scallion", "Quantity": 2, "Unit": "pcs" },
+          { "Name": "Garlic", "Quantity": 2, "Unit": "pcs" },
+          { "Name": "Red bell pepper", "Quantity": 1, "Unit": "pcs" },
+          { "Name": "Achiote", "Quantity": 1, "Unit": "tsp" },
+          { "Name": "Carrot", "Quantity": 1, "Unit": "pcs" },
+          { "Name": "Peas", "Quantity": 0.1, "Unit": "kg" },
+          { "Name": "Corn", "Quantity": 1, "Unit": "bag" },
+          { "Name": "Stock", "Quantity": 1.2, "Unit": "L" },
+          { "Name": "Cilantro", "Quantity": 1, "Unit": "pcs" },
+          { "Name": "Turmeric", "Quantity": 1, "Unit": "tsp" }
+        ]
+      },
+      {
+        "Name": "Chicken Stroganoff",
+        "Name ES": "Pollo Stroganoff",
+        "Description": "Pollo en salsa cremosa con champiñones y un toque de mostaza Dijon.",
+        "Meal Type": "Dinner",
+        "Cuisine Type": "International",
+        "ingredients": [
+          { "Name": "Chicken", "Quantity": 0.4, "Unit": "kg" },
+          { "Name": "Red onion", "Quantity": 1, "Unit": "pcs" },
+          { "Name": "Mushrooms", "Quantity": 1, "Unit": "pack" },
+          { "Name": "Beer", "Notes": "para desglasar" },
           { "Name": "Butter", "Quantity": 0.05, "Unit": "kg" },
-          { "Name": "Cream cheese", "Quantity": 0.25, "Unit": "pack" },
-          { "Name": "Heavy cream", "Quantity": 0.3, "Unit": "L" },
-          { "Name": "Salt", "Quantity": 1, "Unit": "tsp" }
+          { "Name": "Heavy cream", "Quantity": 0.2, "Unit": "L" },
+          { "Name": "Dijon mustard", "Quantity": 1, "Unit": "tbsp" },
+          { "Name": "Parsley" }
+        ]
+      },
+      {
+        "Name": "Baked Salmon Pasta",
+        "Name ES": "Pasta con salmón al horno",
+        "Description": "Pasta estilo TikTok: se hornea el queso feta, salmón y cherrys juntos para crear la salsa.",
+        "Meal Type": "Dinner",
+        "Cuisine Type": "European",
+        "Time to Cook (minutes)": 30,
+        "ingredients": [
+          { "Name": "Pasta", "Quantity": 0.3, "Unit": "kg" },
+          { "Name": "Feta cheese", "Quantity": 1, "Unit": "pack" },
+          { "Name": "Salmon", "Quantity": 0.25, "Unit": "kg" },
+          { "Name": "Cherry tomato", "Quantity": 1, "Unit": "pack" },
+          { "Name": "Garlic", "Quantity": 5, "Unit": "pcs" },
+          { "Name": "Red onion", "Quantity": 0.5, "Unit": "pcs" },
+          { "Name": "Chili flakes", "Quantity": 1, "Unit": "tsp" },
+          { "Name": "Basil" },
+          { "Name": "Dill" }
+        ]
+      },
+      {
+        "Name": "Garlic Chicken",
+        "Name ES": "Pollo al ajillo",
+        "Description": "Clásico español: pollo dorado con abundante ajo laminado y vino blanco.",
+        "Meal Type": "Lunch",
+        "Cuisine Type": "Spanish",
+        "ingredients": [
+          { "Name": "Chicken", "Quantity": 1.5, "Unit": "kg" },
+          { "Name": "Garlic", "Quantity": 1, "Unit": "pcs", "Notes": "Cabeza entera laminada" },
+          { "Name": "White wine", "Quantity": 0.1, "Unit": "L" },
+          { "Name": "Bay leaf", "Quantity": 2, "Unit": "pcs" },
+          { "Name": "Rosemary", "Quantity": 1, "Unit": "pcs" },
+          { "Name": "Parsley" },
+          { "Name": "Chili", "Optional Ingredient": true }
+        ]
+      },
+      {
+        "Name": "Tuna Stuffed Eggs",
+        "Name ES": "Huevos rellenos con atún",
+        "Description": "Huevos duros rellenos de atún, cubiertos con alioli y yema rallada.",
+        "Meal Type": "Snack",
+        "Cuisine Type": "Spanish",
+        "ingredients": [
+          { "Name": "Egg", "Quantity": 6, "Unit": "pcs" },
+          { "Name": "Tuna", "Quantity": 2, "Unit": "bag" },
+          { "Name": "Aioli", "Quantity": 4, "Unit": "tbsp" },
+          { "Name": "Olives", "Quantity": 0.5, "Unit": "bag" },
+          { "Name": "Red bell pepper", "Notes": "para decorar" }
+        ]
+      },
+      {
+        "Name": "Lentils",
+        "Name ES": "Lentejas",
+        "Description": "Guiso tradicional de lentejas con sofrito de verduras y patata.",
+        "Meal Type": "Lunch",
+        "Cuisine Type": "Spanish",
+        "ingredients": [
+          { "Name": "Onion", "Quantity": 0.5, "Unit": "pcs" },
+          { "Name": "Carrot", "Quantity": 0.5, "Unit": "pcs" },
+          { "Name": "Green bell pepper", "Quantity": 0.5, "Unit": "pcs" },
+          { "Name": "Garlic", "Quantity": 1, "Unit": "pcs" },
+          { "Name": "Bay leaf", "Quantity": 0.5, "Unit": "pcs" },
+          { "Name": "Potato", "Quantity": 1, "Unit": "pcs" },
+          { "Name": "Tomato passata", "Quantity": 0.5, "Unit": "tbsp" },
+          { "Name": "Oil" },
+          { "Name": "Salt" }
+        ]
+      },
+      {
+        "Name": "BBQ Ribs",
+        "Name ES": "Costillas BBQ",
+        "Description": "Costillas selladas y luego cocinadas lentamente en una salsa casera de soja, miel y mostaza.",
+        "Meal Type": "Dinner",
+        "Cuisine Type": "American",
+        "ingredients": [
+          { "Name": "Meat", "Quantity": 1, "Unit": "kg", "Notes": "Costillas de cerdo" },
+          { "Name": "Red onion", "Quantity": 1, "Unit": "pcs" },
+          { "Name": "Garlic", "Quantity": 2, "Unit": "pcs" },
+          { "Name": "Soy sauce", "Quantity": 2, "Unit": "tbsp" },
+          { "Name": "Red vinegar", "Quantity": 2, "Unit": "tbsp" },
+          { "Name": "Dijon mustard", "Quantity": 1, "Unit": "tbsp" },
+          { "Name": "Tomato concentrate", "Quantity": 2, "Unit": "tbsp" },
+          { "Name": "Black pepper" },
+          { "Name": "Salt" }
+        ]
+      },
+      {
+        "Name": "Beef Fricando",
+        "Name ES": "Fricandó",
+        "Description": "Guiso catalán de ternera enharinada con setas y vino blanco.",
+        "Meal Type": "Lunch",
+        "Cuisine Type": "Spanish",
+        "ingredients": [
+          { "Name": "Meat", "Quantity": 0.35, "Unit": "kg", "Notes": "Filetes de ternera finos" },
+          { "Name": "Wheat flour", "Notes": "para enharinar" },
+          { "Name": "Onion", "Quantity": 1, "Unit": "pcs" },
+          { "Name": "Garlic", "Quantity": 2, "Unit": "pcs" },
+          { "Name": "Tomato passata", "Quantity": 1, "Unit": "tbsp" },
+          { "Name": "Mushrooms", "Quantity": 0.15, "Unit": "kg" },
+          { "Name": "White wine", "Quantity": 0.2, "Unit": "L" },
+          { "Name": "White rice", "Quantity": 0.12, "Unit": "kg", "Notes": "para acompañar" }
+        ]
+      },
+      {
+        "Name": "Stir-fry Beef (Lomo Saltado)",
+        "Name ES": "Lomo saltado",
+        "Description": "Plato bandera peruano: carne salteada al wok con cebolla, tomate y ají, servido con papas y arroz.",
+        "Meal Type": "Lunch",
+        "Cuisine Type": "Colombian",
+        "ingredients": [
+          { "Name": "Beef loin", "Quantity": 0.25, "Unit": "kg" },
+          { "Name": "Red onion", "Quantity": 1, "Unit": "pcs" },
+          { "Name": "Fresh tomato", "Quantity": 1, "Unit": "pcs" },
+          { "Name": "Yellow chili", "Quantity": 1, "Unit": "pcs" },
+          { "Name": "Garlic", "Quantity": 0.5, "Unit": "tsp", "Notes": "molido" },
+          { "Name": "Soy sauce", "Quantity": 1.5, "Unit": "tbsp" },
+          { "Name": "Red vinegar", "Quantity": 1, "Unit": "tbsp" },
+          { "Name": "Cumin", "Quantity": 0.5, "Unit": "tsp" },
+          { "Name": "Potato", "Quantity": 2, "Unit": "pcs", "Notes": "para freír" },
+          { "Name": "White rice", "Quantity": 0.2, "Unit": "kg" },
+          { "Name": "Cilantro" }
+        ]
+      },
+      {
+        "Name": "Pulled Pork",
+        "Name ES": "Pulled Pork",
+        "Description": "Paleta de cerdo cocinada 8 horas en olla lenta hasta que se deshace sola.",
+        "Meal Type": "Dinner",
+        "Cuisine Type": "American",
+        "Servings": 6,
+        "Time to Cook (minutes)": 480,
+        "ingredients": [
+          { "Name": "Meat", "Quantity": 2, "Unit": "kg", "Notes": "Paleta de cerdo" },
+          { "Name": "Onion", "Quantity": 1, "Unit": "pcs" },
+          { "Name": "Garlic", "Quantity": 4, "Unit": "pcs" },
+          { "Name": "Stock", "Quantity": 0.24, "Unit": "L" },
+          { "Name": "Red vinegar", "Quantity": 2, "Unit": "tbsp", "Notes": "Vinagre de manzana" },
+          { "Name": "Dijon mustard", "Quantity": 2, "Unit": "tbsp" },
+          { "Name": "Oil", "Quantity": 2, "Unit": "tbsp" }
+        ]
+      },
+      {
+        "Name": "Chicken Fajitas",
+        "Name ES": "Fajitas de pollo",
+        "Description": "Salteado rápido de pollo con pimientos y cebolla, servido en tortillas.",
+        "Meal Type": "Dinner",
+        "Cuisine Type": "Mexican",
+        "ingredients": [
+          { "Name": "Chicken", "Quantity": 0.4, "Unit": "kg" },
+          { "Name": "Garlic", "Quantity": 3, "Unit": "pcs" },
+          { "Name": "Onion", "Quantity": 1, "Unit": "pcs" },
+          { "Name": "Red bell pepper", "Quantity": 0.5, "Unit": "pcs" },
+          { "Name": "Green bell pepper", "Quantity": 0.5, "Unit": "pcs" },
+          { "Name": "Salt" },
+          { "Name": "Black pepper" }
         ]
       }
     ]

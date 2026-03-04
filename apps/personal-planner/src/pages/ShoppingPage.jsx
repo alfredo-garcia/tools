@@ -46,7 +46,7 @@ function writeFiltersCollapsed(collapsed) {
   } catch {}
 }
 
-function ShoppingMiniCard({ item, onToggleStatus, onOpenModal, refetch }) {
+function ShoppingMiniCard({ item, onToggleStatus, onOpenModal }) {
   const nameES = str(field(item, 'Name ES')) || ''
   const name = str(field(item, 'Name')) || ''
   const title =
@@ -62,7 +62,6 @@ function ShoppingMiniCard({ item, onToggleStatus, onOpenModal, refetch }) {
     const newStatus = isHave ? 'Need' : 'Have'
     try {
       await onToggleStatus(item.id, newStatus)
-      refetch?.()
     } catch (err) {
       console.error(err)
     }
@@ -99,7 +98,7 @@ function ShoppingMiniCard({ item, onToggleStatus, onOpenModal, refetch }) {
           )}
         </button>
         <div className="flex-1 min-w-0">
-          <div className={`font-semibold text-text ${isHave ? 'line-through opacity-70' : ''}`}>
+          <div className="font-semibold text-text">
             {title}
           </div>
           <div className="text-sm text-text-muted mt-1 space-y-0.5">
@@ -183,6 +182,9 @@ export function ShoppingPage() {
         body: JSON.stringify({ Status: newStatus }),
       })
       invalidateCache('/api/shopping')
+      setList((prev) =>
+        prev.map((i) => (i.id === itemId ? { ...i, Status: newStatus } : i))
+      )
     },
     [fetchApi, invalidateCache]
   )
@@ -388,7 +390,6 @@ export function ShoppingPage() {
                   item={item}
                   onToggleStatus={handleToggleStatus}
                   onOpenModal={setModalItem}
-                  refetch={refetch}
                 />
               ))
             )}

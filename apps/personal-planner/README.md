@@ -67,7 +67,7 @@ En la cabecera de cada día se muestra el nombre del día y la fecha en formato 
 - `/` — Planner (tareas por día y hábitos)
 - `/objectives`, `/objectives/:id` — Objetivos
 - `/key-results`, `/key-results/:id` — Key Results
-- `/tasks`, `/tasks/:id` — Tareas
+- `/tasks`, `/tasks/:id` — Tareas (filtros: Today, Week, Month, Unplanned —sin fecha de vencimiento—, All)
 - `/habits`, `/habits/:id` — Hábitos
 - `/analysis/okr` — Análisis OKR
 - `/analysis/tasks` — Análisis tareas

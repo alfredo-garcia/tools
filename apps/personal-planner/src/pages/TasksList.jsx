@@ -11,6 +11,7 @@ const FILTER_OPTIONS = [
   { value: 'today', label: 'Today' },
   { value: 'week', label: 'Week' },
   { value: 'month', label: 'Month' },
+  { value: 'unplanned', label: 'Unplanned' },
   { value: 'all', label: 'All' },
 ]
 
@@ -23,6 +24,7 @@ const GROUP_LABELS = {
 
 function filterByDate(list, filter, getDue) {
   if (filter === 'all') return list
+  if (filter === 'unplanned') return list.filter((t) => !getDue(t))
   return list.filter((t) => {
     const due = getDue(t)
     if (filter === 'today') return isToday(due)
@@ -153,10 +155,13 @@ export function TasksList() {
 
   const getDue = (t) => dateStr(field(t, 'Due Date', 'Due Date'))
   const filteredByDate = filterByDate(list, filter, getDue)
-  const pastDueFromFull = list.filter((t) => {
-    const due = getDue(t)
-    return due && isPastDue(due) && getTaskStatusGroup(t) !== 'done'
-  })
+  const pastDueFromFull =
+    filter !== 'unplanned'
+      ? list.filter((t) => {
+          const due = getDue(t)
+          return due && isPastDue(due) && getTaskStatusGroup(t) !== 'done'
+        })
+      : []
   const filteredIds = new Set(filteredByDate.map((t) => t.id))
   const filtered = [...filteredByDate]
   pastDueFromFull.forEach((t) => {

@@ -113,14 +113,22 @@ async function main() {
   const ingredientsList = await fetchTable(TABLE_INGREDIENTS, 500, base)
   const ingredientById = new Map(ingredientsList.map((r) => [normalizeName(r.Name), r]))
 
+  const existingRecipes = await fetchTable(TABLE_RECIPES, 500, base)
+  const recipeByName = new Map(existingRecipes.map((r) => [normalizeName(r.Name), r]))
+
   for (const item of recipes) {
     const name = (item.Name && String(item.Name).trim()) || null
     if (!name) {
       console.warn('Receta sin Name, se omite.')
       continue
     }
+    if (recipeByName.has(normalizeName(name))) {
+      console.log('Receta ya existe (se omite):', name)
+      continue
+    }
     const recipeFields = { Name: name, ...mapRecipeFields(item) }
     const recipe = await createRecord(TABLE_RECIPES, recipeFields, base)
+    recipeByName.set(normalizeName(name), recipe)
     console.log('Receta creada:', recipe.Name, recipe.id)
 
     const ingredients = Array.isArray(item.ingredients) ? item.ingredients : []

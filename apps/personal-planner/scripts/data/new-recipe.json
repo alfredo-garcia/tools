@@ -1,0 +1,129 @@
+{
+    "recipes": [
+      {
+        "Name": "Paella",
+        "Name ES": "Paella",
+        "Description": "- Aceite en la paella\n- Poner dos dientes de ajo enteros para dar sabor. Retirarlos cuando estén dorados.\n- Poner la carne y dorarla. Retirarla.\n- Sofrito de verduras: cebolla, pimiento rojo, pimiento verde, judía verde, zanahoria. Todo cortadito pequeño.\n- Poner tomate natural rallado y freírlo un poco.\n- Echar azafrán y sal.\n- Añadir la carne.\n- Arroz bomba, 60 g por persona.\n- Agua o caldo, 3 por cada 1 de arroz.\n- Dejar hervir a fuego medio alto 15–20 min.\n- Sacar y dejar reposar con un trapo encima 4–5 min.",
+        "Meal Type": "Lunch",
+        "Cuisine Type": "Spanish",
+        "Servings": 4,
+        "Time to Cook (minutes)": 25,
+        "ingredients": [
+          { "Name": "Oil" },
+          { "Name": "Garlic", "Quantity": 2, "Unit": "pcs", "Notes": "dientes enteros, retirar al dorar" },
+          { "Name": "Meat", "Quantity": 0.4, "Unit": "kg" },
+          { "Name": "Onion", "Quantity": 1, "Unit": "pcs" },
+          { "Name": "Red bell pepper", "Quantity": 1, "Unit": "pcs" },
+          { "Name": "Green bell pepper", "Quantity": 1, "Unit": "pcs" },
+          { "Name": "Green bean", "Quantity": 0.2, "Unit": "kg" },
+          { "Name": "Carrot", "Quantity": 1, "Unit": "pcs" },
+          { "Name": "Fresh tomato", "Quantity": 2, "Unit": "pcs" },
+          { "Name": "Saffron", "Notes": "pizca" },
+          { "Name": "Salt" },
+          { "Name": "Bomba rice", "Quantity": 0.24, "Unit": "kg", "Notes": "60 g por persona" },
+          { "Name": "Water", "Quantity": 3, "Unit": "L" },
+          { "Name": "Stock", "Quantity": 1, "Unit": "L", "Optional Ingredient": true }
+        ]
+      },
+      {
+        "Name": "Japanese Tiramisu",
+        "Name ES": "Tiramisú Japonés",
+        "Description": "Mezcla de yogur griego, queso crema, vainilla y miel. Galletas con café y cacao por encima.",
+        "Meal Type": "Snack",
+        "Cuisine Type": "Other",
+        "Servings": 4,
+        "Time to Cook (minutes)": 15,
+        "ingredients": [
+          { "Name": "Greek yogurt", "Quantity": 0.4, "Unit": "kg" },
+          { "Name": "Cream cheese", "Quantity": 0.2, "Unit": "pack" },
+          { "Name": "Bread", "Quantity": 1, "Unit": "pack", "Notes": "galletas" }
+        ]
+      },
+      {
+        "Name": "Squid Roman Style",
+        "Name ES": "Calamares a la Romana",
+        "Description": "Calamares rebozados con masa de harina, cerveza y huevo, fritos en aceite.",
+        "Meal Type": "Lunch",
+        "Cuisine Type": "Spanish",
+        "Servings": 4,
+        "Time to Cook (minutes)": 40,
+        "ingredients": [
+          { "Name": "Squid", "Quantity": 0.5, "Unit": "kg" },
+          { "Name": "Wheat flour", "Quantity": 0.15, "Unit": "kg" },
+          { "Name": "Egg", "Quantity": 1, "Unit": "pcs" },
+          { "Name": "Beer", "Quantity": 0.15, "Unit": "L" },
+          { "Name": "Salt", "Quantity": 1, "Unit": "tsp" },
+          { "Name": "Oil", "Quantity": 0.5, "Unit": "L" },
+          { "Name": "Lemon", "Quantity": 1, "Unit": "pcs" }
+        ]
+      },
+      {
+        "Name": "Russian Salad",
+        "Name ES": "Ensaladilla Rusa",
+        "Description": "Mezcla de patatas, zanahoria, huevo, atún, guisantes y mayonesa.",
+        "Meal Type": "Lunch",
+        "Cuisine Type": "Spanish",
+        "Servings": 2,
+        "Time to Cook (minutes)": 30,
+        "ingredients": [
+          { "Name": "Potato", "Quantity": 0.5, "Unit": "kg" },
+          { "Name": "Carrot", "Quantity": 0.1, "Unit": "kg" },
+          { "Name": "Egg", "Quantity": 1, "Unit": "pcs" },
+          { "Name": "Tuna", "Quantity": 0.1, "Unit": "bag" },
+          { "Name": "Peas", "Quantity": 0.05, "Unit": "kg" },
+          { "Name": "Olives", "Quantity": 0.03, "Unit": "bag" },
+          { "Name": "Mayonnaise", "Quantity": 2, "Unit": "tbsp" }
+        ]
+      },
+      {
+        "Name": "Hummus",
+        "Name ES": "Hummus",
+        "Description": "Mezcla de garbanzos, ajo, limón, aceite, comino y sal.",
+        "Meal Type": "Lunch",
+        "Cuisine Type": "Middle Eastern",
+        "Servings": 4,
+        "Time to Cook (minutes)": 10,
+        "ingredients": [
+          { "Name": "Garlic", "Quantity": 0.5, "Unit": "pcs" },
+          { "Name": "Oil", "Quantity": 0.06, "Unit": "L" },
+          { "Name": "Lemon", "Quantity": 0.025, "Unit": "L" },
+          { "Name": "Cumin", "Quantity": 1, "Unit": "tsp" },
+          { "Name": "Salt", "Quantity": 1, "Unit": "tsp" }
+        ]
+      },
+      {
+        "Name": "Potato Omelette",
+        "Name ES": "Tortilla de Patatas",
+        "Description": "Patatas fritas en aceite con cebolla, mezcladas con huevo batido y cuajadas en la sartén.",
+        "Meal Type": "Dinner",
+        "Cuisine Type": "Spanish",
+        "Servings": 4,
+        "Time to Cook (minutes)": 45,
+        "ingredients": [
+          { "Name": "Potato", "Quantity": 0.6, "Unit": "kg" },
+          { "Name": "Onion", "Quantity": 1, "Unit": "pcs" },
+          { "Name": "Oil", "Quantity": 0.2, "Unit": "L" },
+          { "Name": "Egg", "Quantity": 4, "Unit": "pcs" },
+          { "Name": "Salt", "Quantity": 1, "Unit": "tsp" }
+        ]
+      },
+      {
+        "Name": "Carrot Cake",
+        "Name ES": "Pastel de Zanahoria",
+        "Description": "Bizcocho especiado con zanahoria, frosting de queso crema y nata.",
+        "Meal Type": "Snack",
+        "Cuisine Type": "Other",
+        "Servings": 8,
+        "Time to Cook (minutes)": 60,
+        "ingredients": [
+          { "Name": "Wheat flour", "Quantity": 0.225, "Unit": "kg" },
+          { "Name": "Carrot", "Quantity": 0.25, "Unit": "kg" },
+          { "Name": "Egg", "Quantity": 5, "Unit": "pcs" },
+          { "Name": "Butter", "Quantity": 0.05, "Unit": "kg" },
+          { "Name": "Cream cheese", "Quantity": 0.25, "Unit": "pack" },
+          { "Name": "Heavy cream", "Quantity": 0.3, "Unit": "L" },
+          { "Name": "Salt", "Quantity": 1, "Unit": "tsp" }
+        ]
+      }
+    ]
+  }

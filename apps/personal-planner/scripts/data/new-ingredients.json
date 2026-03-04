@@ -1,459 +1,144 @@
 {
     "ingredients": [
-      {
-        "Name": "Oil",
-        "Name ES": "Aceite",
-        "Category": "Condiment",
-        "Unit": "L"
-      },
-      {
-        "Name": "Garlic",
-        "Name ES": "Ajo",
-        "Category": "Vegetable",
-        "Unit": "pcs"
-      },
-      {
-        "Name": "Bomba rice",
-        "Name ES": "Arroz bomba",
-        "Category": "Grain",
-        "Unit": "kg"
-      },
-      {
-        "Name": "Saffron",
-        "Name ES": "Azafrán",
-        "Category": "Spice",
-        "Unit": "tsp"
-      },
-      {
-        "Name": "Stock",
-        "Name ES": "Caldo",
-        "Category": "Other",
-        "Unit": "L"
-      },
-      {
-        "Name": "Meat",
-        "Name ES": "Carne",
-        "Category": "Meat",
-        "Unit": "kg"
-      },
-      {
-        "Name": "Onion",
-        "Name ES": "Cebolla",
-        "Category": "Vegetable",
-        "Unit": "pcs"
-      },
-      {
-        "Name": "Green bean",
-        "Name ES": "Judía verde",
-        "Category": "Vegetable",
-        "Unit": "kg"
-      },
-      {
-        "Name": "Red bell pepper",
-        "Name ES": "Pimiento rojo",
-        "Category": "Vegetable",
-        "Unit": "pcs"
-      },
-      {
-        "Name": "Green bell pepper",
-        "Name ES": "Pimiento verde",
-        "Category": "Vegetable",
-        "Unit": "pcs"
-      },
-      {
-        "Name": "Salt",
-        "Name ES": "Sal",
-        "Category": "Condiment",
-        "Unit": "tsp"
-      },
-      {
-        "Name": "Fresh tomato",
-        "Name ES": "Tomate natural",
-        "Category": "Vegetable",
-        "Unit": "pcs"
-      },
-      {
-        "Name": "Carrot",
-        "Name ES": "Zanahoria",
-        "Category": "Vegetable",
-        "Unit": "pcs"
-      },
-      {
-        "Name": "Water",
-        "Name ES": "Agua",
-        "Category": "Other",
-        "Unit": "L"
-      },
-      {
-        "Name": "Beef loin",
-        "Name ES": "Lomo de res",
-        "Category": "Meat",
-        "Unit": "kg",
-        "Description": "Corte de carne tierno para saltear"
-      },
-      {
-        "Name": "Red onion",
-        "Name ES": "Cebolla roja",
-        "Category": "Vegetable",
-        "Unit": "pcs"
-      },
-      {
-        "Name": "Yellow chili",
-        "Name ES": "Ají amarillo",
-        "Category": "Vegetable",
-        "Unit": "pcs"
-      },
-      {
-        "Name": "Soy sauce",
-        "Name ES": "Salsa de soya (Sillao)",
-        "Category": "Condiment",
-        "Unit": "tbsp"
-      },
-      {
-        "Name": "Red vinegar",
-        "Name ES": "Vinagre tinto",
-        "Category": "Condiment",
-        "Unit": "tbsp"
-      },
-      {
-        "Name": "Cumin",
-        "Name ES": "Comino",
-        "Category": "Spice",
-        "Unit": "tsp"
-      },
-      {
-        "Name": "Potato",
-        "Name ES": "Papa",
-        "Category": "Vegetable",
-        "Unit": "pcs"
-      },
-      {
-        "Name": "White rice",
-        "Name ES": "Arroz blanco",
-        "Category": "Grain",
-        "Unit": "kg"
-      },
-      {
-        "Name": "Cilantro",
-        "Name ES": "Cilantro",
-        "Category": "Herb",
-        "Unit": "pcs"
-      },
-      {
-        "Name": "Chicken",
-        "Name ES": "Pollo",
-        "Category": "Meat",
-        "Unit": "kg",
-        "Description": "Pollo entero troceado para al ajillo"
-      },
-      {
-        "Name": "White wine",
-        "Name ES": "Vino blanco",
-        "Category": "Other",
-        "Unit": "L",
-        "Description": "Vino blanco seco (Manzanilla o Rueda)"
-      },
-      {
-        "Name": "Bay leaf",
-        "Name ES": "Laurel",
-        "Category": "Herb",
-        "Unit": "pcs"
-      },
-      {
-        "Name": "Rosemary",
-        "Name ES": "Romero",
-        "Category": "Herb",
-        "Unit": "pcs"
-      },
-      {
-        "Name": "Black pepper",
-        "Name ES": "Pimienta negra",
-        "Category": "Spice",
-        "Unit": "tsp"
-      },
-      {
-        "Name": "Chili",
-        "Name ES": "Guindilla",
-        "Category": "Spice",
-        "Unit": "pcs"
-      },
-      {
-        "Name": "Parsley",
-        "Name ES": "Perejil",
-        "Category": "Herb",
-        "Unit": "pcs"
-      }
+      { "Name": "Oil", "Name ES": "Aceite", "Category": "Condiment", "Unit": "L" },
+      { "Name": "Garlic", "Name ES": "Ajo", "Category": "Vegetable", "Unit": "pcs" },
+      { "Name": "Bomba rice", "Name ES": "Arroz bomba", "Category": "Grain", "Unit": "kg" },
+      { "Name": "Saffron", "Name ES": "Azafrán", "Category": "Spice", "Unit": "tsp" },
+      { "Name": "Stock", "Name ES": "Caldo", "Category": "Other", "Unit": "L" },
+      { "Name": "Meat", "Name ES": "Carne", "Category": "Meat", "Unit": "kg" },
+      { "Name": "Onion", "Name ES": "Cebolla", "Category": "Vegetable", "Unit": "pcs" },
+      { "Name": "Green bean", "Name ES": "Judía verde", "Category": "Vegetable", "Unit": "kg" },
+      { "Name": "Red bell pepper", "Name ES": "Pimiento rojo", "Category": "Vegetable", "Unit": "pcs" },
+      { "Name": "Green bell pepper", "Name ES": "Pimiento verde", "Category": "Vegetable", "Unit": "pcs" },
+      { "Name": "Salt", "Name ES": "Sal", "Category": "Condiment", "Unit": "tsp" },
+      { "Name": "Fresh tomato", "Name ES": "Tomate natural", "Category": "Vegetable", "Unit": "pcs" },
+      { "Name": "Carrot", "Name ES": "Zanahoria", "Category": "Vegetable", "Unit": "pcs" },
+      { "Name": "Water", "Name ES": "Agua", "Category": "Other", "Unit": "L" },
+      { "Name": "Beef loin", "Name ES": "Lomo de res", "Category": "Meat", "Unit": "kg" },
+      { "Name": "Red onion", "Name ES": "Cebolla roja", "Category": "Vegetable", "Unit": "pcs" },
+      { "Name": "Yellow chili", "Name ES": "Ají amarillo", "Category": "Vegetable", "Unit": "pcs" },
+      { "Name": "Soy sauce", "Name ES": "Salsa de soya (Sillao)", "Category": "Condiment", "Unit": "tbsp" },
+      { "Name": "Red vinegar", "Name ES": "Vinagre tinto", "Category": "Condiment", "Unit": "tbsp" },
+      { "Name": "Cumin", "Name ES": "Comino", "Category": "Spice", "Unit": "tsp" },
+      { "Name": "Potato", "Name ES": "Papa", "Category": "Vegetable", "Unit": "pcs" },
+      { "Name": "White rice", "Name ES": "Arroz blanco", "Category": "Grain", "Unit": "kg" },
+      { "Name": "Cilantro", "Name ES": "Cilantro", "Category": "Herb", "Unit": "pcs" },
+      { "Name": "Chicken", "Name ES": "Pollo", "Category": "Meat", "Unit": "kg" },
+      { "Name": "White wine", "Name ES": "Vino blanco", "Category": "Other", "Unit": "L" },
+      { "Name": "Bay leaf", "Name ES": "Laurel", "Category": "Herb", "Unit": "pcs" },
+      { "Name": "Rosemary", "Name ES": "Romero", "Category": "Herb", "Unit": "pcs" },
+      { "Name": "Black pepper", "Name ES": "Pimienta negra", "Category": "Spice", "Unit": "tsp" },
+      { "Name": "Chili", "Name ES": "Guindilla", "Category": "Spice", "Unit": "pcs" },
+      { "Name": "Parsley", "Name ES": "Perejil", "Category": "Herb", "Unit": "pcs" },
+      { "Name": "Squid", "Name ES": "Calamar", "Category": "Other", "Unit": "kg" },
+      { "Name": "Wheat flour", "Name ES": "Harina de trigo", "Category": "Grain", "Unit": "kg" },
+      { "Name": "Egg", "Name ES": "Huevo", "Category": "Other", "Unit": "pcs" },
+      { "Name": "Beer", "Name ES": "Cerveza", "Category": "Other", "Unit": "L" },
+      { "Name": "Baking powder", "Name ES": "Levadura química", "Category": "Other", "Unit": "tsp" },
+      { "Name": "Lemon", "Name ES": "Limón", "Category": "Fruit", "Unit": "pcs" },
+      { "Name": "Tuna", "Name ES": "Atún", "Category": "Meat", "Unit": "bag" },
+      { "Name": "Aioli", "Name ES": "Alioli", "Category": "Condiment", "Unit": "tbsp" },
+      { "Name": "Olives", "Name ES": "Aceitunas", "Category": "Other", "Unit": "bag" },
+      { "Name": "Pasta", "Name ES": "Pasta", "Category": "Grain", "Unit": "kg" },
+      { "Name": "Feta cheese", "Name ES": "Queso feta", "Category": "Dairy", "Unit": "pack" },
+      { "Name": "Salmon", "Name ES": "Salmón fresco", "Category": "Meat", "Unit": "kg" },
+      { "Name": "Cherry tomato", "Name ES": "Tomate cherry", "Category": "Vegetable", "Unit": "pack" },
+      { "Name": "Chili flakes", "Name ES": "Hojuelas de chile", "Category": "Spice", "Unit": "tsp" },
+      { "Name": "Basil", "Name ES": "Albahaca", "Category": "Herb", "Unit": "pcs" },
+      { "Name": "Dill", "Name ES": "Eneldo", "Category": "Herb", "Unit": "pcs" },
+      { "Name": "Mushrooms", "Name ES": "Champiñones", "Category": "Vegetable", "Unit": "pack" },
+      { "Name": "Butter", "Name ES": "Mantequilla", "Category": "Dairy", "Unit": "kg" },
+      { "Name": "Heavy cream", "Name ES": "Crema de leche", "Category": "Dairy", "Unit": "L" },
+      { "Name": "Dijon mustard", "Name ES": "Mostaza de Dijon", "Category": "Condiment", "Unit": "tbsp" },
+      { "Name": "Scallion", "Name ES": "Cebolla larga", "Category": "Vegetable", "Unit": "pcs" },
+      { "Name": "Achiote", "Name ES": "Achiote", "Category": "Spice", "Unit": "tsp" },
+      { "Name": "Peas", "Name ES": "Arvejas", "Category": "Vegetable", "Unit": "kg" },
+      { "Name": "Corn", "Name ES": "Maíz", "Category": "Vegetable", "Unit": "bag" },
+      { "Name": "Turmeric", "Name ES": "Cúrcuma", "Category": "Spice", "Unit": "tsp" },
+      { "Name": "Ground beef", "Name ES": "Carne molida de res", "Category": "Meat", "Unit": "kg" },
+      { "Name": "Ground pork", "Name ES": "Carne molida de cerdo", "Category": "Meat", "Unit": "kg" },
+      { "Name": "Celery", "Name ES": "Apio", "Category": "Vegetable", "Unit": "pcs" },
+      { "Name": "Red wine", "Name ES": "Vino tinto", "Category": "Other", "Unit": "L" },
+      { "Name": "Whole milk", "Name ES": "Leche entera", "Category": "Dairy", "Unit": "L" },
+      { "Name": "Tomato passata", "Name ES": "Tomate triturado", "Category": "Condiment", "Unit": "L" },
+      { "Name": "Tomato concentrate", "Name ES": "Concentrado de tomate", "Category": "Condiment", "Unit": "tbsp" },
+      { "Name": "Nutmeg", "Name ES": "Nuez moscada", "Category": "Spice", "Unit": "tsp" },
+      { "Name": "Greek yogurt", "Name ES": "Yogur griego", "Category": "Dairy", "Unit": "cup" },
+      { "Name": "Cream cheese", "Name ES": "Queso crema", "Category": "Dairy", "Unit": "pack" },
+      { "Name": "Mayonnaise", "Name ES": "Mayonesa", "Category": "Condiment", "Unit": "tbsp" },
+      { "Name": "Bacon", "Name ES": "Tocineta", "Category": "Meat", "Unit": "kg" },
+      { "Name": "Bread", "Name ES": "Pan de molde", "Category": "Grain", "Unit": "pack" },
+      { "Name": "Chives", "Name ES": "Cebollino", "Category": "Herb", "Unit": "pcs" }
     ],
     "shoppingList": [
-      {
-        "Name": "Oil",
-        "Name ES": "Aceite",
-        "Quantity": 1,
-        "Unit": "L",
-        "Status": "Need",
-        "Priority": "Medium",
-        "Category": "Herbs & Condiments"
-      },
-      {
-        "Name": "Garlic",
-        "Name ES": "Ajo",
-        "Quantity": 1,
-        "Unit": "pcs",
-        "Status": "Need",
-        "Priority": "Medium",
-        "Category": "Fruits & Vegs"
-      },
-      {
-        "Name": "Bomba rice",
-        "Name ES": "Arroz bomba",
-        "Quantity": 0.5,
-        "Unit": "kg",
-        "Status": "Need",
-        "Priority": "Low",
-        "Category": "Other"
-      },
-      {
-        "Name": "Saffron",
-        "Name ES": "Azafrán",
-        "Quantity": 1,
-        "Unit": "tsp",
-        "Status": "Need",
-        "Priority": "High",
-        "Category": "Herbs & Condiments"
-      },
-      {
-        "Name": "Stock",
-        "Name ES": "Caldo",
-        "Quantity": 1,
-        "Unit": "L",
-        "Status": "Need",
-        "Priority": "Medium",
-        "Category": "Other"
-      },
-      {
-        "Name": "Meat",
-        "Name ES": "Carne",
-        "Quantity": 0.5,
-        "Unit": "kg",
-        "Status": "Need",
-        "Priority": "Medium",
-        "Category": "Meat & Fish"
-      },
-      {
-        "Name": "Onion",
-        "Name ES": "Cebolla",
-        "Quantity": 2,
-        "Unit": "pcs",
-        "Status": "Need",
-        "Priority": "Medium",
-        "Category": "Fruits & Vegs"
-      },
-      {
-        "Name": "Green bean",
-        "Name ES": "Judía verde",
-        "Quantity": 0.3,
-        "Unit": "kg",
-        "Status": "Need",
-        "Priority": "Medium",
-        "Category": "Fruits & Vegs"
-      },
-      {
-        "Name": "Red bell pepper",
-        "Name ES": "Pimiento rojo",
-        "Quantity": 1,
-        "Unit": "pcs",
-        "Status": "Need",
-        "Priority": "Medium",
-        "Category": "Fruits & Vegs"
-      },
-      {
-        "Name": "Green bell pepper",
-        "Name ES": "Pimiento verde",
-        "Quantity": 1,
-        "Unit": "pcs",
-        "Status": "Need",
-        "Priority": "Medium",
-        "Category": "Fruits & Vegs"
-      },
-      {
-        "Name": "Salt",
-        "Name ES": "Sal",
-        "Quantity": 1,
-        "Unit": "tsp",
-        "Status": "Need",
-        "Priority": "Low",
-        "Category": "Herbs & Condiments"
-      },
-      {
-        "Name": "Fresh tomato",
-        "Name ES": "Tomate natural",
-        "Quantity": 2,
-        "Unit": "pcs",
-        "Status": "Need",
-        "Priority": "Medium",
-        "Category": "Fruits & Vegs"
-      },
-      {
-        "Name": "Carrot",
-        "Name ES": "Zanahoria",
-        "Quantity": 2,
-        "Unit": "pcs",
-        "Status": "Need",
-        "Priority": "Medium",
-        "Category": "Fruits & Vegs"
-      },
-      {
-        "Name": "Water",
-        "Name ES": "Agua",
-        "Quantity": 1,
-        "Unit": "L",
-        "Status": "Need",
-        "Priority": "Low",
-        "Category": "Drinks"
-      },
-      {
-        "Name": "Beef loin",
-        "Name ES": "Lomo de res",
-        "Quantity": 0.25,
-        "Unit": "kg",
-        "Status": "Need",
-        "Priority": "High",
-        "Category": "Meat & Fish"
-      },
-      {
-        "Name": "Red onion",
-        "Name ES": "Cebolla roja",
-        "Quantity": 1,
-        "Unit": "pcs",
-        "Status": "Need",
-        "Priority": "Medium",
-        "Category": "Fruits & Vegs"
-      },
-      {
-        "Name": "Yellow chili",
-        "Name ES": "Ají amarillo",
-        "Quantity": 1,
-        "Unit": "pcs",
-        "Status": "Need",
-        "Priority": "Medium",
-        "Category": "Fruits & Vegs"
-      },
-      {
-        "Name": "Soy sauce",
-        "Name ES": "Salsa de soya",
-        "Quantity": 1.5,
-        "Unit": "tbsp",
-        "Status": "Need",
-        "Priority": "Medium",
-        "Category": "Herbs & Condiments"
-      },
-      {
-        "Name": "Red vinegar",
-        "Name ES": "Vinagre tinto",
-        "Quantity": 1,
-        "Unit": "tbsp",
-        "Status": "Need",
-        "Priority": "Medium",
-        "Category": "Herbs & Condiments"
-      },
-      {
-        "Name": "Cumin",
-        "Name ES": "Comino",
-        "Quantity": 0.5,
-        "Unit": "tsp",
-        "Status": "Need",
-        "Priority": "Low",
-        "Category": "Herbs & Condiments"
-      },
-      {
-        "Name": "Potato",
-        "Name ES": "Papa",
-        "Quantity": 2,
-        "Unit": "pcs",
-        "Status": "Need",
-        "Priority": "Medium",
-        "Category": "Fruits & Vegs"
-      },
-      {
-        "Name": "White rice",
-        "Name ES": "Arroz blanco",
-        "Quantity": 0.2,
-        "Unit": "kg",
-        "Status": "Need",
-        "Priority": "Medium",
-        "Category": "Other"
-      },
-      {
-        "Name": "Cilantro",
-        "Name ES": "Cilantro",
-        "Quantity": 1,
-        "Unit": "pcs",
-        "Status": "Need",
-        "Priority": "Low",
-        "Category": "Herbs & Condiments"
-      },
-      {
-        "Name": "Chicken",
-        "Name ES": "Pollo",
-        "Quantity": 1.75,
-        "Unit": "kg",
-        "Status": "Need",
-        "Priority": "High",
-        "Category": "Meat & Fish"
-      },
-      {
-        "Name": "White wine",
-        "Name ES": "Vino blanco",
-        "Quantity": 0.1,
-        "Unit": "L",
-        "Status": "Need",
-        "Priority": "Medium",
-        "Category": "Drinks"
-      },
-      {
-        "Name": "Bay leaf",
-        "Name ES": "Laurel",
-        "Quantity": 2,
-        "Unit": "pcs",
-        "Status": "Need",
-        "Priority": "Low",
-        "Category": "Herbs & Condiments"
-      },
-      {
-        "Name": "Rosemary",
-        "Name ES": "Romero",
-        "Quantity": 1,
-        "Unit": "pcs",
-        "Status": "Need",
-        "Priority": "Low",
-        "Category": "Herbs & Condiments"
-      },
-      {
-        "Name": "Black pepper",
-        "Name ES": "Pimienta negra",
-        "Quantity": 0.5,
-        "Unit": "tsp",
-        "Status": "Need",
-        "Priority": "Low",
-        "Category": "Herbs & Condiments"
-      },
-      {
-        "Name": "Chili",
-        "Name ES": "Guindilla",
-        "Quantity": 1,
-        "Unit": "pcs",
-        "Status": "Need",
-        "Priority": "Low",
-        "Category": "Herbs & Condiments"
-      },
-      {
-        "Name": "Parsley",
-        "Name ES": "Perejil",
-        "Quantity": 1,
-        "Unit": "pcs",
-        "Status": "Need",
-        "Priority": "Low",
-        "Category": "Herbs & Condiments"
-      }
+      { "Name": "Oil", "Name ES": "Aceite", "Quantity": 1, "Unit": "L", "Status": "Need", "Priority": "Medium", "Category": "Herbs & Condiments" },
+      { "Name": "Garlic", "Name ES": "Ajo", "Quantity": 2, "Unit": "pcs", "Status": "Need", "Priority": "Medium", "Category": "Fruits & Vegs" },
+      { "Name": "Bomba rice", "Name ES": "Arroz bomba", "Quantity": 0.5, "Unit": "kg", "Status": "Need", "Priority": "Low", "Category": "Other" },
+      { "Name": "Saffron", "Name ES": "Azafrán", "Quantity": 1, "Unit": "tsp", "Status": "Need", "Priority": "High", "Category": "Herbs & Condiments" },
+      { "Name": "Stock", "Name ES": "Caldo", "Quantity": 1, "Unit": "L", "Status": "Need", "Priority": "Medium", "Category": "Other" },
+      { "Name": "Meat", "Name ES": "Carne", "Quantity": 0.5, "Unit": "kg", "Status": "Need", "Priority": "Medium", "Category": "Meat & Fish" },
+      { "Name": "Onion", "Name ES": "Cebolla", "Quantity": 3, "Unit": "pcs", "Status": "Need", "Priority": "Medium", "Category": "Fruits & Vegs" },
+      { "Name": "Green bean", "Name ES": "Judía verde", "Quantity": 0.3, "Unit": "kg", "Status": "Need", "Priority": "Medium", "Category": "Fruits & Vegs" },
+      { "Name": "Red bell pepper", "Name ES": "Pimiento rojo", "Quantity": 2, "Unit": "pcs", "Status": "Need", "Priority": "Medium", "Category": "Fruits & Vegs" },
+      { "Name": "Green bell pepper", "Name ES": "Pimiento verde", "Quantity": 1, "Unit": "pcs", "Status": "Need", "Priority": "Medium", "Category": "Fruits & Vegs" },
+      { "Name": "Salt", "Name ES": "Sal", "Quantity": 1, "Unit": "tsp", "Status": "Need", "Priority": "Low", "Category": "Herbs & Condiments" },
+      { "Name": "Fresh tomato", "Name ES": "Tomate natural", "Quantity": 3, "Unit": "pcs", "Status": "Need", "Priority": "Medium", "Category": "Fruits & Vegs" },
+      { "Name": "Carrot", "Name ES": "Zanahoria", "Quantity": 3, "Unit": "pcs", "Status": "Need", "Priority": "Medium", "Category": "Fruits & Vegs" },
+      { "Name": "Water", "Name ES": "Agua", "Quantity": 2, "Unit": "L", "Status": "Need", "Priority": "Low", "Category": "Drinks" },
+      { "Name": "Beef loin", "Name ES": "Lomo de res", "Quantity": 0.25, "Unit": "kg", "Status": "Need", "Priority": "High", "Category": "Meat & Fish" },
+      { "Name": "Red onion", "Name ES": "Cebolla roja", "Quantity": 2, "Unit": "pcs", "Status": "Need", "Priority": "Medium", "Category": "Fruits & Vegs" },
+      { "Name": "Yellow chili", "Name ES": "Ají amarillo", "Quantity": 1, "Unit": "pcs", "Status": "Need", "Priority": "Medium", "Category": "Fruits & Vegs" },
+      { "Name": "Soy sauce", "Name ES": "Salsa de soya", "Quantity": 2, "Unit": "tbsp", "Status": "Need", "Priority": "Medium", "Category": "Herbs & Condiments" },
+      { "Name": "Red vinegar", "Name ES": "Vinagre tinto", "Quantity": 1, "Unit": "tbsp", "Status": "Need", "Priority": "Medium", "Category": "Herbs & Condiments" },
+      { "Name": "Cumin", "Name ES": "Comino", "Quantity": 1, "Unit": "tsp", "Status": "Need", "Priority": "Low", "Category": "Herbs & Condiments" },
+      { "Name": "Potato", "Name ES": "Papa", "Quantity": 4, "Unit": "pcs", "Status": "Need", "Priority": "Medium", "Category": "Fruits & Vegs" },
+      { "Name": "White rice", "Name ES": "Arroz blanco", "Quantity": 0.5, "Unit": "kg", "Status": "Need", "Priority": "Medium", "Category": "Other" },
+      { "Name": "Cilantro", "Name ES": "Cilantro", "Quantity": 1, "Unit": "pcs", "Status": "Need", "Priority": "Low", "Category": "Herbs & Condiments" },
+      { "Name": "Chicken", "Name ES": "Pollo", "Quantity": 2.5, "Unit": "kg", "Status": "Need", "Priority": "High", "Category": "Meat & Fish" },
+      { "Name": "White wine", "Name ES": "Vino blanco", "Quantity": 0.2, "Unit": "L", "Status": "Need", "Priority": "Medium", "Category": "Drinks" },
+      { "Name": "Bay leaf", "Name ES": "Laurel", "Quantity": 3, "Unit": "pcs", "Status": "Need", "Priority": "Low", "Category": "Herbs & Condiments" },
+      { "Name": "Rosemary", "Name ES": "Romero", "Quantity": 1, "Unit": "pcs", "Status": "Need", "Priority": "Low", "Category": "Herbs & Condiments" },
+      { "Name": "Black pepper", "Name ES": "Pimienta negra", "Quantity": 1, "Unit": "tsp", "Status": "Need", "Priority": "Low", "Category": "Herbs & Condiments" },
+      { "Name": "Chili", "Name ES": "Guindilla", "Quantity": 1, "Unit": "pcs", "Status": "Need", "Priority": "Low", "Category": "Herbs & Condiments" },
+      { "Name": "Parsley", "Name ES": "Perejil", "Quantity": 1, "Unit": "pcs", "Status": "Need", "Priority": "Low", "Category": "Herbs & Condiments" },
+      { "Name": "Squid", "Name ES": "Calamar", "Quantity": 0.5, "Unit": "kg", "Status": "Need", "Priority": "High", "Category": "Meat & Fish" },
+      { "Name": "Wheat flour", "Name ES": "Harina de trigo", "Quantity": 0.5, "Unit": "kg", "Status": "Need", "Priority": "Medium", "Category": "Other" },
+      { "Name": "Egg", "Name ES": "Huevo", "Quantity": 12, "Unit": "pcs", "Status": "Need", "Priority": "High", "Category": "Other" },
+      { "Name": "Beer", "Name ES": "Cerveza", "Quantity": 0.5, "Unit": "L", "Status": "Need", "Priority": "Low", "Category": "Drinks" },
+      { "Name": "Baking powder", "Name ES": "Levadura química", "Quantity": 1, "Unit": "tsp", "Status": "Need", "Priority": "Low", "Category": "Other" },
+      { "Name": "Lemon", "Name ES": "Limón", "Quantity": 2, "Unit": "pcs", "Status": "Need", "Priority": "Low", "Category": "Fruits & Vegs" },
+      { "Name": "Tuna", "Name ES": "Atún", "Quantity": 2, "Unit": "bag", "Status": "Need", "Priority": "Medium", "Category": "Meat & Fish" },
+      { "Name": "Aioli", "Name ES": "Alioli", "Quantity": 2, "Unit": "tbsp", "Status": "Need", "Priority": "Low", "Category": "Herbs & Condiments" },
+      { "Name": "Olives", "Name ES": "Aceitunas", "Quantity": 1, "Unit": "bag", "Status": "Need", "Priority": "Low", "Category": "Other" },
+      { "Name": "Pasta", "Name ES": "Pasta", "Quantity": 1, "Unit": "kg", "Status": "Need", "Priority": "Medium", "Category": "Other" },
+      { "Name": "Feta cheese", "Name ES": "Queso feta", "Quantity": 1, "Unit": "pack", "Status": "Need", "Priority": "High", "Category": "Other" },
+      { "Name": "Salmon", "Name ES": "Salmón fresco", "Quantity": 0.25, "Unit": "kg", "Status": "Need", "Priority": "High", "Category": "Meat & Fish" },
+      { "Name": "Cherry tomato", "Name ES": "Tomate cherry", "Quantity": 1, "Unit": "pack", "Status": "Need", "Priority": "Medium", "Category": "Fruits & Vegs" },
+      { "Name": "Chili flakes", "Name ES": "Hojuelas de chile", "Quantity": 1, "Unit": "tsp", "Status": "Need", "Priority": "Low", "Category": "Herbs & Condiments" },
+      { "Name": "Basil", "Name ES": "Albahaca", "Quantity": 1, "Unit": "pcs", "Status": "Need", "Priority": "Low", "Category": "Herbs & Condiments" },
+      { "Name": "Dill", "Name ES": "Eneldo", "Quantity": 1, "Unit": "pcs", "Status": "Need", "Priority": "Low", "Category": "Herbs & Condiments" },
+      { "Name": "Mushrooms", "Name ES": "Champiñones", "Quantity": 1, "Unit": "pack", "Status": "Need", "Priority": "Medium", "Category": "Fruits & Vegs" },
+      { "Name": "Butter", "Name ES": "Mantequilla", "Quantity": 0.1, "Unit": "kg", "Status": "Need", "Priority": "Medium", "Category": "Other" },
+      { "Name": "Heavy cream", "Name ES": "Crema de leche", "Quantity": 0.5, "Unit": "L", "Status": "Need", "Priority": "Medium", "Category": "Other" },
+      { "Name": "Dijon mustard", "Name ES": "Mostaza de Dijon", "Quantity": 1, "Unit": "tbsp", "Status": "Need", "Priority": "Low", "Category": "Herbs & Condiments" },
+      { "Name": "Scallion", "Name ES": "Cebolla larga", "Quantity": 2, "Unit": "pcs", "Status": "Need", "Priority": "Medium", "Category": "Fruits & Vegs" },
+      { "Name": "Achiote", "Name ES": "Achiote", "Quantity": 1, "Unit": "tsp", "Status": "Need", "Priority": "Low", "Category": "Herbs & Condiments" },
+      { "Name": "Peas", "Name ES": "Arvejas", "Quantity": 0.3, "Unit": "kg", "Status": "Need", "Priority": "Medium", "Category": "Fruits & Vegs" },
+      { "Name": "Corn", "Name ES": "Maíz", "Quantity": 1, "Unit": "bag", "Status": "Need", "Priority": "Medium", "Category": "Fruits & Vegs" },
+      { "Name": "Turmeric", "Name ES": "Cúrcuma", "Quantity": 1, "Unit": "tsp", "Status": "Need", "Priority": "Low", "Category": "Herbs & Condiments" },
+      { "Name": "Ground beef", "Name ES": "Carne molida de res", "Quantity": 0.3, "Unit": "kg", "Status": "Need", "Priority": "High", "Category": "Meat & Fish" },
+      { "Name": "Ground pork", "Name ES": "Carne molida de cerdo", "Quantity": 0.15, "Unit": "kg", "Status": "Need", "Priority": "High", "Category": "Meat & Fish" },
+      { "Name": "Celery", "Name ES": "Apio", "Quantity": 1, "Unit": "pcs", "Status": "Need", "Priority": "Medium", "Category": "Fruits & Vegs" },
+      { "Name": "Red wine", "Name ES": "Vino tinto", "Quantity": 0.5, "Unit": "L", "Status": "Need", "Priority": "Low", "Category": "Drinks" },
+      { "Name": "Whole milk", "Name ES": "Leche entera", "Quantity": 1, "Unit": "L", "Status": "Need", "Priority": "Medium", "Category": "Drinks" },
+      { "Name": "Tomato passata", "Name ES": "Tomate triturado", "Quantity": 0.5, "Unit": "L", "Status": "Need", "Priority": "Medium", "Category": "Herbs & Condiments" },
+      { "Name": "Tomato concentrate", "Name ES": "Concentrado de tomate", "Quantity": 2, "Unit": "tbsp", "Status": "Need", "Priority": "Medium", "Category": "Herbs & Condiments" },
+      { "Name": "Nutmeg", "Name ES": "Nuez moscada", "Quantity": 1, "Unit": "tsp", "Status": "Need", "Priority": "Low", "Category": "Herbs & Condiments" },
+      { "Name": "Greek yogurt", "Name ES": "Yogur griego", "Quantity": 1, "Unit": "cup", "Status": "Need", "Priority": "Low", "Category": "Other" },
+      { "Name": "Cream cheese", "Name ES": "Queso crema", "Quantity": 1, "Unit": "pack", "Status": "Need", "Priority": "Low", "Category": "Other" },
+      { "Name": "Mayonnaise", "Name ES": "Mayonesa", "Quantity": 2, "Unit": "tbsp", "Status": "Need", "Priority": "Low", "Category": "Herbs & Condiments" },
+      { "Name": "Bacon", "Name ES": "Tocineta", "Quantity": 0.3, "Unit": "kg", "Status": "Need", "Priority": "Medium", "Category": "Meat & Fish" },
+      { "Name": "Bread", "Name ES": "Pan de molde", "Quantity": 1, "Unit": "pack", "Status": "Need", "Priority": "Medium", "Category": "Other" },
+      { "Name": "Chives", "Name ES": "Cebollino", "Quantity": 1, "Unit": "pcs", "Status": "Need", "Priority": "Low", "Category": "Herbs & Condiments" }
     ]
   }

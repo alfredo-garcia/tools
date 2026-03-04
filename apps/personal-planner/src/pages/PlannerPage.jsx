@@ -1033,20 +1033,20 @@ export function PlannerPage() {
             type="button"
             aria-label="Previous day"
             onClick={() => setMobileDateStr((d) => addDays(d, -1))}
-            className="min-h-[44px] min-w-[44px] rounded-xl border-2 border-border bg-surface text-text"
+            className="min-h-[44px] min-w-[44px] rounded-xl border-2 border-border bg-surface text-text flex items-center justify-center shrink-0"
           >
-            ←
+            <IconChevronLeft size={22} />
           </button>
-          <span className="font-semibold text-text">
+          <span className="font-semibold text-text truncate text-center">
             {DAY_NAMES[mobileDayIndex]} {formatDayDate(mobileDateStr)}
           </span>
           <button
             type="button"
             aria-label="Next day"
             onClick={() => setMobileDateStr((d) => addDays(d, 1))}
-            className="min-h-[44px] min-w-[44px] rounded-xl border-2 border-border bg-surface text-text"
+            className="min-h-[44px] min-w-[44px] rounded-xl border-2 border-border bg-surface text-text flex items-center justify-center shrink-0"
           >
-            →
+            <IconChevronRight size={22} />
           </button>
         </div>
         <div

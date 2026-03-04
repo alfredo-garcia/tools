@@ -11,15 +11,17 @@
     "preview": "vite preview",
     "generate-pwa-assets": "node scripts/generate-pwa-from-asset.js",
     "seed-ingredients-shopping": "node --env-file=.env scripts/seed-ingredients-shopping.js",
-    "seed-recipes": "node --env-file=.env scripts/seed-recipes.js"
+    "seed-recipes": "node --env-file=.env scripts/seed-recipes.js",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
+    "@tools/shared": "file:../shared",
     "airtable": "^0.12.2",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.4.1",
-    "recharts": "^2.15.0",
-    "@tools/shared": "file:../shared"
+    "recharts": "^2.15.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
@@ -27,13 +29,14 @@
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.1",
+    "concurrently": "^9.1.0",
     "eslint": "^9.39.1",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",
     "globals": "^16.5.0",
+    "jimp": "^1.6.0",
     "vite": "^7.3.1",
     "vite-plugin-pwa": "^0.21.1",
-    "concurrently": "^9.1.0",
-    "jimp": "^1.6.0"
+    "vitest": "^2.1.9"
   }
 }

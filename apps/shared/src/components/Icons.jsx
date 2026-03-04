@@ -434,3 +434,17 @@ export function IconBook({ className = '', size = 24 }) {
     </svg>
   )
 }
+
+/** Platito humeante / comida (Meals). Plato oval con vapor ascendente. */
+export function IconUtensils({ className = '', size = 24 }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconClass} ${className}`} aria-hidden>
+      {/* Plato oval */}
+      <ellipse cx="12" cy="15" rx="7" ry="2.8" />
+      {/* Vapor: líneas curvas que suben */}
+      <path d="M9 12.5 Q9 8 10 4" />
+      <path d="M12 11.5 Q12 6 13 2" />
+      <path d="M15 12.5 Q15 8 16 4" />
+    </svg>
+  )
+}

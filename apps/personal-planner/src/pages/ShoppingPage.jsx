@@ -30,11 +30,13 @@ const PRIORITY_FILTER_OPTIONS = [
 const FILTERS_STORAGE_KEY = 'mosco-shopping-filters-collapsed'
 
 function readFiltersCollapsed() {
-  if (typeof window === 'undefined') return false
+  if (typeof window === 'undefined') return true
   try {
-    return JSON.parse(localStorage.getItem(FILTERS_STORAGE_KEY) ?? 'false')
+    const stored = localStorage.getItem(FILTERS_STORAGE_KEY)
+    if (stored === null) return true
+    return JSON.parse(stored)
   } catch {
-    return false
+    return true
   }
 }
 function writeFiltersCollapsed(collapsed) {

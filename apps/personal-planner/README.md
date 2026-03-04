@@ -13,6 +13,7 @@ Configura una base con estas tablas (los nombres de campos pueden variar; la app
 - **Habits**: Habit Name, Habit Description, Category, Frequency, Priority, Habit type (opcional: "Good" o "Bad" para separar en Planner en Good Habits / Bad Habits)
 - **Habit Tracking**: Habit (link a Habits), Was Successful?, Execution Date-Time
 - **Shopping List**: Name, Category, Description, Image (Web), Name ES, Notes, Priority, Quantity, Status (Need / Have), Store, Unit (puede estar en otra base; usa `AIRTABLE_BASE_ID_SHOPPING`)
+- **Meals** (base principal): Meal Type (Breakfast, Lunch, Dinner), Date, Meal (ID de la receta de la base Recipes; la app muestra el nombre resolviendo contra Recipes)
 - **Recipes** (base separada; usa `AIRTABLE_BASE_ID_RECIPES`): **Recipes**: Name, Name ES, Description, Meal Type (Breakfast, Lunch, Dinner, Snack), Cooking Process, Complexity Rating, Nutrient Rating, Time to Cook (minutes), Servings, Cuisine Type, Source/URL, Tags. **Ingredients**: Name, Name ES, Description, Category, Unit, Notes. **Recipe Ingredients**: Recipe (link), Ingredient (link), Quantity, Unit, Optional Ingredient, Notes
 
 ## Variables de entorno
@@ -23,7 +24,7 @@ Copia `.env.example` a `.env` y rellena:
 - `AIRTABLE_PAT`, `AIRTABLE_BASE_ID`: acceso a la base principal
 - `AIRTABLE_BASE_ID_SHOPPING` (opcional): si la tabla Shopping List está en **otra base**, define aquí el Base ID de esa base; el mismo PAT debe tener acceso a ambas bases
 - `AIRTABLE_BASE_ID_RECIPES` (opcional): base de Airtable para Recipes, Ingredients y Recipe Ingredients (tablas separadas); el mismo PAT debe tener acceso
-- `AIRTABLE_TABLE_OBJECTIVES`, `AIRTABLE_TABLE_KEY_RESULTS`, `AIRTABLE_TABLE_TASKS`, `AIRTABLE_TABLE_HABITS`, `AIRTABLE_TABLE_HABIT_TRACKING`, `AIRTABLE_TABLE_KEY_RESULT_TRACKING`, `AIRTABLE_TABLE_SHOPPING`: nombres exactos de cada tabla en tu base
+- `AIRTABLE_TABLE_OBJECTIVES`, `AIRTABLE_TABLE_KEY_RESULTS`, `AIRTABLE_TABLE_TASKS`, `AIRTABLE_TABLE_HABITS`, `AIRTABLE_TABLE_HABIT_TRACKING`, `AIRTABLE_TABLE_KEY_RESULT_TRACKING`, `AIRTABLE_TABLE_SHOPPING`, `AIRTABLE_TABLE_MEALS`: nombres exactos de cada tabla en tu base
 - `AIRTABLE_TABLE_RECIPES`, `AIRTABLE_TABLE_INGREDIENTS`, `AIRTABLE_TABLE_RECIPE_INGREDIENTS`: nombres exactos de las tablas en la base de Recipes
 - `ENABLE_KEY_RESULT_TRACKING`: si no usas la tabla Key Result Tracking o el PAT no tiene permiso de escritura, pon `false` para desactivar el registro de tracking al actualizar "Current value".
 
@@ -53,6 +54,10 @@ npm run build
 docker compose up --build
 ```
 
+## Vista Meals
+
+En la ruta `/meals` se muestra una vista de semana (como en Planner) con una columna por día. Cada columna tiene tres huecos: **Breakfast**, **Lunch** y **Dinner**. En cada hueco se muestran las comidas (Meals) de Airtable para ese día y tipo. Puedes arrastrar una comida a otro día o a otro tipo (desayuno/comida/cena) y se actualiza la fecha y el tipo en Airtable. El botón "+" en cada hueco abre un modal para elegir una receta (de la base Recipes) que coincida con el Meal Type; al elegirla se crea el registro en Meals. Al hacer clic en una comida se abre un modal para sustituirla por otra receta o borrarla.
+
 ## Vista Planner
 
 En la ruta `/` (Planner), las secciones **Tasks**, **Good Habits** y **Bad Habits** son colapsables. Al colapsar cualquiera de ellas se mantiene visible la primera fila: barra de progreso (Tasks) o iconos contadores 1–5 (Good/Bad Habits). Los títulos "Good Habits" y "Bad Habits" muestran solo el texto, sin icono en el encabezado (los iconos quedan en la fila de contadores).
@@ -65,6 +70,7 @@ En la cabecera de cada día se muestra el nombre del día y la fecha en formato 
 ## Rutas
 
 - `/` — Planner (tareas por día y hábitos)
+- `/meals` — Meals (vista semana: desayuno/comida/cena por día; arrastrar, añadir y editar desde recetas)
 - `/objectives`, `/objectives/:id` — Objetivos
 - `/key-results`, `/key-results/:id` — Key Results
 - `/tasks`, `/tasks/:id` — Tareas (filtros: Today, Week, Month, Unplanned —sin fecha de vencimiento—, All)
@@ -72,7 +78,7 @@ En la cabecera de cada día se muestra el nombre del día y la fecha en formato 
 - `/analysis/okr` — Análisis OKR
 - `/analysis/tasks` — Análisis tareas
 - `/analysis/habits` — Análisis hábitos
-- `/shopping` — Lista de la compra (filtros por Status, Priority, Store, Category; búsqueda; checkbox Need/Have; edición en modal)
+- `/shopping` — Lista de la compra (filtros por Status, Priority, Store, Category; búsqueda; checkbox Need/Have; edición en modal). Los filtros aparecen colapsados por defecto; la preferencia abrir/cerrar se guarda en `localStorage` (`mosco-shopping-filters-collapsed`).
 - `/recipes`, `/recipes/:id` — Recetas (lista con búsqueda; detalle con ingredientes: ver, ampliar, editar, eliminar, añadir)
 
 ## Scripts de datos (Airtable)

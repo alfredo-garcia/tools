@@ -16,6 +16,7 @@ import keyResultTrackingHandler from '../server/handlers/key-result-tracking.js'
 import recipesHandler from '../server/handlers/recipes.js'
 import ingredientsHandler from '../server/handlers/ingredients.js'
 import recipeIngredientsHandler from '../server/handlers/recipe-ingredients.js'
+import mealsHandler from '../server/handlers/meals.js'
 
 const ROUTES = {
   validate: validateHandler,
@@ -30,6 +31,7 @@ const ROUTES = {
   recipes: recipesHandler,
   ingredients: ingredientsHandler,
   'recipe-ingredients': recipeIngredientsHandler,
+  meals: mealsHandler,
 }
 
 function getPathFromRequest(req) {

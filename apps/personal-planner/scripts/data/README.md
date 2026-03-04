@@ -2,6 +2,8 @@
 
 Esquema exacto de las tablas para que los JSON y scripts coincidan con Airtable.
 
+**Para generar más JSON con una IA:** usa la especificación [JSON-SPEC-FOR-AI.md](./JSON-SPEC-FOR-AI.md). Ahí están definidos tipos, campos obligatorios/opcionales y **todas las opciones** (enums) para recetas, ingredientes y shopping list, listas para copiar en el prompt.
+
 ---
 
 ## Ingredients (base Recipes)

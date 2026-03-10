@@ -17,7 +17,16 @@ function mapRecipeFields(body) {
   if (body.Name != null && typeof body.Name === 'string') fields.Name = body.Name.trim()
   if (body['Name ES'] != null && typeof body['Name ES'] === 'string') fields['Name ES'] = body['Name ES'].trim()
   if (body.Description != null && typeof body.Description === 'string') fields.Description = body.Description.trim()
-  if (body['Meal Type'] != null && typeof body['Meal Type'] === 'string') fields['Meal Type'] = body['Meal Type'].trim()
+  if (body['Meal Type'] !== undefined) {
+    const mt = body['Meal Type']
+    if (Array.isArray(mt)) {
+      fields['Meal Type'] = mt.map((v) => String(v).trim()).filter(Boolean)
+    } else if (typeof mt === 'string' && mt.trim()) {
+      fields['Meal Type'] = [mt.trim()]
+    } else {
+      fields['Meal Type'] = []
+    }
+  }
   if (body['Cooking Process'] != null && typeof body['Cooking Process'] === 'string') fields['Cooking Process'] = body['Cooking Process'].trim()
   if (body['Complexity Rating'] != null) fields['Complexity Rating'] = typeof body['Complexity Rating'] === 'number' ? body['Complexity Rating'] : Number(body['Complexity Rating'])
   if (body['Nutrient Rating'] != null) fields['Nutrient Rating'] = typeof body['Nutrient Rating'] === 'number' ? body['Nutrient Rating'] : Number(body['Nutrient Rating'])

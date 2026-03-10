@@ -16,10 +16,12 @@ const INITIAL_FORM = {
 /**
  * Modal to add or edit a recipe ingredient (Recipe Ingredients table).
  * recipeId is required for create. For edit, pass existing recipeIngredient record.
+ * onSaved called after create or update. onDeleted called after delete (when editing).
  */
-export function RecipeIngredientModal({ recipeId, recipeIngredient, ingredients = [], onClose, onSaved }) {
+export function RecipeIngredientModal({ recipeId, recipeIngredient, ingredients = [], onClose, onSaved, onDeleted }) {
   const { fetchApi } = usePlannerApi()
   const [saving, setSaving] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const [form, setForm] = useState(INITIAL_FORM)
   const isCreate = recipeIngredient == null
 
@@ -80,6 +82,21 @@ export function RecipeIngredientModal({ recipeId, recipeIngredient, ingredients 
       console.error(err)
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleDelete = async () => {
+    if (isCreate || !recipeIngredient?.id) return
+    if (!window.confirm('Remove this ingredient from the recipe?')) return
+    setDeleting(true)
+    try {
+      await fetchApi(`/api/recipe-ingredients/${recipeIngredient.id}`, { method: 'DELETE' })
+      onDeleted?.()
+      onClose()
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setDeleting(false)
     }
   }
 
@@ -171,7 +188,17 @@ export function RecipeIngredientModal({ recipeId, recipeIngredient, ingredients 
               className="w-full rounded-lg border border-border bg-surface text-text px-3 py-2.5 min-h-[60px] resize-y"
             />
           </div>
-          <div className="flex justify-end gap-2 pt-2">
+          <div className="flex justify-end gap-2 pt-2 flex-wrap">
+            {!isCreate && (
+              <button
+                type="button"
+                onClick={handleDelete}
+                disabled={deleting}
+                className="min-h-[44px] px-4 rounded-xl text-sm font-medium bg-transparent text-red-600 dark:text-red-400 hover:bg-red-500/10 mr-auto"
+              >
+                {deleting ? 'Removing…' : 'Remove from recipe'}
+              </button>
+            )}
             <button
               type="button"
               onClick={onClose}

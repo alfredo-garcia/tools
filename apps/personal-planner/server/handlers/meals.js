@@ -3,7 +3,7 @@ import { fetchTable, createRecord, updateRecord, deleteRecord } from '../../api/
 
 const TABLE = process.env.AIRTABLE_TABLE_MEALS || 'Meals'
 
-const MEAL_TYPES = ['Breakfast', 'Lunch', 'Dinner', 'Sauce', 'Dessert', 'Snack']
+const MEAL_TYPES = ['Breakfast', 'Lunch', 'Dinner', 'Sauce', 'Dessert', 'Snack', 'Tapa']
 
 function getPathSegments(pathname) {
   return (pathname || '').replace(/^\/api/, '').split('/').filter(Boolean)

@@ -15,7 +15,7 @@ Usa esta especificación para que una IA genere ficheros JSON válidos que se pu
 | `Name` | string | **Sí** | Nombre de la receta (ej. en inglés). |
 | `Name ES` | string | No | Nombre en español. |
 | `Description` | string | No | Descripción o pasos. Puede contener `\n` para saltos de línea. |
-| `Meal Type` | string **o** array de strings | No | **Solo uno o más de:** `Breakfast`, `Lunch`, `Dinner`, `Snack`. Si es un solo valor, enviar string; si son varios, array. |
+| `Meal Type` | string **o** array de strings | No | **Solo uno o más de:** `Breakfast`, `Lunch`, `Dinner`, `Snack`, `Tapa`. Si es un solo valor, enviar string; si son varios, array. |
 | `Cooking Process` | string | No | Texto del proceso de cocción. |
 | `Complexity Rating` | number | No | Número (ej. 1–5). |
 | `Nutrient Rating` | number | No | Número (ej. 1–5). |
@@ -40,7 +40,7 @@ Los ingredientes se referencian por **Name** (debe coincidir con el `Name` de un
 
 **Resumen de opciones para recetas:**
 
-- **Meal Type:** `Breakfast` | `Lunch` | `Dinner` | `Snack` (uno o varios).
+- **Meal Type:** `Breakfast` | `Lunch` | `Dinner` | `Snack` | `Tapa` (uno o varios).
 - **Cuisine Type:** `American` | `Asian` | `European` | `Middle Eastern` | `Mexican` | `Other` | `Spanish` | `Colombian` | `International`.
 - **Unit (en ingredients):** `pcs` | `kg` | `L` | `pack` | `bag` | `cup` | `tbsp` | `tsp`.
 
@@ -154,7 +154,7 @@ Reglas:
 
 | Contexto | Campo | Valores permitidos |
 |----------|--------|--------------------|
-| Recipe | Meal Type | `Breakfast`, `Lunch`, `Dinner`, `Snack` |
+| Recipe | Meal Type | `Breakfast`, `Lunch`, `Dinner`, `Snack`, `Tapa` |
 | Recipe | Cuisine Type | `American`, `Asian`, `European`, `Middle Eastern`, `Mexican`, `Other`, `Spanish`, `Colombian`, `International` |
 | Recipe ingredient / Ingredient / Shopping | Unit | `pcs`, `kg`, `L`, `pack`, `bag`, `cup`, `tbsp`, `tsp` |
 | Ingredient | Category | `Vegetable`, `Fruit`, `Meat`, `Dairy`, `Grain`, `Spice`, `Herb`, `Condiment`, `Other` |

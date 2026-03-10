@@ -214,7 +214,7 @@ function RecipeCardSearch({ recipe }) {
   const name = str(field(recipe, 'Name')) || str(field(recipe, 'Name ES')) || '(untitled)'
   const nameES = str(field(recipe, 'Name ES'))
   const title = nameES && name !== nameES ? `${nameES} — ${name}` : name
-  const mealType = str(field(recipe, 'Meal Type'))
+  const mealTypes = arr(field(recipe, 'Meal Type'))
   const cuisineType = str(field(recipe, 'Cuisine Type'))
   const timeMins = num(field(recipe, 'Time to Cook (minutes)'))
   const servings = num(field(recipe, 'Servings'))
@@ -223,7 +223,9 @@ function RecipeCardSearch({ recipe }) {
     <Link to={`/recipes/${recipe.id}`} className="block">
       <Card title={title} icon={<IconBook size={20} />} className="hover:ring-2 hover:ring-primary/30 transition-shadow">
         <div className="flex flex-wrap items-center gap-2 text-sm text-text-muted">
-          {mealType && <span className="inline-flex px-2 py-0.5 rounded-lg bg-border text-text-muted font-medium">{mealType}</span>}
+          {mealTypes.map((mt) => (
+            <span key={mt} className="inline-flex px-2 py-0.5 rounded-lg bg-border text-text-muted font-medium">{mt}</span>
+          ))}
           {cuisineType && <span className="inline-flex px-2 py-0.5 rounded-lg bg-border text-text-muted">{cuisineType}</span>}
           {timeMins != null && <span>{timeMins} min</span>}
           {servings != null && <span>{servings} servings</span>}

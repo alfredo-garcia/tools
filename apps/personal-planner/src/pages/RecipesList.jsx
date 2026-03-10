@@ -1,9 +1,12 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { Link } from 'react-router-dom'
-import { Spinner, PageHeader, Card, IconBook, IconSearch } from '@tools/shared'
+import { Link, useNavigate } from 'react-router-dom'
+import { Spinner, PageHeader, Card, IconBook, IconSearch, Fab } from '@tools/shared'
 import { usePlannerApi } from '../contexts/PlannerApiContext'
-import { field, str, num } from '@tools/shared'
+import { field, str, num, arr } from '@tools/shared'
+import { recipeMatchesMealType, MEAL_TYPE_OPTIONS } from '../lib/mealsUtils'
+import { RecipeCreateModal } from '../components/RecipeCreateModal'
 
+const FILTER_ALL = 'All'
 const MEAL_TYPE_LABELS = {
   Breakfast: 'Breakfast',
   Lunch: 'Lunch',
@@ -11,13 +14,14 @@ const MEAL_TYPE_LABELS = {
   Sauce: 'Sauce',
   Dessert: 'Dessert',
   Snack: 'Snack',
+  Tapa: 'Tapa',
 }
 
 function RecipeCard({ recipe }) {
   const name = str(field(recipe, 'Name')) || str(field(recipe, 'Name ES')) || '(untitled)'
   const nameES = str(field(recipe, 'Name ES'))
   const title = nameES && name !== nameES ? `${nameES} — ${name}` : name
-  const mealType = str(field(recipe, 'Meal Type'))
+  const mealTypes = arr(field(recipe, 'Meal Type'))
   const cuisineType = str(field(recipe, 'Cuisine Type'))
   const timeMins = num(field(recipe, 'Time to Cook (minutes)'))
   const servings = num(field(recipe, 'Servings'))
@@ -26,11 +30,11 @@ function RecipeCard({ recipe }) {
     <Link to={`/recipes/${recipe.id}`} className="block">
       <Card title={title} icon={<IconBook size={20} />} className="hover:ring-2 hover:ring-primary/30 transition-shadow">
         <div className="flex flex-wrap items-center gap-2 text-sm text-text-muted">
-          {mealType && (
-            <span className="inline-flex px-2 py-0.5 rounded-lg bg-border text-text-muted font-medium">
-              {MEAL_TYPE_LABELS[mealType] || mealType}
+          {mealTypes.map((mt) => (
+            <span key={mt} className="inline-flex px-2 py-0.5 rounded-lg bg-border text-text-muted font-medium">
+              {MEAL_TYPE_LABELS[mt] || mt}
             </span>
-          )}
+          ))}
           {cuisineType && (
             <span className="inline-flex px-2 py-0.5 rounded-lg bg-border text-text-muted">
               {cuisineType}
@@ -49,11 +53,14 @@ function RecipeCard({ recipe }) {
 }
 
 export function RecipesList() {
+  const navigate = useNavigate()
   const { fetchApi, invalidateCache } = usePlannerApi()
   const [list, setList] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [search, setSearch] = useState('')
+  const [mealTypeFilter, setMealTypeFilter] = useState(FILTER_ALL)
+  const [createRecipeOpen, setCreateRecipeOpen] = useState(false)
 
   const refetch = useCallback(() => {
     setLoading(true)
@@ -80,9 +87,10 @@ export function RecipesList() {
   }, [refetch])
 
   const filtered = useMemo(() => {
+    let result = mealTypeFilter === FILTER_ALL ? list : list.filter((r) => recipeMatchesMealType(r, mealTypeFilter))
     const q = search.trim().toLowerCase()
-    if (!q) return list
-    return list.filter((r) => {
+    if (!q) return result
+    return result.filter((r) => {
       const name = (str(field(r, 'Name')) + ' ' + str(field(r, 'Name ES'))).toLowerCase()
       const desc = (str(field(r, 'Description')) || '').toLowerCase()
       const tags = (str(field(r, 'Tags')) || '').toLowerCase()
@@ -90,7 +98,16 @@ export function RecipesList() {
       const cuisine = (str(field(r, 'Cuisine Type')) || '').toLowerCase()
       return name.includes(q) || desc.includes(q) || tags.includes(q) || meal.includes(q) || cuisine.includes(q)
     })
-  }, [list, search])
+  }, [list, search, mealTypeFilter])
+
+  const handleRecipeCreated = useCallback(
+    (recipe) => {
+      invalidateCache('/api/recipes')
+      setCreateRecipeOpen(false)
+      if (recipe?.id) navigate(`/recipes/${recipe.id}`)
+    },
+    [invalidateCache, navigate]
+  )
 
   return (
     <div className="app-content">
@@ -101,6 +118,25 @@ export function RecipesList() {
         loading={loading}
       />
       <div className="space-y-4">
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => setMealTypeFilter(FILTER_ALL)}
+            className={`min-h-[40px] px-3 rounded-xl text-sm font-medium ${mealTypeFilter === FILTER_ALL ? 'bg-primary text-white' : 'bg-border text-text hover:bg-border/80'}`}
+          >
+            All
+          </button>
+          {MEAL_TYPE_OPTIONS.map((value) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => setMealTypeFilter(value)}
+              className={`min-h-[40px] px-3 rounded-xl text-sm font-medium ${mealTypeFilter === value ? 'bg-primary text-white' : 'bg-border text-text hover:bg-border/80'}`}
+            >
+              {MEAL_TYPE_LABELS[value] || value}
+            </button>
+          ))}
+        </div>
         <div className="relative">
           <IconSearch
             size={20}
@@ -138,6 +174,14 @@ export function RecipesList() {
           </div>
         )}
       </div>
+
+      {createRecipeOpen && (
+        <RecipeCreateModal
+          onClose={() => setCreateRecipeOpen(false)}
+          onCreate={handleRecipeCreated}
+        />
+      )}
+      <Fab onClick={() => setCreateRecipeOpen(true)} ariaLabel="Create recipe" />
     </div>
   )
 }

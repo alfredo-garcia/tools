@@ -35,7 +35,7 @@ const TABLE_RECIPES = process.env.AIRTABLE_TABLE_RECIPES || 'Recipes'
 const TABLE_INGREDIENTS = process.env.AIRTABLE_TABLE_INGREDIENTS || 'Ingredients'
 const TABLE_RECIPE_INGREDIENTS = process.env.AIRTABLE_TABLE_RECIPE_INGREDIENTS || 'Recipe Ingredients'
 
-const MEAL_TYPES = new Set(['Breakfast', 'Lunch', 'Dinner', 'Sauce', 'Dessert', 'Snack'])
+const MEAL_TYPES = new Set(['Breakfast', 'Lunch', 'Dinner', 'Sauce', 'Dessert', 'Snack', 'Tapa'])
 const CUISINE_TYPES = new Set(['American', 'Asian', 'European', 'Middle Eastern', 'Mexican', 'Other', 'Spanish', 'Colombian', 'International'])
 const RECIPE_INGREDIENT_UNITS = new Set(['pcs', 'kg', 'L', 'pack', 'bag', 'cup', 'tbsp', 'tsp'])
 

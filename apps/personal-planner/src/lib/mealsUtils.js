@@ -8,6 +8,7 @@ export const MEAL_TYPE_OPTIONS = [
   'Sauce',
   'Dessert',
   'Snack',
+  'Tapa',
 ]
 
 /**

@@ -27,7 +27,7 @@ Esquema exacto de las tablas para que los JSON y scripts coincidan con Airtable.
 | Name | string | Obligatorio. |
 | Name ES | string | Opcional. |
 | Description | string | Opcional. |
-| Meal Type | multi-select | **Uno o más de:** `Breakfast`, `Lunch`, `Dinner`, `Snack` (en el JSON puede ser string o array; el script envía array) |
+| Meal Type | multi-select | **Uno o más de:** `Breakfast`, `Lunch`, `Dinner`, `Snack`, `Tapa` (en el JSON puede ser string o array; el script envía array) |
 | Cooking Process | string | Opcional. |
 | Complexity Rating | number | Opcional. |
 | Nutrient Rating | number | Opcional. |

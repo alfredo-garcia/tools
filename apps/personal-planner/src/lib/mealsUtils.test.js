@@ -39,6 +39,7 @@ describe('mealsUtils', () => {
       expect(recipeMatchesMealType({ 'Meal Type': 'Breakfast' }, 'Breakfast')).toBe(true)
       expect(recipeMatchesMealType({ 'Meal Type': 'Lunch' }, 'Lunch')).toBe(true)
       expect(recipeMatchesMealType({ 'Meal Type': 'Dinner' }, 'Dinner')).toBe(true)
+      expect(recipeMatchesMealType({ 'Meal Type': 'Tapa' }, 'Tapa')).toBe(true)
     })
 
     it('returns true when recipe Meal Type is array containing the type', () => {

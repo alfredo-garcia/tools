@@ -6,6 +6,7 @@ import { getTaskStatusGroup } from '../lib/taskStatus'
 import { TaskCard, STATUS_OPTIONS, getPriorityTagClass } from '../components/TaskCard'
 import { TaskModal } from '../components/TaskModal'
 import { Fab } from '@tools/shared'
+import { useTouchDrag } from '../hooks/useTouchDrag'
 
 const DAY_NAMES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
@@ -275,6 +276,36 @@ function DayTasksColumn({ dayStr, tasks, showCompleted = false, onTaskStatusChan
   const done = tasksForDay.filter((t) => getTaskStatusGroup(t) === 'done')
   const visibleTasks = showCompleted ? [...pending, ...inProgress, ...done] : [...pending, ...inProgress]
 
+  function TaskDraggableRow({ task, onTaskStatusChange, onTaskClick, refetch }) {
+    const touchDrag = useTouchDrag({
+      getPayload: () => ({ taskId: task.id, fromDayStr: dayStr }),
+      onDropTarget: (target) => {
+        if (target?.dayStr && target.dayStr !== dayStr && onTaskMove) onTaskMove(task.id, target.dayStr)
+      },
+      setDragging: (v) => setDraggingTaskId(v ? task.id : null),
+      setDragOverTarget: (target) => setDragOver(target?.dayStr === dayStr),
+    })
+    return (
+      <li
+        ref={touchDrag.ref}
+        className="w-full cursor-grab active:cursor-grabbing"
+        draggable
+        onDragStart={(e) => handleDragStart(e, task)}
+        onDragEnd={handleDragEnd}
+        {...touchDrag}
+      >
+        <TaskCard
+          task={task}
+          dayStr={dayStr}
+          onStatusChange={onTaskStatusChange}
+          onOpenModal={onTaskClick}
+          refetch={refetch}
+          isDragging={draggingTaskId === task.id}
+        />
+      </li>
+    )
+  }
+
   const handleDragStart = (e, task) => {
     e.dataTransfer.setData(DRAG_TYPE_TASK, JSON.stringify({ taskId: task.id, fromDayStr: dayStr }))
     e.dataTransfer.effectAllowed = 'move'
@@ -304,6 +335,8 @@ function DayTasksColumn({ dayStr, tasks, showCompleted = false, onTaskStatusChan
 
   return (
     <div
+      data-drop-zone="task"
+      data-day-str={dayStr}
       className={`flex flex-col min-w-0 px-2 rounded-lg transition-colors min-h-[80px] ${dragOver ? 'ring-2 ring-primary bg-primary/5' : ''}`}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
@@ -334,22 +367,13 @@ function DayTasksColumn({ dayStr, tasks, showCompleted = false, onTaskStatusChan
       <ul className="space-y-2 w-full mt-3">
         {visibleTasks.length === 0 && <li className="text-xs text-text-muted py-1">No tasks</li>}
         {visibleTasks.map((task) => (
-          <li
+          <TaskDraggableRow
             key={task.id}
-            className="w-full cursor-grab active:cursor-grabbing"
-            draggable
-            onDragStart={(e) => handleDragStart(e, task)}
-            onDragEnd={handleDragEnd}
-          >
-            <TaskCard
-              task={task}
-              dayStr={dayStr}
-              onStatusChange={onTaskStatusChange}
-              onOpenModal={onTaskClick}
-              refetch={refetch}
-              isDragging={draggingTaskId === task.id}
-            />
-          </li>
+            task={task}
+            onTaskStatusChange={onTaskStatusChange}
+            onTaskClick={onTaskClick}
+            refetch={refetch}
+          />
         ))}
       </ul>
     </div>
@@ -404,6 +428,44 @@ function DayHabitsColumn({ dayStr, goodHabits, badHabits, allHabits, habitTracki
         ))}
       </div>
     </div>
+  )
+}
+
+/** Draggable task row for mobile day column (touch + mouse drag). */
+function MobileTaskDraggableRow({
+  task,
+  dayStr,
+  onTaskMove,
+  onTaskStatusChange,
+  onTaskClick,
+  refetch,
+  draggingTaskId,
+  setDraggingTaskId,
+  setTasksDragOver,
+}) {
+  const touchDrag = useTouchDrag({
+    getPayload: () => ({ taskId: task.id, fromDayStr: dayStr }),
+    onDropTarget: (target) => {
+      if (target?.dayStr && target.dayStr !== dayStr && onTaskMove) onTaskMove(task.id, target.dayStr)
+    },
+    setDragging: (v) => setDraggingTaskId(v ? task.id : null),
+    setDragOverTarget: (target) => setTasksDragOver(!!(target?.dayStr === dayStr)),
+  })
+  return (
+    <li
+      ref={touchDrag.ref}
+      className="w-full cursor-grab active:cursor-grabbing"
+      draggable
+      onDragStart={(e) => {
+        e.dataTransfer.setData(DRAG_TYPE_TASK, JSON.stringify({ taskId: task.id, fromDayStr: dayStr }))
+        e.dataTransfer.effectAllowed = 'move'
+        setDraggingTaskId(task.id)
+      }}
+      onDragEnd={() => setTimeout(() => setDraggingTaskId(null), 100)}
+      {...touchDrag}
+    >
+      <TaskCard task={task} dayStr={dayStr} onStatusChange={onTaskStatusChange} onOpenModal={onTaskClick} refetch={refetch} isDragging={draggingTaskId === task.id} />
+    </li>
   )
 }
 
@@ -506,6 +568,8 @@ function DayColumn({
       {!tasksCollapsed && (
         <>
           <div
+            data-drop-zone="task"
+            data-day-str={dayStr}
             className={`rounded-lg mt-3 min-h-[60px] transition-colors ${tasksDragOver ? 'ring-2 ring-primary bg-primary/5' : ''}`}
             onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; setTasksDragOver(true) }}
             onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) setTasksDragOver(false) }}
@@ -528,19 +592,18 @@ function DayColumn({
                 const visibleTasks = showCompleted ? [...pending, ...inProgress, ...done] : [...pending, ...inProgress]
                 if (visibleTasks.length === 0) return <li className="text-xs text-text-muted py-1">No tasks</li>
                 return visibleTasks.map((task) => (
-                  <li
+                  <MobileTaskDraggableRow
                     key={task.id}
-                    className="w-full cursor-grab active:cursor-grabbing"
-                    draggable
-                    onDragStart={(e) => {
-                      e.dataTransfer.setData(DRAG_TYPE_TASK, JSON.stringify({ taskId: task.id, fromDayStr: dayStr }))
-                      e.dataTransfer.effectAllowed = 'move'
-                      setDraggingTaskId(task.id)
-                    }}
-                    onDragEnd={() => setTimeout(() => setDraggingTaskId(null), 100)}
-                  >
-                    <TaskCard task={task} dayStr={dayStr} onStatusChange={onTaskStatusChange} onOpenModal={onTaskClick} refetch={refetch} isDragging={draggingTaskId === task.id} />
-                  </li>
+                    task={task}
+                    dayStr={dayStr}
+                    onTaskMove={onTaskMove}
+                    onTaskStatusChange={onTaskStatusChange}
+                    onTaskClick={onTaskClick}
+                    refetch={refetch}
+                    draggingTaskId={draggingTaskId}
+                    setDraggingTaskId={setDraggingTaskId}
+                    setTasksDragOver={setTasksDragOver}
+                  />
                 ))
               })()}
             </ul>

@@ -187,19 +187,25 @@ export function PlannerApiProvider({ children }) {
       const memoryCache = memoryCacheRef.current
 
       if (isGet) {
-        const mem = memoryCache.get(path)
-        if (mem && Date.now() - mem.timestamp < CACHE_TTL_MS) {
-          return mem.data
-        }
-        try {
-          const idb = await getCached(path)
-          if (idb?.data != null) {
-            memoryCache.set(path, { data: idb.data, timestamp: idb.timestamp || Date.now() })
-            return idb.data
+        const now = Date.now()
+        // When online: always try network first (network-first) so first load gets fresh data.
+        // When offline: use cache (memory then IDB).
+        if (!isOnline) {
+          const mem = memoryCache.get(path)
+          if (mem && now - mem.timestamp < CACHE_TTL_MS) {
+            return mem.data
           }
-        } catch {
-          // ignore IDB read errors
+          try {
+            const idb = await getCached(path)
+            if (idb?.data != null) {
+              memoryCache.set(path, { data: idb.data, timestamp: idb.timestamp || now })
+              return idb.data
+            }
+          } catch {
+            // ignore
+          }
         }
+        // Online: skip cache for GET, go straight to network below (cache used only on network failure)
       }
 
       if (!isOnline && !isGet) {
@@ -247,6 +253,19 @@ export function PlannerApiProvider({ children }) {
         }
         return data
       } catch (err) {
+        if (isGet) {
+          try {
+            const mem = memoryCache.get(path)
+            if (mem?.data != null) return mem.data
+            const idb = await getCached(path)
+            if (idb?.data != null) {
+              memoryCache.set(path, { data: idb.data, timestamp: idb.timestamp || Date.now() })
+              return idb.data
+            }
+          } catch {
+            // ignore
+          }
+        }
         if (!isOnline || err.message?.includes('Failed to fetch') || err.message?.includes('NetworkError')) {
           if (!isGet) {
             const resourceKey = getResourcePrefix(path)

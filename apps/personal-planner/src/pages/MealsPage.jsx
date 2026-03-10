@@ -5,6 +5,7 @@ import { usePlannerApi } from '../contexts/PlannerApiContext'
 import { getMealsForSlot } from '../lib/mealsUtils'
 import { AddMealModal } from '../components/AddMealModal'
 import { EditMealModal } from '../components/EditMealModal'
+import { useTouchDrag } from '../hooks/useTouchDrag'
 
 const DAY_NAMES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
@@ -41,15 +42,17 @@ function formatDayDate(dayStr) {
 
 const DRAG_TYPE_MEAL = 'application/x-planner-meal'
 
-function MealSlotCard({ meal, recipeName, isDragging, onDragStart, onDragEnd, onClick }) {
+function MealSlotCard({ meal, recipeName, isDragging, onDragStart, onDragEnd, onClick, touchHandlers = {}, touchRef }) {
   return (
     <div
+      ref={touchRef}
       role="button"
       tabIndex={0}
       draggable
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
       onClick={onClick}
+      {...touchHandlers}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault()
@@ -77,6 +80,55 @@ function AddSlotButton({ onClick, label }) {
     >
       <span className="text-2xl leading-none">+</span>
     </button>
+  )
+}
+
+/** Meal card with touch drag support for mobile. */
+function MealSlotCardWithTouch({
+  meal,
+  dayStr,
+  mealType,
+  recipesById,
+  onEditMeal,
+  onMealMove,
+  draggingMealId,
+  setDraggingMealId,
+  onDragOverSlot,
+  dragKey,
+}) {
+  const recipeId = field(meal, 'Meal', 'Recipe')
+  const recipeName = recipeId ? (recipesById[recipeId] || recipeId) : '(sin receta)'
+  const touchDrag = useTouchDrag({
+    getPayload: () => ({ mealId: meal.id, fromDateStr: dayStr, fromMealType: mealType }),
+    onDropTarget: (target) => {
+      if (target?.dayStr != null && target?.mealType != null && onMealMove) {
+        if (target.dayStr !== dayStr || target.mealType !== mealType) {
+          onMealMove(meal.id, target.dayStr, target.mealType)
+        }
+      }
+    },
+    setDragging: (v) => setDraggingMealId(v ? meal.id : null),
+    setDragOverTarget: (target) => onDragOverSlot(target ? `${target.dayStr}-${target.mealType}` : null),
+  })
+  return (
+    <MealSlotCard
+      meal={meal}
+      recipeName={recipeName}
+      isDragging={draggingMealId === meal.id}
+      onDragStart={(e) => {
+        e.dataTransfer.setData(DRAG_TYPE_MEAL, JSON.stringify({
+          mealId: meal.id,
+          fromDateStr: dayStr,
+          fromMealType: mealType,
+        }))
+        e.dataTransfer.effectAllowed = 'move'
+        setDraggingMealId(meal.id)
+      }}
+      onDragEnd={() => setTimeout(() => setDraggingMealId(null), 100)}
+      onClick={() => onEditMeal(meal, dayStr, mealType, recipeName)}
+      touchHandlers={touchDrag}
+      touchRef={touchDrag.ref}
+    />
   )
 }
 
@@ -116,6 +168,9 @@ function MealSlotCell({
 
   return (
     <div
+      data-drop-zone="meal"
+      data-day-str={dayStr}
+      data-meal-type={mealType}
       className={`flex flex-col min-w-0 px-2 rounded-lg transition-colors min-h-[80px] ${isDragOver ? 'ring-2 ring-primary bg-primary/5' : ''}`}
       onDragOver={(e) => {
         e.preventDefault()
@@ -128,29 +183,21 @@ function MealSlotCell({
       onDrop={handleDrop}
     >
       <div className="space-y-2 w-full mt-0">
-        {slotMeals.map((meal) => {
-          const recipeId = field(meal, 'Meal', 'Recipe')
-          const recipeName = recipeId ? (recipesById[recipeId] || recipeId) : '(sin receta)'
-          return (
-            <MealSlotCard
-              key={meal.id}
-              meal={meal}
-              recipeName={recipeName}
-              isDragging={draggingMealId === meal.id}
-              onDragStart={(e) => {
-                e.dataTransfer.setData(DRAG_TYPE_MEAL, JSON.stringify({
-                  mealId: meal.id,
-                  fromDateStr: dayStr,
-                  fromMealType: mealType,
-                }))
-                e.dataTransfer.effectAllowed = 'move'
-                setDraggingMealId(meal.id)
-              }}
-              onDragEnd={() => setTimeout(() => setDraggingMealId(null), 100)}
-              onClick={() => onEditMeal(meal, dayStr, mealType, recipeName)}
-            />
-          )
-        })}
+        {slotMeals.map((meal) => (
+          <MealSlotCardWithTouch
+            key={meal.id}
+            meal={meal}
+            dayStr={dayStr}
+            mealType={mealType}
+            recipesById={recipesById}
+            onEditMeal={onEditMeal}
+            onMealMove={onMealMove}
+            draggingMealId={draggingMealId}
+            setDraggingMealId={setDraggingMealId}
+            onDragOverSlot={onDragOverSlot}
+            dragKey={dragKey}
+          />
+        ))}
         <AddSlotButton onClick={() => onAddMeal(dayStr, mealType)} label={`${dayLabel} ${mealType}`} />
       </div>
     </div>
@@ -202,6 +249,9 @@ function DayMealsColumn({
         return (
           <div
             key={mealType}
+            data-drop-zone="meal"
+            data-day-str={dayStr}
+            data-meal-type={mealType}
             className={`mt-3 rounded-lg min-h-[52px] transition-colors ${isDragOver ? 'ring-2 ring-primary bg-primary/5' : ''}`}
             onDragOver={(e) => {
               e.preventDefault()
@@ -215,29 +265,21 @@ function DayMealsColumn({
           >
             <div className="text-xs font-medium text-text-muted mb-1 px-0.5">{mealType}</div>
             <div className="space-y-2">
-              {slotMeals.map((meal) => {
-                const recipeId = field(meal, 'Meal', 'Recipe')
-                const recipeName = recipeId ? (recipesById[recipeId] || recipeId) : '(sin receta)'
-                return (
-                  <MealSlotCard
-                    key={meal.id}
-                    meal={meal}
-                    recipeName={recipeName}
-                    isDragging={draggingMealId === meal.id}
-                    onDragStart={(e) => {
-                      e.dataTransfer.setData(DRAG_TYPE_MEAL, JSON.stringify({
-                        mealId: meal.id,
-                        fromDateStr: dayStr,
-                        fromMealType: mealType,
-                      }))
-                      e.dataTransfer.effectAllowed = 'move'
-                      setDraggingMealId(meal.id)
-                    }}
-                    onDragEnd={() => setTimeout(() => setDraggingMealId(null), 100)}
-                    onClick={() => onEditMeal(meal, dayStr, mealType, recipeName)}
-                  />
-                )
-              })}
+              {slotMeals.map((meal) => (
+                <MealSlotCardWithTouch
+                  key={meal.id}
+                  meal={meal}
+                  dayStr={dayStr}
+                  mealType={mealType}
+                  recipesById={recipesById}
+                  onEditMeal={onEditMeal}
+                  onMealMove={onMealMove}
+                  draggingMealId={draggingMealId}
+                  setDraggingMealId={setDraggingMealId}
+                  onDragOverSlot={onDragOverSlot}
+                  dragKey={dragKey}
+                />
+              ))}
               <AddSlotButton onClick={() => onAddMeal(dayStr, mealType)} label={`${dayLabel} ${mealType}`} />
             </div>
           </div>

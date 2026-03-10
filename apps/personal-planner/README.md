@@ -44,7 +44,7 @@ Todas las rutas `/api/*` (validate, tasks, objectives, habits, etc.) se sirven m
 
 ### Caché en el cliente y modo offline
 
-Las respuestas GET se cachean **en memoria** (1 día) y en **IndexedDB** (persistente). La caché se invalida al crear, actualizar o borrar un recurso y al usar el refresh manual.
+Las respuestas GET se cachean **en memoria** (1 día) y en **IndexedDB** (persistente). La caché se invalida al crear, actualizar o borrar un recurso y al usar el refresh manual. **Con conexión** se usa siempre la red primero (network-first): al entrar o al cargar una vista se pide a la API y se actualiza la caché; la caché solo se usa cuando no hay red o cuando la petición falla.
 
 **Comportamiento offline:**
 

@@ -14,7 +14,7 @@ const AUTH_HEADER = 'Authorization'
 const ONE_DAY_MS = 24 * 60 * 60 * 1000
 const CACHE_TTL_MS = ONE_DAY_MS
 
-const PlannerApiContext = createContext(null)
+export const PlannerApiContext = createContext(null)
 
 /**
  * Extract record id from path: /api/tasks/recXXX -> recXXX
@@ -54,7 +54,7 @@ export function PlannerApiProvider({ children }) {
 
   useEffect(() => {
     refreshPendingCount()
-  }, [refreshPendingCount, isOnline, isSyncing])
+  }, [refreshPendingCount, isOnline])
 
   const invalidateCache = useCallback((pathOrPrefix) => {
     const prefix = pathOrPrefix ? getResourcePrefix(pathOrPrefix) : null
@@ -145,7 +145,6 @@ export function PlannerApiProvider({ children }) {
           const data = await doNetworkFetch(mut.path, opts)
           await removePendingMutation(mut.id)
           if (mut.method === 'GET' || mut.method === 'POST' || mut.method === 'PATCH') {
-            const pathToCache = mut.method === 'POST' ? mut.path : mut.path
             const resKey = getResourcePrefix(mut.path)
             invalidateCache(resKey)
             if (mut.method === 'PATCH' && data?.data) {
@@ -155,7 +154,7 @@ export function PlannerApiProvider({ children }) {
             invalidateCache(mut.resourceKey)
           }
         } catch (err) {
-          if (err.status === 409) {
+          if (err?.status === 409) {
             conflicts++
             await removePendingMutation(mut.id)
             invalidateCache(mut.resourceKey)
@@ -165,16 +164,21 @@ export function PlannerApiProvider({ children }) {
       }
       if (conflicts > 0) setConflictCount((c) => c + conflicts)
       await refreshPendingCount()
+    } catch {
+      // never let IDB or network errors crash the app
     } finally {
       setIsSyncing(false)
     }
   }, [isOnline, doNetworkFetch, invalidateCache, refreshPendingCount])
 
   useEffect(() => {
-    if (isOnline) {
+    if (!isOnline) return
+    // Defer sync so first paint completes and we don't block or race with initial IDB reads
+    const t = setTimeout(() => {
       processPendingQueue()
-    }
-  }, [isOnline])
+    }, 100)
+    return () => clearTimeout(t)
+  }, [isOnline, processPendingQueue])
 
   const fetchApi = useCallback(
     async (path, options = {}) => {

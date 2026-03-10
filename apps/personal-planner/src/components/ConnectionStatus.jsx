@@ -2,10 +2,13 @@
  * Shows connection and sync status: online/offline, syncing, pending changes, conflicts.
  * Renders a thin bar when offline or when there are pending/conflict counts.
  */
-import { usePlannerApi } from '../contexts/PlannerApiContext'
+import { useContext } from 'react'
+import { PlannerApiContext } from '../contexts/PlannerApiContext'
 
 export function ConnectionStatus() {
-  const { isOnline, isSyncing, pendingCount, conflictCount, setConflictCount } = usePlannerApi()
+  const ctx = useContext(PlannerApiContext)
+  if (!ctx) return null
+  const { isOnline = true, isSyncing = false, pendingCount = 0, conflictCount = 0, setConflictCount } = ctx
 
   if (isOnline && !isSyncing && pendingCount === 0 && conflictCount === 0) return null
 

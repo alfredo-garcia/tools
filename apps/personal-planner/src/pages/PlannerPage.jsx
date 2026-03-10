@@ -80,9 +80,9 @@ function usePlannerData() {
     setLoading(true)
     setError(null)
     return Promise.all([
-      fetchApi('/api/tasks').then((r) => r.data || []),
-      fetchApi('/api/habits').then((r) => r.data || []),
-      fetchApi('/api/habit-tracking').then((r) => r.data || []),
+      fetchApi('/api/tasks').then((r) => (Array.isArray(r?.data) ? r.data : [])),
+      fetchApi('/api/habits').then((r) => (Array.isArray(r?.data) ? r.data : [])),
+      fetchApi('/api/habit-tracking').then((r) => (Array.isArray(r?.data) ? r.data : [])),
     ])
       .then(([tasks, habits, habitTracking]) => {
         setData({ tasks, habits, habitTracking })
@@ -154,9 +154,10 @@ function dayHeaderStars(tasksForDay, habits, habitTracking, dayStr) {
 
 /** Group habits by category. '' key = uncategorized. Order: named categories first (A–Z), uncategorized last. Within each category, habits sorted by name (A–Z). */
 function getHabitsByCategory(habits) {
+  const list = Array.isArray(habits) ? habits : []
   const map = new Map()
   const habitName = (h) => str(field(h, 'Habit Name', 'Habit Name')) || ''
-  for (const h of habits) {
+  for (const h of list) {
     const cat = str(field(h, 'Category', 'Category')) || ''
     if (!map.has(cat)) map.set(cat, [])
     map.get(cat).push(h)
@@ -169,8 +170,9 @@ function getHabitsByCategory(habits) {
 
 /** Filtra hábitos por columna "Habit type" (o "Habit Type"). type = "Good" | "Bad" (case-insensitive). */
 function filterHabitsByType(habits, type) {
+  const list = Array.isArray(habits) ? habits : []
   const want = String(type).trim().toLowerCase()
-  return habits.filter((h) => {
+  return list.filter((h) => {
     const v = str(field(h, 'Habit type', 'Habit Type')) || ''
     return v.trim().toLowerCase() === want
   })

@@ -10,7 +10,7 @@ Configura una base con estas tablas (los nombres de campos pueden variar; la app
 - **Key Results**: Key Result Name, Description, Metric, Target Value, Current Value, Unit, Status, Deadline, Progress (%), Objective Link (link a Objectives)
 - **Key Result Tracking**: Key Result (link a Key Results), Date, Current Value, Progress (%) (opcionales). Se crea un registro al actualizar "Current value" o "Progress (%)" en un Key Result, con snapshot de valor y progreso.
 - **Tasks**: Task Name, Description, Category, Priority, Status, Assignee, Due Date, Objectives, Key Result (links opcionales)
-- **Habits**: Habit Name, Habit Description, Category, Frequency, Priority, Habit type (opcional: "Good" o "Bad" para separar en Planner en Good Habits / Bad Habits)
+- **Habits**: Habit Name, Habit Description, Category, Frequency, Priority, Habit type (opcional: "Good" o "Bad" para separar en Planner en contadores y agrupar en la lista por categoría)
 - **Habit Tracking**: Habit (link a Habits), Was Successful?, Execution Date-Time
 - **Shopping List**: Name, Category, Description, Image (Web), Name ES, Notes, Priority, Quantity, Status (Need / Have), Store, Unit (puede estar en otra base; usa `AIRTABLE_BASE_ID_SHOPPING`)
 - **Meals** (base principal): Meal Type (Breakfast, Lunch, Dinner), Date, Meal (ID de la receta de la base Recipes; la app muestra el nombre resolviendo contra Recipes)
@@ -60,7 +60,7 @@ En la ruta `/meals` se muestra una vista de semana (como en Planner) con una col
 
 ## Vista Planner
 
-En la ruta `/` (Planner), las secciones **Tasks**, **Good Habits** y **Bad Habits** son colapsables. Al colapsar cualquiera de ellas se mantiene visible la primera fila: barra de progreso (Tasks) o iconos contadores 1–5 (Good/Bad Habits). Los títulos "Good Habits" y "Bad Habits" muestran solo el texto, sin icono en el encabezado (los iconos quedan en la fila de contadores).
+En la ruta `/` (Planner), las secciones **Tasks** y **Habits** son colapsables. Al colapsar Tasks se mantiene visible la barra de progreso. Al colapsar Habits se mantienen visibles dos filas de contadores (1–5): una para Good Habits (corazones verdes) y otra para Bad Habits (corazones rojos). La lista de hábitos es única: todos (good y bad) agrupados por categoría y ordenados alfabéticamente dentro de cada grupo.
 
 En la cabecera de cada día se muestra el nombre del día y la fecha en formato **Monday March 2nd** (mes y día con ordinal). Indicadores en la cabecera:
 - **Estrella**: todas las tareas del día completadas.

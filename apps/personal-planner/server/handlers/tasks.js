@@ -1,5 +1,5 @@
 import { validateAccess } from '../../api/_lib/auth.js'
-import { fetchTable, createRecord, updateRecord, deleteRecord } from '../../api/_lib/airtable.js'
+import { fetchTable, createRecord, updateRecord, deleteRecord, checkConflict } from '../../api/_lib/airtable.js'
 
 const TABLE = process.env.AIRTABLE_TABLE_TASKS || 'Tasks'
 /** Nombre del campo link a Key Results en la tabla Tasks de Airtable (p. ej. "Key Result" o "Key Results"). */
@@ -54,6 +54,19 @@ export default async function handler(req, res) {
 
   if (recordId && req.method === 'PATCH') {
     const body = req.body || {}
+    const clientLastModified = body.clientLastModified
+    if (clientLastModified) {
+      try {
+        const conflict = await checkConflict(TABLE, recordId, clientLastModified)
+        if (conflict.conflict) {
+          res.statusCode = 409
+          res.end(JSON.stringify({ error: 'Conflict', serverLastModified: conflict.serverLastModified }))
+          return
+        }
+      } catch (err) {
+        console.error('tasks PATCH conflict check error:', err)
+      }
+    }
     const fields = {}
     if (body.Status != null && typeof body.Status === 'string') {
       const value = body.Status.trim()

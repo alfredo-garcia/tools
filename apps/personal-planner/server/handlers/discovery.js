@@ -1,5 +1,5 @@
 import { validateAccess } from '../../api/_lib/auth.js'
-import { fetchTable, createRecord, updateRecord, deleteRecord } from '../../api/_lib/airtable.js'
+import { fetchTable, createRecord, updateRecord, deleteRecord, checkConflict } from '../../api/_lib/airtable.js'
 
 /** Tabla Airtable "Discovery Ideas": Idea Name, Idea Description, Category, Status, Priority, Date Added, Objetives (linked). */
 const TABLE = process.env.AIRTABLE_TABLE_DISCOVERY || 'Discovery Ideas'
@@ -35,6 +35,19 @@ export default async function handler(req, res) {
 
   if (recordId && req.method === 'PATCH') {
     const body = req.body || {}
+    const clientLastModified = body.clientLastModified
+    if (clientLastModified) {
+      try {
+        const conflict = await checkConflict(TABLE, recordId, clientLastModified)
+        if (conflict.conflict) {
+          res.statusCode = 409
+          res.end(JSON.stringify({ error: 'Conflict', serverLastModified: conflict.serverLastModified }))
+          return
+        }
+      } catch (err) {
+        console.error('discovery PATCH conflict check error:', err)
+      }
+    }
     const fields = {}
     if (body['Idea Name'] != null && typeof body['Idea Name'] === 'string') fields['Idea Name'] = body['Idea Name'].trim()
     if (body['Idea Description'] != null && typeof body['Idea Description'] === 'string') fields['Idea Description'] = body['Idea Description'].trim()

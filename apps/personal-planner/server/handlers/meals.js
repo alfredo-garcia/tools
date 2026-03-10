@@ -1,5 +1,5 @@
 import { validateAccess } from '../../api/_lib/auth.js'
-import { fetchTable, createRecord, updateRecord, deleteRecord } from '../../api/_lib/airtable.js'
+import { fetchTable, createRecord, updateRecord, deleteRecord, checkConflict } from '../../api/_lib/airtable.js'
 
 const TABLE = process.env.AIRTABLE_TABLE_MEALS || 'Meals'
 
@@ -41,6 +41,19 @@ export default async function handler(req, res) {
 
   if (recordId && req.method === 'PATCH') {
     const body = parseBody(req)
+    const clientLastModified = body.clientLastModified
+    if (clientLastModified) {
+      try {
+        const conflict = await checkConflict(TABLE, recordId, clientLastModified)
+        if (conflict.conflict) {
+          res.statusCode = 409
+          res.end(JSON.stringify({ error: 'Conflict', serverLastModified: conflict.serverLastModified }))
+          return
+        }
+      } catch (err) {
+        console.error('meals PATCH conflict check error:', err)
+      }
+    }
     const fields = {}
     if (body['Meal Type'] != null && MEAL_TYPES.includes(String(body['Meal Type']).trim())) {
       fields['Meal Type'] = String(body['Meal Type']).trim()

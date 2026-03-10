@@ -1,5 +1,5 @@
 import { validateAccess } from '../../api/_lib/auth.js'
-import { fetchTable, createRecord, deleteRecord, updateRecord } from '../../api/_lib/airtable.js'
+import { fetchTable, createRecord, deleteRecord, updateRecord, checkConflict } from '../../api/_lib/airtable.js'
 
 const TABLE = process.env.AIRTABLE_TABLE_HABIT_TRACKING || 'Habit Tracking'
 
@@ -19,7 +19,21 @@ export default async function handler(req, res) {
   const recordId = segments[1]
 
   if (recordId && req.method === 'PATCH') {
-    const successful = req.body?.['Was Successful?']
+    const body = req.body || {}
+    const clientLastModified = body.clientLastModified
+    if (clientLastModified) {
+      try {
+        const conflict = await checkConflict(TABLE, recordId, clientLastModified)
+        if (conflict.conflict) {
+          res.statusCode = 409
+          res.end(JSON.stringify({ error: 'Conflict', serverLastModified: conflict.serverLastModified }))
+          return
+        }
+      } catch (err) {
+        console.error('habit-tracking PATCH conflict check error:', err)
+      }
+    }
+    const successful = body['Was Successful?']
     if (typeof successful !== 'boolean') {
       res.statusCode = 400
       res.end(JSON.stringify({ error: 'Body must include "Was Successful?" (boolean)' }))

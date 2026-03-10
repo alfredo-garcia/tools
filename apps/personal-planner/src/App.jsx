@@ -21,6 +21,7 @@ import { ShoppingPage } from './pages/ShoppingPage'
 import { RecipesList } from './pages/RecipesList'
 import { RecipeDetail } from './pages/RecipeDetail'
 import { MealsPage } from './pages/MealsPage'
+import { ConnectionStatus } from './components/ConnectionStatus'
 
 const baseNavItems = [
   { to: '/', label: 'Planner', Icon: IconCalendar, aria: 'Weekly planner' },
@@ -43,6 +44,7 @@ function PlannerShell({ children }) {
   )
   return (
     <AppShell navItems={navItems} title="Mosco Planner" storageKeyPrefix="mosco-planner">
+      <ConnectionStatus />
       {children}
     </AppShell>
   )

@@ -1,5 +1,5 @@
 import { validateAccess } from '../../api/_lib/auth.js'
-import { fetchTable, updateRecord, createRecord, getShoppingBase } from '../../api/_lib/airtable.js'
+import { fetchTable, updateRecord, createRecord, getShoppingBase, checkConflict } from '../../api/_lib/airtable.js'
 
 /** Tabla Airtable "Shopping List": Name, Category, Description, Image (Web), Name ES, Notes, Priority, Quantity, Status, Store, Unit. */
 const TABLE = process.env.AIRTABLE_TABLE_SHOPPING || 'Shopping List'
@@ -26,6 +26,20 @@ export default async function handler(req, res) {
 
   if (recordId && req.method === 'PATCH') {
     const body = parseBody(req)
+    const base = getShoppingBase()
+    const clientLastModified = body.clientLastModified
+    if (clientLastModified && base) {
+      try {
+        const conflict = await checkConflict(TABLE, recordId, clientLastModified, base)
+        if (conflict.conflict) {
+          res.statusCode = 409
+          res.end(JSON.stringify({ error: 'Conflict', serverLastModified: conflict.serverLastModified }))
+          return
+        }
+      } catch (err) {
+        console.error('shopping PATCH conflict check error:', err)
+      }
+    }
     const fields = {}
     if (body.Name != null && typeof body.Name === 'string') fields.Name = body.Name.trim()
     if (body.Category != null && typeof body.Category === 'string') fields.Category = body.Category.trim()
@@ -44,7 +58,6 @@ export default async function handler(req, res) {
       return
     }
     try {
-      const base = getShoppingBase()
       if (!base) {
         res.statusCode = 500
         res.end(JSON.stringify({ error: 'Airtable no configurado' }))

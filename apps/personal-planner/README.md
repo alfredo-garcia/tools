@@ -42,9 +42,18 @@ Abre http://localhost:5173 e introduce el mismo valor que pusiste en `APP_ACCESS
 
 Todas las rutas `/api/*` (validate, tasks, objectives, habits, etc.) se sirven mediante **una sola** Serverless Function en Vercel (`api/index.js`), que enruta por path a los handlers en `server/handlers/`. Así se respeta el límite de 12 funciones del plan Hobby. En desarrollo local, `server.js` usa el mismo `api/index.js`.
 
-### Caché en el cliente
+### Caché en el cliente y modo offline
 
-Las respuestas GET de la API se cachean en memoria **1 día** (24 h). La caché se invalida automáticamente al crear, actualizar o borrar un item (por recurso afectado) y al usar el **refresh manual** en cada vista (botón de actualizar).
+Las respuestas GET se cachean **en memoria** (1 día) y en **IndexedDB** (persistente). La caché se invalida al crear, actualizar o borrar un recurso y al usar el refresh manual.
+
+**Comportamiento offline:**
+
+- **UI:** La PWA sirve la shell (HTML, JS, CSS) desde el Service Worker (precache + navigate fallback a `index.html`), así la app carga y navega sin red.
+- **Datos:** Si no hay conexión, las lecturas se sirven desde IndexedDB. Las mutaciones (crear, editar, borrar) se encolan en IndexedDB y se aplican en la copia local de forma optimista (la UI se actualiza al instante). Al recuperar conexión, la cola se envía a la API en orden.
+- **Indicador:** En la parte superior se muestra "Sin conexión", "Sincronizando…" o el número de cambios pendientes cuando aplica.
+- **Conflictos:** Si al aplicar un cambio encolado el servidor tiene una versión más reciente (por `lastModified`), la API responde **409 Conflict** y ese cambio se descarta; la app actualiza con los datos del servidor y muestra un aviso de conflicto.
+
+Para que la resolución de conflictos funcione, las tablas de Airtable deben tener un campo de tipo **"Last Modified Time"** (campo calculado de Airtable) o la API usará la metadata del registro cuando esté disponible.
 
 ## Build y producción
 
@@ -86,6 +95,8 @@ En la cabecera de cada día se muestra el nombre del día y la fecha en formato 
 - **Ingredients + Shopping List:** `npm run seed-ingredients-shopping -- scripts/data/ingredients-shopping.json` — JSON con `ingredients` y/o `shoppingList`.
 - **Recetas:** `npm run seed-recipes -- scripts/data/recipes.json` — JSON con `recipes`; cada receta incluye `ingredients` (por `Name` en inglés, mismos que en la tabla Ingredients). Formato: ver `scripts/data/README.md` y `scripts/data/recipes.example.json`.
 
-## PWA
+## PWA y offline
 
 La app es instalable como PWA. En el manifest se definen **shortcuts** que permiten abrir directamente: Discovery (`/discovery`), OKRs (`/objectives`), Tasks (`/tasks`) y Shopping (`/shopping`). Tras instalar la PWA, los shortcuts suelen mostrarse al mantener pulsado el icono de la app (Android) o en el menú contextual del icono (escritorio).
+
+La **UI se sirve desde caché** (precache de assets + fallback de navegación a `index.html`), de modo que la app abre y navega sin red. Los **datos** se leen y escriben contra IndexedDB cuando no hay conexión; al volver a estar online se sincronizan con la API y se resuelven conflictos por timestamp (`lastModified`). Ver sección "Caché en el cliente y modo offline" más arriba.

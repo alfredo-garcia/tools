@@ -1,24 +1,18 @@
 import { useState, useCallback, useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import { Spinner, PageHeader, Card, IconSearch, IconX, IconTarget, IconCheckSquare, IconChevronDown, IconChevronUp } from '@tools/shared'
+import { Spinner, PageHeader, Card, IconSearch, IconX, IconTarget, IconCheckSquare, IconChevronDown, IconChevronUp, IconBook, IconCircle } from '@tools/shared'
 import { usePlannerApi } from '../contexts/PlannerApiContext'
-import { field, str, dateStr, arr } from '@tools/shared'
+import { field, str, dateStr, arr, num } from '@tools/shared'
 import { getTaskStatusGroup } from '../lib/taskStatus'
 import { getPriorityTagClass } from '../components/TaskCard'
+import { normalizeQuery, matchText, matchNameAndNameES } from '../lib/searchUtils'
 
 const GROUP_LABELS = {
   objectives: 'Objectives',
   key_results: 'Key Results',
   tasks: 'Tasks',
-}
-
-function normalizeQuery(q) {
-  return (q || '').trim().toLowerCase()
-}
-
-function matchText(text, query) {
-  if (!query) return false
-  return (str(text) || '').toLowerCase().includes(query)
+  recipes: 'Recipes',
+  ingredients: 'Ingredients',
 }
 
 function matchObjective(obj, query) {
@@ -39,6 +33,20 @@ function matchTask(task, query) {
   return matchText(name, query) || matchText(description, query)
 }
 
+function matchRecipe(recipe, query) {
+  return (
+    matchNameAndNameES(recipe, query) ||
+    matchText(field(recipe, 'Description', 'Description'), query)
+  )
+}
+
+function matchIngredient(ingredient, query) {
+  return (
+    matchNameAndNameES(ingredient, query) ||
+    matchText(field(ingredient, 'Description', 'Description'), query)
+  )
+}
+
 function SearchInput({ value, onChange, onSearch, onClear, showClear }) {
   const handleKeyDown = (e) => {
     if (e.key === 'Enter') onSearch()
@@ -53,7 +61,7 @@ function SearchInput({ value, onChange, onSearch, onClear, showClear }) {
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={handleKeyDown}
-        placeholder="Search objectives, key results, tasks…"
+        placeholder="Search objectives, key results, tasks, recipes, ingredients…"
         className="w-full pl-10 pr-10 py-3 rounded-xl border-2 border-border bg-surface text-text placeholder:text-text-muted focus:outline-none focus:border-primary [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden"
         aria-label="Search"
       />
@@ -202,6 +210,44 @@ function TaskCard({ task }) {
   )
 }
 
+function RecipeCardSearch({ recipe }) {
+  const name = str(field(recipe, 'Name')) || str(field(recipe, 'Name ES')) || '(untitled)'
+  const nameES = str(field(recipe, 'Name ES'))
+  const title = nameES && name !== nameES ? `${nameES} — ${name}` : name
+  const mealType = str(field(recipe, 'Meal Type'))
+  const cuisineType = str(field(recipe, 'Cuisine Type'))
+  const timeMins = num(field(recipe, 'Time to Cook (minutes)'))
+  const servings = num(field(recipe, 'Servings'))
+
+  return (
+    <Link to={`/recipes/${recipe.id}`} className="block">
+      <Card title={title} icon={<IconBook size={20} />} className="hover:ring-2 hover:ring-primary/30 transition-shadow">
+        <div className="flex flex-wrap items-center gap-2 text-sm text-text-muted">
+          {mealType && <span className="inline-flex px-2 py-0.5 rounded-lg bg-border text-text-muted font-medium">{mealType}</span>}
+          {cuisineType && <span className="inline-flex px-2 py-0.5 rounded-lg bg-border text-text-muted">{cuisineType}</span>}
+          {timeMins != null && <span>{timeMins} min</span>}
+          {servings != null && <span>{servings} servings</span>}
+        </div>
+      </Card>
+    </Link>
+  )
+}
+
+function IngredientCardSearch({ ingredient }) {
+  const name = str(field(ingredient, 'Name')) || str(field(ingredient, 'Name ES')) || '(untitled)'
+  const nameES = str(field(ingredient, 'Name ES'))
+  const title = nameES && name !== nameES ? `${nameES} — ${name}` : name
+  const category = str(field(ingredient, 'Category', 'Category'))
+
+  return (
+    <div className="block">
+      <Card title={title} icon={<IconCircle size={20} />}>
+        {category && <span className="text-sm text-text-muted">{category}</span>}
+      </Card>
+    </div>
+  )
+}
+
 export function Search() {
   const { fetchApi } = usePlannerApi()
   const [query, setQuery] = useState('')
@@ -209,6 +255,8 @@ export function Search() {
   const [objectives, setObjectives] = useState([])
   const [keyResults, setKeyResults] = useState([])
   const [tasks, setTasks] = useState([])
+  const [recipes, setRecipes] = useState([])
+  const [ingredients, setIngredients] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [lastQuery, setLastQuery] = useState('')
@@ -224,11 +272,15 @@ export function Search() {
       fetchApi('/api/objectives').then((r) => r.data || []),
       fetchApi('/api/key-results').then((r) => r.data || []),
       fetchApi('/api/tasks').then((r) => r.data || []),
+      fetchApi('/api/recipes').then((r) => r.data || []),
+      fetchApi('/api/ingredients').then((r) => r.data || []),
     ])
-      .then(([objs, krs, tks]) => {
+      .then(([objs, krs, tks, recs, ings]) => {
         setObjectives(objs.filter((o) => matchObjective(o, q)))
         setKeyResults(krs.filter((kr) => matchKeyResult(kr, q)))
         setTasks(tks.filter((t) => matchTask(t, q)))
+        setRecipes(recs.filter((r) => matchRecipe(r, q)))
+        setIngredients(ings.filter((i) => matchIngredient(i, q)))
       })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false))
@@ -241,6 +293,8 @@ export function Search() {
     setObjectives([])
     setKeyResults([])
     setTasks([])
+    setRecipes([])
+    setIngredients([])
     setError(null)
   }, [])
 
@@ -257,7 +311,7 @@ export function Search() {
     return map
   }, [objectives, keyResults])
 
-  const totalResults = objectives.length + keyResults.length + tasks.length
+  const totalResults = objectives.length + keyResults.length + tasks.length + recipes.length + ingredients.length
   const showClear = hasSearchedInSession
 
   return (
@@ -337,6 +391,28 @@ export function Search() {
                   {tasks.map((task) => (
                     <li key={task.id}>
                       <TaskCard task={task} />
+                    </li>
+                  ))}
+                </CollapsibleGroup>
+                <CollapsibleGroup
+                  label={GROUP_LABELS.recipes}
+                  count={recipes.length}
+                  initialCollapsed={false}
+                >
+                  {recipes.map((recipe) => (
+                    <li key={recipe.id}>
+                      <RecipeCardSearch recipe={recipe} />
+                    </li>
+                  ))}
+                </CollapsibleGroup>
+                <CollapsibleGroup
+                  label={GROUP_LABELS.ingredients}
+                  count={ingredients.length}
+                  initialCollapsed={false}
+                >
+                  {ingredients.map((ingredient) => (
+                    <li key={ingredient.id}>
+                      <IngredientCardSearch ingredient={ingredient} />
                     </li>
                   ))}
                 </CollapsibleGroup>

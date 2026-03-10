@@ -83,3 +83,31 @@ export function getMissingIngredients(recipeIngredientNames, shoppingList) {
     })
     .filter(Boolean)
 }
+
+/**
+ * Returns recipe ingredients that ARE in the shopping list, split by current status (Need first, then Have).
+ * Used to show a confirmation modal when adding a recipe so the user can review/toggle Have vs Need.
+ * @param {Array<{ name: string, displayName: string }>} recipeIngredientNames - From getRecipeIngredientNames
+ * @param {Array<{ id: string, fields: object }>} shoppingList - Shopping list records
+ * @returns {{ need: Array<{ displayName: string, name: string, shoppingItem: object }>, have: Array<{ displayName: string, name: string, shoppingItem: object }> }}
+ */
+export function getRecipeIngredientsInShoppingList(recipeIngredientNames, shoppingList) {
+  if (!Array.isArray(recipeIngredientNames) || !Array.isArray(shoppingList)) return { need: [], have: [] }
+  const byName = new Map()
+  shoppingList.forEach((item) => {
+    const n = str(field(item, 'Name')).trim()
+    if (n) byName.set(n, item)
+  })
+  const need = []
+  const have = []
+  for (const { name, displayName } of recipeIngredientNames) {
+    if (!name) continue
+    const shoppingItem = byName.get(name)
+    if (!shoppingItem) continue
+    const entry = { displayName, name, shoppingItem }
+    const status = str(field(shoppingItem, 'Status'))
+    if (status === 'Have') have.push(entry)
+    else need.push(entry)
+  }
+  return { need, have }
+}

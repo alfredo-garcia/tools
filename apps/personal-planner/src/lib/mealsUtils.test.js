@@ -4,6 +4,7 @@ import {
   recipeMatchesMealType,
   getRecipeIngredientNames,
   getMissingIngredients,
+  getRecipeIngredientsInShoppingList,
 } from './mealsUtils.js'
 
 describe('mealsUtils', () => {
@@ -125,6 +126,42 @@ describe('mealsUtils', () => {
     it('handles non-array inputs', () => {
       expect(getMissingIngredients(null, [])).toEqual([])
       expect(getMissingIngredients([], null)).toEqual([])
+    })
+  })
+
+  describe('getRecipeIngredientsInShoppingList', () => {
+    it('splits recipe ingredients in shopping list by Need and Have', () => {
+      const recipeIngredientNames = [
+        { name: 'Tomato', displayName: 'Tomate' },
+        { name: 'Onion', displayName: 'Cebolla' },
+        { name: 'Garlic', displayName: 'Ajo' },
+      ]
+      const shoppingList = [
+        { id: 's1', Name: 'Tomato', Status: 'Have' },
+        { id: 's2', Name: 'Onion', Status: 'Need' },
+        { id: 's3', Name: 'Garlic', Status: 'Need' },
+      ]
+      const result = getRecipeIngredientsInShoppingList(recipeIngredientNames, shoppingList)
+      expect(result.need).toHaveLength(2)
+      expect(result.need[0]).toMatchObject({ displayName: 'Cebolla', name: 'Onion' })
+      expect(result.need[0].shoppingItem.id).toBe('s2')
+      expect(result.need[1]).toMatchObject({ displayName: 'Ajo', name: 'Garlic' })
+      expect(result.have).toHaveLength(1)
+      expect(result.have[0]).toMatchObject({ displayName: 'Tomate', name: 'Tomato' })
+      expect(result.have[0].shoppingItem.id).toBe('s1')
+    })
+
+    it('returns empty arrays when no recipe ingredients are in shopping list', () => {
+      const recipeIngredientNames = [{ name: 'Salt', displayName: 'Sal' }]
+      const shoppingList = [{ id: 's1', Name: 'Pepper', Status: 'Need' }]
+      const result = getRecipeIngredientsInShoppingList(recipeIngredientNames, shoppingList)
+      expect(result.need).toEqual([])
+      expect(result.have).toEqual([])
+    })
+
+    it('handles non-array inputs', () => {
+      expect(getRecipeIngredientsInShoppingList(null, [])).toEqual({ need: [], have: [] })
+      expect(getRecipeIngredientsInShoppingList([], null)).toEqual({ need: [], have: [] })
     })
   })
 })

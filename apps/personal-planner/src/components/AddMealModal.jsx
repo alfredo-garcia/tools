@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { Spinner, Card, IconBook, IconX, IconSearch } from '@tools/shared'
 import { usePlannerApi } from '../contexts/PlannerApiContext'
 import { field, str } from '@tools/shared'
-import { recipeMatchesMealType, MEAL_TYPE_OPTIONS, getRecipeIngredientNames, getMissingIngredients } from '../lib/mealsUtils'
+import { recipeMatchesMealType, MEAL_TYPE_OPTIONS, getRecipeIngredientNames, getRecipeIngredientsInShoppingList } from '../lib/mealsUtils'
 import { MissingIngredientsModal } from './MissingIngredientsModal'
 
 const FILTER_ALL = 'All'
@@ -21,8 +21,8 @@ export function AddMealModal({ dateStr, mealType, onClose, onAdded }) {
   const [filter, setFilter] = useState(() => mealType || MEAL_TYPE_OPTIONS[0])
   const [search, setSearch] = useState('')
   const [pendingMeal, setPendingMeal] = useState(null)
-  const [missingIngredients, setMissingIngredients] = useState([])
-  const [showMissingModal, setShowMissingModal] = useState(false)
+  const [ingredientsInList, setIngredientsInList] = useState([])
+  const [showIngredientsModal, setShowIngredientsModal] = useState(false)
 
   useEffect(() => {
     setFilter(mealType || MEAL_TYPE_OPTIONS[0])
@@ -92,11 +92,15 @@ export function AddMealModal({ dateStr, mealType, onClose, onAdded }) {
       const ingredients = ingRes.data || []
       const shoppingList = shopRes.data || []
       const names = getRecipeIngredientNames(recipe.id, recipeIngredients, ingredients)
-      const missing = getMissingIngredients(names, shoppingList)
-      if (missing.length > 0) {
+      const { need, have } = getRecipeIngredientsInShoppingList(names, shoppingList)
+      const inList = [
+        ...need.map((item) => ({ ...item, status: 'Need' })),
+        ...have.map((item) => ({ ...item, status: 'Have' })),
+      ]
+      if (inList.length > 0) {
         setPendingMeal(recipe)
-        setMissingIngredients(missing)
-        setShowMissingModal(true)
+        setIngredientsInList(inList)
+        setShowIngredientsModal(true)
         setSubmitting(false)
         return
       }
@@ -109,47 +113,27 @@ export function AddMealModal({ dateStr, mealType, onClose, onAdded }) {
     }
   }
 
-  const handleMissingConfirmNo = async () => {
-    if (!pendingMeal) return
-    setSubmitting(true)
-    try {
-      await createMeal(pendingMeal)
-      setPendingMeal(null)
-      setMissingIngredients([])
-      setShowMissingModal(false)
-    } catch (err) {
-      console.error(err)
-      setError(err.message)
-    } finally {
-      setSubmitting(false)
-    }
+  const handleIngredientsModalBack = () => {
+    setShowIngredientsModal(false)
+    setPendingMeal(null)
+    setIngredientsInList([])
   }
 
-  const handleMissingConfirmYes = async () => {
+  const handleIngredientsModalConfirm = async (updates) => {
     if (!pendingMeal) return
     setSubmitting(true)
     try {
-      for (const { name, displayName, shoppingItem } of missingIngredients) {
-        if (shoppingItem) {
-          await fetchApi(`/api/shopping/${shoppingItem.id}`, {
-            method: 'PATCH',
-            body: JSON.stringify({ Status: 'Need' }),
-          })
-        } else {
-          await fetchApi('/api/shopping', {
-            method: 'POST',
-            body: JSON.stringify({
-              Name: name || displayName || '(ingredient)',
-              Status: 'Need',
-            }),
-          })
-        }
+      for (const { shoppingItem, status } of updates) {
+        await fetchApi(`/api/shopping/${shoppingItem.id}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ Status: status }),
+        })
       }
-      invalidateCache('/api/shopping')
+      if (updates.length > 0) invalidateCache('/api/shopping')
       await createMeal(pendingMeal)
+      setShowIngredientsModal(false)
       setPendingMeal(null)
-      setMissingIngredients([])
-      setShowMissingModal(false)
+      setIngredientsInList([])
     } catch (err) {
       console.error(err)
       setError(err.message)
@@ -255,16 +239,11 @@ export function AddMealModal({ dateStr, mealType, onClose, onAdded }) {
           )}
         </div>
       </div>
-      {showMissingModal && (
+      {showIngredientsModal && (
         <MissingIngredientsModal
-          missingIngredients={missingIngredients}
-          onConfirmNo={handleMissingConfirmNo}
-          onConfirmYes={handleMissingConfirmYes}
-          onClose={() => {
-            setShowMissingModal(false)
-            setPendingMeal(null)
-            setMissingIngredients([])
-          }}
+          ingredientsInList={ingredientsInList}
+          onConfirm={handleIngredientsModalConfirm}
+          onBack={handleIngredientsModalBack}
         />
       )}
     </div>

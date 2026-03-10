@@ -1,72 +1,137 @@
+import { useState, useMemo } from 'react'
 import { IconX } from '@tools/shared'
 
 /**
- * Modal shown when adding a meal whose recipe has ingredients not marked as Have in the Shopping List.
- * Lists missing ingredients and asks if the user wants to add them to the Shopping List (set to Needs).
- * @param {Array<{ displayName: string, name: string, shoppingItem?: object }>} missingIngredients - From getMissingIngredients
- * @param {() => void} onConfirmNo - Called when user chooses not to add to list
- * @param {() => void} onConfirmYes - Called when user chooses to add to list (caller updates shopping then continues)
- * @param {() => void} onClose - Close without choosing (e.g. backdrop click)
+ * Modal shown when adding a recipe whose ingredients appear in the Shopping List.
+ * Lists those ingredients grouped by Need (first) and Have, with a checkbox per item (checked = Need, unchecked = Have).
+ * User can toggle and then Confirmar (add recipe + update shopping statuses) or Atrás (cancel, no changes).
+ * @param {Array<{ displayName: string, name: string, shoppingItem: object, status: 'Have'|'Need' }>} ingredientsInList - Recipe ingredients that are in the shopping list (order: Need first, then Have)
+ * @param {(updates: Array<{ shoppingItem: object, status: 'Have'|'Need' }>) => void} onConfirm - Called with desired status per item; caller adds meal and PATCHes shopping
+ * @param {() => void} onBack - Cancel: close without adding recipe or changing shopping
  */
 export function MissingIngredientsModal({
-  missingIngredients = [],
-  onConfirmNo,
-  onConfirmYes,
-  onClose,
+  ingredientsInList = [],
+  onConfirm,
+  onBack,
 }) {
-  if (!missingIngredients.length) return null
+  const initialStatusById = useMemo(() => {
+    const map = new Map()
+    ingredientsInList.forEach((item) => {
+      map.set(item.shoppingItem.id, item.status === 'Need')
+    })
+    return map
+  }, [ingredientsInList])
+
+  const [needById, setNeedById] = useState(initialStatusById)
+
+  const toggle = (id) => {
+    setNeedById((prev) => {
+      const next = new Map(prev)
+      next.set(id, !next.get(id))
+      return next
+    })
+  }
+
+  const handleConfirm = () => {
+    const updates = ingredientsInList.map((item) => ({
+      shoppingItem: item.shoppingItem,
+      status: needById.get(item.shoppingItem.id) ? 'Need' : 'Have',
+    }))
+    onConfirm?.(updates)
+  }
+
+  const needItems = ingredientsInList.filter((item) => item.status === 'Need')
+  const haveItems = ingredientsInList.filter((item) => item.status === 'Have')
+
+  if (!ingredientsInList.length) return null
 
   return (
     <div
       className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60"
-      onClick={onClose}
+      onClick={onBack}
       role="dialog"
       aria-modal="true"
       aria-labelledby="missing-ingredients-modal-title"
     >
       <div
-        className="bg-surface rounded-2xl border-2 border-border shadow-xl w-full max-w-md overflow-hidden"
+        className="bg-surface rounded-2xl border-2 border-border shadow-xl w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="px-6 py-4 border-b border-border flex items-center justify-between gap-3 shrink-0">
           <h2 id="missing-ingredients-modal-title" className="font-bold text-xl text-text">
-            Missing ingredients
+            Ingredientes en tu lista
           </h2>
           <button
             type="button"
-            onClick={onClose}
+            onClick={onBack}
             className="shrink-0 p-2 rounded-lg text-text-muted hover:bg-border text-xl leading-none"
-            aria-label="Close"
+            aria-label="Cerrar"
           >
             <IconX size={20} />
           </button>
         </div>
-        <div className="p-6 space-y-4">
-          <p className="text-text">
-            This recipe uses ingredients that are not marked as &quot;Have&quot; in your Shopping List:
+        <div className="p-6 overflow-y-auto flex-1 space-y-4">
+          <p className="text-text text-sm">
+            Esta receta usa ingredientes que están en tu Shopping List. Marca como &quot;Need&quot; los que necesites comprar y desmarca los que ya tienes (&quot;Have&quot;).
           </p>
-          <ul className="list-disc list-inside text-text space-y-1 max-h-48 overflow-y-auto">
-            {missingIngredients.map(({ displayName, name }) => (
-              <li key={name || displayName}>{displayName || name}</li>
-            ))}
-          </ul>
-          <p className="text-text-muted text-sm">
-            Do you want to add them to your Shopping List (set as Needs)?
-          </p>
+          {/* Need first */}
+          {needItems.length > 0 && (
+            <div>
+              <h3 className="font-semibold text-text mb-2">Need</h3>
+              <ul className="space-y-2">
+                {needItems.map(({ displayName, name, shoppingItem }) => (
+                  <li key={shoppingItem.id} className="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      id={`need-${shoppingItem.id}`}
+                      checked={needById.get(shoppingItem.id) ?? true}
+                      onChange={() => toggle(shoppingItem.id)}
+                      className="rounded border-border text-primary focus:ring-primary"
+                    />
+                    <label htmlFor={`need-${shoppingItem.id}`} className="text-text cursor-pointer flex-1">
+                      {displayName || name}
+                    </label>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {/* Have second */}
+          {haveItems.length > 0 && (
+            <div>
+              <h3 className="font-semibold text-text mb-2">Have</h3>
+              <ul className="space-y-2">
+                {haveItems.map(({ displayName, name, shoppingItem }) => (
+                  <li key={shoppingItem.id} className="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      id={`have-${shoppingItem.id}`}
+                      checked={needById.get(shoppingItem.id) ?? false}
+                      onChange={() => toggle(shoppingItem.id)}
+                      className="rounded border-border text-primary focus:ring-primary"
+                    />
+                    <label htmlFor={`have-${shoppingItem.id}`} className="text-text cursor-pointer flex-1">
+                      {displayName || name}
+                    </label>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           <div className="flex flex-wrap gap-3 pt-2">
             <button
               type="button"
-              onClick={onConfirmNo}
+              onClick={onBack}
               className="min-h-[44px] px-4 py-2 rounded-xl text-base font-medium bg-surface border-2 border-border text-text hover:ring-2 hover:ring-primary/30"
             >
-              No
+              Atrás
             </button>
             <button
               type="button"
-              onClick={onConfirmYes}
+              onClick={handleConfirm}
               className="min-h-[44px] px-4 py-2 rounded-xl text-base font-medium bg-primary text-white hover:ring-2 hover:ring-primary/50"
             >
-              Yes, add to Shopping List
+              Confirmar
             </button>
           </div>
         </div>

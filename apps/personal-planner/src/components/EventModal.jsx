@@ -28,6 +28,7 @@ export function EventModal({ onClose, onCreate, onRefetch, initialDate, event: e
   const [description, setDescription] = useState('')
   const [calendarSlot, setCalendarSlot] = useState(1)
   const [submitting, setSubmitting] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const [error, setError] = useState(null)
 
   useEffect(() => {
@@ -128,6 +129,22 @@ export function EventModal({ onClose, onCreate, onRefetch, initialDate, event: e
     }
   }
 
+  const handleDelete = async () => {
+    if (!isEdit || !editEvent?.id || !window.confirm('Delete this event? This action cannot be undone.')) return
+    setError(null)
+    setDeleting(true)
+    try {
+      const deleteUrl = `/api/calendar/events?eventId=${encodeURIComponent(editEvent.id)}&calendarSlot=${calendarSlot}`
+      await fetchApi(deleteUrl, { method: 'DELETE' })
+      await Promise.resolve(onRefetch?.())
+      onClose()
+    } catch (err) {
+      setError(err.message || 'Could not delete the event')
+    } finally {
+      setDeleting(false)
+    }
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" role="dialog" aria-modal="true" aria-labelledby="event-modal-title">
       <div className="rounded-2xl border-2 border-border bg-surface text-text shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
@@ -219,7 +236,17 @@ export function EventModal({ onClose, onCreate, onRefetch, initialDate, event: e
             {error && (
               <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
             )}
-            <div className="flex gap-3 pt-2">
+            <div className="flex flex-wrap gap-3 pt-2">
+              {isEdit && (
+                <button
+                  type="button"
+                  onClick={handleDelete}
+                  disabled={deleting || submitting}
+                  className="min-h-[44px] px-4 rounded-xl border-2 border-red-500/60 bg-red-500/10 text-red-600 dark:text-red-400 font-medium disabled:opacity-50"
+                >
+                  {deleting ? 'Deleting…' : 'Delete'}
+                </button>
+              )}
               <button
                 type="button"
                 onClick={onClose}

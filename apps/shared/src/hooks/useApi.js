@@ -17,7 +17,7 @@ export function useApi() {
     }
     const res = await fetch(path, { ...options, headers })
     const data = await res.json().catch(() => ({}))
-    if (!res.ok) throw new Error(data.error ?? 'Error en la petición')
+    if (!res.ok) throw new Error(data.error ?? 'Request error')
     return data
   }, [getAccessCode])
 

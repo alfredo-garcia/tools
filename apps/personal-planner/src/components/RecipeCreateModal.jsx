@@ -79,12 +79,12 @@ export function RecipeCreateModal({ onClose, onCreate }) {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-text-muted mb-1">Name (ES)</label>
+            <label className="block text-sm font-medium text-text-muted mb-1">Name (Spanish)</label>
             <input
               type="text"
               value={nameES}
               onChange={(e) => setNameES(e.target.value)}
-              placeholder="Nombre en español"
+              placeholder="Name in Spanish"
               className="w-full rounded-lg border border-border bg-surface text-text px-3 py-2"
             />
           </div>

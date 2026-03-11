@@ -81,7 +81,7 @@ export function PlannerApiProvider({ children }) {
       const res = await fetch(path, { ...options, headers })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) {
-        const err = new Error(data.error ?? 'Error en la petición')
+        const err = new Error(data.error ?? 'Request error')
         err.status = res.status
         err.data = data
         throw err
@@ -188,24 +188,23 @@ export function PlannerApiProvider({ children }) {
 
       if (isGet) {
         const now = Date.now()
-        // When online: always try network first (network-first) so first load gets fresh data.
-        // When offline: use cache (memory then IDB).
-        if (!isOnline) {
-          const mem = memoryCache.get(path)
-          if (mem && now - mem.timestamp < CACHE_TTL_MS) {
-            return mem.data
-          }
-          try {
-            const idb = await getCached(path)
-            if (idb?.data != null) {
-              memoryCache.set(path, { data: idb.data, timestamp: idb.timestamp || now })
-              return idb.data
-            }
-          } catch {
-            // ignore
-          }
+        // Cache-first for GET: use memory or IDB when fresh (within 1 day). IDB used on re-entry so events/tasks show instantly.
+        const mem = memoryCache.get(path)
+        if (mem && now - mem.timestamp < CACHE_TTL_MS) {
+          return mem.data
         }
-        // Online: skip cache for GET, go straight to network below (cache used only on network failure)
+        try {
+          const idb = await getCached(path)
+          const payload = idb?.data?.data != null ? idb.data.data : idb?.data
+          const ts = idb?.data?.timestamp ?? idb?.timestamp ?? 0
+          if (payload != null && (now - ts) < CACHE_TTL_MS) {
+            memoryCache.set(path, { data: payload, timestamp: ts || now })
+            return payload
+          }
+        } catch {
+          // ignore
+        }
+        // Cache miss or stale: fetch below (or throw if offline)
       }
 
       if (!isOnline && !isGet) {
@@ -258,9 +257,11 @@ export function PlannerApiProvider({ children }) {
             const mem = memoryCache.get(path)
             if (mem?.data != null) return mem.data
             const idb = await getCached(path)
-            if (idb?.data != null) {
-              memoryCache.set(path, { data: idb.data, timestamp: idb.timestamp || Date.now() })
-              return idb.data
+            const payload = idb?.data?.data != null ? idb.data.data : idb?.data
+            if (payload != null) {
+              const ts = idb?.data?.timestamp ?? idb?.timestamp ?? Date.now()
+              memoryCache.set(path, { data: payload, timestamp: ts })
+              return payload
             }
           } catch {
             // ignore

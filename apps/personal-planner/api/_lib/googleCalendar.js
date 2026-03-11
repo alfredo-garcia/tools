@@ -162,6 +162,23 @@ function toRFC3339(s) {
 }
 
 /**
+ * Parse blacklist string: names in double quotes separated by comma, or comma-separated names.
+ * e.g. "Reunión", "Focus time" or Reunión, "Focus time"
+ * @param {string|null|undefined} raw - CAL_N_BLACKLIST value
+ * @returns {string[]} Trimmed names (empty strings omitted)
+ */
+function parseBlacklist(raw) {
+  if (!raw || typeof raw !== 'string') return []
+  const parts = raw.split(',').map((s) => s.trim())
+  return parts
+    .map((s) => {
+      if (s.length >= 2 && s.startsWith('"') && s.endsWith('"')) return s.slice(1, -1).trim()
+      return s
+    })
+    .filter(Boolean)
+}
+
+/**
  * List events from all connected calendars in the given time range; merge and add calendarSlot/calendarLabel.
  * If CAL_N_CALENDAR_NAME is set in Settings (e.g. "Trastos"), events are listed from that calendar instead of primary.
  * @param {string} timeMin - ISO datetime (will be normalized to RFC3339)
@@ -177,6 +194,8 @@ export async function listEventsFromAllCalendars(timeMin, timeMax) {
   const all = []
   for (const conn of connections) {
     try {
+      const blacklistRaw = await getSetting(keyFor(conn.slot, 'BLACKLIST'))
+      const blacklist = parseBlacklist(blacklistRaw).map((name) => name.toLowerCase())
       const { calendar, calendarId } = await getCalendarClientForSlot(conn.slot)
       let calendarColor = null
       try {
@@ -196,11 +215,15 @@ export async function listEventsFromAllCalendars(timeMin, timeMax) {
       })
       const items = res.data.items || []
       for (const ev of items) {
+        // Skip Google Calendar special event types (working location, focus time, etc.)
+        if (ev.eventType === 'workingLocation' || ev.eventType === 'focusTime' || ev.eventType === 'outOfOffice') continue
+        const summary = (ev.summary || '').trim()
+        if (blacklist.length && blacklist.includes(summary.toLowerCase())) continue
         const start = ev.start?.dateTime || ev.start?.date || ''
         const end = ev.end?.dateTime || ev.end?.date || ''
         all.push({
           id: ev.id,
-          summary: ev.summary || '',
+          summary,
           description: ev.description || '',
           start,
           end,
@@ -271,4 +294,19 @@ export async function updateEvent(slot, eventId, body) {
     requestBody,
   })
   return res.data
+}
+
+/**
+ * Delete an event from the calendar for the given slot.
+ * @param {number} slot - 1, 2, or 3
+ * @param {string} eventId - Google Calendar event id
+ * @returns {Promise<void>}
+ */
+export async function deleteEvent(slot, eventId) {
+  if (!eventId || !String(eventId).trim()) throw new Error('eventId is required')
+  const { calendar, calendarId } = await getCalendarClientForSlot(slot)
+  await calendar.events.delete({
+    calendarId,
+    eventId: String(eventId).trim(),
+  })
 }

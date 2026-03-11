@@ -7,7 +7,7 @@ export default function handler(req, res) {
   res.setHeader('Content-Type', 'application/json')
   if (req.method !== 'POST') {
     res.statusCode = 405
-    res.end(JSON.stringify({ error: 'Método no permitido.' }))
+    res.end(JSON.stringify({ error: 'Method not allowed.' }))
     return
   }
   const result = validateAccess(req)

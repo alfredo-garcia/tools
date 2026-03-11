@@ -26,7 +26,7 @@ export default defineConfig({
       manifest: {
         name: 'Mosco Planner',
         short_name: 'Mosco Planner',
-        description: 'OKRs, tareas y hábitos',
+        description: 'OKRs, tasks and habits',
         theme_color: '#f97316',
         background_color: '#f97316',
         display: 'standalone',

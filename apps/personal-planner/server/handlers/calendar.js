@@ -7,6 +7,7 @@ import {
   listEventsFromAllCalendars,
   createEvent,
   updateEvent,
+  deleteEvent,
 } from '../../api/_lib/googleCalendar.js'
 
 function getPathSegments(url) {
@@ -192,6 +193,34 @@ export default async function handler(req, res) {
         const code = err.message?.includes('No calendar connected') ? 401 : 500
         res.statusCode = code
         res.end(JSON.stringify({ error: err.message || 'Failed to update event' }))
+      }
+      return
+    }
+
+    if (req.method === 'DELETE') {
+      const body = getBody(req)
+      const query = req.query || {}
+      const eventId = body.eventId ?? body.id ?? query.eventId
+      const slot = body.calendarSlot != null ? Number(body.calendarSlot) : (query.calendarSlot != null ? Number(query.calendarSlot) : 1)
+      if (!eventId || typeof eventId !== 'string' || !eventId.trim()) {
+        res.statusCode = 400
+        res.end(JSON.stringify({ error: 'eventId is required' }))
+        return
+      }
+      if (!Number.isInteger(slot) || slot < 1 || slot > 3) {
+        res.statusCode = 400
+        res.end(JSON.stringify({ error: 'calendarSlot must be 1, 2, or 3' }))
+        return
+      }
+      try {
+        await deleteEvent(slot, eventId.trim())
+        res.statusCode = 200
+        res.end(JSON.stringify({ deleted: eventId.trim() }))
+      } catch (err) {
+        console.error('calendar events delete error:', err)
+        const code = err.message?.includes('No calendar connected') ? 401 : 500
+        res.statusCode = code
+        res.end(JSON.stringify({ error: err.message || 'Failed to delete event' }))
       }
       return
     }

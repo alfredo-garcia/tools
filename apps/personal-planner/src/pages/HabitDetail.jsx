@@ -111,23 +111,23 @@ export function HabitDetail() {
         <div className="p-6 border-b border-border">
           <h1 className="text-xl font-bold text-text">{title}</h1>
           {category && (
-            <p className="text-sm text-text-muted mt-1">Categoría: {category}</p>
+            <p className="text-sm text-text-muted mt-1">Category: {category}</p>
           )}
         </div>
 
         <div className="p-6 grid grid-cols-1 sm:grid-cols-3 gap-4 border-b border-border">
           <div className="p-4 rounded-xl bg-surface border border-border">
-            <p className="text-sm text-text-muted">Últimos 3 días</p>
+            <p className="text-sm text-text-muted">Last 3 days</p>
             <p className="text-2xl font-bold text-text">{pct3}%</p>
             <p className="text-xs text-text-muted">{last3.filter(isSuccess).length} / {last3.length}</p>
           </div>
           <div className="p-4 rounded-xl bg-surface border border-border">
-            <p className="text-sm text-text-muted">Esta semana</p>
+            <p className="text-sm text-text-muted">This week</p>
             <p className="text-2xl font-bold text-text">{pctWeek}%</p>
             <p className="text-xs text-text-muted">{lastWeek.filter(isSuccess).length} / {lastWeek.length}</p>
           </div>
           <div className="p-4 rounded-xl bg-surface border border-border">
-            <p className="text-sm text-text-muted">Este mes</p>
+            <p className="text-sm text-text-muted">This month</p>
             <p className="text-2xl font-bold text-text">{pctMonth}%</p>
             <p className="text-xs text-text-muted">{lastMonth.filter(isSuccess).length} / {lastMonth.length}</p>
           </div>
@@ -136,13 +136,13 @@ export function HabitDetail() {
         {barChartData.length > 0 && (
           <div className="p-6">
             <h2 className="text-base font-semibold text-text mb-3">
-              Cumplimiento últimos 2 meses (por semana)
+              Completion last 2 months (by week)
             </h2>
             <ResponsiveContainer width="100%" height={260}>
               <BarChart data={barChartData} margin={{ left: 8, right: 20 }}>
                 <XAxis dataKey="name" tick={{ fontSize: 11 }} tickFormatter={(v) => v.slice(8, 10) + '/' + v.slice(5, 7)} />
                 <YAxis domain={[0, 100]} tickFormatter={(v) => `${v}%`} />
-                <Tooltip formatter={(v) => [`${v}%`, 'Cumplimiento']} />
+                <Tooltip formatter={(v) => [`${v}%`, 'Completion']} />
                 <Bar dataKey="pct" fill="#f97316" radius={[4, 4, 0, 0]} name="%" />
               </BarChart>
             </ResponsiveContainer>
@@ -151,7 +151,7 @@ export function HabitDetail() {
 
         <div className="p-6">
           <h2 className="text-base font-semibold text-text mb-3">
-            Historial reciente
+            Recent history
           </h2>
           <ul className="space-y-2 max-h-64 overflow-y-auto">
             {tracking.slice(0, 30).map((t) => {
@@ -169,7 +169,7 @@ export function HabitDetail() {
             })}
           </ul>
           {tracking.length === 0 && (
-            <p className="text-sm text-text-muted">Aún no hay registros.</p>
+            <p className="text-sm text-text-muted">No records yet.</p>
           )}
         </div>
       </div>

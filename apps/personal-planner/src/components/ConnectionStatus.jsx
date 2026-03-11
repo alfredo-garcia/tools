@@ -22,28 +22,28 @@ export function ConnectionStatus() {
     >
       {!isOnline && (
         <span className="font-medium text-warning">
-          Sin conexión. Los cambios se guardarán localmente.
+          Offline. Changes will be saved locally.
         </span>
       )}
       {isOnline && isSyncing && (
-        <span className="text-muted">Sincronizando…</span>
+        <span className="text-muted">Syncing…</span>
       )}
       {pendingCount > 0 && (
         <span className="text-muted">
-          {pendingCount} cambio{pendingCount !== 1 ? 's' : ''} pendiente{pendingCount !== 1 ? 's' : ''}
+          {pendingCount} change{pendingCount !== 1 ? 's' : ''} pending
         </span>
       )}
       {conflictCount > 0 && (
         <span className="flex items-center gap-2">
           <span className="text-warning">
-            {conflictCount} cambio{conflictCount !== 1 ? 's' : ''} no aplicado{conflictCount !== 1 ? 's' : ''} (conflicto)
+            {conflictCount} change{conflictCount !== 1 ? 's' : ''} not applied (conflict)
           </span>
           <button
             type="button"
             onClick={handleDismissConflict}
             className="underline text-muted hover:text-text"
           >
-            Cerrar
+            Dismiss
           </button>
         </span>
       )}

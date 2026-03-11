@@ -39,7 +39,7 @@ function filterHabitsByType(habits, type) {
 function getHabitsByCategory(habits) {
   const map = new Map()
   for (const h of habits) {
-    const cat = str(field(h, 'Category', 'Category')) || '(sin categoría)'
+    const cat = str(field(h, 'Category', 'Category')) || '(uncategorized)'
     if (!map.has(cat)) map.set(cat, [])
     map.get(cat).push(h)
   }
@@ -158,12 +158,12 @@ function KpiBlock({ periodLabel, pct, barData, barHeight = 140 }) {
           <BarChart data={barData} layout="vertical" margin={{ left: 4, right: 24 }}>
             <XAxis type="number" allowDecimals tick={{ fontSize: 10 }} />
             <YAxis type="category" dataKey="category" width={72} tick={{ fontSize: 11 }} />
-            <Tooltip formatter={(v) => [v, 'Promedio/día']} />
-            <Bar dataKey="avg" radius={[0, 4, 4, 0]} fill="#f97316" name="Promedio" />
+            <Tooltip formatter={(v) => [v, 'Average/day']} />
+            <Bar dataKey="avg" radius={[0, 4, 4, 0]} fill="#f97316" name="Average" />
           </BarChart>
         </ResponsiveContainer>
       ) : (
-        <p className="text-xs text-text-muted">Sin datos</p>
+        <p className="text-xs text-text-muted">No data</p>
       )}
     </div>
   )
@@ -268,7 +268,7 @@ export function HabitsList() {
       const hid = getHabitId(t)
       if (!d || !dayCount[d] || !hid) continue
       const habit = filteredHabits.find((h) => h.id === hid)
-      const cat = habit ? (str(field(habit, 'Category', 'Category')) || '(sin categoría)') : null
+      const cat = habit ? (str(field(habit, 'Category', 'Category')) || '(uncategorized)') : null
       if (cat && dayCount[d][cat] !== undefined) dayCount[d][cat] += 1
     }
     const series = categories.map(([cat]) => ({ key: cat, label: cat }))
@@ -368,14 +368,14 @@ export function HabitsList() {
       </div>
 
       <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <KpiBlock periodLabel="últimos 3 días" pct={pct3} barData={barLast3} />
-        <KpiBlock periodLabel="esta semana" pct={pctWeek} barData={barWeek} />
-        <KpiBlock periodLabel="este mes" pct={pctMonth} barData={barMonth} />
+        <KpiBlock periodLabel="last 3 days" pct={pct3} barData={barLast3} />
+        <KpiBlock periodLabel="this week" pct={pctWeek} barData={barWeek} />
+        <KpiBlock periodLabel="this month" pct={pctMonth} barData={barMonth} />
       </section>
 
       {areaChartDataByCategory.series.length > 0 && areaChartDataByCategory.data.some((d) => areaChartDataByCategory.series.some((s) => (d[s.key] || 0) > 0)) && (
         <section className="rounded-2xl border border-2 border-border bg-surface p-5">
-          <h2 className="text-base font-semibold text-text mb-3">Por categoría (desde {chartStart} hasta hoy)</h2>
+          <h2 className="text-base font-semibold text-text mb-3">By category (from {chartStart} to today)</h2>
           <StackedAreaChartRecharts
             data={areaChartDataByCategory.data}
             series={areaChartDataByCategory.series.map((s, i) => ({ ...s, color: CATEGORY_COLORS[i % CATEGORY_COLORS.length] }))}
@@ -441,7 +441,7 @@ export function HabitsList() {
       </section>
 
       {filteredHabits.length === 0 && (
-        <p className="text-text-muted">No hay hábitos con este filtro.</p>
+        <p className="text-text-muted">No habits match this filter.</p>
       )}
     </div>
   )

@@ -52,10 +52,10 @@ export function CalendarConnections() {
   if (loading) {
     return (
       <div className="rounded-2xl border-2 border-border bg-surface p-6">
-        <h2 className="text-base font-bold text-text mb-2">Calendarios de Google</h2>
+        <h2 className="text-base font-bold text-text mb-2">Google Calendars</h2>
         <div className="flex items-center gap-2 text-text-muted">
           <Spinner size="sm" />
-          <span className="text-sm">Cargando…</span>
+          <span className="text-sm">Loading…</span>
         </div>
       </div>
     )
@@ -63,20 +63,20 @@ export function CalendarConnections() {
 
   return (
     <div className="rounded-2xl border-2 border-border bg-surface p-6 space-y-4">
-      <h2 className="text-base font-bold text-text">Calendarios de Google</h2>
-      <p className="text-sm text-text-muted">Conecta hasta 3 calendarios para ver y crear eventos en el Planner.</p>
+      <h2 className="text-base font-bold text-text">Google Calendars</h2>
+      <p className="text-sm text-text-muted">Connect up to 3 calendars to view and create events in the Planner.</p>
       <div className="space-y-3">
         {[1, 2, 3].map((slot) => {
           const conn = connections.find((c) => c.slot === slot)
           const isConnected = !!conn
-          const label = conn?.label || (isConnected ? `Calendario ${slot}` : '')
+          const label = conn?.label || (isConnected ? `Calendar ${slot}` : '')
           return (
             <div
               key={slot}
               className="flex items-center justify-between gap-3 py-2 px-3 rounded-xl border border-border bg-surface"
             >
               <span className="text-sm font-medium text-text">
-                Calendario {slot}
+                Calendar {slot}
                 {isConnected && label ? `: ${label}` : ''}
               </span>
               {isConnected ? (
@@ -86,7 +86,7 @@ export function CalendarConnections() {
                   disabled={disconnecting === slot}
                   className="min-h-[36px] px-3 py-1.5 rounded-lg border-2 border-border text-sm font-medium text-text hover:bg-surface disabled:opacity-50"
                 >
-                  {disconnecting === slot ? '…' : 'Desconectar'}
+                  {disconnecting === slot ? '…' : 'Disconnect'}
                 </button>
               ) : (
                 <button
@@ -94,7 +94,7 @@ export function CalendarConnections() {
                   onClick={() => handleConnect(slot)}
                   className="min-h-[36px] px-3 py-1.5 rounded-lg border-2 border-primary bg-primary/10 text-primary font-medium text-sm hover:bg-primary/20"
                 >
-                  Conectar calendario
+                  Connect calendar
                 </button>
               )}
             </div>

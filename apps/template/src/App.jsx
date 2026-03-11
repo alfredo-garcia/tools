@@ -52,7 +52,7 @@ function Dashboard() {
             <div className="flex items-center gap-3 py-8">
               <Spinner size="md" />
               <span className="text-base text-text-muted">
-                Cargando…
+                Loading…
               </span>
             </div>
           )}
@@ -65,7 +65,7 @@ function Dashboard() {
             <ul className="space-y-2 text-base text-text">
               {data.length === 0 ? (
                 <li className="text-text-muted">
-                  No hay registros. Configura AIRTABLE_* en .env.
+                  No records. Configure AIRTABLE_* in .env.
                 </li>
               ) : (
                 data.slice(0, 10).map((row) => (

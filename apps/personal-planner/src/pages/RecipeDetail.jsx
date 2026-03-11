@@ -286,7 +286,7 @@ export function RecipeDetail() {
           <div className="p-5 space-y-4">
             {/* Name ES */}
             <div className="flex items-center gap-2 text-sm">
-              <span className="text-text-muted shrink-0 w-24">Name (ES):</span>
+              <span className="text-text-muted shrink-0 w-24">Name (Spanish):</span>
               {editingField === 'nameES' ? (
                 <input
                   type="text"

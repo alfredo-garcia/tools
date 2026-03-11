@@ -10,11 +10,12 @@ const mockCalendarListItems = []
 const mockEventsList = vi.fn()
 const mockEventsInsert = vi.fn()
 const mockEventsPatch = vi.fn()
+const mockEventsDelete = vi.fn()
 const mockCalendarInstance = {
   calendarList: {
     list: () => Promise.resolve({ data: { items: mockCalendarListItems } }),
   },
-  events: { list: mockEventsList, insert: mockEventsInsert, patch: mockEventsPatch },
+  events: { list: mockEventsList, insert: mockEventsInsert, patch: mockEventsPatch, delete: mockEventsDelete },
 }
 vi.mock('googleapis', () => ({
   google: {
@@ -123,6 +124,74 @@ describe('googleCalendar', () => {
       expect(events[0].calendarColor).toBe('#0088aa')
       expect(events[0].summary).toBe('Meeting')
     })
+
+    it('excludes working location, focus time, and out of office events', async () => {
+      const { getSetting } = await import('./settings.js')
+      getSetting.mockImplementation((key) => {
+        const slot1Keys = {
+          CAL_1_SLOT: '1',
+          CAL_1_REFRESH_TOKEN: 'refresh',
+          CAL_1_ACCESS_TOKEN: 'access',
+          CAL_1_TOKEN_EXPIRY: new Date(Date.now() + 3600000).toISOString(),
+          CAL_1_ID: 'primary',
+          CAL_1_LABEL: '',
+          CAL_1_CALENDAR_NAME: '',
+          CAL_1_NAME: '',
+        }
+        return Promise.resolve(slot1Keys[key] ?? '')
+      })
+      mockCalendarListItems.push({ id: 'primary' })
+      mockEventsList.mockResolvedValue({
+        data: {
+          items: [
+            { id: 'ev1', summary: 'Normal meeting', start: { dateTime: '2025-03-10T10:00:00Z' }, end: { dateTime: '2025-03-10T11:00:00Z' } },
+            { id: 'ev2', summary: 'Office', eventType: 'workingLocation', start: { dateTime: '2025-03-10T09:00:00Z' }, end: { dateTime: '2025-03-10T17:00:00Z' } },
+            { id: 'ev3', summary: 'Focus', eventType: 'focusTime', start: { dateTime: '2025-03-10T14:00:00Z' }, end: { dateTime: '2025-03-10T15:00:00Z' } },
+            { id: 'ev4', summary: 'OOO', eventType: 'outOfOffice', start: { dateTime: '2025-03-11T09:00:00Z' }, end: { dateTime: '2025-03-11T17:00:00Z' } },
+          ],
+        },
+      })
+
+      const { listEventsFromAllCalendars } = await import('./googleCalendar.js')
+      const events = await listEventsFromAllCalendars('2025-03-10T00:00:00Z', '2025-03-12T00:00:00Z')
+      expect(events).toHaveLength(1)
+      expect(events[0].id).toBe('ev1')
+      expect(events[0].summary).toBe('Normal meeting')
+    })
+
+    it('filters out events whose summary matches CAL_N_BLACKLIST (names in quotes, comma-separated)', async () => {
+      const { getSetting } = await import('./settings.js')
+      getSetting.mockImplementation((key) => {
+        const slot1Keys = {
+          CAL_1_SLOT: '1',
+          CAL_1_REFRESH_TOKEN: 'refresh',
+          CAL_1_ACCESS_TOKEN: 'access',
+          CAL_1_TOKEN_EXPIRY: new Date(Date.now() + 3600000).toISOString(),
+          CAL_1_ID: 'primary',
+          CAL_1_LABEL: '',
+          CAL_1_CALENDAR_NAME: '',
+          CAL_1_NAME: '',
+          CAL_1_BLACKLIST: '"Reunión interna", "Blocked", "No mostrar"',
+        }
+        return Promise.resolve(slot1Keys[key] ?? '')
+      })
+      mockCalendarListItems.push({ id: 'primary' })
+      mockEventsList.mockResolvedValue({
+        data: {
+          items: [
+            { id: 'ev1', summary: 'Keep this', start: { dateTime: '2025-03-10T10:00:00Z' }, end: { dateTime: '2025-03-10T11:00:00Z' } },
+            { id: 'ev2', summary: 'Reunión interna', start: { dateTime: '2025-03-10T12:00:00Z' }, end: { dateTime: '2025-03-10T13:00:00Z' } },
+            { id: 'ev3', summary: 'Blocked', start: { dateTime: '2025-03-10T14:00:00Z' }, end: { dateTime: '2025-03-10T15:00:00Z' } },
+            { id: 'ev4', summary: 'Another visible', start: { dateTime: '2025-03-10T16:00:00Z' }, end: { dateTime: '2025-03-10T17:00:00Z' } },
+          ],
+        },
+      })
+
+      const { listEventsFromAllCalendars } = await import('./googleCalendar.js')
+      const events = await listEventsFromAllCalendars('2025-03-10T00:00:00Z', '2025-03-11T00:00:00Z')
+      expect(events).toHaveLength(2)
+      expect(events.map((e) => e.summary)).toEqual(['Keep this', 'Another visible'])
+    })
   })
 
   describe('updateEvent', () => {
@@ -176,6 +245,40 @@ describe('googleCalendar', () => {
       const { updateEvent } = await import('./googleCalendar.js')
       await expect(updateEvent(1, '', { summary: 'x' })).rejects.toThrow('eventId is required')
       await expect(updateEvent(1, '  ', { summary: 'x' })).rejects.toThrow('eventId is required')
+    })
+  })
+
+  describe('deleteEvent', () => {
+    it('calls calendar.events.delete with slot calendar and eventId', async () => {
+      const { getSetting } = await import('./settings.js')
+      getSetting.mockImplementation((key) => {
+        const keys = {
+          CAL_1_SLOT: '1',
+          CAL_1_REFRESH_TOKEN: 'refresh',
+          CAL_1_ACCESS_TOKEN: 'access',
+          CAL_1_TOKEN_EXPIRY: new Date(Date.now() + 3600000).toISOString(),
+          CAL_1_ID: 'primary',
+          CAL_1_LABEL: '',
+          CAL_1_CALENDAR_NAME: '',
+          CAL_1_NAME: '',
+        }
+        return Promise.resolve(keys[key] ?? '')
+      })
+      mockEventsDelete.mockResolvedValue(undefined)
+
+      const { deleteEvent } = await import('./googleCalendar.js')
+      await deleteEvent(1, 'ev-456')
+
+      expect(mockEventsDelete).toHaveBeenCalledWith({
+        calendarId: 'primary',
+        eventId: 'ev-456',
+      })
+    })
+
+    it('throws when eventId is missing', async () => {
+      const { deleteEvent } = await import('./googleCalendar.js')
+      await expect(deleteEvent(1, '')).rejects.toThrow('eventId is required')
+      await expect(deleteEvent(1, '  ')).rejects.toThrow('eventId is required')
     })
   })
 })

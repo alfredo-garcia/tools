@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { getEventsForDay, eventToSlots, eventToVisibleSlots, getEventsVisibility } from './calendarEventsUtils.js'
+import { getEventsForDay, eventToSlots, eventToVisibleSlots, getEventsVisibility, getEventsWithColumnLayout } from './calendarEventsUtils.js'
 
 describe('calendarEventsUtils', () => {
   describe('getEventsForDay', () => {
@@ -101,6 +101,56 @@ describe('calendarEventsUtils', () => {
         { id: '1', start: '2025-03-10T09:00:00', end: '2025-03-10T10:00:00' },
       ]
       expect(getEventsVisibility(events, '2025-03-10', 7, 19)).toEqual({ hasEventsBefore: false, hasEventsAfter: false })
+    })
+  })
+
+  describe('getEventsWithColumnLayout', () => {
+    it('returns single event with totalColumns 1 (full width)', () => {
+      const events = [{ id: '1', start: '2025-03-10T09:00:00', end: '2025-03-10T10:00:00' }]
+      const result = getEventsWithColumnLayout(events, '2025-03-10', 7, 19)
+      expect(result).toHaveLength(1)
+      expect(result[0].columnIndex).toBe(0)
+      expect(result[0].totalColumns).toBe(1)
+      expect(result[0].slotIndex).toBe(4)
+      expect(result[0].span).toBe(2)
+    })
+
+    it('assigns two columns when two events overlap', () => {
+      const events = [
+        { id: '1', start: '2025-03-10T09:00:00', end: '2025-03-10T10:00:00' },
+        { id: '2', start: '2025-03-10T09:30:00', end: '2025-03-10T10:30:00' },
+      ]
+      const result = getEventsWithColumnLayout(events, '2025-03-10', 7, 19)
+      expect(result).toHaveLength(2)
+      expect(result[0].totalColumns).toBe(2)
+      expect(result[0].columnIndex).toBe(0)
+      expect(result[1].totalColumns).toBe(2)
+      expect(result[1].columnIndex).toBe(1)
+    })
+
+    it('assigns three columns when three events overlap', () => {
+      const events = [
+        { id: '1', start: '2025-03-10T09:00:00', end: '2025-03-10T10:00:00' },
+        { id: '2', start: '2025-03-10T09:30:00', end: '2025-03-10T10:30:00' },
+        { id: '3', start: '2025-03-10T09:45:00', end: '2025-03-10T10:45:00' },
+      ]
+      const result = getEventsWithColumnLayout(events, '2025-03-10', 7, 19)
+      expect(result).toHaveLength(3)
+      expect(result.every((r) => r.totalColumns === 3)).toBe(true)
+      expect(result.map((r) => r.columnIndex).sort()).toEqual([0, 1, 2])
+    })
+
+    it('keeps non-overlapping events in separate groups (each totalColumns 1)', () => {
+      const events = [
+        { id: '1', start: '2025-03-10T09:00:00', end: '2025-03-10T10:00:00' },
+        { id: '2', start: '2025-03-10T14:00:00', end: '2025-03-10T15:00:00' },
+      ]
+      const result = getEventsWithColumnLayout(events, '2025-03-10', 7, 19)
+      expect(result).toHaveLength(2)
+      expect(result[0].totalColumns).toBe(1)
+      expect(result[0].columnIndex).toBe(0)
+      expect(result[1].totalColumns).toBe(1)
+      expect(result[1].columnIndex).toBe(0)
     })
   })
 })

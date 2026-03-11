@@ -3,7 +3,7 @@ import { usePlannerApi } from '../contexts/PlannerApiContext'
 import { Spinner, PageHeader, Switch, IconChevronDown, IconChevronUp, IconChevronLeft, IconChevronRight, IconStar, IconFlameFilled, IconPoop, IconTarget, IconCalendar, IconUser, IconTag, IconCircle, IconPlay, IconCheckSquare, IconTrash, IconHeart, IconHeartFire } from '@tools/shared'
 import { field, str, dateStr, arr, getWeekDays, getWeekStart, getWeekdayIndex } from '@tools/shared'
 import { getTaskStatusGroup } from '../lib/taskStatus'
-import { getEventsForDay, eventToVisibleSlots, getEventsVisibility } from '../lib/calendarEventsUtils'
+import { getEventsForDay, eventToVisibleSlots, getEventsVisibility, getEventsWithColumnLayout } from '../lib/calendarEventsUtils'
 import { TaskCard, STATUS_OPTIONS, getPriorityTagClass } from '../components/TaskCard'
 import { TaskModal } from '../components/TaskModal'
 import { EventModal } from '../components/EventModal'
@@ -258,9 +258,9 @@ function EventsTimeLabelsColumn({ startHour, endHour }) {
   )
 }
 
-/** One day column for Events: 30-min slots with events positioned. showTimeLabels: true on mobile (one day), false in week view. onEventClick(ev): when provided, event blocks are clickable to edit. */
+/** One day column for Events: 30-min slots with events positioned. Overlapping events are shown in 2 or 3 columns. showTimeLabels: true on mobile, false in week view. onEventClick(ev): when provided, event blocks are clickable to edit. */
 function DayEventsColumn({ dayStr, events, showTimeLabels = false, startHour, endHour, onEventClick }) {
-  const forDay = getEventsForDay(events, dayStr)
+  const withLayout = getEventsWithColumnLayout(events, dayStr, startHour, endHour)
   const slotsCount = (endHour - startHour) * 2
   const { hasEventsBefore, hasEventsAfter } = getEventsVisibility(events, dayStr, startHour, endHour)
   const slotLabels = showTimeLabels ? (() => {
@@ -286,10 +286,7 @@ function DayEventsColumn({ dayStr, events, showTimeLabels = false, startHour, en
           {label != null && <span className="shrink-0 w-8">{label}</span>}
         </div>
       ))}
-      {forDay.map((ev) => {
-        const visible = eventToVisibleSlots(ev, startHour, endHour)
-        if (!visible) return null
-        const { slotIndex, span } = visible
+      {withLayout.map(({ event: ev, slotIndex, span, columnIndex, totalColumns }) => {
         const top = slotIndex * EVENTS_SLOT_HEIGHT_PX
         const height = span * EVENTS_SLOT_HEIGHT_PX - 2
         const hasColor = ev.calendarColor && /^#[0-9A-Fa-f]{6}$/.test(ev.calendarColor)
@@ -297,6 +294,8 @@ function DayEventsColumn({ dayStr, events, showTimeLabels = false, startHour, en
           top: top + 1,
           height,
           minHeight: 20,
+          left: totalColumns <= 1 ? 8 : `calc(8px + (100% - 16px) * ${columnIndex / totalColumns}${columnIndex > 0 ? ' + 2px' : ''})`,
+          width: totalColumns <= 1 ? 'calc(100% - 16px)' : `calc((100% - 16px) / ${totalColumns} - 2px)`,
           ...(hasColor
             ? {
                 backgroundColor: `${ev.calendarColor}26`,
@@ -315,7 +314,7 @@ function DayEventsColumn({ dayStr, events, showTimeLabels = false, startHour, en
             tabIndex={clickable ? 0 : undefined}
             onClick={clickable ? () => onEventClick(ev) : undefined}
             onKeyDown={clickable ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onEventClick(ev) } } : undefined}
-            className={`absolute left-2 right-2 rounded px-1.5 py-0.5 overflow-hidden text-text text-xs ${hasColor ? '' : 'bg-primary/15 border border-primary/40'} ${clickable ? 'cursor-pointer hover:opacity-90 focus:outline focus:ring-2 focus:ring-primary' : ''}`}
+            className={`absolute rounded px-1.5 py-0.5 overflow-hidden text-text text-xs ${hasColor ? '' : 'bg-primary/15 border border-primary/40'} ${clickable ? 'cursor-pointer hover:opacity-90 focus:outline focus:ring-2 focus:ring-primary' : ''}`}
             style={eventStyle}
             title={clickable ? `${title} — Click to edit` : title}
           >
@@ -801,10 +800,6 @@ function PlannerHabitRow({ habit, dayStr, habitTracking, onToggle }) {
 export function PlannerPage() {
   const { fetchApi, invalidateCache } = usePlannerApi()
   const { data, loading, error, refetch, updateHabitTracking } = usePlannerData()
-  const handleRefresh = useCallback(() => {
-    invalidateCache()
-    refetch()
-  }, [invalidateCache, refetch])
   const { tasks, habits, habitTracking } = data
   const todayStr = new Date().toISOString().slice(0, 10)
   const [weekOffset, setWeekOffset] = useState(0)
@@ -818,6 +813,7 @@ export function PlannerPage() {
   const [eventsCollapsed, setEventsCollapsed] = useState(() => readPlannerPrefs().eventsCollapsed)
   const [showFullDay, setShowFullDay] = useState(() => readPlannerPrefs().showFullDay)
   const [calendarEvents, setCalendarEvents] = useState([])
+  const [calendarEventsLoading, setCalendarEventsLoading] = useState(true)
   const [createEventOpen, setCreateEventOpen] = useState(false)
   const [editEvent, setEditEvent] = useState(null)
   const [fabMenuOpen, setFabMenuOpen] = useState(false)
@@ -831,6 +827,7 @@ export function PlannerPage() {
   const timeMax = weekDays[6] ? `${weekDays[6]}T23:59:59` : ''
   const refetchCalendarEvents = useCallback(() => {
     if (!timeMin || !timeMax) return Promise.resolve()
+    setCalendarEventsLoading(true)
     const url = `/api/calendar/events?timeMin=${encodeURIComponent(timeMin)}&timeMax=${encodeURIComponent(timeMax)}`
     return fetchApi(url)
       .then((r) => {
@@ -842,7 +839,20 @@ export function PlannerPage() {
         setCalendarEvents([])
         throw new Error('Failed to refetch calendar events')
       })
+      .finally(() => setCalendarEventsLoading(false))
   }, [timeMin, timeMax, fetchApi])
+
+  const refreshCalendarEvents = useCallback(() => {
+    invalidateCache('/api/calendar/events')
+    return refetchCalendarEvents()
+  }, [invalidateCache, refetchCalendarEvents])
+
+  const handleRefresh = useCallback(() => {
+    invalidateCache()
+    refetch()
+    refetchCalendarEvents()
+  }, [invalidateCache, refetch, refetchCalendarEvents])
+
   useEffect(() => {
     refetchCalendarEvents()
   }, [refetchCalendarEvents])
@@ -1137,23 +1147,29 @@ export function PlannerPage() {
             </div>
           ) : (
             <div className="flex gap-3 mt-2 min-h-[200px]">
-              <EventsTimeLabelsColumn
-                startHour={showFullDay ? EVENTS_FULL_DAY_START_HOUR : EVENTS_DEFAULT_START_HOUR}
-                endHour={showFullDay ? EVENTS_FULL_DAY_END_HOUR : EVENTS_DEFAULT_END_HOUR}
-              />
-              <div className="grid grid-cols-7 gap-3 flex-1 min-w-0">
-                {weekDays.map((dayStr) => (
-                  <DayEventsColumn
-                    key={dayStr}
-                    dayStr={dayStr}
-                    events={calendarEvents}
-                    showTimeLabels={false}
+              {calendarEventsLoading && calendarEvents.length === 0 ? (
+                <p className="text-text-muted text-sm py-4">Loading events…</p>
+              ) : (
+                <>
+                  <EventsTimeLabelsColumn
                     startHour={showFullDay ? EVENTS_FULL_DAY_START_HOUR : EVENTS_DEFAULT_START_HOUR}
                     endHour={showFullDay ? EVENTS_FULL_DAY_END_HOUR : EVENTS_DEFAULT_END_HOUR}
-                    onEventClick={setEditEvent}
                   />
-                ))}
-              </div>
+                  <div className="grid grid-cols-7 gap-3 flex-1 min-w-0">
+                    {weekDays.map((dayStr) => (
+                      <DayEventsColumn
+                        key={dayStr}
+                        dayStr={dayStr}
+                        events={calendarEvents}
+                        showTimeLabels={false}
+                        startHour={showFullDay ? EVENTS_FULL_DAY_START_HOUR : EVENTS_DEFAULT_START_HOUR}
+                        endHour={showFullDay ? EVENTS_FULL_DAY_END_HOUR : EVENTS_DEFAULT_END_HOUR}
+                        onEventClick={setEditEvent}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
           )}
         </div>
@@ -1248,14 +1264,18 @@ export function PlannerPage() {
           </button>
           {!eventsCollapsed && (
             <div className="mt-2 min-h-[200px]">
-              <DayEventsColumn
-                dayStr={mobileDateStr}
-                events={calendarEvents}
-                showTimeLabels
-                startHour={showFullDay ? EVENTS_FULL_DAY_START_HOUR : EVENTS_DEFAULT_START_HOUR}
-                endHour={showFullDay ? EVENTS_FULL_DAY_END_HOUR : EVENTS_DEFAULT_END_HOUR}
-                onEventClick={setEditEvent}
-              />
+              {calendarEventsLoading && calendarEvents.length === 0 ? (
+                <p className="text-text-muted text-sm py-4">Loading events…</p>
+              ) : (
+                <DayEventsColumn
+                  dayStr={mobileDateStr}
+                  events={calendarEvents}
+                  showTimeLabels
+                  startHour={showFullDay ? EVENTS_FULL_DAY_START_HOUR : EVENTS_DEFAULT_START_HOUR}
+                  endHour={showFullDay ? EVENTS_FULL_DAY_END_HOUR : EVENTS_DEFAULT_END_HOUR}
+                  onEventClick={setEditEvent}
+                />
+              )}
             </div>
           )}
         </div>
@@ -1289,7 +1309,7 @@ export function PlannerPage() {
             setCreateEventOpen(false)
             setEditEvent(null)
           }}
-          onRefetch={refetchCalendarEvents}
+          onRefetch={refreshCalendarEvents}
         />
       )}
 

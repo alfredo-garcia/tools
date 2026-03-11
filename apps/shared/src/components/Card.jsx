@@ -17,6 +17,7 @@ export function Card({
   expandedContent,
   buttons,
   className = '',
+  titleClassName = '',
   ...rest
 }) {
   const [expanded, setExpanded] = useState(defaultExpanded)
@@ -30,7 +31,7 @@ export function Card({
         <div className="flex items-start gap-3">
           {icon && <div className="shrink-0 mt-0.5 text-text-muted">{icon}</div>}
           <div className="flex-1 min-w-0">
-            <div className="font-semibold text-text">{title}</div>
+            <div className={`font-semibold text-text ${titleClassName}`.trim()}>{title}</div>
             {children != null && children !== '' && <div className="mt-1">{children}</div>}
           </div>
           {expandable && (

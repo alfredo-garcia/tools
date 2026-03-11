@@ -448,3 +448,75 @@ export function IconUtensils({ className = '', size = 24 }) {
     </svg>
   )
 }
+
+/** Taza de café (Breakfast). */
+export function IconCoffee({ className = '', size = 24 }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconClass} ${className}`} aria-hidden>
+      <path d="M18 8h1a4 4 0 0 1 0 8h-1" />
+      <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z" />
+      <line x1="6" y1="1" x2="6" y2="4" />
+      <line x1="10" y1="1" x2="10" y2="4" />
+      <line x1="14" y1="1" x2="14" y2="4" />
+    </svg>
+  )
+}
+
+/** Muslo de pollo (Lunch / Dinner). */
+export function IconChickenLeg({ className = '', size = 24 }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconClass} ${className}`} aria-hidden>
+      <path d="M15 6c0 2-1.5 4-4 5-2.5 1-4.5.5-5.5-1S5 7 7 5s5-1 7 1c1 1.2 1 2.5 1 4" />
+      <path d="M12 12v9" />
+      <path d="M9 21h6" />
+    </svg>
+  )
+}
+
+/** Gilda / montadito – pincho o tapa (Tapa). */
+export function IconTapa({ className = '', size = 24 }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconClass} ${className}`} aria-hidden>
+      <line x1="12" y1="2" x2="12" y2="18" />
+      <circle cx="12" cy="6" r="2.5" />
+      <circle cx="12" cy="12" r="2" />
+      <circle cx="12" cy="16" r="1.5" />
+    </svg>
+  )
+}
+
+/** Trozo de tarta (Dessert). */
+export function IconCake({ className = '', size = 24 }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconClass} ${className}`} aria-hidden>
+      <path d="M12 2v8" />
+      <path d="M8 22h8l-1-10H9l-1 10z" />
+      <path d="M6 12l2-2 2 2 2-2 2 2 2-2" />
+      <path d="M4 22V12a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10" />
+    </svg>
+  )
+}
+
+/** Bote de mostaza/ketchup (Sauce). */
+export function IconBottle({ className = '', size = 24 }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconClass} ${className}`} aria-hidden>
+      <path d="M9 2v4l2 2 2-2V2" />
+      <path d="M9 8v14" />
+      <path d="M15 8v14" />
+      <rect x="7" y="6" width="10" height="14" rx="1" />
+    </svg>
+  )
+}
+
+/** Copa de martini (Cocktail). */
+export function IconMartini({ className = '', size = 24 }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconClass} ${className}`} aria-hidden>
+      <path d="M8 22h8" />
+      <path d="M12 22V11" />
+      <path d="M5 11l7-8 7 8" />
+      <path d="M6 11h12" />
+    </svg>
+  )
+}

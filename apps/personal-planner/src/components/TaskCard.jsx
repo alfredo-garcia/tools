@@ -103,6 +103,7 @@ export function TaskCard({ task, dayStr, onStatusChange, onOpenModal, refetch, i
     >
       <Card
         title={name}
+        titleClassName="text-sm"
         expandable={false}
         buttons={statusButtons}
         className="w-full"

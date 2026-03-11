@@ -2,6 +2,8 @@ import { describe, it, expect } from 'vitest'
 import {
   getMealsForSlot,
   recipeMatchesMealType,
+  getMealTypeIconKey,
+  getDominantMealType,
   getRecipeIngredientNames,
   getMissingIngredients,
   getRecipeIngredientsInShoppingList,
@@ -31,6 +33,50 @@ describe('mealsUtils', () => {
     it('handles non-array meals', () => {
       expect(getMealsForSlot(null, '2025-03-03', 'Breakfast')).toEqual([])
       expect(getMealsForSlot(undefined, '2025-03-03', 'Breakfast')).toEqual([])
+    })
+  })
+
+  describe('getMealTypeIconKey', () => {
+    it('returns icon key for each meal type', () => {
+      expect(getMealTypeIconKey('Breakfast')).toBe('Coffee')
+      expect(getMealTypeIconKey('Lunch')).toBe('ChickenLeg')
+      expect(getMealTypeIconKey('Dinner')).toBe('ChickenLeg')
+      expect(getMealTypeIconKey('Tapa')).toBe('Tapa')
+      expect(getMealTypeIconKey('Dessert')).toBe('Cake')
+      expect(getMealTypeIconKey('Sauce')).toBe('Bottle')
+      expect(getMealTypeIconKey('Cocktail')).toBe('Martini')
+    })
+
+    it('returns Book for unknown or missing meal type', () => {
+      expect(getMealTypeIconKey('Snack')).toBe('Book')
+      expect(getMealTypeIconKey('')).toBe('Book')
+      expect(getMealTypeIconKey(undefined)).toBe('Book')
+      expect(getMealTypeIconKey('Other')).toBe('Book')
+    })
+  })
+
+  describe('getDominantMealType', () => {
+    it('returns first type in priority order when recipe has multiple meal types', () => {
+      expect(getDominantMealType({ 'Meal Type': ['Snack', 'Breakfast'] })).toBe('Breakfast')
+      expect(getDominantMealType({ 'Meal Type': ['Dessert', 'Lunch', 'Tapa'] })).toBe('Lunch')
+      expect(getDominantMealType({ 'Meal Type': ['Tapa', 'Dinner'] })).toBe('Dinner')
+    })
+
+    it('returns single meal type', () => {
+      expect(getDominantMealType({ 'Meal Type': 'Breakfast' })).toBe('Breakfast')
+      expect(getDominantMealType({ 'Meal Type': ['Lunch'] })).toBe('Lunch')
+    })
+
+    it('returns first in recipe list when no type is in priority order', () => {
+      expect(getDominantMealType({ 'Meal Type': ['Snack'] })).toBe('Snack')
+      expect(getDominantMealType({ 'Meal Type': ['Other'] })).toBe('Other')
+      expect(getDominantMealType({ 'Meal Type': ['CustomType', 'Other'] })).toBe('CustomType')
+    })
+
+    it('returns undefined when recipe has no meal types', () => {
+      expect(getDominantMealType({})).toBeUndefined()
+      expect(getDominantMealType({ 'Meal Type': [] })).toBeUndefined()
+      expect(getDominantMealType(null)).toBeUndefined()
     })
   })
 

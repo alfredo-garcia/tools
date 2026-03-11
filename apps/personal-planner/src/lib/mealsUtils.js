@@ -11,6 +11,52 @@ export const MEAL_TYPE_OPTIONS = [
   'Tapa',
 ]
 
+/** Clave del icono a mostrar en la card de Meal según Meal Type (para UI). */
+export const MEAL_TYPE_ICON_KEYS = {
+  Breakfast: 'Coffee',
+  Lunch: 'ChickenLeg',
+  Dinner: 'ChickenLeg',
+  Tapa: 'Tapa',
+  Dessert: 'Cake',
+  Sauce: 'Bottle',
+  Cocktail: 'Martini',
+}
+
+/**
+ * Returns the icon key for a meal type (used by MealSlotCard to pick the icon).
+ * @param {string} mealType - e.g. 'Breakfast', 'Lunch', 'Dinner', 'Tapa', 'Dessert', 'Sauce', 'Cocktail'
+ * @returns {string} Icon key: 'Coffee' | 'ChickenLeg' | 'Tapa' | 'Cake' | 'Bottle' | 'Martini' | 'Book' (default)
+ */
+export function getMealTypeIconKey(mealType) {
+  return MEAL_TYPE_ICON_KEYS[mealType] || 'Book'
+}
+
+/** Order used to pick dominant meal type (first match wins). */
+const MEAL_TYPE_PRIORITY = [
+  'Breakfast',
+  'Lunch',
+  'Dinner',
+  'Tapa',
+  'Dessert',
+  'Sauce',
+  'Cocktail',
+  'Snack',
+]
+
+/**
+ * Returns the dominant meal type for a recipe (for display/icon).
+ * Uses MEAL_TYPE_PRIORITY: first type in that order that appears in the recipe's Meal Type wins.
+ * @param {object} recipe - Recipe record with 'Meal Type' (string or array)
+ * @returns {string|undefined} Dominant meal type or undefined if none
+ */
+export function getDominantMealType(recipe) {
+  if (!recipe) return undefined
+  const values = arr(field(recipe, 'Meal Type')).map((v) => String(v).trim()).filter(Boolean)
+  if (values.length === 0) return undefined
+  const priority = MEAL_TYPE_PRIORITY.find((p) => values.includes(p))
+  return priority ?? values[0]
+}
+
 /**
  * Returns meals that belong to the given day and meal type.
  * @param {Array<{ id: string, fields: object }>} meals - List of meal records (id + Airtable fields)

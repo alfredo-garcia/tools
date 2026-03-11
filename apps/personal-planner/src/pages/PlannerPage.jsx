@@ -605,6 +605,7 @@ function DayColumn({
   showCompleted: controlledShowCompleted,
   onHabitsCollapsedChange,
   onShowCompletedChange,
+  middleSection = null,
 }) {
   const [tasksCollapsed, setTasksCollapsed] = useState(false)
   const [localHabitsCollapsed, setLocalHabitsCollapsed] = useState(false)
@@ -729,7 +730,17 @@ function DayColumn({
         </>
       )}
 
-      <button type="button" onClick={() => setHabitsCollapsed((c) => !c)} className="w-full flex items-center justify-between gap-2 py-1.5 text-left font-semibold text-base text-text mt-5">
+      {middleSection != null ? (
+        <>
+          <div className="border-t border-border pt-4 mt-4" />
+          {middleSection}
+          <div className="border-t border-border pt-4 mt-4" />
+        </>
+      ) : (
+        <div className="mt-5" aria-hidden />
+      )}
+
+      <button type="button" onClick={() => setHabitsCollapsed((c) => !c)} className={`w-full flex items-center justify-between gap-2 py-1.5 text-left font-semibold text-base text-text ${middleSection == null ? 'mt-0' : ''}`}>
         <span className="text-text">Habits</span>
         {habitsCollapsed ? <IconChevronDown size={22} /> : <IconChevronUp size={22} />}
       </button>
@@ -1019,6 +1030,50 @@ export function PlannerPage() {
       {...dayColumnPrefs}
     />
   ))
+  const mobileEventsSection = (
+    <div className="pt-4 mt-4">
+      <button
+        type="button"
+        onClick={() => setEventsCollapsed((c) => !c)}
+        className="w-full flex items-center justify-between gap-2 py-2 text-left font-semibold text-base text-text"
+      >
+        <span className="text-text">Events</span>
+        <span className="flex items-center gap-3 shrink-0">
+          <span onClick={(e) => e.stopPropagation()}>
+            <Switch checked={showFullDay} onChange={setShowFullDay} label="Show full day" />
+          </span>
+          {eventsCollapsed ? <IconChevronDown size={22} /> : <IconChevronUp size={22} />}
+        </span>
+      </button>
+      {!eventsCollapsed && (
+        <div className="mt-2 min-h-[200px] flex gap-2">
+          {calendarEventsLoading && calendarEvents.length === 0 ? (
+            <p className="text-text-muted text-sm py-4">Loading events…</p>
+          ) : (
+            <>
+              <div className="shrink-0 min-w-[3rem] w-14">
+                <EventsTimeLabelsColumn
+                  startHour={showFullDay ? EVENTS_FULL_DAY_START_HOUR : EVENTS_DEFAULT_START_HOUR}
+                  endHour={showFullDay ? EVENTS_FULL_DAY_END_HOUR : EVENTS_DEFAULT_END_HOUR}
+                />
+              </div>
+              <div className="flex-1 min-w-0">
+                <DayEventsColumn
+                  dayStr={mobileDateStr}
+                  events={calendarEvents}
+                  showTimeLabels={false}
+                  startHour={showFullDay ? EVENTS_FULL_DAY_START_HOUR : EVENTS_DEFAULT_START_HOUR}
+                  endHour={showFullDay ? EVENTS_FULL_DAY_END_HOUR : EVENTS_DEFAULT_END_HOUR}
+                  onEventClick={setEditEvent}
+                />
+              </div>
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  )
+
   const mobileDayColumns = mobileWeekDays.map((dayStr, i) => (
     <DayColumn
       key={dayStr}
@@ -1035,6 +1090,7 @@ export function PlannerPage() {
       onTaskMove={handleTaskMove}
       refetch={refetch}
       hideDayHeader
+      middleSection={mobileEventsSection}
       {...dayColumnPrefs}
     />
   ))
@@ -1247,37 +1303,6 @@ export function PlannerPage() {
           onTouchEnd={handleTouchEnd}
         >
           {mobileDayColumns[mobileDayIndex]}
-        </div>
-        <div className="mt-4 pt-4 border-t border-border">
-          <button
-            type="button"
-            onClick={() => setEventsCollapsed((c) => !c)}
-            className="w-full flex items-center justify-between gap-2 py-2 text-left font-semibold text-base text-text"
-          >
-            <span className="text-text">Events</span>
-            <span className="flex items-center gap-3 shrink-0">
-              <span onClick={(e) => e.stopPropagation()}>
-                <Switch checked={showFullDay} onChange={setShowFullDay} label="Show full day" />
-              </span>
-              {eventsCollapsed ? <IconChevronDown size={22} /> : <IconChevronUp size={22} />}
-            </span>
-          </button>
-          {!eventsCollapsed && (
-            <div className="mt-2 min-h-[200px]">
-              {calendarEventsLoading && calendarEvents.length === 0 ? (
-                <p className="text-text-muted text-sm py-4">Loading events…</p>
-              ) : (
-                <DayEventsColumn
-                  dayStr={mobileDateStr}
-                  events={calendarEvents}
-                  showTimeLabels
-                  startHour={showFullDay ? EVENTS_FULL_DAY_START_HOUR : EVENTS_DEFAULT_START_HOUR}
-                  endHour={showFullDay ? EVENTS_FULL_DAY_END_HOUR : EVENTS_DEFAULT_END_HOUR}
-                  onEventClick={setEditEvent}
-                />
-              )}
-            </div>
-          )}
         </div>
       </div>
 

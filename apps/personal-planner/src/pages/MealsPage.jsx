@@ -1,8 +1,22 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { Spinner, PageHeader, IconBook, IconChevronLeft, IconChevronRight, IconChevronDown, IconChevronUp } from '@tools/shared'
+import {
+  Spinner,
+  PageHeader,
+  IconBook,
+  IconCoffee,
+  IconChickenLeg,
+  IconTapa,
+  IconCake,
+  IconBottle,
+  IconMartini,
+  IconChevronLeft,
+  IconChevronRight,
+  IconChevronDown,
+  IconChevronUp,
+} from '@tools/shared'
 import { field, str, dateStr, getWeekDays, getWeekStart, getWeekdayIndex } from '@tools/shared'
 import { usePlannerApi } from '../contexts/PlannerApiContext'
-import { getMealsForSlot } from '../lib/mealsUtils'
+import { getMealsForSlot, getMealTypeIconKey } from '../lib/mealsUtils'
 import { AddMealModal } from '../components/AddMealModal'
 import { EditMealModal } from '../components/EditMealModal'
 import { useTouchDrag } from '../hooks/useTouchDrag'
@@ -42,7 +56,23 @@ function formatDayDate(dayStr) {
 
 const DRAG_TYPE_MEAL = 'application/x-planner-meal'
 
-function MealSlotCard({ meal, recipeName, isDragging, onDragStart, onDragEnd, onClick, touchHandlers = {}, touchRef }) {
+const ICON_BY_KEY = {
+  Coffee: IconCoffee,
+  ChickenLeg: IconChickenLeg,
+  Tapa: IconTapa,
+  Cake: IconCake,
+  Bottle: IconBottle,
+  Martini: IconMartini,
+  Book: IconBook,
+}
+
+function getMealIcon(mealType) {
+  const key = getMealTypeIconKey(mealType)
+  return ICON_BY_KEY[key] || IconBook
+}
+
+function MealSlotCard({ meal, recipeName, mealType, isDragging, onDragStart, onDragEnd, onClick, touchHandlers = {}, touchRef }) {
+  const Icon = getMealIcon(mealType)
   return (
     <div
       ref={touchRef}
@@ -63,8 +93,8 @@ function MealSlotCard({ meal, recipeName, isDragging, onDragStart, onDragEnd, on
       aria-label={`Meal: ${recipeName}. Click to edit, drag to move.`}
     >
       <div className="flex items-center gap-2 min-w-0">
-        <IconBook size={18} className="shrink-0 text-text-muted" />
-        <span className="font-medium text-text truncate">{recipeName || '(sin nombre)'}</span>
+        <Icon size={18} className="shrink-0 text-text-muted" />
+        <span className="text-sm font-medium text-text truncate">{recipeName || '(sin nombre)'}</span>
       </div>
     </div>
   )
@@ -114,6 +144,7 @@ function MealSlotCardWithTouch({
     <MealSlotCard
       meal={meal}
       recipeName={recipeName}
+      mealType={mealType}
       isDragging={draggingMealId === meal.id}
       onDragStart={(e) => {
         e.dataTransfer.setData(DRAG_TYPE_MEAL, JSON.stringify({

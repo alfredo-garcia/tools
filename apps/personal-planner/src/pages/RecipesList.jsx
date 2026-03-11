@@ -1,9 +1,22 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Spinner, PageHeader, Card, IconBook, IconSearch, Fab } from '@tools/shared'
+import {
+  Spinner,
+  PageHeader,
+  Card,
+  IconBook,
+  IconCoffee,
+  IconChickenLeg,
+  IconTapa,
+  IconCake,
+  IconBottle,
+  IconMartini,
+  IconSearch,
+  Fab,
+} from '@tools/shared'
 import { usePlannerApi } from '../contexts/PlannerApiContext'
 import { field, str, num, arr } from '@tools/shared'
-import { recipeMatchesMealType, MEAL_TYPE_OPTIONS } from '../lib/mealsUtils'
+import { recipeMatchesMealType, MEAL_TYPE_OPTIONS, getDominantMealType, getMealTypeIconKey } from '../lib/mealsUtils'
 import { RecipeCreateModal } from '../components/RecipeCreateModal'
 
 const FILTER_ALL = 'All'
@@ -17,18 +30,31 @@ const MEAL_TYPE_LABELS = {
   Tapa: 'Tapa',
 }
 
+const ICON_BY_KEY = {
+  Coffee: IconCoffee,
+  ChickenLeg: IconChickenLeg,
+  Tapa: IconTapa,
+  Cake: IconCake,
+  Bottle: IconBottle,
+  Martini: IconMartini,
+  Book: IconBook,
+}
+
 function RecipeCard({ recipe }) {
   const name = str(field(recipe, 'Name')) || str(field(recipe, 'Name ES')) || '(untitled)'
   const nameES = str(field(recipe, 'Name ES'))
   const title = nameES && name !== nameES ? `${nameES} — ${name}` : name
   const mealTypes = arr(field(recipe, 'Meal Type'))
+  const dominantMealType = getDominantMealType(recipe)
+  const iconKey = getMealTypeIconKey(dominantMealType)
+  const Icon = ICON_BY_KEY[iconKey] || IconBook
   const cuisineType = str(field(recipe, 'Cuisine Type'))
   const timeMins = num(field(recipe, 'Time to Cook (minutes)'))
   const servings = num(field(recipe, 'Servings'))
 
   return (
     <Link to={`/recipes/${recipe.id}`} className="block">
-      <Card title={title} icon={<IconBook size={20} />} className="hover:ring-2 hover:ring-primary/30 transition-shadow">
+      <Card title={title} icon={<Icon size={20} />} className="hover:ring-2 hover:ring-primary/30 transition-shadow">
         <div className="flex flex-wrap items-center gap-2 text-sm text-text-muted">
           {mealTypes.map((mt) => (
             <span key={mt} className="inline-flex px-2 py-0.5 rounded-lg bg-border text-text-muted font-medium">

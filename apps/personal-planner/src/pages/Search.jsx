@@ -1,8 +1,27 @@
 import { useState, useCallback, useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import { Spinner, PageHeader, Card, IconSearch, IconX, IconTarget, IconCheckSquare, IconChevronDown, IconChevronUp, IconBook, IconCircle } from '@tools/shared'
+import {
+  Spinner,
+  PageHeader,
+  Card,
+  IconSearch,
+  IconX,
+  IconTarget,
+  IconCheckSquare,
+  IconChevronDown,
+  IconChevronUp,
+  IconBook,
+  IconCoffee,
+  IconChickenLeg,
+  IconTapa,
+  IconCake,
+  IconBottle,
+  IconMartini,
+  IconCircle,
+} from '@tools/shared'
 import { usePlannerApi } from '../contexts/PlannerApiContext'
 import { field, str, dateStr, arr, num } from '@tools/shared'
+import { getDominantMealType, getMealTypeIconKey } from '../lib/mealsUtils'
 import { getTaskStatusGroup } from '../lib/taskStatus'
 import { getPriorityTagClass } from '../components/TaskCard'
 import { normalizeQuery, matchText, matchNameAndNameES } from '../lib/searchUtils'
@@ -210,18 +229,31 @@ function TaskCard({ task }) {
   )
 }
 
+const RECIPE_ICON_BY_KEY = {
+  Coffee: IconCoffee,
+  ChickenLeg: IconChickenLeg,
+  Tapa: IconTapa,
+  Cake: IconCake,
+  Bottle: IconBottle,
+  Martini: IconMartini,
+  Book: IconBook,
+}
+
 function RecipeCardSearch({ recipe }) {
   const name = str(field(recipe, 'Name')) || str(field(recipe, 'Name ES')) || '(untitled)'
   const nameES = str(field(recipe, 'Name ES'))
   const title = nameES && name !== nameES ? `${nameES} — ${name}` : name
   const mealTypes = arr(field(recipe, 'Meal Type'))
+  const dominantMealType = getDominantMealType(recipe)
+  const iconKey = getMealTypeIconKey(dominantMealType)
+  const Icon = RECIPE_ICON_BY_KEY[iconKey] || IconBook
   const cuisineType = str(field(recipe, 'Cuisine Type'))
   const timeMins = num(field(recipe, 'Time to Cook (minutes)'))
   const servings = num(field(recipe, 'Servings'))
 
   return (
     <Link to={`/recipes/${recipe.id}`} className="block">
-      <Card title={title} icon={<IconBook size={20} />} className="hover:ring-2 hover:ring-primary/30 transition-shadow">
+      <Card title={title} icon={<Icon size={20} />} className="hover:ring-2 hover:ring-primary/30 transition-shadow">
         <div className="flex flex-wrap items-center gap-2 text-sm text-text-muted">
           {mealTypes.map((mt) => (
             <span key={mt} className="inline-flex px-2 py-0.5 rounded-lg bg-border text-text-muted font-medium">{mt}</span>

@@ -22,6 +22,7 @@ import { RecipesList } from './pages/RecipesList'
 import { RecipeDetail } from './pages/RecipeDetail'
 import { MealsPage } from './pages/MealsPage'
 import { ConnectionStatus } from './components/ConnectionStatus'
+import { CalendarConnections } from './components/CalendarConnections'
 
 const baseNavItems = [
   { to: '/', label: 'Planner', Icon: IconCalendar, aria: 'Weekly planner' },
@@ -60,7 +61,7 @@ function App() {
             <Route path="/" element={<PlannerPage />} />
             <Route path="/planner" element={<Navigate to="/" replace />} />
             <Route path="/analytics" element={<Dashboard />} />
-            <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/settings" element={<SettingsPage><CalendarConnections /></SettingsPage>} />
             <Route path="/objectives" element={<ObjectivesList />} />
             <Route path="/objectives/:id" element={<ObjectiveDetail />} />
             <Route path="/key-results" element={<KeyResultsList />} />

@@ -3,8 +3,10 @@ import { usePlannerApi } from '../contexts/PlannerApiContext'
 import { Spinner, PageHeader, Switch, IconChevronDown, IconChevronUp, IconChevronLeft, IconChevronRight, IconStar, IconFlameFilled, IconPoop, IconTarget, IconCalendar, IconUser, IconTag, IconCircle, IconPlay, IconCheckSquare, IconTrash, IconHeart, IconHeartFire } from '@tools/shared'
 import { field, str, dateStr, arr, getWeekDays, getWeekStart, getWeekdayIndex } from '@tools/shared'
 import { getTaskStatusGroup } from '../lib/taskStatus'
+import { getEventsForDay, eventToSlots } from '../lib/calendarEventsUtils'
 import { TaskCard, STATUS_OPTIONS, getPriorityTagClass } from '../components/TaskCard'
 import { TaskModal } from '../components/TaskModal'
+import { EventModal } from '../components/EventModal'
 import { Fab } from '@tools/shared'
 import { useTouchDrag } from '../hooks/useTouchDrag'
 
@@ -25,19 +27,17 @@ function getOrdinalSuffix(n) {
 }
 
 function readPlannerPrefs() {
-  if (typeof window === 'undefined') return { habitsCollapsed: false, showCompleted: false }
+  if (typeof window === 'undefined') return { habitsCollapsed: false, showCompleted: false, eventsCollapsed: true }
   try {
     const raw = localStorage.getItem(PLANNER_PREFS_KEY)
-    if (!raw) return { habitsCollapsed: false, showCompleted: false }
+    if (!raw) return { habitsCollapsed: false, showCompleted: false, eventsCollapsed: true }
     const p = JSON.parse(raw)
-    if (p.habitsCollapsed !== undefined) {
-      return { habitsCollapsed: Boolean(p.habitsCollapsed), showCompleted: Boolean(p.showCompleted) }
-    }
-    const legacyGood = Boolean(p.goodHabitsCollapsed)
-    const legacyBad = Boolean(p.badHabitsCollapsed)
-    return { habitsCollapsed: legacyGood && legacyBad, showCompleted: Boolean(p.showCompleted) }
+    const habitsCollapsed = p.habitsCollapsed !== undefined ? Boolean(p.habitsCollapsed) : (Boolean(p.goodHabitsCollapsed) && Boolean(p.badHabitsCollapsed))
+    const showCompleted = Boolean(p.showCompleted)
+    const eventsCollapsed = p.eventsCollapsed !== undefined ? Boolean(p.eventsCollapsed) : true
+    return { habitsCollapsed, showCompleted, eventsCollapsed }
   } catch (_) {
-    return { habitsCollapsed: false, showCompleted: false }
+    return { habitsCollapsed: false, showCompleted: false, eventsCollapsed: true }
   }
 }
 
@@ -109,6 +109,11 @@ function usePlannerData() {
 function getTasksForDay(tasks, dayStr) {
   return tasks.filter((t) => dateStr(field(t, 'Due Date', 'Due Date')) === dayStr)
 }
+
+/** 30-min slots from 06:00 to 24:00 = 36 slots. Used for Events column height/labels. */
+const EVENTS_SLOT_START_HOUR = 6
+const EVENTS_SLOTS_COUNT = 36
+const EVENTS_SLOT_HEIGHT_PX = 28
 
 function getHabitEntryForDay(habitTracking, habitId, dayStr) {
   return habitTracking.find((t) => {
@@ -212,6 +217,89 @@ function DayHeaderCell({ dayStr, dayIndex, tasks, habits, habitTracking }) {
 }
 
 const DRAG_TYPE_TASK = 'application/x-planner-task'
+
+/** Summary row for Events section when collapsed: event count per day. */
+function DayEventsSummary({ dayStr, events }) {
+  const forDay = getEventsForDay(events, dayStr)
+  const n = forDay.length
+  return (
+    <div className="flex flex-col min-w-0 px-2 py-1">
+      <span className="text-xs font-medium text-text-muted" title={`${n} events`}>
+        ({n})
+      </span>
+    </div>
+  )
+}
+
+/** Time labels column (06:00–24:00, 30-min slots). Used once on the left in week view. */
+function EventsTimeLabelsColumn() {
+  const slotLabels = []
+  for (let i = 0; i < EVENTS_SLOTS_COUNT; i++) {
+    const h = EVENTS_SLOT_START_HOUR + Math.floor(i / 2)
+    const m = (i % 2) * 30
+    slotLabels.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`)
+  }
+  return (
+    <div className="flex flex-col shrink-0 pr-2 border-r border-border/50" style={{ minHeight: EVENTS_SLOTS_COUNT * EVENTS_SLOT_HEIGHT_PX }}>
+      {slotLabels.map((label, idx) => (
+        <div
+          key={idx}
+          className="flex items-center text-xs text-text-muted shrink-0"
+          style={{ height: EVENTS_SLOT_HEIGHT_PX, minHeight: EVENTS_SLOT_HEIGHT_PX }}
+        >
+          <span className="shrink-0 w-8">{label}</span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+/** One day column for Events: 30-min slots with events positioned. showTimeLabels: true on mobile (one day), false in week view (times are in first column). */
+function DayEventsColumn({ dayStr, events, showTimeLabels = false }) {
+  const forDay = getEventsForDay(events, dayStr)
+  const slotLabels = showTimeLabels ? (() => {
+    const out = []
+    for (let i = 0; i < EVENTS_SLOTS_COUNT; i++) {
+      const h = EVENTS_SLOT_START_HOUR + Math.floor(i / 2)
+      const m = (i % 2) * 30
+      out.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`)
+    }
+    return out
+  })() : null
+  return (
+    <div className="flex flex-col min-w-0 px-2 relative" style={{ minHeight: EVENTS_SLOTS_COUNT * EVENTS_SLOT_HEIGHT_PX }}>
+      {(slotLabels || Array(EVENTS_SLOTS_COUNT).fill(null)).map((label, idx) => (
+        <div
+          key={idx}
+          className="flex items-center border-b border-border/50 text-xs text-text-muted shrink-0"
+          style={{ height: EVENTS_SLOT_HEIGHT_PX, minHeight: EVENTS_SLOT_HEIGHT_PX }}
+        >
+          {label != null && <span className="shrink-0 w-8">{label}</span>}
+        </div>
+      ))}
+      {forDay.map((ev) => {
+        const [slotIndex, span] = eventToSlots(ev)
+        const top = slotIndex * EVENTS_SLOT_HEIGHT_PX
+        const height = span * EVENTS_SLOT_HEIGHT_PX - 2
+        return (
+          <div
+            key={ev.id}
+            className="absolute left-2 right-2 rounded px-1.5 py-0.5 overflow-hidden bg-primary/15 border border-primary/40 text-text text-xs"
+            style={{ top: top + 1, height, minHeight: 20 }}
+            title={ev.summary + (ev.calendarLabel ? ` (${ev.calendarLabel})` : '')}
+          >
+            <span className="font-medium truncate block">{ev.summary || 'Event'}</span>
+            {ev.start && (
+              <span className="text-text-muted text-[10px] truncate block">
+                {ev.start.slice(11, 16)} – {ev.end?.slice(11, 16) || ''}
+              </span>
+            )}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
 
 /** Solo la barra de progreso de tareas de un día (para mostrar cuando la sección Tasks está colapsada). */
 function DayTaskProgressBar({ dayStr, tasks }) {
@@ -696,12 +784,27 @@ export function PlannerPage() {
   const [desktopTasksCollapsed, setDesktopTasksCollapsed] = useState(false)
   const [habitsCollapsed, setHabitsCollapsed] = useState(() => readPlannerPrefs().habitsCollapsed)
   const [showCompleted, setShowCompleted] = useState(() => readPlannerPrefs().showCompleted)
+  const [eventsCollapsed, setEventsCollapsed] = useState(() => readPlannerPrefs().eventsCollapsed)
+  const [calendarEvents, setCalendarEvents] = useState([])
+  const [createEventOpen, setCreateEventOpen] = useState(false)
 
   useEffect(() => {
-    writePlannerPrefs({ habitsCollapsed, showCompleted })
-  }, [habitsCollapsed, showCompleted])
+    writePlannerPrefs({ habitsCollapsed, showCompleted, eventsCollapsed })
+  }, [habitsCollapsed, showCompleted, eventsCollapsed])
 
   const weekDays = getWeekDaysForOffset(weekOffset)
+  const timeMin = weekDays[0] ? `${weekDays[0]}T00:00:00` : ''
+  const timeMax = weekDays[6] ? `${weekDays[6]}T23:59:59` : ''
+  const refetchCalendarEvents = useCallback(() => {
+    if (!timeMin || !timeMax) return
+    fetchApi(`/api/calendar/events?timeMin=${encodeURIComponent(timeMin)}&timeMax=${encodeURIComponent(timeMax)}`)
+      .then((r) => setCalendarEvents(Array.isArray(r?.data) ? r.data : []))
+      .catch(() => setCalendarEvents([]))
+  }, [timeMin, timeMax, fetchApi])
+  useEffect(() => {
+    refetchCalendarEvents()
+  }, [refetchCalendarEvents])
+
   const mobileWeekDays = getWeekDays(parseLocalDate(mobileDateStr))
   const mobileDayIndex = getWeekdayIndex(mobileDateStr)
 
@@ -967,6 +1070,43 @@ export function PlannerPage() {
           )}
         </div>
         <div className="mt-6 pt-4 border-t border-border">
+          <div className="flex items-center justify-between gap-2">
+            <button
+              type="button"
+              onClick={() => setEventsCollapsed((c) => !c)}
+              className="flex-1 flex items-center justify-between gap-2 py-2 text-left font-semibold text-base text-text"
+            >
+              <span className="text-text">Events</span>
+              {eventsCollapsed ? <IconChevronDown size={22} /> : <IconChevronUp size={22} />}
+            </button>
+            {!eventsCollapsed && (
+              <button
+                type="button"
+                onClick={() => setCreateEventOpen(true)}
+                className="min-h-[36px] px-3 py-1.5 rounded-lg border-2 border-primary bg-primary/10 text-primary text-sm font-medium hover:bg-primary/20"
+              >
+                New event
+              </button>
+            )}
+          </div>
+          {eventsCollapsed ? (
+            <div className="grid grid-cols-7 gap-3 mt-2">
+              {weekDays.map((dayStr) => (
+                <DayEventsSummary key={dayStr} dayStr={dayStr} events={calendarEvents} />
+              ))}
+            </div>
+          ) : (
+            <div className="flex gap-3 mt-2 min-h-[200px]">
+              <EventsTimeLabelsColumn />
+              <div className="grid grid-cols-7 gap-3 flex-1 min-w-0">
+                {weekDays.map((dayStr) => (
+                  <DayEventsColumn key={dayStr} dayStr={dayStr} events={calendarEvents} showTimeLabels={false} />
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+        <div className="mt-6 pt-4 border-t border-border">
           <button
             type="button"
             onClick={() => setHabitsCollapsed((c) => !c)}
@@ -1041,6 +1181,21 @@ export function PlannerPage() {
         >
           {mobileDayColumns[mobileDayIndex]}
         </div>
+        <div className="mt-4 pt-4 border-t border-border">
+          <button
+            type="button"
+            onClick={() => setEventsCollapsed((c) => !c)}
+            className="w-full flex items-center justify-between gap-2 py-2 text-left font-semibold text-base text-text"
+          >
+            <span className="text-text">Events</span>
+            {eventsCollapsed ? <IconChevronDown size={22} /> : <IconChevronUp size={22} />}
+          </button>
+          {!eventsCollapsed && (
+            <div className="mt-2 min-h-[200px]">
+              <DayEventsColumn dayStr={mobileDateStr} events={calendarEvents} showTimeLabels />
+            </div>
+          )}
+        </div>
       </div>
 
       {modalTask && (
@@ -1061,6 +1216,13 @@ export function PlannerPage() {
           onCreate={handleCreateTask}
           refetch={refetch}
           initialValues={{ 'Due Date': todayStr }}
+        />
+      )}
+
+      {createEventOpen && (
+        <EventModal
+          onClose={() => setCreateEventOpen(false)}
+          onRefetch={refetchCalendarEvents}
         />
       )}
 

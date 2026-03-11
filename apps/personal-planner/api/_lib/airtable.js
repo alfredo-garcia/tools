@@ -32,6 +32,14 @@ export function getRecipesBase() {
   return new Airtable({ apiKey: pat }).base(baseId)
 }
 
+/** Base para tabla Settings (Key-Value). Usa AIRTABLE_BASE_ID_SETTINGS si está definido, si no la base por defecto. */
+export function getSettingsBase() {
+  const pat = process.env.AIRTABLE_PAT
+  const baseId = process.env.AIRTABLE_BASE_ID_SETTINGS || process.env.AIRTABLE_BASE_ID
+  if (!pat || !baseId) return null
+  return new Airtable({ apiKey: pat }).base(baseId)
+}
+
 /**
  * Lee todos los registros de una tabla (máx 500).
  * @param {object} [baseOverride] - Si se pasa (p. ej. getShoppingBase()), se usa en lugar de la base por defecto.

@@ -17,6 +17,7 @@ import recipesHandler from '../server/handlers/recipes.js'
 import ingredientsHandler from '../server/handlers/ingredients.js'
 import recipeIngredientsHandler from '../server/handlers/recipe-ingredients.js'
 import mealsHandler from '../server/handlers/meals.js'
+import calendarHandler from '../server/handlers/calendar.js'
 
 const ROUTES = {
   validate: validateHandler,
@@ -32,6 +33,7 @@ const ROUTES = {
   ingredients: ingredientsHandler,
   'recipe-ingredients': recipeIngredientsHandler,
   meals: mealsHandler,
+  calendar: calendarHandler,
 }
 
 function getPathFromRequest(req) {

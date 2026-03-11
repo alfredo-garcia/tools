@@ -27,6 +27,7 @@ Copia `.env.example` a `.env` y rellena:
 - `AIRTABLE_TABLE_OBJECTIVES`, `AIRTABLE_TABLE_KEY_RESULTS`, `AIRTABLE_TABLE_TASKS`, `AIRTABLE_TABLE_HABITS`, `AIRTABLE_TABLE_HABIT_TRACKING`, `AIRTABLE_TABLE_KEY_RESULT_TRACKING`, `AIRTABLE_TABLE_SHOPPING`, `AIRTABLE_TABLE_MEALS`: nombres exactos de cada tabla en tu base
 - `AIRTABLE_TABLE_RECIPES`, `AIRTABLE_TABLE_INGREDIENTS`, `AIRTABLE_TABLE_RECIPE_INGREDIENTS`: nombres exactos de las tablas en la base de Recipes
 - `ENABLE_KEY_RESULT_TRACKING`: si no usas la tabla Key Result Tracking o el PAT no tiene permiso de escritura, pon `false` para desactivar el registro de tracking al actualizar "Current value".
+- **Google Calendar (opcional):** `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` (credenciales OAuth 2.0 de Google Cloud). Opcional: `GOOGLE_CALENDAR_REDIRECT_URI` (por defecto se construye desde la URL de la app). Tabla Airtable **Settings** (Key-Value): claves `CAL_1_REFRESH_TOKEN`, `CAL_1_ACCESS_TOKEN`, `CAL_1_TOKEN_EXPIRY`, `CAL_1_ID`, `CAL_1_LABEL` (y `CAL_2_*`, `CAL_3_*` para hasta 3 calendarios). Si la tabla Settings está en otra base: `AIRTABLE_BASE_ID_SETTINGS`.
 
 ## Desarrollo
 
@@ -67,9 +68,15 @@ docker compose up --build
 
 En la ruta `/meals` se muestra una vista de semana (como en Planner) con una columna por día. Cada columna tiene tres huecos: **Breakfast**, **Lunch** y **Dinner**. En cada hueco se muestran las comidas (Meals) de Airtable para ese día y tipo. Puedes arrastrar una comida a otro día o a otro tipo (desayuno/comida/cena) y se actualiza la fecha y el tipo en Airtable. El botón "+" en cada hueco abre un modal para elegir una receta (de la base Recipes) que coincida con el Meal Type. **Al elegir una receta**, la app comprueba si alguno de sus ingredientes está en tu Shopping List. Si hay ingredientes en la lista, se muestra un pop-up **Ingredientes en tu lista** con esos ingredientes agrupados en **Need** (primero) y **Have** (después), cada uno con un checkbox (marcado = Need, desmarcado = Have). Puedes cambiar el estado antes de confirmar. **Atrás**: cierra el pop-up sin añadir la receta ni modificar la Shopping List. **Confirmar**: añade la receta al día y actualiza el estado (Have/Need) de esos ingredientes en la Shopping List según los checkboxes. Si la receta no tiene ningún ingrediente en tu lista, se añade directamente sin pop-up. Al hacer clic en una comida se abre un modal para sustituirla por otra receta o borrarla.
 
+## Google Calendar
+
+Puedes conectar hasta **3 calendarios de Google** (todos visibles para cualquier usuario de la app). En **Settings** aparece el bloque "Calendarios de Google" con hasta 3 filas: **Conectar calendario** inicia el flujo OAuth; **Desconectar** borra la conexión de ese slot. Los tokens se guardan en la tabla Airtable **Settings** (Key-Value). En el **Planner** (`/`) la sección **Events** (colapsada por defecto) muestra los eventos de la semana en franjas de 30 minutos por día; el botón **New event** abre un modal para crear un evento en uno de los calendarios conectados.
+
+**Requisitos:** Proyecto en [Google Cloud Console](https://console.cloud.google.com/) con **Google Calendar API** activada y credenciales **OAuth 2.0** (tipo Web application). Añade en "Authorized redirect URIs" la URL de callback (ej. `https://tu-dominio.vercel.app/api/calendar/oauth-callback` y en local `http://localhost:5173/api/calendar/oauth-callback`).
+
 ## Vista Planner
 
-En la ruta `/` (Planner), las secciones **Tasks** y **Habits** son colapsables. Al colapsar Tasks se mantiene visible la barra de progreso. Al colapsar Habits se mantienen visibles dos filas de contadores (1–5): una para Good Habits (corazones verdes) y otra para Bad Habits (corazones rojos). La lista de hábitos es única: todos (good y bad) agrupados por categoría y ordenados alfabéticamente dentro de cada grupo.
+En la ruta `/` (Planner), las secciones **Tasks**, **Events** y **Habits** son colapsables. Al colapsar Tasks se mantiene visible la barra de progreso. **Events** (calendarios de Google): colapsada por defecto; al expandir se muestran franjas de 30 minutos (06:00–24:00) por día con los eventos posicionados; **New event** crea un evento en el calendario elegido. Al colapsar Habits se mantienen visibles dos filas de contadores (1–5): una para Good Habits (corazones verdes) y otra para Bad Habits (corazones rojos). La lista de hábitos es única: todos (good y bad) agrupados por categoría y ordenados alfabéticamente dentro de cada grupo.
 
 En la cabecera de cada día se muestra el nombre del día y la fecha en formato **Monday March 2nd** (mes y día con ordinal). Indicadores en la cabecera:
 - **Estrella**: todas las tareas del día completadas.

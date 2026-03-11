@@ -4,8 +4,9 @@ import { useAuth } from '../contexts/AuthContext.jsx'
 
 /**
  * Settings block: Appearance (ThemeToggle) + Session (logout).
+ * Optional children are rendered below the main block (e.g. app-specific sections like calendar connections).
  */
-export function SettingsPage({ backTo, backLabel = '← Back to home' }) {
+export function SettingsPage({ backTo, backLabel = '← Back to home', children }) {
   const { logout } = useAuth()
 
   return (
@@ -31,6 +32,7 @@ export function SettingsPage({ backTo, backLabel = '← Back to home' }) {
           </button>
         </div>
       </div>
+      {children}
     </div>
   )
 }

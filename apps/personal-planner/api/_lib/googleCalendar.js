@@ -95,7 +95,30 @@ export async function clearConnection(slot) {
 }
 
 /**
+ * Resolve calendar id: if CAL_N_CALENDAR_NAME is set (e.g. "Trastos"), fetch calendar list and return the id for that summary; otherwise return current calendarId.
+ * @param {import('googleapis').calendar_v3.Calendar} calendar
+ * @param {number} slot
+ * @param {string} currentCalendarId
+ * @returns {Promise<string>}
+ */
+async function resolveCalendarId(calendar, slot, currentCalendarId) {
+  const name = (await getSetting(keyFor(slot, 'CALENDAR_NAME'))) || (await getSetting(keyFor(slot, 'NAME')))
+  if (!name || !name.trim()) return currentCalendarId
+  const want = name.trim().toLowerCase()
+  try {
+    const listRes = await calendar.calendarList.list()
+    const items = listRes.data.items || []
+    const found = items.find((item) => (item.summary || '').trim().toLowerCase() === want)
+    if (found && found.id) return found.id
+  } catch (err) {
+    console.error(`[Calendar] slot ${slot} calendarList.list (resolve "${name}"):`, err.message)
+  }
+  return currentCalendarId
+}
+
+/**
  * Get a Calendar API client for the given slot (refreshes access token if needed).
+ * If CAL_N_CALENDAR_NAME is set in Settings, the returned calendarId is the resolved one (e.g. "Trastos").
  * @param {number} slot - 1, 2, or 3
  * @returns {Promise<{ calendar: import('googleapis').calendar_v3.Calendar, calendarId: string }>}
  */
@@ -126,7 +149,8 @@ export async function getCalendarClientForSlot(slot) {
   }
 
   const calendar = google.calendar({ version: 'v3', auth: client })
-  return { calendar, calendarId: conn.calendarId }
+  const calendarId = await resolveCalendarId(calendar, slot, conn.calendarId)
+  return { calendar, calendarId }
 }
 
 /** Ensure RFC3339 (Google requires timezone offset or Z). */
@@ -139,6 +163,7 @@ function toRFC3339(s) {
 
 /**
  * List events from all connected calendars in the given time range; merge and add calendarSlot/calendarLabel.
+ * If CAL_N_CALENDAR_NAME is set in Settings (e.g. "Trastos"), events are listed from that calendar instead of primary.
  * @param {string} timeMin - ISO datetime (will be normalized to RFC3339)
  * @param {string} timeMax - ISO datetime (will be normalized to RFC3339)
  * @returns {Promise<Array<{ id: string, summary: string, start: string, end: string, calendarSlot: number, calendarLabel?: string, [k: string]: unknown }>>}

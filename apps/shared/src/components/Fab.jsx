@@ -1,8 +1,10 @@
 /**
  * Floating Action Button: fixed bottom-right, above bottom nav on mobile.
- * Props: onClick, ariaLabel, optional className.
+ * Props: onClick, ariaLabel, optional className, optional variant ('add' | 'close').
+ * variant 'close' shows an X icon instead of +.
  */
-export function Fab({ onClick, ariaLabel, className = '' }) {
+export function Fab({ onClick, ariaLabel, className = '', variant = 'add' }) {
+  const isClose = variant === 'close'
   return (
     <button
       type="button"
@@ -18,21 +20,39 @@ export function Fab({ onClick, ariaLabel, className = '' }) {
         ${className}
       `.trim()}
     >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width={28}
-        height={28}
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden
-      >
-        <line x1="12" y1="5" x2="12" y2="19" />
-        <line x1="5" y1="12" x2="19" y2="12" />
-      </svg>
+      {isClose ? (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width={28}
+          height={28}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden
+        >
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
+        </svg>
+      ) : (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width={28}
+          height={28}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden
+        >
+          <line x1="12" y1="5" x2="12" y2="19" />
+          <line x1="5" y1="12" x2="19" y2="12" />
+        </svg>
+      )}
     </button>
   )
 }

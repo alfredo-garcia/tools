@@ -3,7 +3,7 @@ import { usePlannerApi } from '../contexts/PlannerApiContext'
 import { Spinner, PageHeader, Switch, IconChevronDown, IconChevronUp, IconChevronLeft, IconChevronRight, IconStar, IconFlameFilled, IconPoop, IconTarget, IconCalendar, IconUser, IconTag, IconCircle, IconPlay, IconCheckSquare, IconTrash, IconHeart, IconHeartFire } from '@tools/shared'
 import { field, str, dateStr, arr, getWeekDays, getWeekStart, getWeekdayIndex } from '@tools/shared'
 import { getTaskStatusGroup } from '../lib/taskStatus'
-import { getEventsForDay, eventToSlots } from '../lib/calendarEventsUtils'
+import { getEventsForDay, eventToVisibleSlots, getEventsVisibility } from '../lib/calendarEventsUtils'
 import { TaskCard, STATUS_OPTIONS, getPriorityTagClass } from '../components/TaskCard'
 import { TaskModal } from '../components/TaskModal'
 import { EventModal } from '../components/EventModal'
@@ -27,17 +27,18 @@ function getOrdinalSuffix(n) {
 }
 
 function readPlannerPrefs() {
-  if (typeof window === 'undefined') return { habitsCollapsed: false, showCompleted: false, eventsCollapsed: true }
+  if (typeof window === 'undefined') return { habitsCollapsed: false, showCompleted: false, eventsCollapsed: true, showFullDay: false }
   try {
     const raw = localStorage.getItem(PLANNER_PREFS_KEY)
-    if (!raw) return { habitsCollapsed: false, showCompleted: false, eventsCollapsed: true }
+    if (!raw) return { habitsCollapsed: false, showCompleted: false, eventsCollapsed: true, showFullDay: false }
     const p = JSON.parse(raw)
     const habitsCollapsed = p.habitsCollapsed !== undefined ? Boolean(p.habitsCollapsed) : (Boolean(p.goodHabitsCollapsed) && Boolean(p.badHabitsCollapsed))
     const showCompleted = Boolean(p.showCompleted)
     const eventsCollapsed = p.eventsCollapsed !== undefined ? Boolean(p.eventsCollapsed) : true
-    return { habitsCollapsed, showCompleted, eventsCollapsed }
+    const showFullDay = Boolean(p.showFullDay)
+    return { habitsCollapsed, showCompleted, eventsCollapsed, showFullDay }
   } catch (_) {
-    return { habitsCollapsed: false, showCompleted: false, eventsCollapsed: true }
+    return { habitsCollapsed: false, showCompleted: false, eventsCollapsed: true, showFullDay: false }
   }
 }
 
@@ -110,9 +111,11 @@ function getTasksForDay(tasks, dayStr) {
   return tasks.filter((t) => dateStr(field(t, 'Due Date', 'Due Date')) === dayStr)
 }
 
-/** 30-min slots from 06:00 to 24:00 = 36 slots. Used for Events column height/labels. */
-const EVENTS_SLOT_START_HOUR = 6
-const EVENTS_SLOTS_COUNT = 36
+/** Events calendar: default 7:00–19:00; "Show full day" 5:00–22:00. 30-min slots, height per slot. */
+const EVENTS_DEFAULT_START_HOUR = 7
+const EVENTS_DEFAULT_END_HOUR = 19
+const EVENTS_FULL_DAY_START_HOUR = 5
+const EVENTS_FULL_DAY_END_HOUR = 22
 const EVENTS_SLOT_HEIGHT_PX = 28
 
 function getHabitEntryForDay(habitTracking, habitId, dayStr) {
@@ -231,16 +234,17 @@ function DayEventsSummary({ dayStr, events }) {
   )
 }
 
-/** Time labels column (06:00–24:00, 30-min slots). Used once on the left in week view. */
-function EventsTimeLabelsColumn() {
+/** Time labels column (30-min slots). Used once on the left in week view. */
+function EventsTimeLabelsColumn({ startHour, endHour }) {
+  const slotsCount = (endHour - startHour) * 2
   const slotLabels = []
-  for (let i = 0; i < EVENTS_SLOTS_COUNT; i++) {
-    const h = EVENTS_SLOT_START_HOUR + Math.floor(i / 2)
+  for (let i = 0; i < slotsCount; i++) {
+    const h = startHour + Math.floor(i / 2)
     const m = (i % 2) * 30
     slotLabels.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`)
   }
   return (
-    <div className="flex flex-col shrink-0 pr-2 border-r border-border/50" style={{ minHeight: EVENTS_SLOTS_COUNT * EVENTS_SLOT_HEIGHT_PX }}>
+    <div className="flex flex-col shrink-0 pr-2 border-r border-border/50" style={{ minHeight: slotsCount * EVENTS_SLOT_HEIGHT_PX }}>
       {slotLabels.map((label, idx) => (
         <div
           key={idx}
@@ -254,21 +258,26 @@ function EventsTimeLabelsColumn() {
   )
 }
 
-/** One day column for Events: 30-min slots with events positioned. showTimeLabels: true on mobile (one day), false in week view (times are in first column). */
-function DayEventsColumn({ dayStr, events, showTimeLabels = false }) {
+/** One day column for Events: 30-min slots with events positioned. showTimeLabels: true on mobile (one day), false in week view. */
+function DayEventsColumn({ dayStr, events, showTimeLabels = false, startHour, endHour }) {
   const forDay = getEventsForDay(events, dayStr)
+  const slotsCount = (endHour - startHour) * 2
+  const { hasEventsBefore, hasEventsAfter } = getEventsVisibility(events, dayStr, startHour, endHour)
   const slotLabels = showTimeLabels ? (() => {
     const out = []
-    for (let i = 0; i < EVENTS_SLOTS_COUNT; i++) {
-      const h = EVENTS_SLOT_START_HOUR + Math.floor(i / 2)
+    for (let i = 0; i < slotsCount; i++) {
+      const h = startHour + Math.floor(i / 2)
       const m = (i % 2) * 30
       out.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`)
     }
     return out
   })() : null
   return (
-    <div className="flex flex-col min-w-0 px-2 relative" style={{ minHeight: EVENTS_SLOTS_COUNT * EVENTS_SLOT_HEIGHT_PX }}>
-      {(slotLabels || Array(EVENTS_SLOTS_COUNT).fill(null)).map((label, idx) => (
+    <div
+      className={`flex flex-col min-w-0 px-2 relative border-l border-r border-transparent ${hasEventsBefore ? 'border-t-2 border-t-primary/60' : ''} ${hasEventsAfter ? 'border-b-2 border-b-primary/60' : ''}`}
+      style={{ minHeight: slotsCount * EVENTS_SLOT_HEIGHT_PX }}
+    >
+      {(slotLabels || Array(slotsCount).fill(null)).map((label, idx) => (
         <div
           key={idx}
           className="flex items-center border-b border-border/50 text-xs text-text-muted shrink-0"
@@ -278,7 +287,9 @@ function DayEventsColumn({ dayStr, events, showTimeLabels = false }) {
         </div>
       ))}
       {forDay.map((ev) => {
-        const [slotIndex, span] = eventToSlots(ev)
+        const visible = eventToVisibleSlots(ev, startHour, endHour)
+        if (!visible) return null
+        const { slotIndex, span } = visible
         const top = slotIndex * EVENTS_SLOT_HEIGHT_PX
         const height = span * EVENTS_SLOT_HEIGHT_PX - 2
         return (
@@ -785,20 +796,26 @@ export function PlannerPage() {
   const [habitsCollapsed, setHabitsCollapsed] = useState(() => readPlannerPrefs().habitsCollapsed)
   const [showCompleted, setShowCompleted] = useState(() => readPlannerPrefs().showCompleted)
   const [eventsCollapsed, setEventsCollapsed] = useState(() => readPlannerPrefs().eventsCollapsed)
+  const [showFullDay, setShowFullDay] = useState(() => readPlannerPrefs().showFullDay)
   const [calendarEvents, setCalendarEvents] = useState([])
   const [createEventOpen, setCreateEventOpen] = useState(false)
+  const [fabMenuOpen, setFabMenuOpen] = useState(false)
 
   useEffect(() => {
-    writePlannerPrefs({ habitsCollapsed, showCompleted, eventsCollapsed })
-  }, [habitsCollapsed, showCompleted, eventsCollapsed])
+    writePlannerPrefs({ habitsCollapsed, showCompleted, eventsCollapsed, showFullDay })
+  }, [habitsCollapsed, showCompleted, eventsCollapsed, showFullDay])
 
   const weekDays = getWeekDaysForOffset(weekOffset)
   const timeMin = weekDays[0] ? `${weekDays[0]}T00:00:00` : ''
   const timeMax = weekDays[6] ? `${weekDays[6]}T23:59:59` : ''
   const refetchCalendarEvents = useCallback(() => {
     if (!timeMin || !timeMax) return
-    fetchApi(`/api/calendar/events?timeMin=${encodeURIComponent(timeMin)}&timeMax=${encodeURIComponent(timeMax)}`)
-      .then((r) => setCalendarEvents(Array.isArray(r?.data) ? r.data : []))
+    const url = `/api/calendar/events?timeMin=${encodeURIComponent(timeMin)}&timeMax=${encodeURIComponent(timeMax)}`
+    fetchApi(url)
+      .then((r) => {
+        const list = Array.isArray(r?.data) ? r.data : []
+        setCalendarEvents(list)
+      })
       .catch(() => setCalendarEvents([]))
   }, [timeMin, timeMax, fetchApi])
   useEffect(() => {
@@ -1077,17 +1094,15 @@ export function PlannerPage() {
               className="flex-1 flex items-center justify-between gap-2 py-2 text-left font-semibold text-base text-text"
             >
               <span className="text-text">Events</span>
-              {eventsCollapsed ? <IconChevronDown size={22} /> : <IconChevronUp size={22} />}
+              <span className="flex items-center gap-3 shrink-0">
+                {!eventsCollapsed && (
+                  <span onClick={(e) => e.stopPropagation()}>
+                    <Switch checked={showFullDay} onChange={setShowFullDay} label="Show full day" />
+                  </span>
+                )}
+                {eventsCollapsed ? <IconChevronDown size={22} /> : <IconChevronUp size={22} />}
+              </span>
             </button>
-            {!eventsCollapsed && (
-              <button
-                type="button"
-                onClick={() => setCreateEventOpen(true)}
-                className="min-h-[36px] px-3 py-1.5 rounded-lg border-2 border-primary bg-primary/10 text-primary text-sm font-medium hover:bg-primary/20"
-              >
-                New event
-              </button>
-            )}
           </div>
           {eventsCollapsed ? (
             <div className="grid grid-cols-7 gap-3 mt-2">
@@ -1097,10 +1112,20 @@ export function PlannerPage() {
             </div>
           ) : (
             <div className="flex gap-3 mt-2 min-h-[200px]">
-              <EventsTimeLabelsColumn />
+              <EventsTimeLabelsColumn
+                startHour={showFullDay ? EVENTS_FULL_DAY_START_HOUR : EVENTS_DEFAULT_START_HOUR}
+                endHour={showFullDay ? EVENTS_FULL_DAY_END_HOUR : EVENTS_DEFAULT_END_HOUR}
+              />
               <div className="grid grid-cols-7 gap-3 flex-1 min-w-0">
                 {weekDays.map((dayStr) => (
-                  <DayEventsColumn key={dayStr} dayStr={dayStr} events={calendarEvents} showTimeLabels={false} />
+                  <DayEventsColumn
+                    key={dayStr}
+                    dayStr={dayStr}
+                    events={calendarEvents}
+                    showTimeLabels={false}
+                    startHour={showFullDay ? EVENTS_FULL_DAY_START_HOUR : EVENTS_DEFAULT_START_HOUR}
+                    endHour={showFullDay ? EVENTS_FULL_DAY_END_HOUR : EVENTS_DEFAULT_END_HOUR}
+                  />
                 ))}
               </div>
             </div>
@@ -1188,11 +1213,22 @@ export function PlannerPage() {
             className="w-full flex items-center justify-between gap-2 py-2 text-left font-semibold text-base text-text"
           >
             <span className="text-text">Events</span>
-            {eventsCollapsed ? <IconChevronDown size={22} /> : <IconChevronUp size={22} />}
+            <span className="flex items-center gap-3 shrink-0">
+              <span onClick={(e) => e.stopPropagation()}>
+                <Switch checked={showFullDay} onChange={setShowFullDay} label="Show full day" />
+              </span>
+              {eventsCollapsed ? <IconChevronDown size={22} /> : <IconChevronUp size={22} />}
+            </span>
           </button>
           {!eventsCollapsed && (
             <div className="mt-2 min-h-[200px]">
-              <DayEventsColumn dayStr={mobileDateStr} events={calendarEvents} showTimeLabels />
+              <DayEventsColumn
+                dayStr={mobileDateStr}
+                events={calendarEvents}
+                showTimeLabels
+                startHour={showFullDay ? EVENTS_FULL_DAY_START_HOUR : EVENTS_DEFAULT_START_HOUR}
+                endHour={showFullDay ? EVENTS_FULL_DAY_END_HOUR : EVENTS_DEFAULT_END_HOUR}
+              />
             </div>
           )}
         </div>
@@ -1226,7 +1262,40 @@ export function PlannerPage() {
         />
       )}
 
-      <Fab onClick={() => setCreateTaskOpen(true)} ariaLabel="Create task" />
+      <div className="fixed z-40 right-4 md:right-8 bottom-[6rem] md:bottom-8 flex flex-col items-end gap-2">
+        {fabMenuOpen && (
+          <div className="flex flex-col gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setCreateTaskOpen(true)
+                setFabMenuOpen(false)
+              }}
+              className="min-h-[44px] px-4 rounded-full shadow-lg bg-surface border-2 border-border text-text font-medium hover:bg-surface-hover flex items-center gap-2"
+            >
+              <IconCheckSquare size={20} />
+              New task
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setCreateEventOpen(true)
+                setFabMenuOpen(false)
+              }}
+              className="min-h-[44px] px-4 rounded-full shadow-lg bg-surface border-2 border-border text-text font-medium hover:bg-surface-hover flex items-center gap-2"
+            >
+              <IconCalendar size={20} />
+              New event
+            </button>
+          </div>
+        )}
+        <Fab
+          onClick={() => setFabMenuOpen((open) => !open)}
+          ariaLabel={fabMenuOpen ? 'Close menu' : 'Create'}
+          variant={fabMenuOpen ? 'close' : 'add'}
+          className="!relative !right-0 !bottom-0"
+        />
+      </div>
     </div>
   )
 }

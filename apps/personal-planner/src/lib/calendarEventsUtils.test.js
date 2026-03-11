@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { getEventsForDay, eventToSlots } from './calendarEventsUtils.js'
+import { getEventsForDay, eventToSlots, eventToVisibleSlots, getEventsVisibility } from './calendarEventsUtils.js'
 
 describe('calendarEventsUtils', () => {
   describe('getEventsForDay', () => {
@@ -43,6 +43,64 @@ describe('calendarEventsUtils', () => {
       const ev = { start: '2025-03-10T09:00:00', end: '2025-03-10T09:15:00' }
       const [start, span] = eventToSlots(ev)
       expect(span).toBeGreaterThanOrEqual(1)
+    })
+  })
+
+  describe('eventToVisibleSlots', () => {
+    it('returns { slotIndex, span } for event within range 7–19', () => {
+      const ev = { start: '2025-03-10T09:00:00', end: '2025-03-10T10:00:00' }
+      expect(eventToVisibleSlots(ev, 7, 19)).toEqual({ slotIndex: 4, span: 2 })
+    })
+
+    it('returns null when event is entirely before range', () => {
+      const ev = { start: '2025-03-10T05:00:00', end: '2025-03-10T06:00:00' }
+      expect(eventToVisibleSlots(ev, 7, 19)).toBeNull()
+    })
+
+    it('returns null when event is entirely after range', () => {
+      const ev = { start: '2025-03-10T20:00:00', end: '2025-03-10T21:00:00' }
+      expect(eventToVisibleSlots(ev, 7, 19)).toBeNull()
+    })
+
+    it('clips event that starts before range', () => {
+      const ev = { start: '2025-03-10T06:00:00', end: '2025-03-10T08:00:00' }
+      expect(eventToVisibleSlots(ev, 7, 19)).toEqual({ slotIndex: 0, span: 2 })
+    })
+
+    it('clips event that ends after range', () => {
+      const ev = { start: '2025-03-10T18:00:00', end: '2025-03-10T21:00:00' }
+      expect(eventToVisibleSlots(ev, 7, 19)).toEqual({ slotIndex: 22, span: 2 })
+    })
+  })
+
+  describe('getEventsVisibility', () => {
+    it('returns hasEventsBefore when an event starts before range', () => {
+      const events = [
+        { id: '1', start: '2025-03-10T06:00:00', end: '2025-03-10T07:30:00' },
+      ]
+      expect(getEventsVisibility(events, '2025-03-10', 7, 19)).toEqual({ hasEventsBefore: true, hasEventsAfter: false })
+    })
+
+    it('returns hasEventsAfter when an event ends after range', () => {
+      const events = [
+        { id: '1', start: '2025-03-10T18:00:00', end: '2025-03-10T20:00:00' },
+      ]
+      expect(getEventsVisibility(events, '2025-03-10', 7, 19)).toEqual({ hasEventsBefore: false, hasEventsAfter: true })
+    })
+
+    it('returns both when events span outside range', () => {
+      const events = [
+        { id: '1', start: '2025-03-10T06:00:00', end: '2025-03-10T08:00:00' },
+        { id: '2', start: '2025-03-10T18:00:00', end: '2025-03-10T21:00:00' },
+      ]
+      expect(getEventsVisibility(events, '2025-03-10', 7, 19)).toEqual({ hasEventsBefore: true, hasEventsAfter: true })
+    })
+
+    it('returns neither when all events are inside range', () => {
+      const events = [
+        { id: '1', start: '2025-03-10T09:00:00', end: '2025-03-10T10:00:00' },
+      ]
+      expect(getEventsVisibility(events, '2025-03-10', 7, 19)).toEqual({ hasEventsBefore: false, hasEventsAfter: false })
     })
   })
 })

@@ -70,13 +70,25 @@ En la ruta `/meals` se muestra una vista de semana (como en Planner) con una col
 
 ## Google Calendar
 
-Puedes conectar hasta **3 calendarios de Google** (todos visibles para cualquier usuario de la app). En **Settings** aparece el bloque "Calendarios de Google" con hasta 3 filas: **Conectar calendario** inicia el flujo OAuth; **Desconectar** borra la conexión de ese slot. Los tokens se guardan en la tabla Airtable **Settings** (Key-Value). En el **Planner** (`/`) la sección **Events** (colapsada por defecto) muestra los eventos de la semana en franjas de 30 minutos por día; el botón **New event** abre un modal para crear un evento en uno de los calendarios conectados.
+Puedes conectar hasta **3 calendarios de Google** (todos visibles para cualquier usuario de la app). En **Settings** aparece el bloque "Calendarios de Google" con hasta 3 filas: **Conectar calendario** inicia el flujo OAuth; **Desconectar** borra la conexión de ese slot. Los tokens se guardan en la tabla Airtable **Settings** (Key-Value).
+
+**Variables de Airtable por slot (ej. slot 1 = CAL_1_*):**
+
+| Key | Uso |
+|-----|-----|
+| **CAL_N_SLOT** | Número de slot (1, 2, 3). Lo rellena la app al conectar. |
+| **CAL_N_REFRESH_TOKEN** / **ACCESS_TOKEN** / **TOKEN_EXPIRY** | Tokens OAuth; los gestiona la app. |
+| **CAL_N_ID** | ID del calendario por defecto: `primary` o un id de Google. **Si defines CAL_N_NAME (o CAL_N_CALENDAR_NAME), este valor se ignora** al listar/crear: la app resuelve el id por nombre. Solo se usa como fallback si el nombre no se encuentra en la lista de calendarios. |
+| **CAL_N_NAME** o **CAL_N_CALENDAR_NAME** | Nombre exacto del calendario en Google (p. ej. "Trastos"). Si está definido, la app obtiene la lista de calendarios y usa el que coincida con este nombre (no choca con CAL_N_ID). |
+| **CAL_N_LABEL** | Etiqueta para mostrar en la UI (p. ej. "Al & Trastos"); no afecta qué calendario se usa. |
+
+Por defecto se usa el calendario **primary**. Para usar otro (p. ej. "Trastos"), añade **CAL_1_NAME** = **Trastos** (mismo criterio para slot 2 y 3). En el **Planner** (`/`) la sección **Events** (colapsada por defecto) muestra los eventos de la semana en franjas de 30 minutos por día. Crear eventos: botón flotante (FAB) → **New event** abre el modal para crear un evento en uno de los calendarios conectados.
 
 **Requisitos:** Proyecto en [Google Cloud Console](https://console.cloud.google.com/) con **Google Calendar API** activada y credenciales **OAuth 2.0** (tipo Web application). Añade en "Authorized redirect URIs" la URL de callback (ej. `https://tu-dominio.vercel.app/api/calendar/oauth-callback` y en local `http://localhost:5173/api/calendar/oauth-callback`).
 
 ## Vista Planner
 
-En la ruta `/` (Planner), las secciones **Tasks**, **Events** y **Habits** son colapsables. Al colapsar Tasks se mantiene visible la barra de progreso. **Events** (calendarios de Google): colapsada por defecto; al expandir se muestran franjas de 30 minutos (06:00–24:00) por día con los eventos posicionados; **New event** crea un evento en el calendario elegido. Al colapsar Habits se mantienen visibles dos filas de contadores (1–5): una para Good Habits (corazones verdes) y otra para Bad Habits (corazones rojos). La lista de hábitos es única: todos (good y bad) agrupados por categoría y ordenados alfabéticamente dentro de cada grupo.
+En la ruta `/` (Planner), las secciones **Tasks**, **Events** y **Habits** son colapsables. Al colapsar Tasks se mantiene visible la barra de progreso. **Events** (calendarios de Google): colapsada por defecto; al expandir se muestran franjas de 30 minutos por día con los eventos posicionados. Por defecto el rango visible es **7:00–19:00**; el switch **Show full day** (apagado por defecto) amplía a **5:00–22:00**. Si hay eventos fuera del rango visible, se muestra un borde de color en la parte superior o inferior de la columna del día para indicarlo. El **FAB** (botón flotante) abre un menú con **New task** (crear tarea) y **New event** (crear evento en el calendario elegido); al abrir el menú el FAB pasa a "×" para cerrarlo. Al colapsar Habits se mantienen visibles dos filas de contadores (1–5): una para Good Habits (corazones verdes) y otra para Bad Habits (corazones rojos). La lista de hábitos es única: todos (good y bad) agrupados por categoría y ordenados alfabéticamente dentro de cada grupo.
 
 En la cabecera de cada día se muestra el nombre del día y la fecha en formato **Monday March 2nd** (mes y día con ordinal). Indicadores en la cabecera:
 - **Estrella**: todas las tareas del día completadas.

@@ -6,6 +6,7 @@ import {
   clearConnection,
   listEventsFromAllCalendars,
   createEvent,
+  updateEvent,
 } from '../../api/_lib/googleCalendar.js'
 
 function getPathSegments(url) {
@@ -158,6 +159,39 @@ export default async function handler(req, res) {
         const code = err.message?.includes('No calendar connected') ? 401 : 500
         res.statusCode = code
         res.end(JSON.stringify({ error: err.message || 'Failed to create event' }))
+      }
+      return
+    }
+
+    if (req.method === 'PATCH') {
+      const body = getBody(req)
+      const eventId = body.eventId ?? body.id
+      const slot = body.calendarSlot != null ? Number(body.calendarSlot) : 1
+      if (!eventId || typeof eventId !== 'string' || !eventId.trim()) {
+        res.statusCode = 400
+        res.end(JSON.stringify({ error: 'eventId is required' }))
+        return
+      }
+      if (!Number.isInteger(slot) || slot < 1 || slot > 3) {
+        res.statusCode = 400
+        res.end(JSON.stringify({ error: 'calendarSlot must be 1, 2, or 3' }))
+        return
+      }
+      try {
+        const event = await updateEvent(slot, eventId.trim(), {
+          summary: body.summary,
+          description: body.description,
+          start: body.start,
+          end: body.end,
+          timeZone: body.timeZone,
+        })
+        res.statusCode = 200
+        res.end(JSON.stringify({ data: event }))
+      } catch (err) {
+        console.error('calendar events update error:', err)
+        const code = err.message?.includes('No calendar connected') ? 401 : 500
+        res.statusCode = code
+        res.end(JSON.stringify({ error: err.message || 'Failed to update event' }))
       }
       return
     }

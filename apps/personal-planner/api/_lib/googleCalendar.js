@@ -166,7 +166,7 @@ function toRFC3339(s) {
  * If CAL_N_CALENDAR_NAME is set in Settings (e.g. "Trastos"), events are listed from that calendar instead of primary.
  * @param {string} timeMin - ISO datetime (will be normalized to RFC3339)
  * @param {string} timeMax - ISO datetime (will be normalized to RFC3339)
- * @returns {Promise<Array<{ id: string, summary: string, start: string, end: string, calendarSlot: number, calendarLabel?: string, [k: string]: unknown }>>}
+ * @returns {Promise<Array<{ id: string, summary: string, start: string, end: string, calendarSlot: number, calendarLabel?: string, calendarColor?: string, [k: string]: unknown }>>}
  */
 export async function listEventsFromAllCalendars(timeMin, timeMax) {
   const connections = await getStoredConnections()
@@ -178,6 +178,15 @@ export async function listEventsFromAllCalendars(timeMin, timeMax) {
   for (const conn of connections) {
     try {
       const { calendar, calendarId } = await getCalendarClientForSlot(conn.slot)
+      let calendarColor = null
+      try {
+        const listRes = await calendar.calendarList.list()
+        const listItems = listRes.data.items || []
+        const calendarEntry = listItems.find((item) => item.id === calendarId)
+        if (calendarEntry?.backgroundColor) calendarColor = calendarEntry.backgroundColor
+      } catch (listErr) {
+        // non-fatal: events still listed, just without color
+      }
       const res = await calendar.events.list({
         calendarId,
         timeMin: min,
@@ -197,6 +206,7 @@ export async function listEventsFromAllCalendars(timeMin, timeMax) {
           end,
           calendarSlot: conn.slot,
           calendarLabel: conn.label,
+          calendarColor: calendarColor || undefined,
           htmlLink: ev.htmlLink,
           location: ev.location,
         })
@@ -229,6 +239,35 @@ export async function createEvent(slot, body) {
   }
   const res = await calendar.events.insert({
     calendarId,
+    requestBody,
+  })
+  return res.data
+}
+
+/**
+ * Update an existing event in the calendar for the given slot.
+ * @param {number} slot - 1, 2, or 3
+ * @param {string} eventId - Google Calendar event id
+ * @param {{ summary?: string, description?: string, start?: string, end?: string, timeZone?: string }} body - fields to update
+ * @returns {Promise<object>} Updated event from API
+ */
+export async function updateEvent(slot, eventId, body) {
+  if (!eventId || !String(eventId).trim()) throw new Error('eventId is required')
+  const { calendar, calendarId } = await getCalendarClientForSlot(slot)
+  const start = body.start || ''
+  const end = body.end || ''
+  const timeZone = body.timeZone || undefined
+  const isAllDay = start.length <= 10 && end.length <= 10
+  const requestBody = {}
+  if (body.summary !== undefined) requestBody.summary = body.summary
+  if (body.description !== undefined) requestBody.description = body.description
+  if (start && end) {
+    requestBody.start = isAllDay ? { date: start.slice(0, 10), timeZone } : { dateTime: start, timeZone }
+    requestBody.end = isAllDay ? { date: end.slice(0, 10), timeZone } : { dateTime: end, timeZone }
+  }
+  const res = await calendar.events.patch({
+    calendarId,
+    eventId: String(eventId).trim(),
     requestBody,
   })
   return res.data

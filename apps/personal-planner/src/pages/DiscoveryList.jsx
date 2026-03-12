@@ -1,19 +1,11 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Spinner, PageHeader, Card, CardList, IconMagicBall } from '@tools/shared'
+import { Spinner, PageHeader, Card, CardList, IconMagicBall, IconSearch } from '@tools/shared'
 import { usePlannerApi } from '../contexts/PlannerApiContext'
 import { field, str, dateStr } from '@tools/shared'
 import { getPriorityTagClass } from '../components/TaskCard'
 import { DiscoveryModal } from '../components/DiscoveryModal'
 import { Fab } from '@tools/shared'
-
-/** Status options for Discovery Ideas (Airtable). */
-const STATUS_OPTIONS = [
-  { value: '', label: 'All' },
-  { value: 'New', label: 'New' },
-  { value: 'Under Review', label: 'Under Review' },
-  { value: 'Explored', label: 'Explored' },
-  { value: 'Archived', label: 'Archived' },
-]
+import { STATUS_OPTIONS, getStatusLabel, filterByStatus, filterBySearch } from '../lib/discoveryListUtils'
 
 /** Priority order for grouping. Items with other/empty priority go last. */
 const PRIORITY_ORDER = ['High', 'Medium', 'Low']
@@ -36,6 +28,7 @@ function DiscoveryCardClickable({ idea, onClick }) {
   const description = str(field(idea, 'Idea Description', 'Idea Description')) || ''
   const priority = str(field(idea, 'Priority', 'Priority'))
   const status = str(field(idea, 'Status', 'Status'))
+  const statusLabel = getStatusLabel(status)
   const category = str(field(idea, 'Category', 'Category'))
   const dateAdded = dateStr(field(idea, 'Date Added', 'Date Added'))
 
@@ -50,9 +43,9 @@ function DiscoveryCardClickable({ idea, onClick }) {
           <p className="text-sm text-text-muted line-clamp-2 mb-2">{description}</p>
         )}
         <div className="flex flex-wrap items-center gap-2">
-          {status && (
+          {statusLabel && (
             <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-border text-text-muted">
-              {status}
+              {statusLabel}
             </span>
           )}
           {priority && (
@@ -81,7 +74,8 @@ export function DiscoveryList() {
   const [list, setList] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [statusFilter, setStatusFilter] = useState('')
+  const [statusFilter, setStatusFilter] = useState('_open')
+  const [search, setSearch] = useState('')
   const [modalIdea, setModalIdea] = useState(null)
   const [createOpen, setCreateOpen] = useState(false)
 
@@ -139,11 +133,14 @@ export function DiscoveryList() {
     [fetchApi, refetch]
   )
 
-  // Filter by status (empty = all)
-  let filtered = list
-  if (statusFilter) {
-    filtered = filtered.filter((i) => str(field(i, 'Status', 'Status')) === statusFilter)
-  }
+  const getStatus = (i) => str(field(i, 'Status', 'Status'))
+  const getSearchFields = (i) => ({
+    name: str(field(i, 'Idea Name', 'Idea Name')) || '',
+    description: str(field(i, 'Idea Description', 'Idea Description')) || '',
+    category: str(field(i, 'Category', 'Category')) || '',
+  })
+  let filtered = filterByStatus(list, statusFilter, getStatus)
+  filtered = filterBySearch(filtered, search, getSearchFields)
 
   const groupBy = getPriorityGroup
   const initialCollapsed = { High: false, Medium: false, Low: false, _other: false }
@@ -159,10 +156,25 @@ export function DiscoveryList() {
     <div className="space-y-6">
       <PageHeader breadcrumbs={[{ label: 'Planner', to: '/' }, { label: 'Discovery', to: '/discovery' }]} onRefresh={handleRefresh} loading={loading} />
 
+      <div className="relative">
+        <IconSearch
+          size={20}
+          className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none"
+        />
+        <input
+          type="search"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search ideas…"
+          className="w-full pl-10 pr-4 py-3 rounded-xl border border-border bg-surface text-text placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary"
+          aria-label="Search discovery ideas"
+        />
+      </div>
+
       <div className="flex flex-wrap items-center gap-2">
         {STATUS_OPTIONS.map(({ value, label }) => (
           <button
-            key={value || '_all'}
+            key={value === '' ? '_all' : value}
             type="button"
             onClick={() => setStatusFilter(value)}
             className={`min-h-[44px] px-4 py-2 rounded-xl text-base font-medium ${

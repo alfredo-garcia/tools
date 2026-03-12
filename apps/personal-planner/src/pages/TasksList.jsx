@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Spinner, PageHeader, Card, CardList, IconCheckSquare } from '@tools/shared'
+import { Spinner, PageHeader, Card, CardList, IconCheckSquare, IconSearch } from '@tools/shared'
 import { usePlannerApi } from '../contexts/PlannerApiContext'
 import { field, str, dateStr, isToday, isThisWeek, isThisMonth, isPastDue } from '@tools/shared'
 import { getTaskStatusGroup } from '../lib/taskStatus'
@@ -84,6 +84,7 @@ export function TasksList() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [filter, setFilter] = useState('today')
+  const [search, setSearch] = useState('')
   const [modalTask, setModalTask] = useState(null)
   const [createTaskOpen, setCreateTaskOpen] = useState(false)
 
@@ -154,14 +155,29 @@ export function TasksList() {
   )
 
   const getDue = (t) => dateStr(field(t, 'Due Date', 'Due Date'))
-  const filteredByDate = filterByDate(list, filter, getDue)
-  const pastDueFromFull =
+  let filteredByDate = filterByDate(list, filter, getDue)
+  const searchLower = search.trim().toLowerCase()
+  if (searchLower) {
+    filteredByDate = filteredByDate.filter((t) => {
+      const name = (str(field(t, 'Task Name', 'Task Name')) || '').toLowerCase()
+      const desc = (str(field(t, 'Description', 'Description')) || '').toLowerCase()
+      return name.includes(searchLower) || desc.includes(searchLower)
+    })
+  }
+  let pastDueFromFull =
     filter !== 'unplanned'
       ? list.filter((t) => {
           const due = getDue(t)
           return due && isPastDue(due) && getTaskStatusGroup(t) !== 'done'
         })
       : []
+  if (searchLower) {
+    pastDueFromFull = pastDueFromFull.filter((t) => {
+      const name = (str(field(t, 'Task Name', 'Task Name')) || '').toLowerCase()
+      const desc = (str(field(t, 'Description', 'Description')) || '').toLowerCase()
+      return name.includes(searchLower) || desc.includes(searchLower)
+    })
+  }
   const filteredIds = new Set(filteredByDate.map((t) => t.id))
   const filtered = [...filteredByDate]
   pastDueFromFull.forEach((t) => {
@@ -199,6 +215,20 @@ export function TasksList() {
   return (
     <div className="space-y-6">
       <PageHeader breadcrumbs={[{ label: 'Planner', to: '/' }, { label: 'Tasks', to: '/tasks' }]} onRefresh={handleRefresh} loading={loading} />
+      <div className="relative">
+        <IconSearch
+          size={20}
+          className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none"
+        />
+        <input
+          type="search"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search tasks…"
+          className="w-full pl-10 pr-4 py-3 rounded-xl border border-border bg-surface text-text placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary"
+          aria-label="Search tasks"
+        />
+      </div>
       <div className="flex flex-wrap gap-2">
         {FILTER_OPTIONS.map(({ value, label }) => (
           <button

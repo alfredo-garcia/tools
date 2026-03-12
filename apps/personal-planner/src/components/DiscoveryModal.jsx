@@ -4,7 +4,13 @@ import { IconTag, IconTrash, IconCalendar, IconTarget } from '@tools/shared'
 import { usePlannerApi } from '../contexts/PlannerApiContext'
 import { field, str, arr, dateStr as toDateStr } from '@tools/shared'
 
-const STATUS_OPTIONS = ['New', 'Under Review', 'Explored', 'Archived']
+/** Airtable Status values and UI labels. */
+const STATUS_OPTIONS = [
+  { value: 'New', label: 'Parking lot' },
+  { value: 'Under Review', label: 'Discovery' },
+  { value: 'Explored', label: 'Done' },
+  { value: 'Archived', label: 'Archived' },
+]
 const PRIORITY_OPTIONS = ['High', 'Medium', 'Low']
 /** Same category options as in TaskModal. */
 const CATEGORY_OPTIONS = ['Health', 'Learning', 'Social & Recreation', 'Business', 'Productivity', 'Obligations', 'Finance', 'Others']
@@ -229,18 +235,18 @@ export function DiscoveryModal({ idea, onClose, onCreate, onIdeaUpdate, onIdeaDe
               </div>
               <div className="flex flex-wrap gap-2">
                 {STATUS_OPTIONS.map((opt) => {
-                  const isActive = createStatus === opt
+                  const isActive = createStatus === opt.value
                   const baseClasses = 'min-h-[40px] px-3 rounded-xl text-sm font-medium'
                   const activeClasses = 'bg-primary text-white'
                   const inactiveClasses = 'bg-border text-text hover:bg-border/80'
                   return (
                     <button
-                      key={opt}
+                      key={opt.value}
                       type="button"
-                      onClick={() => setCreateStatus(opt)}
+                      onClick={() => setCreateStatus(opt.value)}
                       className={`${baseClasses} ${isActive ? activeClasses : inactiveClasses}`}
                     >
-                      {opt}
+                      {opt.label}
                     </button>
                   )
                 })}
@@ -391,18 +397,18 @@ export function DiscoveryModal({ idea, onClose, onCreate, onIdeaUpdate, onIdeaDe
           <div className="border-t border-border mt-5 pt-5 flex flex-wrap items-center justify-between gap-3">
             <div className="flex flex-wrap gap-2">
               {STATUS_OPTIONS.map((opt) => {
-                const isActive = status === opt
+                const isActive = status === opt.value
                 const baseClasses = 'min-h-[36px] px-3 rounded-xl text-sm font-medium'
                 const activeClasses = 'bg-primary text-white'
                 const inactiveClasses = 'bg-border text-text hover:bg-border/80'
                 return (
                   <button
-                    key={opt}
+                    key={opt.value}
                     type="button"
-                    onClick={() => handleStatusChange(opt)}
+                    onClick={() => handleStatusChange(opt.value)}
                     className={`${baseClasses} ${isActive ? activeClasses : inactiveClasses}`}
                   >
-                    {opt}
+                    {opt.label}
                   </button>
                 )
               })}

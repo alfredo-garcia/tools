@@ -258,8 +258,22 @@ function EventsTimeLabelsColumn({ startHour, endHour }) {
   )
 }
 
+/** Current local date as YYYY-MM-DD. */
+function getTodayStr() {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
+/** Refresh interval (ms) for current-time line position. */
+const CURRENT_TIME_LINE_REFRESH_MS = 5 * 60 * 1000
+
 /** One day column for Events: 30-min slots with events positioned. Overlapping events are shown in 2 or 3 columns. showTimeLabels: true on mobile, false in week view. onEventClick(ev): when provided, event blocks are clickable to edit. */
 function DayEventsColumn({ dayStr, events, showTimeLabels = false, startHour, endHour, onEventClick }) {
+  const [now, setNow] = useState(() => new Date())
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), CURRENT_TIME_LINE_REFRESH_MS)
+    return () => clearInterval(id)
+  }, [])
   const withLayout = getEventsWithColumnLayout(events, dayStr, startHour, endHour)
   const slotsCount = (endHour - startHour) * 2
   const { hasEventsBefore, hasEventsAfter } = getEventsVisibility(events, dayStr, startHour, endHour)
@@ -272,11 +286,32 @@ function DayEventsColumn({ dayStr, events, showTimeLabels = false, startHour, en
     }
     return out
   })() : null
+  const todayStr = getTodayStr()
+  const isToday = dayStr === todayStr
+  const rangeStartMinutes = startHour * 60
+  const rangeEndMinutes = endHour * 60
+  const currentMinutes = now.getHours() * 60 + now.getMinutes() + now.getSeconds() / 60
+  const showCurrentTimeLine = isToday && currentMinutes >= rangeStartMinutes && currentMinutes < rangeEndMinutes
+  const currentTimeLineTop = showCurrentTimeLine
+    ? (currentMinutes - rangeStartMinutes) * (EVENTS_SLOT_HEIGHT_PX / 30)
+    : 0
   return (
     <div
       className={`flex flex-col min-w-0 px-2 relative border-l border-r border-transparent ${hasEventsBefore ? 'border-t-2 border-t-primary/60' : ''} ${hasEventsAfter ? 'border-b-2 border-b-primary/60' : ''}`}
       style={{ minHeight: slotsCount * EVENTS_SLOT_HEIGHT_PX }}
     >
+      {showCurrentTimeLine && (
+        <div
+          className="absolute left-0 right-0 z-10 pointer-events-none"
+          style={{
+            top: currentTimeLineTop,
+            height: 2,
+            backgroundColor: 'var(--token-primary-hover)',
+          }}
+          aria-hidden
+          title="Current time"
+        />
+      )}
       {(slotLabels || Array(slotsCount).fill(null)).map((label, idx) => (
         <div
           key={idx}

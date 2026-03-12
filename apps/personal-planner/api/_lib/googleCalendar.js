@@ -3,7 +3,7 @@
  * Uses Airtable Settings table (Key-Value): CAL_1_*, CAL_2_*, CAL_3_*.
  */
 import { google } from 'googleapis'
-import { getSetting, setSetting } from './settings.js'
+import { getSetting, setSetting, getSettingsByPrefix } from './settings.js'
 
 const MAX_CALENDARS = 3
 const SCOPES = ['https://www.googleapis.com/auth/calendar']
@@ -11,6 +11,12 @@ const KEY_PREFIX = 'CAL_'
 
 function keyFor(slot, suffix) {
   return `${KEY_PREFIX}${slot}_${suffix}`
+}
+
+/** Temporary perf logging: set CALENDAR_PERF_LOG=0 to disable. */
+const CALENDAR_PERF_LOG = typeof process !== 'undefined' && process.env.CALENDAR_PERF_LOG !== '0'
+function perfLog(label, ms) {
+  if (CALENDAR_PERF_LOG && ms !== undefined) console.log(`[CalendarPerf] ${label}: ${ms}ms`)
 }
 
 /**
@@ -61,9 +67,29 @@ export async function exchangeCodeForTokens(code, redirectUri, state) {
 }
 
 /**
+ * Build connections array from a preloaded settings map (sync) or from Airtable (async).
+ * @param {Map<string, string>} [settingsMap] - Optional: from getSettingsByPrefix('CAL_') to avoid N Airtable round-trips
  * @returns {Promise<Array<{ slot: number, refreshToken: string, accessToken?: string, expiry?: string, calendarId: string, label?: string }>>}
  */
-export async function getStoredConnections() {
+export async function getStoredConnections(settingsMap) {
+  if (settingsMap && settingsMap.size > 0) {
+    const out = []
+    for (let slot = 1; slot <= MAX_CALENDARS; slot++) {
+      const refreshToken = settingsMap.get(keyFor(slot, 'REFRESH_TOKEN'))
+      if (!refreshToken || !refreshToken.trim()) continue
+      const calendarId = settingsMap.get(keyFor(slot, 'ID')) || 'primary'
+      const label = settingsMap.get(keyFor(slot, 'LABEL'))
+      out.push({
+        slot,
+        refreshToken: refreshToken.trim(),
+        accessToken: settingsMap.get(keyFor(slot, 'ACCESS_TOKEN')) || undefined,
+        expiry: settingsMap.get(keyFor(slot, 'TOKEN_EXPIRY')) || undefined,
+        calendarId: (calendarId && calendarId.trim()) || 'primary',
+        label: label != null && label !== '' ? String(label).trim() : undefined,
+      })
+    }
+    return out
+  }
   const out = []
   for (let slot = 1; slot <= MAX_CALENDARS; slot++) {
     const refreshToken = await getSetting(keyFor(slot, 'REFRESH_TOKEN'))
@@ -99,10 +125,13 @@ export async function clearConnection(slot) {
  * @param {import('googleapis').calendar_v3.Calendar} calendar
  * @param {number} slot
  * @param {string} currentCalendarId
+ * @param {Map<string, string>} [settingsMap] - Optional: from getSettingsByPrefix('CAL_')
  * @returns {Promise<string>}
  */
-async function resolveCalendarId(calendar, slot, currentCalendarId) {
-  const name = (await getSetting(keyFor(slot, 'CALENDAR_NAME'))) || (await getSetting(keyFor(slot, 'NAME')))
+async function resolveCalendarId(calendar, slot, currentCalendarId, settingsMap) {
+  const name = settingsMap
+    ? (settingsMap.get(keyFor(slot, 'CALENDAR_NAME')) || settingsMap.get(keyFor(slot, 'NAME')) || '')
+    : (await getSetting(keyFor(slot, 'CALENDAR_NAME'))) || (await getSetting(keyFor(slot, 'NAME'))) || ''
   if (!name || !name.trim()) return currentCalendarId
   const want = name.trim().toLowerCase()
   try {
@@ -120,10 +149,19 @@ async function resolveCalendarId(calendar, slot, currentCalendarId) {
  * Get a Calendar API client for the given slot (refreshes access token if needed).
  * If CAL_N_CALENDAR_NAME is set in Settings, the returned calendarId is the resolved one (e.g. "Trastos").
  * @param {number} slot - 1, 2, or 3
+ * @param {Array<{ slot: number, refreshToken: string, accessToken?: string, expiry?: string, calendarId: string, label?: string }>} [connectionsCache] - Optional: reuse from listEventsFromAllCalendars to avoid repeated getStoredConnections
+ * @param {Map<string, string>} [settingsMap] - Optional: from getSettingsByPrefix('CAL_') so resolveCalendarId does not call getSetting
  * @returns {Promise<{ calendar: import('googleapis').calendar_v3.Calendar, calendarId: string }>}
  */
-export async function getCalendarClientForSlot(slot) {
-  const connections = await getStoredConnections()
+export async function getCalendarClientForSlot(slot, connectionsCache, settingsMap) {
+  let connections
+  if (connectionsCache && connectionsCache.length) {
+    connections = connectionsCache
+  } else {
+    const t0 = Date.now()
+    connections = await getStoredConnections()
+    perfLog('getCalendarClientForSlot getStoredConnections (no cache)', Date.now() - t0)
+  }
   const conn = connections.find((c) => c.slot === slot)
   if (!conn) throw new Error(`No calendar connected for slot ${slot}`)
 
@@ -149,7 +187,7 @@ export async function getCalendarClientForSlot(slot) {
   }
 
   const calendar = google.calendar({ version: 'v3', auth: client })
-  const calendarId = await resolveCalendarId(calendar, slot, conn.calendarId)
+  const calendarId = await resolveCalendarId(calendar, slot, conn.calendarId, settingsMap)
   return { calendar, calendarId }
 }
 
@@ -186,18 +224,32 @@ function parseBlacklist(raw) {
  * @returns {Promise<Array<{ id: string, summary: string, start: string, end: string, calendarSlot: number, calendarLabel?: string, calendarColor?: string, [k: string]: unknown }>>}
  */
 export async function listEventsFromAllCalendars(timeMin, timeMax) {
-  const connections = await getStoredConnections()
+  const totalStart = Date.now()
+
+  let t0 = Date.now()
+  const settingsMap = await getSettingsByPrefix(KEY_PREFIX)
+  perfLog('getSettingsByPrefix(CAL_)', Date.now() - t0)
+
+  t0 = Date.now()
+  const connections = await getStoredConnections(settingsMap)
+  perfLog('getStoredConnections(from map)', Date.now() - t0)
   if (connections.length === 0) return []
 
   const min = toRFC3339(timeMin)
   const max = toRFC3339(timeMax)
   const all = []
-  for (const conn of connections) {
+
+  const fetchOneCalendar = async (conn) => {
+    const slotStart = Date.now()
     try {
-      const blacklistRaw = await getSetting(keyFor(conn.slot, 'BLACKLIST'))
-      const blacklist = parseBlacklist(blacklistRaw).map((name) => name.toLowerCase())
-      const { calendar, calendarId } = await getCalendarClientForSlot(conn.slot)
+      const blacklistRaw = settingsMap.get(keyFor(conn.slot, 'BLACKLIST')) ?? null
+
+      t0 = Date.now()
+      const { calendar, calendarId } = await getCalendarClientForSlot(conn.slot, connections, settingsMap)
+      perfLog(`  slot ${conn.slot} getCalendarClientForSlot`, Date.now() - t0)
+
       let calendarColor = null
+      t0 = Date.now()
       try {
         const listRes = await calendar.calendarList.list()
         const listItems = listRes.data.items || []
@@ -206,6 +258,9 @@ export async function listEventsFromAllCalendars(timeMin, timeMax) {
       } catch (listErr) {
         // non-fatal: events still listed, just without color
       }
+      perfLog(`  slot ${conn.slot} calendarList.list (color)`, Date.now() - t0)
+
+      t0 = Date.now()
       const res = await calendar.events.list({
         calendarId,
         timeMin: min,
@@ -213,6 +268,9 @@ export async function listEventsFromAllCalendars(timeMin, timeMax) {
         singleEvents: true,
         orderBy: 'startTime',
       })
+      perfLog(`  slot ${conn.slot} events.list`, Date.now() - t0)
+
+      const blacklist = parseBlacklist(blacklistRaw).map((name) => name.toLowerCase())
       const items = res.data.items || []
       for (const ev of items) {
         // Skip Google Calendar special event types (working location, focus time, etc.)
@@ -237,8 +295,13 @@ export async function listEventsFromAllCalendars(timeMin, timeMax) {
     } catch (err) {
       console.error(`Calendar slot ${conn.slot} list error:`, err.message)
     }
+    perfLog(`  slot ${conn.slot} TOTAL`, Date.now() - slotStart)
   }
+
+  await Promise.all(connections.map(fetchOneCalendar))
+
   all.sort((a, b) => (a.start < b.start ? -1 : a.start > b.start ? 1 : 0))
+  perfLog('listEventsFromAllCalendars TOTAL', Date.now() - totalStart)
   return all
 }
 

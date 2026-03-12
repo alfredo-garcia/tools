@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 vi.mock('./settings.js', () => ({
   getSetting: vi.fn(),
   setSetting: vi.fn(),
+  getSettingsByPrefix: vi.fn(),
 }))
 
 // Shared calendar list for tests that need resolveCalendarId (e.g. CAL_1_NAME)
@@ -43,6 +44,7 @@ describe('googleCalendar', () => {
       ...originalEnv,
       GOOGLE_CLIENT_ID: 'test-client-id',
       GOOGLE_CLIENT_SECRET: 'test-client-secret',
+      CALENDAR_PERF_LOG: '0',
     }
   })
 
@@ -90,20 +92,19 @@ describe('googleCalendar', () => {
 
   describe('listEventsFromAllCalendars', () => {
     it('adds calendarColor from calendar list backgroundColor when present', async () => {
-      const { getSetting } = await import('./settings.js')
-      getSetting.mockImplementation((key) => {
-        const slot1Keys = {
-          CAL_1_SLOT: '1',
-          CAL_1_REFRESH_TOKEN: 'refresh',
-          CAL_1_ACCESS_TOKEN: 'access',
-          CAL_1_TOKEN_EXPIRY: new Date(Date.now() + 3600000).toISOString(),
-          CAL_1_ID: 'primary',
-          CAL_1_LABEL: 'Work',
-          CAL_1_CALENDAR_NAME: '',
-          CAL_1_NAME: '',
-        }
-        return Promise.resolve(slot1Keys[key] ?? '')
-      })
+      const { getSetting, getSettingsByPrefix } = await import('./settings.js')
+      const slot1Keys = {
+        CAL_1_SLOT: '1',
+        CAL_1_REFRESH_TOKEN: 'refresh',
+        CAL_1_ACCESS_TOKEN: 'access',
+        CAL_1_TOKEN_EXPIRY: new Date(Date.now() + 3600000).toISOString(),
+        CAL_1_ID: 'primary',
+        CAL_1_LABEL: 'Work',
+        CAL_1_CALENDAR_NAME: '',
+        CAL_1_NAME: '',
+      }
+      getSetting.mockImplementation((key) => Promise.resolve(slot1Keys[key] ?? ''))
+      getSettingsByPrefix.mockImplementation(() => Promise.resolve(new Map(Object.entries(slot1Keys))))
       mockCalendarListItems.push({ id: 'primary', backgroundColor: '#0088aa' })
       mockEventsList.mockResolvedValue({
         data: {
@@ -126,20 +127,19 @@ describe('googleCalendar', () => {
     })
 
     it('excludes working location, focus time, and out of office events', async () => {
-      const { getSetting } = await import('./settings.js')
-      getSetting.mockImplementation((key) => {
-        const slot1Keys = {
-          CAL_1_SLOT: '1',
-          CAL_1_REFRESH_TOKEN: 'refresh',
-          CAL_1_ACCESS_TOKEN: 'access',
-          CAL_1_TOKEN_EXPIRY: new Date(Date.now() + 3600000).toISOString(),
-          CAL_1_ID: 'primary',
-          CAL_1_LABEL: '',
-          CAL_1_CALENDAR_NAME: '',
-          CAL_1_NAME: '',
-        }
-        return Promise.resolve(slot1Keys[key] ?? '')
-      })
+      const { getSetting, getSettingsByPrefix } = await import('./settings.js')
+      const slot1Keys = {
+        CAL_1_SLOT: '1',
+        CAL_1_REFRESH_TOKEN: 'refresh',
+        CAL_1_ACCESS_TOKEN: 'access',
+        CAL_1_TOKEN_EXPIRY: new Date(Date.now() + 3600000).toISOString(),
+        CAL_1_ID: 'primary',
+        CAL_1_LABEL: '',
+        CAL_1_CALENDAR_NAME: '',
+        CAL_1_NAME: '',
+      }
+      getSetting.mockImplementation((key) => Promise.resolve(slot1Keys[key] ?? ''))
+      getSettingsByPrefix.mockImplementation(() => Promise.resolve(new Map(Object.entries(slot1Keys))))
       mockCalendarListItems.push({ id: 'primary' })
       mockEventsList.mockResolvedValue({
         data: {
@@ -160,21 +160,20 @@ describe('googleCalendar', () => {
     })
 
     it('filters out events whose summary matches CAL_N_BLACKLIST (names in quotes, comma-separated)', async () => {
-      const { getSetting } = await import('./settings.js')
-      getSetting.mockImplementation((key) => {
-        const slot1Keys = {
-          CAL_1_SLOT: '1',
-          CAL_1_REFRESH_TOKEN: 'refresh',
-          CAL_1_ACCESS_TOKEN: 'access',
-          CAL_1_TOKEN_EXPIRY: new Date(Date.now() + 3600000).toISOString(),
-          CAL_1_ID: 'primary',
-          CAL_1_LABEL: '',
-          CAL_1_CALENDAR_NAME: '',
-          CAL_1_NAME: '',
-          CAL_1_BLACKLIST: '"Reunión interna", "Blocked", "No mostrar"',
-        }
-        return Promise.resolve(slot1Keys[key] ?? '')
-      })
+      const { getSetting, getSettingsByPrefix } = await import('./settings.js')
+      const slot1Keys = {
+        CAL_1_SLOT: '1',
+        CAL_1_REFRESH_TOKEN: 'refresh',
+        CAL_1_ACCESS_TOKEN: 'access',
+        CAL_1_TOKEN_EXPIRY: new Date(Date.now() + 3600000).toISOString(),
+        CAL_1_ID: 'primary',
+        CAL_1_LABEL: '',
+        CAL_1_CALENDAR_NAME: '',
+        CAL_1_NAME: '',
+        CAL_1_BLACKLIST: '"Reunión interna", "Blocked", "No mostrar"',
+      }
+      getSetting.mockImplementation((key) => Promise.resolve(slot1Keys[key] ?? ''))
+      getSettingsByPrefix.mockImplementation(() => Promise.resolve(new Map(Object.entries(slot1Keys))))
       mockCalendarListItems.push({ id: 'primary' })
       mockEventsList.mockResolvedValue({
         data: {

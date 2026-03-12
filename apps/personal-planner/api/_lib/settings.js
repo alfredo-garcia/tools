@@ -14,6 +14,32 @@ function escapeFormulaString(s) {
 }
 
 /**
+ * Get all settings whose Key starts with the given prefix (one Airtable request).
+ * Used to load all CAL_* keys at once and avoid N round-trips in listEventsFromAllCalendars.
+ * @param {string} prefix - e.g. 'CAL_'
+ * @returns {Promise<Map<string, string>>} Map of key -> value (value is string; missing keys are absent)
+ */
+export async function getSettingsByPrefix(prefix) {
+  const base = getSettingsBase()
+  const out = new Map()
+  if (!base || !prefix) return out
+  return new Promise((resolve, reject) => {
+    const formula = `FIND("${String(prefix).replace(/"/g, '""')}", {${KEY_FIELD}}) = 1`
+    base(SETTINGS_TABLE)
+      .select({ filterByFormula: formula, pageSize: 100 })
+      .firstPage((err, records) => {
+        if (err) return reject(err)
+        for (const r of records || []) {
+          const k = r.fields && r.fields[KEY_FIELD]
+          const v = r.fields && r.fields[VALUE_FIELD]
+          if (k != null) out.set(String(k), v != null ? String(v) : '')
+        }
+        resolve(out)
+      })
+  })
+}
+
+/**
  * Get a setting value by key.
  * @param {string} key - e.g. 'CAL_1_REFRESH_TOKEN'
  * @returns {Promise<string|null>}

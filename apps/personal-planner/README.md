@@ -119,7 +119,7 @@ En la cabecera de cada día se muestra el nombre del día y la fecha en formato 
 - `/analysis/okr` — Análisis OKR
 - `/analysis/tasks` — Análisis tareas
 - `/analysis/habits` — Análisis hábitos
-- `/shopping` — Lista de la compra (filtros por Status, Priority, Store, Category; búsqueda; checkbox Need/Have; edición en modal). Los filtros aparecen colapsados por defecto; la preferencia abrir/cerrar se guarda en `localStorage` (`mosco-shopping-filters-collapsed`).
+- `/shopping` — Lista de la compra (filtros por Status, Priority, Store, Category; búsqueda; checkbox Need/Have; edición en modal). Cada card muestra: icono por categoría (tipo de comida), nombre en inglés y luego en español, prioridad arriba a la derecha, categoría y tienda debajo. Los filtros aparecen colapsados por defecto; la preferencia abrir/cerrar se guarda en `localStorage` (`mosco-shopping-filters-collapsed`).
 - `/recipes`, `/recipes/:id` — Recetas (lista con búsqueda; detalle con ingredientes: ver, ampliar, editar, eliminar, añadir)
 
 ## Scripts de datos (Airtable)

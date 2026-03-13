@@ -86,7 +86,7 @@ Los tokens definen colores, tipografía y espaciados de forma semántica. Las ap
 | `PageHeader`    | Título de página + botón de refresh opcional. |
 | `AppShell`      | Navegación: sidebar (lg+) + bottom nav (< lg). Props: `navItems` (array de `{ to, label, Icon?, aria }`), `title` (opcional, ej. "My Planner"). |
 | `SettingsPage`  | Bloque de Ajustes: apariencia (ThemeToggle) + sesión (logout). Props opcionales: `backTo`, `backLabel`. |
-| `Icons.jsx`      | Iconos planos (IconHome, IconTarget, IconCheckSquare, IconCircle, IconSettings, IconRefresh, IconChevronLeft/Right, IconSun, IconMoon, IconMonitor). |
+| `Icons.jsx`      | Iconos desde **Lucide React** (librería estándar): misma API (`size`, `className`, `strokeWidth`). Se re-exportan con nombres `Icon*` (ej. IconHome, IconTarget, IconCalendar, IconSearch). Solo unos pocos iconos sin equivalente en Lucide se mantienen como SVG custom (IconPoop, IconHeartFire, IconSaint, IconDevil, IconSkullFlies, IconPoopFlies). |
 
 ### Contextos y hooks
 

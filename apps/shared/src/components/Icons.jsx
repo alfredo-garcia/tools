@@ -1,245 +1,130 @@
 /**
- * Iconos planos, stroke, sin relleno de color. Heredan currentColor.
- * viewBox 24x24, stroke 2, mismo estilo en toda la app.
+ * Iconos desde Lucide React (librería estándar).
+ * Re-exportamos con la misma API: size, className, strokeWidth; por defecto shrink-0 y strokeWidth 2.
+ * Los iconos que no existen en Lucide se mantienen como SVG custom (poop, heart-fire, saint, devil, etc.).
  */
+import {
+  Menu,
+  Home,
+  Target,
+  CheckSquare,
+  Circle,
+  Settings,
+  Calendar,
+  RefreshCw,
+  ChevronLeft,
+  ChevronRight,
+  ChevronDown,
+  ChevronUp,
+  ChevronsLeft,
+  ChevronsRight,
+  Sun,
+  Moon,
+  Monitor,
+  Star,
+  Play,
+  Flame,
+  User,
+  Tag,
+  Trash2,
+  BarChart3,
+  Search,
+  X,
+  MoreVertical,
+  ShoppingCart,
+  BookOpen,
+  UtensilsCrossed,
+  Coffee,
+  Cake,
+  Martini,
+  Wine,
+  Drumstick,
+  Cherry,
+  Sparkles,
+  Filter,
+  Skull,
+  Heart,
+  ArrowUpNarrowWide,
+} from 'lucide-react'
+
 const iconClass = 'shrink-0'
+const defaultStroke = 2
 
-export function IconMenu({ className = '', size = 24 }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconClass} ${className}`} aria-hidden>
-      <line x1="3" y1="6" x2="21" y2="6" />
-      <line x1="3" y1="12" x2="21" y2="12" />
-      <line x1="3" y1="18" x2="21" y2="18" />
-    </svg>
-  )
+function wrapLucide(LucideIcon, defaultFill = false) {
+  return function Icon({ className = '', size = 24, strokeWidth = defaultStroke, ...rest }) {
+    return (
+      <LucideIcon
+        size={size}
+        strokeWidth={strokeWidth}
+        className={`${iconClass} ${className}`.trim()}
+        aria-hidden
+        {...(defaultFill ? { fill: 'currentColor' } : {})}
+        {...rest}
+      />
+    )
+  }
 }
 
-export function IconHome({ className = '', size = 24 }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconClass} ${className}`} aria-hidden>
-      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-      <polyline points="9 22 9 12 15 12 15 22" />
-    </svg>
-  )
-}
+// Re-exportar con mismo nombre y API que antes
+export const IconMenu = wrapLucide(Menu)
+export const IconHome = wrapLucide(Home)
+export const IconTarget = wrapLucide(Target)
+export const IconCheckSquare = wrapLucide(CheckSquare)
+export const IconCircle = wrapLucide(Circle)
+export const IconSettings = wrapLucide(Settings)
+export const IconCalendar = wrapLucide(Calendar)
+export const IconRefresh = wrapLucide(RefreshCw)
+export const IconChevronLeft = wrapLucide(ChevronLeft)
+export const IconChevronRight = wrapLucide(ChevronRight)
+export const IconChevronDown = wrapLucide(ChevronDown)
+export const IconChevronUp = wrapLucide(ChevronUp)
+export const IconChevronsLeft = wrapLucide(ChevronsLeft)
+export const IconChevronsRight = wrapLucide(ChevronsRight)
+export const IconSun = wrapLucide(Sun)
+export const IconMoon = wrapLucide(Moon)
+export const IconMonitor = wrapLucide(Monitor)
+export const IconStar = wrapLucide(Star, true)
+export const IconPlay = wrapLucide(Play, true)
+export const IconFlame = wrapLucide(Flame)
+export const IconUser = wrapLucide(User)
+export const IconTag = wrapLucide(Tag)
+export const IconTrash = wrapLucide(Trash2)
+export const IconPriority = wrapLucide(ArrowUpNarrowWide)
+export const IconHeart = wrapLucide(Heart)
+export const IconChartBar = wrapLucide(BarChart3)
+export const IconSearch = wrapLucide(Search)
+export const IconX = wrapLucide(X)
+export const IconMoreVertical = wrapLucide(MoreVertical)
+export const IconCart = wrapLucide(ShoppingCart)
+export const IconBook = wrapLucide(BookOpen)
+export const IconUtensils = wrapLucide(UtensilsCrossed)
+export const IconCoffee = wrapLucide(Coffee)
+export const IconChickenLeg = wrapLucide(Drumstick)
+export const IconTapa = wrapLucide(Cherry)
+export const IconCake = wrapLucide(Cake)
+export const IconBottle = wrapLucide(Wine)
+export const IconMartini = wrapLucide(Martini)
+export const IconMagicBall = wrapLucide(Sparkles)
+export const IconFilter = wrapLucide(Filter)
+export const IconSkull = wrapLucide(Skull)
 
-export function IconTarget({ className = '', size = 24 }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconClass} ${className}`} aria-hidden>
-      <circle cx="12" cy="12" r="10" />
-      <circle cx="12" cy="12" r="6" />
-      <circle cx="12" cy="12" r="2" />
-    </svg>
-  )
-}
-
-export function IconCheckSquare({ className = '', size = 24 }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconClass} ${className}`} aria-hidden>
-      <polyline points="9 11 12 14 22 4" />
-      <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
-    </svg>
-  )
-}
-
-export function IconCircle({ className = '', size = 24 }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconClass} ${className}`} aria-hidden>
-      <circle cx="12" cy="12" r="10" />
-    </svg>
-  )
-}
-
-export function IconSettings({ className = '', size = 24 }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconClass} ${className}`} aria-hidden>
-      <circle cx="12" cy="12" r="3" />
-      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
-    </svg>
-  )
-}
-
-export function IconCalendar({ className = '', size = 24 }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconClass} ${className}`} aria-hidden>
-      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-      <line x1="16" y1="2" x2="16" y2="6" />
-      <line x1="8" y1="2" x2="8" y2="6" />
-      <line x1="3" y1="10" x2="21" y2="10" />
-    </svg>
-  )
-}
-
-export function IconRefresh({ className = '', size = 24 }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconClass} ${className}`} aria-hidden>
-      <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-      <path d="M3 3v5h5" />
-      <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
-      <path d="M16 21h5v-5" />
-    </svg>
-  )
-}
-
-export function IconChevronLeft({ className = '', size = 24 }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconClass} ${className}`} aria-hidden>
-      <polyline points="15 18 9 12 15 6" />
-    </svg>
-  )
-}
-
-export function IconChevronRight({ className = '', size = 24 }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconClass} ${className}`} aria-hidden>
-      <polyline points="9 18 15 12 9 6" />
-    </svg>
-  )
-}
-
-export function IconChevronDown({ className = '', size = 24 }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconClass} ${className}`} aria-hidden>
-      <polyline points="6 9 12 15 18 9" />
-    </svg>
-  )
-}
-
-export function IconChevronUp({ className = '', size = 24 }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconClass} ${className}`} aria-hidden>
-      <polyline points="18 15 12 9 6 15" />
-    </svg>
-  )
-}
-
-export function IconChevronsLeft({ className = '', size = 24 }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconClass} ${className}`} aria-hidden>
-      <polyline points="11 17 6 12 11 7" />
-      <polyline points="18 17 13 12 18 7" />
-    </svg>
-  )
-}
-
-export function IconChevronsRight({ className = '', size = 24 }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconClass} ${className}`} aria-hidden>
-      <polyline points="13 17 18 12 13 7" />
-      <polyline points="6 17 11 12 6 7" />
-    </svg>
-  )
-}
-
-export function IconSun({ className = '', size = 24 }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconClass} ${className}`} aria-hidden>
-      <circle cx="12" cy="12" r="5" />
-      <line x1="12" y1="1" x2="12" y2="3" />
-      <line x1="12" y1="21" x2="12" y2="23" />
-      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-      <line x1="1" y1="12" x2="3" y2="12" />
-      <line x1="21" y1="12" x2="23" y2="12" />
-      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-    </svg>
-  )
-}
-
-export function IconMoon({ className = '', size = 24 }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconClass} ${className}`} aria-hidden>
-      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-    </svg>
-  )
-}
-
-export function IconMonitor({ className = '', size = 24 }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconClass} ${className}`} aria-hidden>
-      <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
-      <line x1="8" y1="21" x2="16" y2="21" />
-      <line x1="12" y1="17" x2="12" y2="21" />
-    </svg>
-  )
-}
-
-export function IconStar({ className = '', size = 24 }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconClass} ${className}`} aria-hidden>
-      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-    </svg>
-  )
-}
-
-export function IconPlay({ className = '', size = 24 }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={`${iconClass} ${className}`} aria-hidden>
-      <polygon points="5 3 19 12 5 21 5 3" />
-    </svg>
-  )
-}
-
-export function IconFlame({ className = '', size = 24 }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconClass} ${className}`} aria-hidden>
-      <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" />
-    </svg>
-  )
-}
-
+/** Flame relleno (Lucide Flame no tiene variante filled; usamos el mismo con fill). */
 export function IconFlameFilled({ className = '', size = 24 }) {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={`${iconClass} ${className}`} aria-hidden>
-      <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" />
-    </svg>
+    <Flame
+      size={size}
+      fill="currentColor"
+      stroke="currentColor"
+      strokeWidth={defaultStroke}
+      className={`${iconClass} ${className}`.trim()}
+      aria-hidden
+    />
   )
 }
 
-export function IconUser({ className = '', size = 24 }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconClass} ${className}`} aria-hidden>
-      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-      <circle cx="12" cy="7" r="4" />
-    </svg>
-  )
-}
+// ——— Iconos custom (no hay equivalente en Lucide o se prefiere el dibujo actual) ———
 
-export function IconTag({ className = '', size = 24 }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconClass} ${className}`} aria-hidden>
-      <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
-      <line x1="7" y1="7" x2="7.01" y2="7" />
-    </svg>
-  )
-}
-
-export function IconTrash({ className = '', size = 24 }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconClass} ${className}`} aria-hidden>
-      <polyline points="3 6 5 6 21 6" />
-      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-      <line x1="10" y1="11" x2="10" y2="17" />
-      <line x1="14" y1="11" x2="14" y2="17" />
-    </svg>
-  )
-}
-
-/** Prioridad / orden ascendente: flecha arriba + líneas crecientes. Mismo estilo stroke que el resto. */
-export function IconPriority({ className = '', size = 24 }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconClass} ${className}`} aria-hidden>
-      <polyline points="8 18 12 10 16 18" />
-      <line x1="18" y1="18" x2="22" y2="18" />
-      <line x1="17" y1="14" x2="22" y2="14" />
-      <line x1="16" y1="10" x2="22" y2="10" />
-      <line x1="15" y1="6" x2="22" y2="6" />
-    </svg>
-  )
-}
-
-/** Santo: aureola (círculo) encima de la cabeza y figura. */
+/** Santo: aureola y figura. */
 export function IconSaint({ className = '', size = 24 }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconClass} ${className}`} aria-hidden>
@@ -250,7 +135,7 @@ export function IconSaint({ className = '', size = 24 }) {
   )
 }
 
-/** Demonio: cuernos curvos y figura. */
+/** Demonio: cuernos y figura. */
 export function IconDevil({ className = '', size = 24 }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconClass} ${className}`} aria-hidden>
@@ -263,16 +148,7 @@ export function IconDevil({ className = '', size = 24 }) {
   )
 }
 
-/** Corazón (outline). */
-export function IconHeart({ className = '', size = 24 }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconClass} ${className}`} aria-hidden>
-      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-    </svg>
-  )
-}
-
-/** Corazón en llamas (filled, para 5+ good habits). */
+/** Corazón en llamas (5+ good habits). */
 export function IconHeartFire({ className = '', size = 24 }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" className={`${iconClass} ${className}`} aria-hidden>
@@ -284,24 +160,20 @@ export function IconHeartFire({ className = '', size = 24 }) {
   )
 }
 
-/** Mierda / poop (estilo emoji 💩: montículo con espiral arriba y carita). */
+/** Poop (estilo emoji). */
 export function IconPoop({ className = '', size = 24 }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={`${iconClass} ${className}`} aria-hidden>
-      {/* Cuerpo: montículo ancho abajo + curva de espiral arriba */}
       <path d="M12 3.2c-3 0-5.5 2.2-6 5.2-.3 2 0 4.2.9 5.8 1 1.6 2.4 2.8 4 3.2 1.7.4 3.4.1 4.8-1 .9-.8 1.5-1.9 1.8-3.2.3-1.5-.1-3.1-.8-4.4C16.2 5.2 14.3 3.2 12 3.2z" />
-      {/* Remate espiral (como soft-serve / 💩) */}
       <ellipse cx="11.5" cy="5.8" rx="2.8" ry="2.4" />
-      {/* Ojos (puntos como en el emoji) */}
       <circle cx="9" cy="11" r="1" />
       <circle cx="15" cy="11" r="1" />
-      {/* Sonrisa */}
       <path d="M9.2 14.5c.9.5 2.1.5 3 0" fill="none" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" />
     </svg>
   )
 }
 
-/** Mierda con moscas (para 5+ bad habits). */
+/** Poop con moscas (5+ bad habits). */
 export function IconPoopFlies({ className = '', size = 24 }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" className={`${iconClass} ${className}`} aria-hidden>
@@ -310,19 +182,6 @@ export function IconPoopFlies({ className = '', size = 24 }) {
       <circle cx="7.5" cy="6" r="1.1" fill="currentColor" />
       <circle cx="16.5" cy="6.5" r="1.1" fill="currentColor" />
       <circle cx="10" cy="4" r="0.85" fill="currentColor" />
-    </svg>
-  )
-}
-
-/** Calavera (Bad Habits). */
-export function IconSkull({ className = '', size = 24 }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconClass} ${className}`} aria-hidden>
-      <circle cx="12" cy="10" r="6" />
-      <path d="M5 10c0-1.5 1-3 3-3h8c2 0 3 1.5 3 3v1a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-1z" />
-      <circle cx="9" cy="10" r="1.5" fill="currentColor" stroke="none" />
-      <circle cx="15" cy="10" r="1.5" fill="currentColor" stroke="none" />
-      <path d="M8 14h2M14 14h2M10 17h4" />
     </svg>
   )
 }
@@ -339,184 +198,6 @@ export function IconSkullFlies({ className = '', size = 24 }) {
       <circle cx="7" cy="5" r="1" />
       <circle cx="17" cy="6" r="1" />
       <circle cx="12" cy="3" r="0.8" />
-    </svg>
-  )
-}
-
-/** Analytics / gráfico de barras. Mismo estilo stroke. */
-export function IconChartBar({ className = '', size = 24 }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconClass} ${className}`} aria-hidden>
-      <line x1="12" y1="20" x2="12" y2="10" />
-      <line x1="18" y1="20" x2="18" y2="4" />
-      <line x1="6" y1="20" x2="6" y2="16" />
-    </svg>
-  )
-}
-
-/** Search / lupa. */
-export function IconSearch({ className = '', size = 24 }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconClass} ${className}`} aria-hidden>
-      <circle cx="11" cy="11" r="8" />
-      <line x1="21" y1="21" x2="16.65" y2="16.65" />
-    </svg>
-  )
-}
-
-/** Clear / cerrar (X). */
-export function IconX({ className = '', size = 24 }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconClass} ${className}`} aria-hidden>
-      <line x1="18" y1="6" x2="6" y2="18" />
-      <line x1="6" y1="6" x2="18" y2="18" />
-    </svg>
-  )
-}
-
-/** More / tres puntos verticales. */
-export function IconMoreVertical({ className = '', size = 24 }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconClass} ${className}`} aria-hidden>
-      <circle cx="12" cy="12" r="1.5" />
-      <circle cx="12" cy="5" r="1.5" />
-      <circle cx="12" cy="19" r="1.5" />
-    </svg>
-  )
-}
-
-/** Magic ball / crystal ball (ver el futuro). */
-export function IconMagicBall({ className = '', size = 24 }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconClass} ${className}`} aria-hidden>
-      <circle cx="12" cy="10" r="6" />
-      <path d="M8 20c0-2.2 1.8-4 4-4s4 1.8 4 4" />
-      <circle cx="12" cy="8" r="1" fill="currentColor" stroke="none" />
-    </svg>
-  )
-}
-
-/** Icono de filtros: tres líneas horizontales con control/slider. */
-export function IconFilter({ className = '', size = 24 }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconClass} ${className}`} aria-hidden>
-      <line x1="2" y1="7" x2="22" y2="7" />
-      <circle cx="6" cy="7" r="2" />
-      <line x1="2" y1="12" x2="22" y2="12" />
-      <circle cx="12" cy="12" r="2" />
-      <line x1="2" y1="17" x2="22" y2="17" />
-      <circle cx="18" cy="17" r="2" />
-    </svg>
-  )
-}
-
-/** Carrito de supermercado / shopping cart. Contenido centrado en 24×24 (bounds ~1–23×1–21). */
-export function IconCart({ className = '', size = 24 }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconClass} ${className}`} aria-hidden>
-      <g transform="translate(0 1)">
-        <circle cx="9" cy="21" r="1" />
-        <circle cx="20" cy="21" r="1" />
-        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
-      </g>
-    </svg>
-  )
-}
-
-/** Libro / recetas (recipe book). */
-export function IconBook({ className = '', size = 24 }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconClass} ${className}`} aria-hidden>
-      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-      <line x1="8" y1="6" x2="16" y2="6" />
-      <line x1="8" y1="10" x2="16" y2="10" />
-    </svg>
-  )
-}
-
-/** Platito humeante / comida (Meals). Plato oval con vapor ascendente. */
-export function IconUtensils({ className = '', size = 24 }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconClass} ${className}`} aria-hidden>
-      {/* Plato oval */}
-      <ellipse cx="12" cy="15" rx="7" ry="2.8" />
-      {/* Vapor: líneas curvas que suben */}
-      <path d="M9 12.5 Q9 8 10 4" />
-      <path d="M12 11.5 Q12 6 13 2" />
-      <path d="M15 12.5 Q15 8 16 4" />
-    </svg>
-  )
-}
-
-/** Taza de café (Breakfast). */
-export function IconCoffee({ className = '', size = 24 }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconClass} ${className}`} aria-hidden>
-      <path d="M18 8h1a4 4 0 0 1 0 8h-1" />
-      <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z" />
-      <line x1="6" y1="1" x2="6" y2="4" />
-      <line x1="10" y1="1" x2="10" y2="4" />
-      <line x1="14" y1="1" x2="14" y2="4" />
-    </svg>
-  )
-}
-
-/** Muslo de pollo (Lunch / Dinner). */
-export function IconChickenLeg({ className = '', size = 24 }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconClass} ${className}`} aria-hidden>
-      <path d="M15 6c0 2-1.5 4-4 5-2.5 1-4.5.5-5.5-1S5 7 7 5s5-1 7 1c1 1.2 1 2.5 1 4" />
-      <path d="M12 12v9" />
-      <path d="M9 21h6" />
-    </svg>
-  )
-}
-
-/** Gilda / montadito – pincho o tapa (Tapa). */
-export function IconTapa({ className = '', size = 24 }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconClass} ${className}`} aria-hidden>
-      <line x1="12" y1="2" x2="12" y2="18" />
-      <circle cx="12" cy="6" r="2.5" />
-      <circle cx="12" cy="12" r="2" />
-      <circle cx="12" cy="16" r="1.5" />
-    </svg>
-  )
-}
-
-/** Trozo de tarta (Dessert). */
-export function IconCake({ className = '', size = 24 }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconClass} ${className}`} aria-hidden>
-      <path d="M12 2v8" />
-      <path d="M8 22h8l-1-10H9l-1 10z" />
-      <path d="M6 12l2-2 2 2 2-2 2 2 2-2" />
-      <path d="M4 22V12a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10" />
-    </svg>
-  )
-}
-
-/** Bote de mostaza/ketchup (Sauce). */
-export function IconBottle({ className = '', size = 24 }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconClass} ${className}`} aria-hidden>
-      <path d="M9 2v4l2 2 2-2V2" />
-      <path d="M9 8v14" />
-      <path d="M15 8v14" />
-      <rect x="7" y="6" width="10" height="14" rx="1" />
-    </svg>
-  )
-}
-
-/** Copa de martini (Cocktail). */
-export function IconMartini({ className = '', size = 24 }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconClass} ${className}`} aria-hidden>
-      <path d="M8 22h8" />
-      <path d="M12 22V11" />
-      <path d="M5 11l7-8 7 8" />
-      <path d="M6 11h12" />
     </svg>
   )
 }

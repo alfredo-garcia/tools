@@ -9,6 +9,13 @@ import {
   IconSearch,
   IconCheckSquare,
   IconCircle,
+  IconUtensils,
+  IconChickenLeg,
+  IconBottle,
+  IconTapa,
+  IconCake,
+  IconTag,
+  IconCart,
   field,
   str,
 } from '@tools/shared'
@@ -28,6 +35,23 @@ const PRIORITY_FILTER_OPTIONS = [
   { value: '', label: 'All' },
 ]
 const FILTERS_STORAGE_KEY = 'mosco-shopping-filters-collapsed'
+
+/** Icono por categoría de item (tipo de comida). Usa iconos existentes de shared. */
+const CATEGORY_ICON_MAP = {
+  'Fruits & Vegs': IconUtensils,
+  'Meat & Fish': IconChickenLeg,
+  Frozen: IconCake,
+  Drinks: IconBottle,
+  Snacks: IconTapa,
+  Household: IconTag,
+  Other: IconTag,
+}
+const DEFAULT_CATEGORY_ICON = IconCart
+
+function getCategoryIcon(category) {
+  if (!category) return DEFAULT_CATEGORY_ICON
+  return CATEGORY_ICON_MAP[category] ?? DEFAULT_CATEGORY_ICON
+}
 
 function readFiltersCollapsed() {
   if (typeof window === 'undefined') return true
@@ -50,12 +74,13 @@ function ShoppingMiniCard({ item, onToggleStatus, onOpenModal }) {
   const nameES = str(field(item, 'Name ES')) || ''
   const name = str(field(item, 'Name')) || ''
   const title =
-    nameES && name ? `${nameES} - ${name}` : nameES || name || '(untitled)'
+    name && nameES ? `${name} - ${nameES}` : name || nameES || '(untitled)'
   const category = str(field(item, 'Category')) || ''
   const store = str(field(item, 'Store')) || ''
   const priority = str(field(item, 'Priority')) || ''
   const status = str(field(item, 'Status')) || 'Need'
   const isHave = status === 'Have'
+  const CategoryIcon = getCategoryIcon(category)
 
   const handleCheckbox = async (e) => {
     e.stopPropagation()
@@ -97,20 +122,23 @@ function ShoppingMiniCard({ item, onToggleStatus, onOpenModal }) {
             <IconCircle size={22} strokeWidth={2} aria-hidden />
           )}
         </button>
+        <div className="shrink-0 mt-0.5 text-text-muted" aria-hidden>
+          <CategoryIcon size={20} />
+        </div>
         <div className="flex-1 min-w-0">
-          <div className="font-semibold text-text">
-            {title}
+          <div className="flex items-start justify-between gap-2">
+            <div className="font-semibold text-text min-w-0">
+              {title}
+            </div>
+            {priority && (
+              <span
+                className={`shrink-0 inline-flex px-1.5 py-0.5 rounded text-[10px] font-medium ${getPriorityTagClass(priority)}`}
+              >
+                {priority}
+              </span>
+            )}
           </div>
           <div className="text-sm text-text-muted mt-1 space-y-0.5">
-            {priority && (
-              <div className="flex flex-wrap items-center gap-1.5">
-                <span
-                  className={`inline-flex px-1.5 py-0.5 rounded text-[10px] font-medium ${getPriorityTagClass(priority)}`}
-                >
-                  {priority}
-                </span>
-              </div>
-            )}
             {category && <div>{category}</div>}
             {store && <div>{store}</div>}
           </div>

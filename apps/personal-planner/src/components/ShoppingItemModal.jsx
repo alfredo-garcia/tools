@@ -27,8 +27,9 @@ const INITIAL_FORM = {
  * Modal de edición o creación de un item de la Shopping List (Airtable).
  * Si item es null y onCreate está definido, muestra formulario de creación (POST).
  * Campos: Name, Category, Description, Image (Web), Name ES, Notes, Priority, Quantity, Status, Store, Unit.
+ * @param {string[]} [existingStores] - Optional list of Store values from other items for the Store dropdown suggestions.
  */
-export function ShoppingItemModal({ item, onClose, onItemUpdate, refetch, onCreate }) {
+export function ShoppingItemModal({ item, onClose, onItemUpdate, refetch, onCreate, existingStores = [] }) {
   const { fetchApi } = usePlannerApi()
   const [saving, setSaving] = useState(false)
   const [form, setForm] = useState(INITIAL_FORM)
@@ -143,11 +144,20 @@ export function ShoppingItemModal({ item, onClose, onItemUpdate, refetch, onCrea
             <label className="block text-sm font-medium text-text-muted mb-1.5">Store</label>
             <input
               type="text"
+              list="shopping-store-list"
               value={form.Store}
               onChange={(e) => handleChange('Store', e.target.value)}
               placeholder="Where you find it"
               className="w-full rounded-lg border border-border bg-surface text-text px-3 py-2.5"
+              autoComplete="off"
             />
+            {existingStores.length > 0 && (
+              <datalist id="shopping-store-list">
+                {existingStores.map((store) => (
+                  <option key={store} value={store} />
+                ))}
+              </datalist>
+            )}
           </div>
           <div>
             <label className="block text-sm font-medium text-text-muted mb-1.5">Priority</label>
@@ -191,7 +201,7 @@ export function ShoppingItemModal({ item, onClose, onItemUpdate, refetch, onCrea
             <input
               type="number"
               min="0"
-              step="1"
+              step={form.Unit === 'kg' || form.Unit === 'L' ? 'any' : '1'}
               value={form.Quantity}
               onChange={(e) => handleChange('Quantity', e.target.value)}
               className="w-full rounded-lg border border-border bg-surface text-text px-3 py-2.5"

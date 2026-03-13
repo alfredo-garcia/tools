@@ -403,6 +403,7 @@ export function ShoppingPage() {
           onClose={() => setModalItem(null)}
           onItemUpdate={() => setModalItem(null)}
           refetch={refetch}
+          existingStores={uniqueStores}
         />
       )}
       {createOpen && (
@@ -411,6 +412,7 @@ export function ShoppingPage() {
           onClose={() => setCreateOpen(false)}
           refetch={refetch}
           onCreate={() => setCreateOpen(false)}
+          existingStores={uniqueStores}
         />
       )}
       <Fab onClick={() => setCreateOpen(true)} ariaLabel="Add shopping item" />

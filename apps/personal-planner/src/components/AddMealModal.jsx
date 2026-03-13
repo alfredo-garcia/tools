@@ -134,6 +134,7 @@ export function AddMealModal({ dateStr, mealType, onClose, onAdded }) {
       setShowIngredientsModal(false)
       setPendingMeal(null)
       setIngredientsInList([])
+      onClose()
     } catch (err) {
       console.error(err)
       setError(err.message)

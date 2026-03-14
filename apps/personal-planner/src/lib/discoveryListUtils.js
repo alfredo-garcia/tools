@@ -4,7 +4,7 @@
  */
 
 export const STATUS_OPTIONS = [
-  { value: '', label: 'All' },
+  { value: '', label: 'All statuses' },
   { value: '_open', label: 'All open' },
   { value: 'New', label: 'Parking lot' },
   { value: 'Under Review', label: 'Discovery' },

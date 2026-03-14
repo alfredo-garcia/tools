@@ -68,13 +68,17 @@ docker compose up --build
 
 En la ruta `/meals` se muestra una vista de semana (como en Planner) con una columna por día. Cada columna tiene tres huecos: **Breakfast**, **Lunch** y **Dinner**. En cada hueco se muestran las comidas (Meals) de Airtable para ese día y tipo. Cada card de comida muestra un **icono según el Meal Type**: Breakfast → café, Lunch/Dinner → muslo de pollo, Tapa → gilda/montadito, Dessert → tarta, Sauce → bote (mostaza/ketchup), Cocktail → copa de martini; el resto usa icono genérico (libro). Puedes arrastrar una comida a otro día o a otro tipo (desayuno/comida/cena) y se actualiza la fecha y el tipo en Airtable. El botón "+" en cada hueco abre un modal para elegir una receta (de la base Recipes) que coincida con el Meal Type. **Al elegir una receta**, la app comprueba si alguno de sus ingredientes está en tu Shopping List. Si hay ingredientes en la lista, se muestra un pop-up **Ingredients in your list** con esos ingredientes agrupados en **Need** (primero) y **Have** (después), cada uno con un checkbox (marcado = Need, desmarcado = Have). Puedes cambiar el estado antes de confirmar. **Back**: cierra el pop-up sin añadir la receta ni modificar la Shopping List. **Confirm**: añade la receta al día y actualiza el estado (Have/Need) de esos ingredientes en la Shopping List según los checkboxes. Si la receta no tiene ningún ingrediente en tu lista, se añade directamente sin pop-up. Al hacer clic en una comida se abre un modal para sustituirla por otra receta o borrarla.
 
+## Filtros (FilterBar y FilterDropdown)
+
+Las listas que tienen filtros (Tasks, Discovery, Recipes, Shopping) usan un **sistema unificado** de filtros tipo dropdown (componentes `FilterBar` y `FilterDropdown` de `@tools/shared`): un icono de filtro discreto a la izquierda y una fila de controles tipo card que, al hacer clic, abren un desplegable. Los filtros **multi-selección** (p. ej. Category, Priority) muestran opciones con checkbox dentro del desplegable; los **single-select** (p. ej. Dates, Status) muestran una lista y al elegir una opción se cierra el desplegable.
+
 ## Vista Discovery
 
-En la ruta `/discovery` se listan las ideas de la tabla **Discovery Ideas** de Airtable, agrupadas por prioridad. **Filtros de estado:** All, **All open** (por defecto; excluye Archivadas), Parking lot (antes New), Discovery (antes Under Review), Done (antes Explored), Archived. Un **buscador** filtra las ideas por nombre, descripción y categoría. El FAB permite crear una nueva idea; al hacer clic en una card se abre el modal de detalle para editar o borrar.
+En la ruta `/discovery` se listan las ideas de la tabla **Discovery Ideas** de Airtable, agrupadas por prioridad. **Filtros:** Status (single: All, All open, Parking lot, Discovery, Done, Archived), Category (multi, desde datos) y Priority (multi: High, Medium, Low). Un **buscador** filtra las ideas por nombre, descripción y categoría. El FAB permite crear una nueva idea; al hacer clic en una card se abre el modal de detalle para editar o borrar.
 
 ## Vista Tasks
 
-En `/tasks` se listan las tareas con filtros por periodo (Today, Week, Month, Unplanned, All) y una **búsqueda** por nombre y descripción de la tarea. En **Shopping** (`/shopping`) un buscador filtra la lista por nombre, tienda, categoría y descripción.
+En `/tasks` se listan las tareas con filtro **Dates** (single: Today, Week, Month, Unplanned, All) y una **búsqueda** por nombre y descripción de la tarea. En **Shopping** (`/shopping`) los filtros son Status (single), Priority (multi), Store (single), Category (multi) y un buscador por nombre, tienda, categoría y descripción.
 
 ## Google Calendar
 
@@ -119,8 +123,8 @@ En la cabecera de cada día se muestra el nombre del día y la fecha en formato 
 - `/analysis/okr` — Análisis OKR
 - `/analysis/tasks` — Análisis tareas
 - `/analysis/habits` — Análisis hábitos
-- `/shopping` — Lista de la compra (filtros por Status, Priority, Store, Category; búsqueda; checkbox Need/Have; edición en modal). Cada card muestra: icono por categoría (tipo de comida), nombre en inglés y luego en español, prioridad arriba a la derecha, categoría y tienda debajo. Los filtros aparecen colapsados por defecto; la preferencia abrir/cerrar se guarda en `localStorage` (`mosco-shopping-filters-collapsed`).
-- `/recipes`, `/recipes/:id` — Recetas (lista con búsqueda; detalle con ingredientes: ver, ampliar, editar, eliminar, añadir)
+- `/shopping` — Lista de la compra (filtros dropdown: Status, Priority, Store, Category; búsqueda; checkbox Need/Have; edición en modal). Cada card muestra: icono por categoría (tipo de comida), nombre en inglés y luego en español, prioridad arriba a la derecha, categoría y tienda debajo.
+- `/recipes`, `/recipes/:id` — Recetas (filtro dropdown Meal type multi-selección; lista con búsqueda; detalle con ingredientes: ver, ampliar, editar, eliminar, añadir)
 
 ## Scripts de datos (Airtable)
 

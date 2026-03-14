@@ -7,19 +7,22 @@ import {
   IconBook,
   IconCoffee,
   IconChickenLeg,
-  IconTapa,
+  IconEggFried,
+  IconCakeSlice,
   IconCake,
   IconBottle,
+  IconCookie,
   IconMartini,
   IconSearch,
   Fab,
+  FilterBar,
+  FilterDropdown,
 } from '@tools/shared'
 import { usePlannerApi } from '../contexts/PlannerApiContext'
 import { field, str, num, arr } from '@tools/shared'
-import { recipeMatchesMealType, MEAL_TYPE_OPTIONS, getDominantMealType, getMealTypeIconKey } from '../lib/mealsUtils'
+import { recipeMatchesMealTypes, MEAL_TYPE_OPTIONS, getDominantMealType, getMealTypeIconKey } from '../lib/mealsUtils'
 import { RecipeCreateModal } from '../components/RecipeCreateModal'
 
-const FILTER_ALL = 'All'
 const MEAL_TYPE_LABELS = {
   Breakfast: 'Breakfast',
   Lunch: 'Lunch',
@@ -29,13 +32,19 @@ const MEAL_TYPE_LABELS = {
   Snack: 'Snack',
   Tapa: 'Tapa',
 }
+const MEAL_TYPE_OPTIONS_WITH_LABELS = MEAL_TYPE_OPTIONS.map((value) => ({
+  value,
+  label: MEAL_TYPE_LABELS[value] || value,
+}))
 
 const ICON_BY_KEY = {
   Coffee: IconCoffee,
   ChickenLeg: IconChickenLeg,
-  Tapa: IconTapa,
+  EggFried: IconEggFried,
   Cake: IconCake,
+  CakeSlice: IconCakeSlice,
   Bottle: IconBottle,
+  Cookie: IconCookie,
   Martini: IconMartini,
   Book: IconBook,
 }
@@ -85,7 +94,7 @@ export function RecipesList() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [search, setSearch] = useState('')
-  const [mealTypeFilter, setMealTypeFilter] = useState(FILTER_ALL)
+  const [mealTypeFilter, setMealTypeFilter] = useState([])
   const [createRecipeOpen, setCreateRecipeOpen] = useState(false)
 
   const refetch = useCallback(() => {
@@ -113,7 +122,7 @@ export function RecipesList() {
   }, [refetch])
 
   const filtered = useMemo(() => {
-    let result = mealTypeFilter === FILTER_ALL ? list : list.filter((r) => recipeMatchesMealType(r, mealTypeFilter))
+    let result = list.filter((r) => recipeMatchesMealTypes(r, mealTypeFilter))
     const q = search.trim().toLowerCase()
     if (!q) return result
     return result.filter((r) => {
@@ -144,25 +153,17 @@ export function RecipesList() {
         loading={loading}
       />
       <div className="space-y-4">
-        <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={() => setMealTypeFilter(FILTER_ALL)}
-            className={`min-h-[40px] px-3 rounded-xl text-sm font-medium ${mealTypeFilter === FILTER_ALL ? 'bg-primary text-white' : 'bg-border text-text hover:bg-border/80'}`}
-          >
-            All
-          </button>
-          {MEAL_TYPE_OPTIONS.map((value) => (
-            <button
-              key={value}
-              type="button"
-              onClick={() => setMealTypeFilter(value)}
-              className={`min-h-[40px] px-3 rounded-xl text-sm font-medium ${mealTypeFilter === value ? 'bg-primary text-white' : 'bg-border text-text hover:bg-border/80'}`}
-            >
-              {MEAL_TYPE_LABELS[value] || value}
-            </button>
-          ))}
-        </div>
+        <FilterBar>
+          <FilterDropdown
+            label="Meal type"
+            summary={mealTypeFilter.length === 0 ? 'All meal types' : mealTypeFilter.length === 1 ? (MEAL_TYPE_LABELS[mealTypeFilter[0]] || mealTypeFilter[0]) : `${mealTypeFilter.length} selected`}
+            options={MEAL_TYPE_OPTIONS_WITH_LABELS}
+            value={mealTypeFilter}
+            onChange={setMealTypeFilter}
+            multi
+            allOptionLabel="All meal types"
+          />
+        </FilterBar>
         <div className="relative">
           <IconSearch
             size={20}

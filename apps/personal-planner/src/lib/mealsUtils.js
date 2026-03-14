@@ -16,16 +16,17 @@ export const MEAL_TYPE_ICON_KEYS = {
   Breakfast: 'Coffee',
   Lunch: 'ChickenLeg',
   Dinner: 'ChickenLeg',
-  Tapa: 'Tapa',
-  Dessert: 'Cake',
+  Tapa: 'EggFried',
+  Dessert: 'CakeSlice',
   Sauce: 'Bottle',
   Cocktail: 'Martini',
+  Snack: 'Cookie',
 }
 
 /**
  * Returns the icon key for a meal type (used by MealSlotCard to pick the icon).
  * @param {string} mealType - e.g. 'Breakfast', 'Lunch', 'Dinner', 'Tapa', 'Dessert', 'Sauce', 'Cocktail'
- * @returns {string} Icon key: 'Coffee' | 'ChickenLeg' | 'Tapa' | 'Cake' | 'Bottle' | 'Martini' | 'Book' (default)
+ * @returns {string} Icon key: 'Coffee' | 'ChickenLeg' | 'EggFried' | 'CakeSlice' | 'Bottle' | 'Cookie' | 'Martini' | 'Book' (default)
  */
 export function getMealTypeIconKey(mealType) {
   return MEAL_TYPE_ICON_KEYS[mealType] || 'Book'
@@ -81,6 +82,18 @@ export function recipeMatchesMealType(recipe, mealType) {
   const mt = field(recipe, 'Meal Type')
   const values = arr(mt)
   return values.some((v) => String(v).trim() === mealType)
+}
+
+/**
+ * Returns whether a recipe matches any of the selected meal types (multi-select filter).
+ * If selectedTypes is empty, returns true (show all).
+ */
+export function recipeMatchesMealTypes(recipe, selectedTypes) {
+  if (!recipe || !Array.isArray(selectedTypes)) return true
+  if (selectedTypes.length === 0) return true
+  const mt = field(recipe, 'Meal Type')
+  const values = arr(mt).map((v) => String(v).trim()).filter(Boolean)
+  return values.some((v) => selectedTypes.includes(v))
 }
 
 /**

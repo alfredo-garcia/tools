@@ -36,9 +36,13 @@ import {
   UtensilsCrossed,
   Coffee,
   Cake,
+  CakeSlice,
+  ChefHat,
+  Cookie,
   Martini,
   Wine,
   Drumstick,
+  EggFried,
   Cherry,
   Sparkles,
   Filter,
@@ -102,7 +106,11 @@ export const IconCoffee = wrapLucide(Coffee)
 export const IconChickenLeg = wrapLucide(Drumstick)
 export const IconTapa = wrapLucide(Cherry)
 export const IconCake = wrapLucide(Cake)
+export const IconCakeSlice = wrapLucide(CakeSlice)
+export const IconChefHat = wrapLucide(ChefHat)
+export const IconCookie = wrapLucide(Cookie)
 export const IconBottle = wrapLucide(Wine)
+export const IconEggFried = wrapLucide(EggFried)
 export const IconMartini = wrapLucide(Martini)
 export const IconMagicBall = wrapLucide(Sparkles)
 export const IconFilter = wrapLucide(Filter)
@@ -201,3 +209,4 @@ export function IconSkullFlies({ className = '', size = 24 }) {
     </svg>
   )
 }
+

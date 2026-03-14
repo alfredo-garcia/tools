@@ -3,9 +3,6 @@ import {
   Spinner,
   PageHeader,
   Fab,
-  IconFilter,
-  IconChevronDown,
-  IconChevronUp,
   IconSearch,
   IconCheckSquare,
   IconCircle,
@@ -18,6 +15,8 @@ import {
   IconCart,
   field,
   str,
+  FilterBar,
+  FilterDropdown,
 } from '@tools/shared'
 import { usePlannerApi } from '../contexts/PlannerApiContext'
 import { getPriorityTagClass } from '../components/TaskCard'
@@ -26,15 +25,14 @@ import { ShoppingItemModal, SHOPPING_CATEGORY_OPTIONS } from '../components/Shop
 const STATUS_FILTER_OPTIONS = [
   { value: 'Need', label: 'Needs', aria: 'Show items you need' },
   { value: 'Have', label: 'Have', aria: 'Show items you have' },
-  { value: '', label: 'All', aria: 'Show all items' },
+  { value: '', label: 'All statuses', aria: 'Show all items' },
 ]
-const PRIORITY_FILTER_OPTIONS = [
+const PRIORITY_OPTIONS = [
   { value: 'High', label: 'High' },
   { value: 'Medium', label: 'Medium' },
   { value: 'Low', label: 'Low' },
-  { value: '', label: 'All' },
 ]
-const FILTERS_STORAGE_KEY = 'mosco-shopping-filters-collapsed'
+const CATEGORY_OPTIONS = SHOPPING_CATEGORY_OPTIONS.map((c) => ({ value: c, label: c }))
 
 /** Icono por categoría de item (tipo de comida). Usa iconos existentes de shared. */
 const CATEGORY_ICON_MAP = {
@@ -51,23 +49,6 @@ const DEFAULT_CATEGORY_ICON = IconCart
 function getCategoryIcon(category) {
   if (!category) return DEFAULT_CATEGORY_ICON
   return CATEGORY_ICON_MAP[category] ?? DEFAULT_CATEGORY_ICON
-}
-
-function readFiltersCollapsed() {
-  if (typeof window === 'undefined') return true
-  try {
-    const stored = localStorage.getItem(FILTERS_STORAGE_KEY)
-    if (stored === null) return true
-    return JSON.parse(stored)
-  } catch {
-    return true
-  }
-}
-function writeFiltersCollapsed(collapsed) {
-  if (typeof window === 'undefined') return
-  try {
-    localStorage.setItem(FILTERS_STORAGE_KEY, JSON.stringify(collapsed))
-  } catch {}
 }
 
 function ShoppingMiniCard({ item, onToggleStatus, onOpenModal }) {
@@ -155,10 +136,9 @@ export function ShoppingPage() {
   const [error, setError] = useState(null)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('Need')
-  const [priorityFilter, setPriorityFilter] = useState('')
+  const [priorityFilter, setPriorityFilter] = useState([])
   const [storeFilter, setStoreFilter] = useState('')
-  const [categoryFilter, setCategoryFilter] = useState('')
-  const [filtersCollapsed, setFiltersCollapsed] = useState(readFiltersCollapsed)
+  const [categoryFilter, setCategoryFilter] = useState([])
   const [modalItem, setModalItem] = useState(null)
   const [createOpen, setCreateOpen] = useState(false)
 
@@ -185,14 +165,6 @@ export function ShoppingPage() {
   useEffect(() => {
     refetch()
   }, [refetch])
-
-  const toggleFiltersCollapsed = useCallback(() => {
-    setFiltersCollapsed((prev) => {
-      const next = !prev
-      writeFiltersCollapsed(next)
-      return next
-    })
-  }, [])
 
   const uniqueStores = useMemo(() => {
     const set = new Set()
@@ -236,14 +208,14 @@ export function ShoppingPage() {
   if (statusFilter) {
     filtered = filtered.filter((i) => str(field(i, 'Status')) === statusFilter)
   }
-  if (priorityFilter) {
-    filtered = filtered.filter((i) => str(field(i, 'Priority')) === priorityFilter)
+  if (priorityFilter.length > 0) {
+    filtered = filtered.filter((i) => priorityFilter.includes(str(field(i, 'Priority'))))
   }
   if (storeFilter) {
     filtered = filtered.filter((i) => str(field(i, 'Store')) === storeFilter)
   }
-  if (categoryFilter) {
-    filtered = filtered.filter((i) => str(field(i, 'Category')) === categoryFilter)
+  if (categoryFilter.length > 0) {
+    filtered = filtered.filter((i) => categoryFilter.includes(str(field(i, 'Category'))))
   }
 
   return (
@@ -270,132 +242,41 @@ export function ShoppingPage() {
           />
         </div>
 
-        <div className="rounded-xl bg-surface overflow-hidden border border-border">
-          <button
-            type="button"
-            onClick={toggleFiltersCollapsed}
-            className="w-full p-4 flex items-center justify-between gap-3 text-left hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
-            aria-expanded={!filtersCollapsed}
-          >
-            <div className="flex items-center gap-3">
-              <IconFilter size={20} className="text-text-muted shrink-0" />
-              <span className="font-semibold text-text">Filters</span>
-            </div>
-            {filtersCollapsed ? (
-              <IconChevronDown size={20} className="text-text-muted shrink-0" />
-            ) : (
-              <IconChevronUp size={20} className="text-text-muted shrink-0" />
-            )}
-          </button>
-          {!filtersCollapsed && (
-            <div className="px-4 pb-4 pt-0 space-y-4 border-t border-border">
-              {/* Desktop: row1 = Status + Priority. Mobile: each on its own row */}
-              <div className="flex flex-col md:flex-row md:items-start gap-4 md:gap-8">
-                <div className="min-w-0">
-                  <span className="text-text-muted text-xs font-medium uppercase tracking-wide">Status</span>
-                  <div className="flex flex-wrap gap-2 mt-1.5">
-                    {STATUS_FILTER_OPTIONS.map(({ value, label, aria }) => (
-                      <button
-                        key={value || 'all'}
-                        type="button"
-                        onClick={() => setStatusFilter(value)}
-                        aria-label={aria}
-                        className={`min-h-[36px] px-3 rounded-xl text-sm font-medium ${
-                          statusFilter === value
-                            ? 'bg-primary text-white'
-                            : 'bg-border text-text hover:bg-border/80'
-                        }`}
-                      >
-                        {label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div className="min-w-0">
-                  <span className="text-text-muted text-xs font-medium uppercase tracking-wide">Priority</span>
-                  <div className="flex flex-wrap gap-2 mt-1.5">
-                    {PRIORITY_FILTER_OPTIONS.map(({ value, label }) => (
-                      <button
-                        key={value || 'all'}
-                        type="button"
-                        onClick={() => setPriorityFilter(value)}
-                        className={`min-h-[36px] px-3 rounded-xl text-sm font-medium ${
-                          priorityFilter === value
-                            ? 'bg-primary text-white'
-                            : 'bg-border text-text hover:bg-border/80'
-                        }`}
-                      >
-                        {label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-              {/* Row 2: Store (buttons) */}
-              <div>
-                <span className="text-text-muted text-xs font-medium uppercase tracking-wide">Store</span>
-                <div className="flex flex-wrap gap-2 mt-1.5">
-                  <button
-                    type="button"
-                    onClick={() => setStoreFilter('')}
-                    className={`min-h-[36px] px-3 rounded-xl text-sm font-medium ${
-                      storeFilter === ''
-                        ? 'bg-primary text-white'
-                        : 'bg-border text-text hover:bg-border/80'
-                    }`}
-                  >
-                    All
-                  </button>
-                  {uniqueStores.map((s) => (
-                    <button
-                      key={s}
-                      type="button"
-                      onClick={() => setStoreFilter(s)}
-                      className={`min-h-[36px] px-3 rounded-xl text-sm font-medium ${
-                        storeFilter === s
-                          ? 'bg-primary text-white'
-                          : 'bg-border text-text hover:bg-border/80'
-                      }`}
-                    >
-                      {s}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              {/* Row 3: Category (buttons) */}
-              <div>
-                <span className="text-text-muted text-xs font-medium uppercase tracking-wide">Category</span>
-                <div className="flex flex-wrap gap-2 mt-1.5">
-                  <button
-                    type="button"
-                    onClick={() => setCategoryFilter('')}
-                    className={`min-h-[36px] px-3 rounded-xl text-sm font-medium ${
-                      categoryFilter === ''
-                        ? 'bg-primary text-white'
-                        : 'bg-border text-text hover:bg-border/80'
-                    }`}
-                  >
-                    All
-                  </button>
-                  {SHOPPING_CATEGORY_OPTIONS.map((c) => (
-                    <button
-                      key={c}
-                      type="button"
-                      onClick={() => setCategoryFilter(c)}
-                      className={`min-h-[36px] px-3 rounded-xl text-sm font-medium ${
-                        categoryFilter === c
-                          ? 'bg-primary text-white'
-                          : 'bg-border text-text hover:bg-border/80'
-                      }`}
-                    >
-                      {c}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
+        <FilterBar>
+          <FilterDropdown
+            label="Status"
+            summary={STATUS_FILTER_OPTIONS.find((o) => o.value === statusFilter)?.label ?? 'Status'}
+            options={STATUS_FILTER_OPTIONS}
+            value={statusFilter}
+            onChange={setStatusFilter}
+          />
+          <FilterDropdown
+            label="Priority"
+            summary={priorityFilter.length === 0 ? 'All priorities' : priorityFilter.map((v) => PRIORITY_OPTIONS.find((o) => o.value === v)?.label).join(', ')}
+            options={PRIORITY_OPTIONS}
+            value={priorityFilter}
+            onChange={setPriorityFilter}
+            multi
+            allOptionLabel="All priorities"
+          />
+          <FilterDropdown
+            label="Store"
+            summary={storeFilter || 'All stores'}
+            options={[{ value: '', label: 'All stores' }, ...uniqueStores.map((s) => ({ value: s, label: s }))]}
+            value={storeFilter}
+            onChange={setStoreFilter}
+            allOptionLabel="All stores"
+          />
+          <FilterDropdown
+            label="Category"
+            summary={categoryFilter.length === 0 ? 'All categories' : categoryFilter.length === 1 ? categoryFilter[0] : `${categoryFilter.length} selected`}
+            options={CATEGORY_OPTIONS}
+            value={categoryFilter}
+            onChange={setCategoryFilter}
+            multi
+            allOptionLabel="All categories"
+          />
+        </FilterBar>
 
         {loading && (
           <div className="flex justify-center py-8">

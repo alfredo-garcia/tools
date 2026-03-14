@@ -3,9 +3,9 @@ import { STATUS_OPTIONS, getStatusLabel, filterByStatus, filterBySearch } from '
 
 describe('discoveryListUtils', () => {
   describe('STATUS_OPTIONS', () => {
-    it('includes All, All open, Parking lot, Discovery, Done, Archived', () => {
+    it('includes All statuses, All open, Parking lot, Discovery, Done, Archived', () => {
       const labels = STATUS_OPTIONS.map((o) => o.label)
-      expect(labels).toContain('All')
+      expect(labels).toContain('All statuses')
       expect(labels).toContain('All open')
       expect(labels).toContain('Parking lot')
       expect(labels).toContain('Discovery')
@@ -28,9 +28,9 @@ describe('discoveryListUtils', () => {
       expect(getStatusLabel('Archived')).toBe('Archived')
     })
 
-    it('returns value when unknown, and All for empty string', () => {
+    it('returns value when unknown, and All statuses for empty string', () => {
       expect(getStatusLabel('Other')).toBe('Other')
-      expect(getStatusLabel('')).toBe('All')
+      expect(getStatusLabel('')).toBe('All statuses')
     })
   })
 

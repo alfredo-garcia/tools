@@ -13,9 +13,11 @@ import {
   IconBook,
   IconCoffee,
   IconChickenLeg,
-  IconTapa,
+  IconEggFried,
   IconCake,
+  IconCakeSlice,
   IconBottle,
+  IconCookie,
   IconMartini,
   IconCircle,
 } from '@tools/shared'
@@ -232,9 +234,11 @@ function TaskCard({ task }) {
 const RECIPE_ICON_BY_KEY = {
   Coffee: IconCoffee,
   ChickenLeg: IconChickenLeg,
-  Tapa: IconTapa,
+  EggFried: IconEggFried,
   Cake: IconCake,
+  CakeSlice: IconCakeSlice,
   Bottle: IconBottle,
+  Cookie: IconCookie,
   Martini: IconMartini,
   Book: IconBook,
 }

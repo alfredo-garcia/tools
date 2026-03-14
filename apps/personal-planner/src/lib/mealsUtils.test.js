@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import {
   getMealsForSlot,
   recipeMatchesMealType,
+  recipeMatchesMealTypes,
   getMealTypeIconKey,
   getDominantMealType,
   getRecipeIngredientNames,
@@ -41,14 +42,14 @@ describe('mealsUtils', () => {
       expect(getMealTypeIconKey('Breakfast')).toBe('Coffee')
       expect(getMealTypeIconKey('Lunch')).toBe('ChickenLeg')
       expect(getMealTypeIconKey('Dinner')).toBe('ChickenLeg')
-      expect(getMealTypeIconKey('Tapa')).toBe('Tapa')
-      expect(getMealTypeIconKey('Dessert')).toBe('Cake')
+      expect(getMealTypeIconKey('Tapa')).toBe('EggFried')
+      expect(getMealTypeIconKey('Dessert')).toBe('CakeSlice')
       expect(getMealTypeIconKey('Sauce')).toBe('Bottle')
+      expect(getMealTypeIconKey('Snack')).toBe('Cookie')
       expect(getMealTypeIconKey('Cocktail')).toBe('Martini')
     })
 
     it('returns Book for unknown or missing meal type', () => {
-      expect(getMealTypeIconKey('Snack')).toBe('Book')
       expect(getMealTypeIconKey('')).toBe('Book')
       expect(getMealTypeIconKey(undefined)).toBe('Book')
       expect(getMealTypeIconKey('Other')).toBe('Book')
@@ -102,6 +103,30 @@ describe('mealsUtils', () => {
     it('returns false when recipe or mealType is missing', () => {
       expect(recipeMatchesMealType(null, 'Breakfast')).toBe(false)
       expect(recipeMatchesMealType({ 'Meal Type': 'Breakfast' }, '')).toBe(false)
+    })
+  })
+
+  describe('recipeMatchesMealTypes', () => {
+    it('returns true when selectedTypes is empty (show all)', () => {
+      expect(recipeMatchesMealTypes({ 'Meal Type': 'Breakfast' }, [])).toBe(true)
+      expect(recipeMatchesMealTypes({ 'Meal Type': ['Lunch'] }, [])).toBe(true)
+    })
+
+    it('returns true when recipe has at least one of the selected types', () => {
+      expect(recipeMatchesMealTypes({ 'Meal Type': 'Breakfast' }, ['Breakfast'])).toBe(true)
+      expect(recipeMatchesMealTypes({ 'Meal Type': ['Breakfast', 'Snack'] }, ['Breakfast'])).toBe(true)
+      expect(recipeMatchesMealTypes({ 'Meal Type': ['Lunch', 'Dinner'] }, ['Lunch', 'Dessert'])).toBe(true)
+    })
+
+    it('returns false when recipe has none of the selected types', () => {
+      expect(recipeMatchesMealTypes({ 'Meal Type': 'Lunch' }, ['Breakfast'])).toBe(false)
+      expect(recipeMatchesMealTypes({ 'Meal Type': ['Snack'] }, ['Dinner', 'Dessert'])).toBe(false)
+    })
+
+    it('returns true when recipe or selectedTypes is invalid (treat as show all)', () => {
+      expect(recipeMatchesMealTypes(null, ['Breakfast'])).toBe(true)
+      expect(recipeMatchesMealTypes({ 'Meal Type': 'Breakfast' }, null)).toBe(true)
+      expect(recipeMatchesMealTypes({}, [])).toBe(true)
     })
   })
 

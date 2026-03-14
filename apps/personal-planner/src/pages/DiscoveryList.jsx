@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react'
-import { Spinner, PageHeader, Card, CardList, IconMagicBall, IconSearch } from '@tools/shared'
+import { useState, useEffect, useCallback, useMemo } from 'react'
+import { Spinner, PageHeader, Card, CardList, IconMagicBall, IconSearch, FilterBar, FilterDropdown } from '@tools/shared'
 import { usePlannerApi } from '../contexts/PlannerApiContext'
 import { field, str, dateStr } from '@tools/shared'
 import { getPriorityTagClass } from '../components/TaskCard'
@@ -9,6 +9,7 @@ import { STATUS_OPTIONS, getStatusLabel, filterByStatus, filterBySearch } from '
 
 /** Priority order for grouping. Items with other/empty priority go last. */
 const PRIORITY_ORDER = ['High', 'Medium', 'Low']
+const PRIORITY_OPTIONS = PRIORITY_ORDER.map((p) => ({ value: p, label: p }))
 const GROUP_ORDER = [...PRIORITY_ORDER, '_other']
 const GROUP_LABELS = {
   High: 'High',
@@ -75,6 +76,8 @@ export function DiscoveryList() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [statusFilter, setStatusFilter] = useState('_open')
+  const [categoryFilter, setCategoryFilter] = useState([])
+  const [priorityFilter, setPriorityFilter] = useState([])
   const [search, setSearch] = useState('')
   const [modalIdea, setModalIdea] = useState(null)
   const [createOpen, setCreateOpen] = useState(false)
@@ -134,12 +137,24 @@ export function DiscoveryList() {
   )
 
   const getStatus = (i) => str(field(i, 'Status', 'Status'))
+  const getCategory = (i) => str(field(i, 'Category', 'Category')) || ''
+  const getPriority = (i) => str(field(i, 'Priority', 'Priority'))
   const getSearchFields = (i) => ({
     name: str(field(i, 'Idea Name', 'Idea Name')) || '',
     description: str(field(i, 'Idea Description', 'Idea Description')) || '',
-    category: str(field(i, 'Category', 'Category')) || '',
+    category: getCategory(i),
   })
+  const categoryOptions = useMemo(() => {
+    const set = new Set()
+    list.forEach((i) => {
+      const c = getCategory(i)
+      if (c) set.add(c)
+    })
+    return Array.from(set).sort().map((c) => ({ value: c, label: c }))
+  }, [list])
   let filtered = filterByStatus(list, statusFilter, getStatus)
+  if (categoryFilter.length > 0) filtered = filtered.filter((i) => categoryFilter.includes(getCategory(i)))
+  if (priorityFilter.length > 0) filtered = filtered.filter((i) => priorityFilter.includes(getPriority(i)))
   filtered = filterBySearch(filtered, search, getSearchFields)
 
   const groupBy = getPriorityGroup
@@ -171,22 +186,33 @@ export function DiscoveryList() {
         />
       </div>
 
-      <div className="flex flex-wrap items-center gap-2">
-        {STATUS_OPTIONS.map(({ value, label }) => (
-          <button
-            key={value === '' ? '_all' : value}
-            type="button"
-            onClick={() => setStatusFilter(value)}
-            className={`min-h-[44px] px-4 py-2 rounded-xl text-base font-medium ${
-              statusFilter === value
-                ? 'bg-primary text-white'
-                : 'bg-surface border-2 border-border text-text'
-            }`}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
+      <FilterBar>
+        <FilterDropdown
+          label="Status"
+          summary={STATUS_OPTIONS.find((o) => o.value === statusFilter)?.label ?? 'Status'}
+          options={STATUS_OPTIONS}
+          value={statusFilter}
+          onChange={setStatusFilter}
+        />
+        <FilterDropdown
+          label="Category"
+          summary={categoryFilter.length === 0 ? 'All categories' : categoryFilter.length === 1 ? categoryFilter[0] : `${categoryFilter.length} selected`}
+          options={categoryOptions}
+          value={categoryFilter}
+          onChange={setCategoryFilter}
+          multi
+          allOptionLabel="All categories"
+        />
+        <FilterDropdown
+          label="Priority"
+          summary={priorityFilter.length === 0 ? 'All priorities' : priorityFilter.map((v) => PRIORITY_OPTIONS.find((o) => o.value === v)?.label).join(', ')}
+          options={PRIORITY_OPTIONS}
+          value={priorityFilter}
+          onChange={setPriorityFilter}
+          multi
+          allOptionLabel="All priorities"
+        />
+      </FilterBar>
 
       <section className="space-y-3">
         <h2 className="text-base font-semibold text-text">Discovery</h2>

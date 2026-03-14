@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Spinner, PageHeader, Card, CardList, IconCheckSquare, IconSearch } from '@tools/shared'
+import { Spinner, PageHeader, Card, CardList, IconCheckSquare, IconSearch, FilterBar, FilterDropdown } from '@tools/shared'
 import { usePlannerApi } from '../contexts/PlannerApiContext'
 import { field, str, dateStr, isToday, isThisWeek, isThisMonth, isPastDue } from '@tools/shared'
 import { getTaskStatusGroup } from '../lib/taskStatus'
@@ -12,7 +12,7 @@ const FILTER_OPTIONS = [
   { value: 'week', label: 'Week' },
   { value: 'month', label: 'Month' },
   { value: 'unplanned', label: 'Unplanned' },
-  { value: 'all', label: 'All' },
+  { value: 'all', label: 'All time' },
 ]
 
 const GROUP_ORDER = ['in_progress', 'pending', 'done']
@@ -229,22 +229,15 @@ export function TasksList() {
           aria-label="Search tasks"
         />
       </div>
-      <div className="flex flex-wrap gap-2">
-        {FILTER_OPTIONS.map(({ value, label }) => (
-          <button
-            key={value}
-            type="button"
-            onClick={() => setFilter(value)}
-            className={`min-h-[44px] px-4 py-2 rounded-xl text-base font-medium ${
-              filter === value
-                ? 'bg-primary text-white'
-                : 'bg-surface border-2 border-border text-text'
-            }`}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
+      <FilterBar>
+        <FilterDropdown
+          label="Dates"
+          summary={FILTER_OPTIONS.find((o) => o.value === filter)?.label ?? 'Dates'}
+          options={FILTER_OPTIONS}
+          value={filter}
+          onChange={setFilter}
+        />
+      </FilterBar>
 
       <section className="space-y-3">
         <h2 className="text-base font-semibold text-text">Tasks</h2>

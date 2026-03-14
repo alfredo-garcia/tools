@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { Layout, AppShell, SettingsPage, IconCalendar, IconTarget, IconCheckSquare, IconCircle, IconSettings, IconChartBar, IconSearch, IconMagicBall, IconCart, IconBook, IconUtensils } from '@tools/shared'
+import { Layout, AppShell, SettingsPage, IconCalendar, IconTarget, IconCheckSquare, IconCircle, IconSettings, IconChartBar, IconSearch, IconMagicBall, IconCart, IconBook, IconUtensils, IconChefHat } from '@tools/shared'
 import { PlannerApiProvider } from './contexts/PlannerApiContext'
 import { usePastDueTasks } from './hooks/usePastDueTasks'
 import { Dashboard } from './pages/Dashboard'
@@ -30,7 +30,7 @@ const baseNavItems = [
   { to: '/discovery', label: 'Discovery', Icon: IconMagicBall, aria: 'Discovery ideas' },
   { to: '/tasks', label: 'Tasks', Icon: IconCheckSquare, aria: 'Tasks' },
   { to: '/objectives', label: 'OKRs', Icon: IconTarget, aria: 'Objectives and Key Results', inMore: true },
-  { to: '/meals', label: 'Meals', Icon: IconUtensils, aria: 'Meals planner', inMore: true},
+  { to: '/meals', label: 'Meals', Icon: IconChefHat, aria: 'Meals planner', inMore: true},
   { to: '/shopping', label: 'Shopping', Icon: IconCart, aria: 'Shopping list', inMore: true},
   { to: '/recipes', label: 'Recipes', Icon: IconBook, aria: 'Recipes', inMore: true},
   { to: '/habits', label: 'Habits', Icon: IconCircle, aria: 'Habits', inMore: true },

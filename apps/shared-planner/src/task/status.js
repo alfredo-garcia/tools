@@ -74,3 +74,18 @@ export function getTaskStatusBreakdown(tasks, options) {
   }
 }
 
+/**
+ * Display group for lists: past_due first (due date in past and not done), then status.
+ * @param {object} task - Task object
+ * @param {string} dueDateStr - Due date as YYYY-MM-DD
+ * @param {function} isPastDueFn - (dateStr) => boolean
+ * @param {object} [options] - Same options as getTaskStatusGroup (fieldAccessor)
+ * @returns {'past_due' | 'in_progress' | 'pending' | 'done'}
+ */
+export function getTaskDisplayGroup(task, dueDateStr, isPastDueFn, options = {}) {
+  const statusGroup = getTaskStatusGroup(task, options)
+  if (statusGroup === 'done') return 'done'
+  if (dueDateStr && isPastDueFn && isPastDueFn(dueDateStr)) return 'past_due'
+  return statusGroup
+}
+

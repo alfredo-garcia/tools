@@ -75,18 +75,38 @@ Los tokens definen colores, tipografía y espaciados de forma semántica. Las ap
 - **Tokens CSS**: `import '@tools/shared/tokens.css'`
 - **Theme (referencia)**: `import { themeExtend } from '@tools/shared/theme.js'` (opcional; las apps que usan Tailwind v4 suelen hacer el mapeo en CSS con `@theme`).
 
-### Componentes
+### Capas del design system
 
-| Componente      | Descripción |
-|-----------------|-------------|
-| `Layout`        | Envuelve la app; muestra spinner mientras comprueba sesión y `LoginScreen` si no hay autenticación. |
-| `LoginScreen`   | Formulario de código de acceso; llama a `POST /api/validate` y guarda en localStorage. |
-| `ThemeToggle`   | Ciclo sistema / claro / oscuro; persiste en localStorage. |
-| `Spinner`       | Indicador de carga (tamaños `sm`, `md`, `lg`). |
-| `PageHeader`    | Título de página + botón de refresh opcional. |
-| `AppShell`      | Navegación: sidebar (lg+) + bottom nav (< lg). Props: `navItems` (array de `{ to, label, Icon?, aria }`), `title` (opcional, ej. "My Planner"). |
-| `SettingsPage`  | Bloque de Ajustes: apariencia (ThemeToggle) + sesión (logout). Props opcionales: `backTo`, `backLabel`. |
-| `Icons.jsx`      | Iconos desde **Lucide React** (librería estándar): misma API (`size`, `className`, `strokeWidth`). Se re-exportan con nombres `Icon*` (ej. IconHome, IconTarget, IconCalendar, IconSearch). Solo unos pocos iconos sin equivalente en Lucide se mantienen como SVG custom (IconPoop, IconHeartFire, IconSaint, IconDevil, IconSkullFlies, IconPoopFlies). |
+- **Átomos**: Spinner, Switch, Card, Fab, Icons, Tag/Badge (si se añaden).
+- **Moléculas**: CardList, PageHeader, FilterBar, FilterDropdown, KpiCard, StatusProgressBar, InstallBanner.
+- **Organismos**: Layout, AppShell, SettingsPage, LoginScreen, EntityListPage, EntityDetailPage, WeekView. Contenedores de gráficos: LineChart, AreaChart.
+
+### Componentes (lista completa)
+
+| Componente         | Capa       | Descripción |
+|--------------------|------------|-------------|
+| `Layout`           | Organismo  | Envuelve la app; muestra spinner mientras comprueba sesión y `LoginScreen` si no hay autenticación. |
+| `LoginScreen`      | Organismo  | Formulario de código de acceso; llama a `POST /api/validate` y guarda en localStorage. |
+| `AppShell`         | Organismo  | Navegación: sidebar (lg+) + bottom nav (< lg). Props: `navItems`, `title`, `storageKeyPrefix`. |
+| `SettingsPage`     | Organismo  | Bloque de Ajustes: apariencia (ThemeToggle) + sesión (logout). Props opcionales: `backTo`, `backLabel`. |
+| `EntityListPage`   | Organismo  | Layout genérico para listas: `header`, `filters`, `summary`, `children`, `emptyState`, `showEmptyState`. |
+| `EntityDetailPage`| Organismo  | Layout genérico para detalle: `backLink`, `header`, `children`. |
+| `WeekView`         | Organismo  | Vista semanal: `weekDays`, `onPrevWeek`, `onNextWeek`, `renderDayHeader`, `children`. |
+| `ThemeToggle`      | Átomo      | Ciclo sistema / claro / oscuro; persiste en localStorage. |
+| `Spinner`          | Átomo      | Indicador de carga (tamaños `sm`, `md`, `lg`). |
+| `Card`             | Átomo      | Contenedor con título, icono, opcional expandible y botones. |
+| `Switch`           | Átomo      | Toggle on/off con `checked`, `onChange`, `label`. |
+| `Fab`              | Átomo      | Botón flotante; props `onClick`, `ariaLabel`, `variant`. |
+| `PageHeader`       | Molécula   | Título/breadcrumbs + botón de refresh opcional. |
+| `KpiCard`          | Molécula   | Tarjeta KPI: `title`, `value`, `subtitle`, `tone` (default/warning/danger), `as` (ej. Link). |
+| `StatusProgressBar`| Molécula   | Barra segmentada: `segments` (objeto counts), `total?`, `ariaLabel`. |
+| `FilterBar`        | Molécula   | Contenedor de filtros (icono + flex de controles). |
+| `FilterDropdown`   | Molécula   | Desplegable de filtro: `label`, `summary`, `options`, `value`, `onChange`, `multi?`, `allOptionLabel?`. |
+| `CardList`         | Molécula   | Lista agrupada: `items`, `renderItem`, `groupBy`, `groupOrder`, `groupLabels`, `initialCollapsed`. |
+| `LineChart`        | Molécula   | Wrapper de gráfico de líneas (Recharts). |
+| `AreaChart`        | Molécula   | Wrapper de gráfico de área (Recharts). |
+| `InstallBanner`    | Molécula   | Banner PWA “instalar app”. |
+| `Icons`            | Átomo      | Iconos Lucide + custom (IconPoop, IconHeartFire, etc.); API: `size`, `className`, `strokeWidth`. |
 
 ### Contextos y hooks
 

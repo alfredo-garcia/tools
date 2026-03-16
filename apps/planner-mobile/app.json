@@ -1,0 +1,9 @@
+{
+  "expo": {
+    "name": "Planner Mobile",
+    "slug": "planner-mobile",
+    "version": "1.0.0",
+    "scheme": "planner-mobile",
+    "platforms": ["ios", "android"]
+  }
+}

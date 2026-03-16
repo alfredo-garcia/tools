@@ -1,0 +1,370 @@
+# Planner API – GraphQL schema
+# Types are generic records (id + fields); filter types can be extended later.
+
+scalar JSON
+
+type Task {
+  id: ID!
+  "Task Name"
+  taskName: String
+  status: String
+  description: String
+  dueDate: String
+  priority: String
+  assignee: String
+  category: String
+  keyResults: [String]
+  objectives: [String]
+  lastModified: String
+}
+
+type Habit {
+  id: ID!
+  name: String
+  description: String
+  frequency: String
+  lastModified: String
+}
+
+type HabitTrackingEntry {
+  id: ID!
+  habitId: String
+  executionDateTime: String
+  wasSuccessful: Boolean
+  lastModified: String
+}
+
+type Objective {
+  id: ID!
+  objectiveName: String
+  status: String
+  description: String
+  category: String
+  priority: String
+  startDate: String
+  targetDate: String
+  lastModified: String
+}
+
+type KeyResult {
+  id: ID!
+  keyResultName: String
+  status: String
+  description: String
+  metric: String
+  currentValue: Float
+  targetValue: Float
+  unit: String
+  deadline: String
+  progressPercent: Float
+  objectiveLink: [String]
+  lastModified: String
+}
+
+type Meal {
+  id: ID!
+  mealType: String
+  date: String
+  meal: String
+  lastModified: String
+}
+
+type Recipe {
+  id: ID!
+  name: String
+  nameES: String
+  description: String
+  mealType: [String]
+  cookingProcess: String
+  complexityRating: Float
+  nutrientRating: Float
+  timeToCookMinutes: Int
+  servings: Int
+  cuisineType: String
+  sourceUrl: String
+  tags: String
+  lastModified: String
+}
+
+type Ingredient {
+  id: ID!
+  name: String
+  nameES: String
+  description: String
+  category: String
+  unit: String
+  notes: String
+  lastModified: String
+}
+
+type ShoppingItem {
+  id: ID!
+  name: String
+  category: String
+  description: String
+  imageWeb: String
+  nameES: String
+  notes: String
+  priority: String
+  quantity: Float
+  status: String
+  store: String
+  unit: String
+  lastModified: String
+}
+
+type PlannerSummary {
+  week: String!
+  taskCount: Int
+  habitCount: Int
+  mealsCount: Int
+}
+
+type DiscoveryIdea {
+  id: ID!
+  ideaName: String
+  ideaDescription: String
+  category: String
+  status: String
+  priority: String
+  dateAdded: String
+  objectives: [String!]
+  lastModified: String
+}
+
+# --- Queries ---
+type Query {
+  tasks: [Task!]!
+  task(id: ID!): Task
+  habits: [Habit!]!
+  habit(id: ID!): Habit
+  habitTracking: [HabitTrackingEntry!]!
+  objectives: [Objective!]!
+  objective(id: ID!): Objective
+  keyResults: [KeyResult!]!
+  keyResult(id: ID!): KeyResult
+  meals: [Meal!]!
+  meal(id: ID!): Meal
+  recipes: [Recipe!]!
+  recipe(id: ID!): Recipe
+  ingredients: [Ingredient!]!
+  ingredient(id: ID!): Ingredient
+  shopping: [ShoppingItem!]!
+  shoppingItem(id: ID!): ShoppingItem
+  discovery: [DiscoveryIdea!]!
+  discoveryIdea(id: ID!): DiscoveryIdea
+  plannerSummary(week: String!): PlannerSummary!
+}
+
+# --- Mutations ---
+input TaskCreateInput {
+  taskName: String!
+  status: String
+  description: String
+  dueDate: String
+  priority: String
+  assignee: String
+  category: String
+  keyResults: [String]
+  objectives: [String]
+}
+
+input TaskUpdateInput {
+  taskName: String
+  status: String
+  description: String
+  dueDate: String
+  priority: String
+  assignee: String
+  category: String
+  keyResults: [String]
+  objectives: [String]
+  clientLastModified: String
+}
+
+input ToggleHabitInput {
+  habitId: ID!
+  date: String!
+}
+
+input HabitTrackingUpdateInput {
+  wasSuccessful: Boolean!
+  clientLastModified: String
+}
+
+input ObjectiveCreateInput {
+  objectiveName: String!
+  status: String
+  description: String
+  category: String
+  priority: String
+  startDate: String
+  targetDate: String
+}
+
+input ObjectiveUpdateInput {
+  objectiveName: String
+  status: String
+  description: String
+  category: String
+  priority: String
+  startDate: String
+  targetDate: String
+  clientLastModified: String
+}
+
+input KeyResultCreateInput {
+  keyResultName: String!
+  status: String
+  description: String
+  metric: String
+  currentValue: Float
+  targetValue: Float
+  unit: String
+  deadline: String
+  progressPercent: Float
+  objectiveLink: [String]
+}
+
+input KeyResultUpdateInput {
+  keyResultName: String
+  status: String
+  description: String
+  metric: String
+  currentValue: Float
+  targetValue: Float
+  unit: String
+  deadline: String
+  progressPercent: Float
+  objectiveLink: [String]
+  clientLastModified: String
+}
+
+input MealCreateInput {
+  mealType: String!
+  date: String!
+  meal: String
+  recipe: String
+}
+
+input MealUpdateInput {
+  mealType: String
+  date: String
+  meal: String
+  clientLastModified: String
+}
+
+input RecipeCreateInput {
+  name: String!
+  nameES: String
+  description: String
+  mealType: [String]
+  cookingProcess: String
+  complexityRating: Float
+  nutrientRating: Float
+  timeToCookMinutes: Int
+  servings: Int
+  cuisineType: String
+  sourceUrl: String
+  tags: String
+}
+
+input RecipeUpdateInput {
+  name: String
+  nameES: String
+  description: String
+  mealType: [String]
+  cookingProcess: String
+  complexityRating: Float
+  nutrientRating: Float
+  timeToCookMinutes: Int
+  servings: Int
+  cuisineType: String
+  sourceUrl: String
+  tags: String
+  clientLastModified: String
+}
+
+input ShoppingItemCreateInput {
+  name: String
+  category: String
+  description: String
+  imageWeb: String
+  nameES: String
+  notes: String
+  priority: String
+  quantity: Float
+  status: String
+  store: String
+  unit: String
+}
+
+input ShoppingItemUpdateInput {
+  name: String
+  category: String
+  description: String
+  imageWeb: String
+  nameES: String
+  notes: String
+  priority: String
+  quantity: Float
+  status: String
+  store: String
+  unit: String
+  clientLastModified: String
+}
+
+input DiscoveryIdeaCreateInput {
+  ideaName: String!
+  ideaDescription: String
+  category: String
+  status: String
+  priority: String
+  dateAdded: String
+  objectives: [String]
+}
+
+input DiscoveryIdeaUpdateInput {
+  ideaName: String
+  ideaDescription: String
+  category: String
+  status: String
+  priority: String
+  dateAdded: String
+  objectives: [String]
+  clientLastModified: String
+}
+
+type Mutation {
+  createTask(input: TaskCreateInput!): Task!
+  updateTask(id: ID!, input: TaskUpdateInput!): Task!
+  deleteTask(id: ID!): Boolean!
+
+  toggleHabit(input: ToggleHabitInput!): HabitTrackingEntry!
+  updateHabitTracking(id: ID!, input: HabitTrackingUpdateInput!): HabitTrackingEntry!
+  deleteHabitTracking(id: ID!): Boolean!
+
+  createObjective(input: ObjectiveCreateInput!): Objective!
+  updateObjective(id: ID!, input: ObjectiveUpdateInput!): Objective!
+  deleteObjective(id: ID!): Boolean!
+
+  createKeyResult(input: KeyResultCreateInput!): KeyResult!
+  updateKeyResult(id: ID!, input: KeyResultUpdateInput!): KeyResult!
+  deleteKeyResult(id: ID!): Boolean!
+
+  createMeal(input: MealCreateInput!): Meal!
+  updateMeal(id: ID!, input: MealUpdateInput!): Meal!
+  deleteMeal(id: ID!): Boolean!
+
+  createRecipe(input: RecipeCreateInput!): Recipe!
+  updateRecipe(id: ID!, input: RecipeUpdateInput!): Recipe!
+  deleteRecipe(id: ID!): Boolean!
+
+  createShoppingItem(input: ShoppingItemCreateInput!): ShoppingItem!
+  updateShoppingItem(id: ID!, input: ShoppingItemUpdateInput!): ShoppingItem!
+  deleteShoppingItem(id: ID!): Boolean!
+
+  createDiscoveryIdea(input: DiscoveryIdeaCreateInput!): DiscoveryIdea!
+  updateDiscoveryIdea(id: ID!, input: DiscoveryIdeaUpdateInput!): DiscoveryIdea!
+  deleteDiscoveryIdea(id: ID!): Boolean!
+}

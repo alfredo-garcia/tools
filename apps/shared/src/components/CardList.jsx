@@ -2,15 +2,17 @@ import { useState, useMemo } from 'react'
 import { IconChevronDown, IconChevronUp } from './Icons.jsx'
 
 /**
- * CardList: lista de ítems agrupados por groupBy.
- * - items: array
- * - groupBy: (item) => groupKey
- * - groupOrder: [groupKey, ...]
- * - groupLabels: { [groupKey]: string }
- * - renderItem: (item) => ReactNode (típicamente un Card)
- * - initialCollapsed: { [groupKey]: boolean } opcional
+ * CardList: dos modos de uso.
  *
- * Cada grupo muestra un título fuera de la card (texto normal) + icono expandir/contraer.
+ * 1) Lista simple (solo children): renderiza los hijos en un contenedor con espaciado.
+ *
+ * 2) Lista agrupada: items, groupBy, groupOrder, groupLabels, renderItem.
+ *    - items: array
+ *    - groupBy: (item) => groupKey
+ *    - groupOrder: [groupKey, ...]
+ *    - groupLabels: { [groupKey]: string }
+ *    - renderItem: (item) => ReactNode (típicamente un Card)
+ *    - initialCollapsed: { [groupKey]: boolean } opcional
  */
 export function CardList({
   items,
@@ -19,10 +21,12 @@ export function CardList({
   groupLabels,
   renderItem,
   initialCollapsed = {},
+  children,
 }) {
   const [collapsed, setCollapsed] = useState(initialCollapsed)
 
   const groups = useMemo(() => {
+    if (items == null || groupBy == null || groupOrder == null) return null
     const map = {}
     groupOrder.forEach((key) => { map[key] = [] })
     items.forEach((item) => {
@@ -31,6 +35,10 @@ export function CardList({
     })
     return map
   }, [items, groupBy, groupOrder])
+
+  if (groups == null) {
+    return <ul className="space-y-2 list-none p-0 m-0">{children}</ul>
+  }
 
   const toggle = (key) => {
     setCollapsed((prev) => ({ ...prev, [key]: !prev[key] }))

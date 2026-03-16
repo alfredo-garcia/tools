@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import { Spinner, PageHeader } from '@tools/shared'
+import { Spinner, PageHeader, KpiCard } from '@tools/shared'
 import { usePlannerApi } from '../contexts/PlannerApiContext'
 import { field, num, str, arr, dateStr } from '@tools/shared'
+import { computeHabitSuccessPercentage } from '@tools/shared-planner'
 import { isToday, isThisWeek, isPastDue, isInNextDays, getWeekStart } from '@tools/shared'
 import { getTaskStatusGroup } from '../lib/taskStatus'
 import { getCurrentStreak, getLongestStreak } from '../lib/habitStreaks'
@@ -69,27 +70,6 @@ function useDashboardData() {
   }, [refetch])
 
   return { data, loading, error, refetch }
-}
-
-function KpiCard({ title, value, subtitle, to, variant }) {
-  const borderClass =
-    variant === 'danger'
-      ? 'border-red-300 dark:border-red-700'
-      : 'border-border'
-  return (
-    <Link
-      to={to || '#'}
-      className={`rounded-2xl border border-2 ${borderClass} bg-surface p-5 shadow-sm hover:shadow-md transition-shadow ${
-        to ? 'cursor-pointer' : 'cursor-default'
-      }`}
-    >
-      <p className="text-sm font-medium text-text-muted">{title}</p>
-      <p className="mt-1 text-2xl font-bold text-text">{value}</p>
-      {subtitle != null && (
-        <p className="mt-0.5 text-sm text-text-muted">{subtitle}</p>
-      )}
-    </Link>
-  )
 }
 
 export function Dashboard() {
@@ -201,10 +181,7 @@ export function Dashboard() {
     isThisWeek(dateStr(field(t, 'Execution Date-Time', 'Execution Date-Time', 'Execution Date')))
   )
   const habitSuccess = thisWeekTracking.filter(isHabitSuccess).length
-  const habitsPct =
-    thisWeekTracking.length === 0
-      ? 0
-      : Math.round((habitSuccess / thisWeekTracking.length) * 100)
+  const habitsPct = computeHabitSuccessPercentage(thisWeekTracking)
 
   // Trend: last 4 weeks success %
   const byWeek = {}

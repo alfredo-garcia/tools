@@ -1,4 +1,5 @@
 import { field, str } from '@tools/shared'
+import { getTaskStatusGroup as coreGetTaskStatusGroup } from '@tools/shared-planner'
 
 export const STATUS_DONE = ['Done', 'Complete', 'Completado', 'Hecho', 'Cerrado']
 
@@ -7,19 +8,14 @@ export const STATUS_IN_PROGRESS = [
   'En progreso',
 ]
 
-const DONE_SET = new Set(STATUS_DONE.map((s) => s.toLowerCase()))
-const IN_PROGRESS_SET = new Set(STATUS_IN_PROGRESS.map((s) => s.toLowerCase()))
-
 /**
- * @param {object} task - Task object with Status field
- * @returns {'done' | 'in_progress' | 'pending'}
+ * Backwards-compatible wrapper around shared-planner's getTaskStatusGroup.
+ * Keeps existing semantics for the current Airtable-backed tasks.
  */
 export function getTaskStatusGroup(task) {
-  const status = str(field(task, 'Status', 'Status'))
-  const lower = status.toLowerCase()
-  if (DONE_SET.has(lower)) return 'done'
-  if (IN_PROGRESS_SET.has(lower)) return 'in_progress'
-  return 'pending'
+  return coreGetTaskStatusGroup(task, {
+    fieldAccessor: (t, ...keys) => str(field(t, ...keys)),
+  })
 }
 
 /**

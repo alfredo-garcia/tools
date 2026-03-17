@@ -1,0 +1,42 @@
+# --- Node / JS ---
+node_modules/
+**/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# --- Builds ---
+dist/
+**/dist/
+dist-ssr/
+**/dist-ssr/
+build/
+**/build/
+.next/
+**/.next/
+.nuxt/
+**/.nuxt/
+.svelte-kit/
+**/.svelte-kit/
+.turbo/
+**/.turbo/
+.vite/
+**/.vite/
+coverage/
+**/coverage/
+
+# --- Env (keep examples) ---
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# --- OS / Editors ---
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.sw?
+

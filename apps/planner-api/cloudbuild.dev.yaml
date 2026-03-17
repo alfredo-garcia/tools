@@ -1,0 +1,30 @@
+# Dev Cloud Build pipeline for planner-api.
+# This trigger builds the Docker image and deploys the Cloud Run service automatically on each push to main.
+
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -f
+      - apps/planner-api/Dockerfile
+      - -t
+      - gcr.io/$PROJECT_ID/github.com/alfredo-garcia/tools:$COMMIT_SHA
+      - ./apps
+
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - tools
+      - --image
+      - gcr.io/$PROJECT_ID/github.com/alfredo-garcia/tools:$COMMIT_SHA
+      - --region
+      - northamerica-south1
+      - --platform
+      - managed
+      - --quiet
+
+images:
+  - gcr.io/$PROJECT_ID/github.com/alfredo-garcia/tools:$COMMIT_SHA
+

@@ -6,12 +6,16 @@ import { validateAccess } from './shared/auth.js'
 import { getSchema, getResolvers } from './resolvers.js'
 
 const PORT = Number(process.env.PORT) || 4000
+const CORS_ORIGINS = (process.env.CORS_ORIGINS || '')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean)
 
 async function run() {
   const app = Fastify({ logger: true })
 
   await app.register(cors, {
-    origin: true,
+    origin: CORS_ORIGINS.length > 0 ? CORS_ORIGINS : true,
     credentials: true,
     methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'x-app-access-code'],

@@ -1,7 +1,7 @@
 {
-  "name": "Planner",
-  "short_name": "Planner",
-  "description": "OKRs, tasks, habits, meals and shopping list",
+  "name": "Mosco Planner",
+  "short_name": "Mosco Planner",
+  "description": "OKRs, tareas y hábitos",
   "theme_color": "#f97316",
   "background_color": "#f97316",
   "display": "standalone",
@@ -23,4 +23,3 @@
     }
   ]
 }
-

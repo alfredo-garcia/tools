@@ -13,6 +13,7 @@
   "dependencies": {
     "@tools/shared": "file:../shared",
     "@tools/shared-planner": "file:../shared-planner",
+    "lucide-react": "^0.460.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.4.1",
@@ -21,6 +22,7 @@
   "devDependencies": {
     "@tailwindcss/vite": "^4.0.0",
     "@vitejs/plugin-react": "^5.1.1",
-    "vite": "^7.3.1"
+    "vite": "^7.3.1",
+    "vite-plugin-pwa": "^1.0.3"
   }
 }

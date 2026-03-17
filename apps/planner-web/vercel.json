@@ -1,0 +1,9 @@
+{
+  "rewrites": [
+    { "source": "/favicon.ico", "destination": "/favicon.png" },
+    { "source": "/((?!assets/|favicon\\.png|favicon\\.ico|apple-touch-icon\\.png|mask-icon\\.svg|manifest\\.webmanifest|pwa-192x192\\.png|pwa-512x512\\.png|splash\\.png).*)", "destination": "/index.html" }
+  ],
+  "cleanUrls": true,
+  "trailingSlash": false
+}
+

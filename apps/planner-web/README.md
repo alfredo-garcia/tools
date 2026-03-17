@@ -30,3 +30,11 @@ React SPA for the planner. Uses **@tools/shared**, **@tools/shared-planner**, an
 - `/analysis/okr`, `/analysis/tasks`, `/analysis/habits` — Analysis pages
 - `/settings`
 - `/discovery` — Placeholder (Discovery not in planner-api yet)
+
+## PWA (Vercel)
+
+This app mirrors the `personal-planner` PWA setup via `vite-plugin-pwa`:
+
+- Installable app (manifest + icons)
+- Auto-updating service worker (`registerType: autoUpdate`)
+- SPA routing on Vercel via `vercel.json` rewrites

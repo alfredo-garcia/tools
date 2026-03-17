@@ -11,6 +11,11 @@ steps:
       - gcr.io/$PROJECT_ID/github.com/alfredo-garcia/tools:$COMMIT_SHA
       - ./apps
 
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - gcr.io/$PROJECT_ID/github.com/alfredo-garcia/tools:$COMMIT_SHA
+
   - name: gcr.io/google.com/cloudsdktool/cloud-sdk
     entrypoint: gcloud
     args:

@@ -22,7 +22,7 @@ React SPA for the planner. Uses **@tools/shared**, **@tools/shared-planner**, an
 - `/objectives` — OKRs list: progress bar, objective cards with KR progress, FAB to create objective.
 - `/objectives/:id` — Objective detail: editable card, state buttons, delete, Key Results list with progress, FAB to create KR.
 - `/key-results`, `/key-results/:id` — Key results list and detail (state buttons, delete, linked tasks, FAB to add task).
-- `/meals` — Meals planner: week grid by slot (Breakfast/Lunch/Dinner), “+” per cell to add meal (modal), click meal to edit or delete.
+- `/meals` — Meals planner: week grid by slot (Breakfast/Lunch/Dinner), “+” per cell to add meal (modal). When you pick a recipe, a second modal reviews that recipe’s ingredients and lets you optionally add missing ones to the Shopping List and toggle existing items between Need/Have. You can skip and add the meal only. Click meal to edit or delete.
 - `/shopping` — Shopping list: search, filters (Status, Store, Category), category icons, Need/Have checkbox, FAB to add item.
 - `/recipes` — Recipes: search, meal type and complexity filters, icon by meal type. `/recipes/:id` — Recipe detail with edit mode (Save to persist). (Recipe-ingredients API available: `recipeIngredients` query.)
 - `/habits` — Habits list with KPIs (last 3 days, week, month success %) and overall bar; habit cards. `/habits/:id` — Habit detail with period KPIs and recent history.

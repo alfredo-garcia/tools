@@ -7,7 +7,7 @@
     "start": "node src/main.js",
     "start:mosco": "clear && PORT=4100 npm run start",
     "dev": "node --watch src/main.js",
-    "test": "node --test src/shared/mappers.test.js src/modules/calendar/calendar.resolver.test.js"
+    "test": "node --test src/shared/mappers.test.js src/modules/calendar/calendar.resolver.test.js src/modules/recipe-ingredients/recipeIngredients.resolver.test.js"
   },
   "dependencies": {
     "@tools/planner-db": "file:../planner-db",

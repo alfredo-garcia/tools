@@ -1,5 +1,5 @@
 import path from 'path'
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
@@ -16,12 +16,17 @@ export default defineConfig({
     },
   },
   plugins: [react(), tailwindcss()],
-  server: {
-    proxy: {
-      '/graphql': {
-        target: process.env.VITE_PLANNER_API_URL || 'http://localhost:4000',
-        changeOrigin: true,
+  server: (() => {
+    const env = loadEnv(process.env.NODE_ENV || 'development', process.cwd(), '')
+    const target =
+      env.VITE_PLANNER_API_URL ||
+      process.env.VITE_PLANNER_API_URL ||
+      `http://localhost:${env.API_PORT || process.env.API_PORT || 4000}`
+    return {
+      proxy: {
+        '/api': { target, changeOrigin: true },
+        '/graphql': { target, changeOrigin: true },
       },
-    },
-  },
+    }
+  })(),
 })

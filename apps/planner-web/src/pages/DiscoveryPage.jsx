@@ -6,6 +6,7 @@ import {
   CardList,
   EntityListPage,
   IconMagicBall,
+  IconSearch,
   FilterBar,
   FilterDropdown,
 } from '@tools/shared'
@@ -258,28 +259,31 @@ export function DiscoveryPage() {
     <EntityListPage
       header={<PageHeader title="Discovery" onRefresh={load} loading={loading} />}
       filters={
-        <FilterBar>
-          <FilterDropdown
-            label="Status"
-            summary={statusSummary}
-            options={STATUS_OPTIONS}
-            value={statusFilter}
-            onChange={setStatusFilter}
-          />
-          <div className="flex items-center gap-2">
-            <label htmlFor="discovery-search" className="text-sm text-text-muted shrink-0">
-              Search
-            </label>
+        <div className="space-y-3">
+          <div className="relative w-full max-w-md">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" aria-hidden>
+              <IconSearch size={18} />
+            </span>
             <input
               id="discovery-search"
               type="search"
               placeholder="Name, description, category…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="flex-1 min-w-0 rounded-lg border border-border bg-bg px-3 py-2 text-sm text-text placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/50"
+              className="w-full pl-9 pr-3 py-2 rounded-lg border border-border bg-surface text-text text-sm placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/50"
+              aria-label="Search discovery ideas"
             />
           </div>
-        </FilterBar>
+          <FilterBar>
+            <FilterDropdown
+              label="Status"
+              summary={statusSummary}
+              options={STATUS_OPTIONS}
+              value={statusFilter}
+              onChange={setStatusFilter}
+            />
+          </FilterBar>
+        </div>
       }
       showEmptyState={!loading && filtered.length === 0}
       emptyState={

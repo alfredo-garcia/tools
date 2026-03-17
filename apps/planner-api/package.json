@@ -5,14 +5,17 @@
   "type": "module",
   "scripts": {
     "start": "node src/main.js",
-    "start:mosco": "clear && npm run start",
-    "dev": "node --watch src/main.js"
+    "start:mosco": "clear && PORT=4100 npm run start",
+    "dev": "node --watch src/main.js",
+    "test": "node --test src/shared/mappers.test.js src/modules/calendar/calendar.resolver.test.js"
   },
   "dependencies": {
     "@tools/planner-db": "file:../planner-db",
+    "airtable": "^0.12.2",
     "dotenv": "^16.4.5",
     "fastify": "^4.28.0",
     "@fastify/cors": "^8.5.0",
+    "googleapis": "^154.0.0",
     "mercurius": "^13.0.0"
   }
 }

@@ -7,7 +7,7 @@ import { IconMenu, IconMoreVertical } from './Icons.jsx'
  * Layout: flex row estándar — sidebar en flujo normal, sticky.
  * navItems = [{ to, label, Icon?, aria, desktopOnly?, inMore?, badge? }]
  * - desktopOnly: true → solo sidebar (md+), no en bottom nav.
- * - inMore: true → en mobile solo aparece dentro del submenú "More" (tres puntos).
+ * - inMore: true → en viewports pequeños solo aparece dentro del submenú "More" (tres puntos).
  * - badge: true → muestra un puntito rojo sobre el icono (ej. tareas vencidas).
  *
  * El toggle (hamburguesa) vive como primer ítem del nav para que los iconos
@@ -181,10 +181,10 @@ export function AppShell({ children, navItems = [], title = '', storageKeyPrefix
         </main>
       </div>
 
-      {/* ── Bottom nav: solo mobile ── */}
+      {/* ── Bottom nav: solo en viewports pequeños ── */}
       <nav
         className="app-bottom-nav fixed bottom-0 left-0 right-0 z-30 md:hidden"
-        aria-label="Main navigation (mobile)"
+        aria-label="Navegación principal (viewports pequeños)"
       >
         <div className="app-bottom-nav-inner flex items-stretch justify-around min-h-[5rem] gap-1 px-4 pt-3 pb-3">
           {mainItems.filter((item) => !item.desktopOnly).map(({ to, label, Icon, aria, badge }) => (

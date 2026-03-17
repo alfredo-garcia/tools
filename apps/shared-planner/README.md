@@ -1,6 +1,10 @@
 # @tools/shared-planner
 
-Dominio compartido del planner (tareas, hábitos, OKR, comidas, recetas, compra). Lógica y helpers reutilizables entre **planner-web** y **planner-mobile**, sin depender de una API concreta ni de UI web/móvil.
+Dominio compartido del planner (tareas, hábitos, OKR, comidas, recetas, compra). Lógica y helpers reutilizables para apps web (p. ej. planner-web), sin depender de una API concreta ni de UI.
+
+## Arquitectura
+
+Lógica de negocio compartida para el planner (tareas, hábitos, calendario). **Sin componentes ni estilos.** Para UI las apps usan **@tools/shared** (p. ej. planner-web importa componentes y tokens de shared). Opcional: para adaptadores de campos (Airtable, etc.) puedes usar `field`, `str` de @tools/shared.
 
 ## Estructura
 
@@ -19,7 +23,7 @@ apps/shared-planner/
 
 ## Dependencias
 
-- **peerDependencies**: `react`, `@tools/shared` (para normalización de campos si se usa en adaptadores).
+- **peerDependencies**: `react`, `@tools/shared` (opcional; para normalización de campos en adaptadores, p. ej. Airtable).
 
 ## Exportaciones
 
@@ -41,7 +45,7 @@ apps/shared-planner/
 | `groupHabitsByCategory(habits, options?)` | Agrupa hábitos por categoría; devuelve `[category, habits[]][]`. |
 | `filterTrackingByHabitIds(tracking, habitIds)` | Filtra registros por conjunto de ids de hábito. |
 
-## Uso desde planner-web o personal-planner
+## Uso desde planner-web (o cualquier app web que use @tools/shared)
 
 ```js
 import {
@@ -64,8 +68,3 @@ const statusGroup = getTaskStatusGroup(task, {
   fieldAccessor: (t, ...keys) => str(field(t, ...keys)),
 })
 ```
-
-## Futuro
-
-- Hooks: `useTaskFilters`, `useHabitAnalytics`, `usePlannerWeek`, `useMealsWeek`.
-- Componentes planner-specific (TaskCard, HabitCounters, etc.) que usen átomos de `@tools/shared` y se reimplementen en RN para planner-mobile.

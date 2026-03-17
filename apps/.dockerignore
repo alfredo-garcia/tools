@@ -1,0 +1,10 @@
+# Usado cuando el contexto de build es ./apps (ej. Dockerfile de planner-api)
+planner-api/node_modules
+planner-api/.env
+planner-api/.env.*
+!planner-api/.env.example
+planner-api/.git
+planner-api/coverage
+planner-api/*.log
+planner-db/node_modules
+planner-db/.git

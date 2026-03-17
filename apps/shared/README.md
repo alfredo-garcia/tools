@@ -1,6 +1,10 @@
 # @tools/shared
 
-Paquete compartido de diseño y componentes para las apps del monorepo (template, personal-planner). Incluye **design tokens**, componentes de UI recurrentes y contexto de autenticación.
+Paquete compartido de diseño y componentes para las apps web PWA del monorepo. Incluye **design tokens**, componentes de UI recurrentes y contexto de autenticación.
+
+## Arquitectura
+
+Este paquete es el **design system** para apps web PWA del monorepo. Solo web; stack **HTML semántico + Tailwind v4** con clases tokenizadas. **@tools/shared-planner** contiene la lógica de negocio del planner (tareas, hábitos, calendario) sin UI; para pantallas y componentes las apps usan @tools/shared.
 
 ## Estructura
 
@@ -89,7 +93,7 @@ Los tokens definen colores, tipografía y espaciados de forma semántica. Las ap
 | `LoginScreen`      | Organismo  | Formulario de código de acceso; llama a `POST /api/validate` y guarda en localStorage. |
 | `AppShell`         | Organismo  | Navegación: sidebar (lg+) + bottom nav (< lg). Props: `navItems`, `title`, `storageKeyPrefix`. |
 | `SettingsPage`     | Organismo  | Bloque de Ajustes: apariencia (ThemeToggle) + sesión (logout). Props opcionales: `backTo`, `backLabel`. |
-| `EntityListPage`   | Organismo  | Layout genérico para listas: `header`, `filters`, `summary`, `children`, `emptyState`, `showEmptyState`. |
+| `EntityListPage`   | Organismo  | Layout genérico para listas: `header`, `filters`, `summary`, `children`, `emptyState`, `showEmptyState`. Para páginas con buscador: pasar `filters` con dos filas (fila 1 = buscador, fila 2 = FilterBar con dropdowns). |
 | `EntityDetailPage`| Organismo  | Layout genérico para detalle: `backLink`, `header`, `children`. |
 | `WeekView`         | Organismo  | Vista semanal: `weekDays`, `onPrevWeek`, `onNextWeek`, `renderDayHeader`, `children`. |
 | `ThemeToggle`      | Átomo      | Ciclo sistema / claro / oscuro; persiste en localStorage. |

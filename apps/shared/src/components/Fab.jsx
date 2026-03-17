@@ -1,5 +1,5 @@
 /**
- * Floating Action Button: fixed bottom-right, above bottom nav on mobile.
+ * Floating Action Button: fixed bottom-right, above bottom nav on small viewports.
  * Props: onClick, ariaLabel, optional className, optional variant ('add' | 'close').
  * variant 'close' shows an X icon instead of +.
  */

@@ -71,6 +71,15 @@
  */
 
 /**
+ * @typedef {Object} RecipeIngredientsRepository
+ * @property {() => Promise<Object[]>} list
+ * @property {(id: string) => Promise<Object|null>} getById
+ * @property {(fields: Object) => Promise<Object>} create
+ * @property {(id: string, fields: Object, opts?: { clientLastModified?: string }) => Promise<Object>} update
+ * @property {(id: string) => Promise<void>} delete
+ */
+
+/**
  * @typedef {Object} ShoppingRepository
  * @property {() => Promise<Object[]>} list
  * @property {(id: string) => Promise<Object|null>} getById
@@ -98,6 +107,7 @@
  * @property {MealsRepository} meals
  * @property {RecipesRepository} recipes
  * @property {IngredientsRepository} ingredients
+ * @property {RecipeIngredientsRepository} recipeIngredients
  * @property {ShoppingRepository} shopping
  * @property {DiscoveryRepository} discovery
  */

@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Spinner, PageHeader, WeekView } from '@tools/shared'
+import { Spinner, PageHeader, IconChevronLeft, IconChevronRight } from '@tools/shared'
 import { getWeekDays, getWeekStart } from '@tools/shared'
 import { usePlannerApi } from '../contexts/PlannerApiContext'
+import { AddMealModal } from '../components/AddMealModal'
+import { EditMealModal } from '../components/EditMealModal'
 
 const MEALS_QUERY = `
   query { meals { id mealType date meal lastModified } }
@@ -25,6 +27,8 @@ export function MealsPage() {
   const [recipes, setRecipes] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [addModal, setAddModal] = useState(null)
+  const [editMeal, setEditMeal] = useState(null)
 
   const weekDays = getWeekDaysForOffset(weekOffset)
   const weekLabel = weekDays[0] && weekDays[6] ? `${weekDays[0]} – ${weekDays[6]}` : 'Week'
@@ -68,56 +72,114 @@ export function MealsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Meals" subtitle={weekLabel} onRefresh={load} loading={loading} />
+      <PageHeader title="Meals" onRefresh={load} loading={loading} />
+      <p className="text-sm text-text-muted -mt-4">{weekLabel}</p>
       {error && (
         <p className="text-red-600 dark:text-red-400 text-sm" role="alert">
           {error}
         </p>
       )}
-      <WeekView
-        weekDays={weekDays}
-        onPrevWeek={() => setWeekOffset((o) => o - 1)}
-        onNextWeek={() => setWeekOffset((o) => o + 1)}
-        renderDayHeader={(dayStr) => (
-          <span className="text-sm font-medium text-text truncate block">{dayStr}</span>
-        )}
-      >
-        <div className="mt-4 overflow-x-auto">
-          <table className="w-full border-collapse min-w-[600px]">
-            <thead>
-              <tr className="border-b border-border">
-                <th className="text-left text-xs font-medium text-text-muted p-2 w-24">Slot</th>
-                {weekDays.map((dayStr) => (
-                  <th key={dayStr} className="text-left text-xs font-medium text-text-muted p-2">
-                    {dayStr}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {MEAL_SLOTS.map((slot) => (
-                <tr key={slot} className="border-b border-border">
-                  <td className="p-2 text-sm font-medium text-text">{slot}</td>
-                  {weekDays.map((dayStr) => {
-                    const dayMeals = getMealsForDaySlot(dayStr, slot)
-                    return (
-                      <td key={`${dayStr}-${slot}`} className="p-2 align-top">
-                        <ul className="space-y-1">
-                          {dayMeals.map((m) => (
-                            <li key={m.id} className="text-sm text-text rounded bg-surface px-2 py-1">
-                              {recipesById[m.meal] || m.meal || '(no recipe)'}
-                            </li>
-                          ))}
-                        </ul>
-                      </td>
-                    )
-                  })}
-                </tr>
+      <div className="mt-4 overflow-x-auto">
+        <table className="w-full border-collapse min-w-[600px]">
+          <thead>
+            <tr className="border-b border-border">
+              <th className="w-24 p-2" aria-label="Slot" />
+              {weekDays.map((dayStr, i) => (
+                <th key={dayStr} className="text-left text-xs font-medium text-text-muted p-2">
+                  <span className="flex items-center justify-center gap-1">
+                    {i === 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setWeekOffset((o) => o - 1)}
+                        aria-label="Previous week"
+                        className="shrink-0 p-1 rounded-lg text-text-muted hover:bg-border hover:text-text"
+                      >
+                        <IconChevronLeft size={18} />
+                      </button>
+                    )}
+                    <span className="truncate">{dayStr}</span>
+                    {i === 6 && (
+                      <button
+                        type="button"
+                        onClick={() => setWeekOffset((o) => o + 1)}
+                        aria-label="Next week"
+                        className="shrink-0 p-1 rounded-lg text-text-muted hover:bg-border hover:text-text"
+                      >
+                        <IconChevronRight size={18} />
+                      </button>
+                    )}
+                  </span>
+                </th>
               ))}
-            </tbody>
-          </table>
-        </div>
-      </WeekView>
+            </tr>
+          </thead>
+          <tbody>
+            {MEAL_SLOTS.map((slot) => (
+              <tr key={slot} className="border-b border-border">
+                <td className="p-2 text-sm font-medium text-text">{slot}</td>
+                {weekDays.map((dayStr) => {
+                  const dayMeals = getMealsForDaySlot(dayStr, slot)
+                  return (
+                    <td key={`${dayStr}-${slot}`} className="p-2 align-top">
+                      <ul className="space-y-1">
+                        {dayMeals.map((m) => (
+                          <li key={m.id}>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setEditMeal({
+                                  meal: m,
+                                  dateStr: (m.date || '').slice(0, 10),
+                                  mealType: m.mealType,
+                                  recipeName: recipesById[m.meal] || m.meal || '(no recipe)',
+                                })
+                              }
+                              className="w-full text-left text-sm text-text rounded bg-surface px-2 py-1 hover:ring-2 hover:ring-primary/30 transition-shadow"
+                            >
+                              {recipesById[m.meal] || m.meal || '(no recipe)'}
+                            </button>
+                          </li>
+                        ))}
+                        <li>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setAddModal({ dateStr: dayStr, mealType: slot })
+                            }
+                            className="w-full text-sm text-text-muted rounded border border-dashed border-border px-2 py-1 hover:bg-surface hover:text-primary transition-colors"
+                            aria-label={`Add meal for ${dayStr} ${slot}`}
+                          >
+                            +
+                          </button>
+                        </li>
+                      </ul>
+                    </td>
+                  )
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {addModal && (
+        <AddMealModal
+          dateStr={addModal.dateStr}
+          mealType={addModal.mealType}
+          onClose={() => setAddModal(null)}
+          onAdded={load}
+        />
+      )}
+      {editMeal && (
+        <EditMealModal
+          meal={editMeal.meal}
+          dateStr={editMeal.dateStr}
+          mealType={editMeal.mealType}
+          recipeName={editMeal.recipeName}
+          onClose={() => setEditMeal(null)}
+          onUpdated={load}
+          onDeleted={load}
+        />
+      )}
     </div>
   )
 }

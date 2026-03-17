@@ -4,7 +4,7 @@
  *
  * Props:
  * - header: ReactNode (típicamente PageHeader)
- * - filters?: ReactNode (FilterBar + FilterDropdowns)
+ * - filters?: ReactNode. Recomendado: fila 1 = buscador (input full width), fila 2 = FilterBar con FilterDropdowns (icono filtros + filtros).
  * - summary?: ReactNode (KPI bar, StatusProgressBar, etc.)
  * - children: contenido principal (lista de cards, CardList, etc.)
  * - emptyState?: ReactNode (cuando no hay items)

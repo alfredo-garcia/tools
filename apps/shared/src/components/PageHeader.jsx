@@ -5,7 +5,7 @@ import { IconRefresh, IconChevronLeft } from './Icons.jsx'
 /**
  * breadcrumbs: [{ label, to? }] — last = current page (más grande); parents = breadcrumb pequeños.
  * Or title (string). onRefresh: icon spins while loading (usa clase .page-header-refresh-spin en app).
- * Back arrow (mobile only): visible cuando hay ≥ 2 items en breadcrumbs, navega al parent inmediato.
+ * Back arrow (solo en viewports pequeños): visible cuando hay ≥ 2 items en breadcrumbs, navega al parent inmediato.
  */
 export function PageHeader({ title, breadcrumbs, onRefresh, loading }) {
   const [refreshing, setRefreshing] = useState(false)
@@ -26,11 +26,11 @@ export function PageHeader({ title, breadcrumbs, onRefresh, loading }) {
 
   const content = breadcrumbs ? (
     <>
-      {/* Mobile: solo título de la página (vistas de detalle) */}
+      {/* Viewports pequeños: solo título de la página (vistas de detalle) */}
       <h1 className="text-2xl font-bold text-text md:hidden truncate" id="page-header-title">
         {currentLabel}
       </h1>
-      {/* Desktop: breadcrumbs completos */}
+      {/* Viewports md+: breadcrumbs completos */}
       <nav className="hidden md:flex items-baseline gap-1.5 flex-wrap" aria-label="Breadcrumb">
         {breadcrumbs.map((item, i) => {
           const isLast = i === breadcrumbs.length - 1

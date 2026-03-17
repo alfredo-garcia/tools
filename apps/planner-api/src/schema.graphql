@@ -23,6 +23,8 @@ type Habit {
   name: String
   description: String
   frequency: String
+  category: String
+  type: String
   lastModified: String
 }
 
@@ -32,6 +34,19 @@ type HabitTrackingEntry {
   executionDateTime: String
   wasSuccessful: Boolean
   lastModified: String
+}
+
+type CalendarEvent {
+  id: ID!
+  summary: String
+  description: String
+  start: String
+  end: String
+  calendarSlot: Int
+  calendarLabel: String
+  calendarColor: String
+  htmlLink: String
+  location: String
 }
 
 type Objective {
@@ -97,6 +112,17 @@ type Ingredient {
   lastModified: String
 }
 
+type RecipeIngredient {
+  id: ID!
+  recipeId: String
+  ingredientId: String
+  quantity: Float
+  unit: String
+  optionalIngredient: Boolean
+  notes: String
+  lastModified: String
+}
+
 type ShoppingItem {
   id: ID!
   name: String
@@ -139,6 +165,7 @@ type Query {
   habits: [Habit!]!
   habit(id: ID!): Habit
   habitTracking: [HabitTrackingEntry!]!
+  calendarEvents(timeMin: String!, timeMax: String!): [CalendarEvent!]!
   objectives: [Objective!]!
   objective(id: ID!): Objective
   keyResults: [KeyResult!]!
@@ -149,6 +176,8 @@ type Query {
   recipe(id: ID!): Recipe
   ingredients: [Ingredient!]!
   ingredient(id: ID!): Ingredient
+  recipeIngredients: [RecipeIngredient!]!
+  recipeIngredient(id: ID!): RecipeIngredient
   shopping: [ShoppingItem!]!
   shoppingItem(id: ID!): ShoppingItem
   discovery: [DiscoveryIdea!]!

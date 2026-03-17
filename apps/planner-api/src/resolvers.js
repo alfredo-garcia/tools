@@ -7,9 +7,11 @@ import { habitsResolvers } from './modules/habits/habits.resolver.js'
 import { okrResolvers } from './modules/okr/okr.resolver.js'
 import { mealsResolvers } from './modules/meals/meals.resolver.js'
 import { recipesResolvers } from './modules/recipes/recipes.resolver.js'
+import { recipeIngredientsResolvers } from './modules/recipe-ingredients/recipeIngredients.resolver.js'
 import { shoppingResolvers } from './modules/shopping/shopping.resolver.js'
 import { discoveryResolvers } from './modules/discovery/discovery.resolver.js'
 import { summaryResolvers } from './modules/summary/summary.resolver.js'
+import { calendarResolvers } from './modules/calendar/calendar.resolver.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -39,8 +41,10 @@ export function getResolvers() {
     okrResolvers(repos),
     mealsResolvers(repos),
     recipesResolvers(repos),
+    recipeIngredientsResolvers(repos),
     shoppingResolvers(repos),
     discoveryResolvers(repos),
+    calendarResolvers(repos),
     summaryResolvers(repos),
   ])
 }

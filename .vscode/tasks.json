@@ -17,7 +17,7 @@
         "type": "shell",
         "command": "bash", // O 'zsh' si usas esa
         "options": {
-            "cwd": "${workspaceFolder}/apps/personal-planner"
+            "cwd": "${workspaceFolder}/apps/planner-web"
         }
       },
       {
@@ -25,7 +25,7 @@
         "type": "shell",
         "command": "bash",
         "options": {
-          "cwd": "${workspaceFolder}/apps/personal-planner"
+          "cwd": "${workspaceFolder}/apps/planner-api"
         }
       }
     ]

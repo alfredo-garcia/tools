@@ -12,6 +12,14 @@ async function run() {
 
   await app.register(cors, { origin: true })
 
+  app.post('/api/validate', async (request, reply) => {
+    const auth = validateAccess(request)
+    if (!auth.valid) {
+      return reply.status(auth.status).send(auth.body)
+    }
+    return { ok: true }
+  })
+
   app.addHook('preHandler', async (request, reply) => {
     const path = request.url?.split('?')[0] || ''
     if (path !== '/graphql') return

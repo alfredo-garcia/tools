@@ -25,6 +25,8 @@ export function habitFromRecord(r) {
     name: r.Name ?? r['Habit Name'],
     description: r.Description,
     frequency: r.Frequency,
+    category: r.Category,
+    type: r['Habit Type'] ?? r['Habit type'],
     lastModified: r.lastModified,
   }
 }
@@ -114,6 +116,22 @@ export function ingredientFromRecord(r) {
     category: r.Category,
     unit: r.Unit,
     notes: r.Notes,
+    lastModified: r.lastModified,
+  }
+}
+
+export function recipeIngredientFromRecord(r) {
+  if (!r) return null
+  const recipeId = Array.isArray(r.Recipe) ? r.Recipe[0] : r.Recipe
+  const ingredientId = Array.isArray(r.Ingredient) ? r.Ingredient[0] : r.Ingredient
+  return {
+    id: r.id,
+    recipeId: recipeId ?? null,
+    ingredientId: ingredientId ?? null,
+    quantity: r.Quantity ?? null,
+    unit: r.Unit ?? null,
+    optionalIngredient: r['Optional Ingredient'] ?? false,
+    notes: r.Notes ?? null,
     lastModified: r.lastModified,
   }
 }

@@ -1,17 +1,25 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import {
   Spinner,
   PageHeader,
   EntityListPage,
   CardList,
-  Card,
   IconCart,
   IconCheckSquare,
   IconCircle,
+  IconSearch,
+  IconUtensils,
+  IconChickenLeg,
+  IconCake,
+  IconBottle,
+  IconTapa,
+  IconTag,
   FilterBar,
   FilterDropdown,
+  Fab,
 } from '@tools/shared'
 import { usePlannerApi } from '../contexts/PlannerApiContext'
+import { ShoppingItemModal, SHOPPING_CATEGORY_OPTIONS } from '../components/ShoppingItemModal'
 
 const SHOPPING_QUERY = `
   query { shopping { id name nameES category store priority status quantity unit lastModified } }
@@ -29,9 +37,26 @@ const STATUS_OPTIONS = [
   { value: '', label: 'All statuses' },
 ]
 
-function ShoppingCard({ item, onToggleStatus }) {
+const CATEGORY_ICON_MAP = {
+  'Fruits & Vegs': IconUtensils,
+  'Meat & Fish': IconChickenLeg,
+  Frozen: IconCake,
+  Drinks: IconBottle,
+  Snacks: IconTapa,
+  Household: IconTag,
+  Other: IconTag,
+}
+const DEFAULT_CATEGORY_ICON = IconCart
+
+function getCategoryIcon(category) {
+  if (!category) return DEFAULT_CATEGORY_ICON
+  return CATEGORY_ICON_MAP[category] ?? DEFAULT_CATEGORY_ICON
+}
+
+function ShoppingCard({ item, onToggleStatus, onOpenModal }) {
   const title = [item.name, item.nameES].filter(Boolean).join(' — ') || '(untitled)'
   const isHave = item.status === 'Have'
+  const CategoryIcon = getCategoryIcon(item.category)
 
   const handleCheckbox = async (e) => {
     e.stopPropagation()
@@ -44,29 +69,37 @@ function ShoppingCard({ item, onToggleStatus }) {
   }
 
   return (
-    <Card title={title} icon={<IconCart size={20} />}>
-      <div className="flex items-center gap-3 mt-2">
-        <button
-          type="button"
-          onClick={handleCheckbox}
-          className="shrink-0 p-1 rounded-lg hover:bg-border text-text-muted hover:text-text"
-          aria-label={isHave ? 'Mark as need' : 'Mark as have'}
-        >
-          {isHave ? (
-            <IconCheckSquare size={22} className="text-status-done" />
-          ) : (
-            <IconCircle size={22} strokeWidth={2} />
-          )}
-        </button>
-        <div className="flex flex-wrap gap-2 text-sm text-text-muted">
-          {item.category && <span>{item.category}</span>}
-          {item.store && <span>{item.store}</span>}
-          {item.priority && (
-            <span className="px-2 py-0.5 rounded bg-border">{item.priority}</span>
-          )}
+    <button
+      type="button"
+      onClick={() => onOpenModal?.(item)}
+      className="block w-full text-left rounded-xl bg-surface overflow-hidden"
+    >
+      <div className="p-4">
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={handleCheckbox}
+            className="shrink-0 p-1 rounded-lg hover:bg-border text-text-muted hover:text-text"
+            aria-label={isHave ? 'Mark as need' : 'Mark as have'}
+          >
+            {isHave ? (
+              <IconCheckSquare size={22} className="text-status-done" />
+            ) : (
+              <IconCircle size={22} strokeWidth={2} />
+            )}
+          </button>
+          <span className="shrink-0 text-text-muted">
+            <CategoryIcon size={20} />
+          </span>
+          <span className="font-semibold text-text truncate min-w-0">{title}</span>
         </div>
+        {item.store && (
+          <p className="text-sm text-text-muted mt-1 pl-12">
+            {item.store}
+          </p>
+        )}
       </div>
-    </Card>
+    </button>
   )
 }
 
@@ -76,6 +109,11 @@ export function ShoppingPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [statusFilter, setStatusFilter] = useState('Need')
+  const [storeFilter, setStoreFilter] = useState('')
+  const [categoryFilter, setCategoryFilter] = useState([])
+  const [search, setSearch] = useState('')
+  const [modalItem, setModalItem] = useState(null)
+  const [createOpen, setCreateOpen] = useState(false)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -96,35 +134,98 @@ export function ShoppingPage() {
 
   const updateStatus = useCallback(
     async (id, status) => {
-      await graphql(UPDATE_STATUS_MUTATION, {
-        id,
-        input: { status },
-      })
+      await graphql(UPDATE_STATUS_MUTATION, { id, input: { status } })
       setList((prev) => prev.map((i) => (i.id === id ? { ...i, status } : i)))
     },
     [graphql]
   )
 
-  const filtered =
-    statusFilter === ''
-      ? list
-      : list.filter((i) => (i.status || 'Need') === statusFilter)
+  const uniqueStores = useMemo(() => {
+    const stores = [...new Set(list.map((i) => i.store).filter(Boolean))].sort()
+    return stores.map((s) => ({ value: s, label: s }))
+  }, [list])
 
-  const statusSummary = statusFilter ? STATUS_OPTIONS.find((o) => o.value === statusFilter)?.label : 'All statuses'
+  const categoryOptions = useMemo(
+    () => SHOPPING_CATEGORY_OPTIONS.map((c) => ({ value: c, label: c })),
+    []
+  )
+
+  const filtered = useMemo(() => {
+    let result = list
+    if (statusFilter !== '') {
+      result = result.filter((i) => (i.status || 'Need') === statusFilter)
+    }
+    if (storeFilter !== '') {
+      result = result.filter((i) => (i.store || '') === storeFilter)
+    }
+    if (categoryFilter.length > 0) {
+      result = result.filter((i) => categoryFilter.includes(i.category || ''))
+    }
+    if (search.trim()) {
+      const q = search.trim().toLowerCase()
+      result = result.filter(
+        (i) =>
+          (i.name || '').toLowerCase().includes(q) ||
+          (i.nameES || '').toLowerCase().includes(q) ||
+          (i.store || '').toLowerCase().includes(q) ||
+          (i.category || '').toLowerCase().includes(q) ||
+          (i.description || '').toLowerCase().includes(q)
+      )
+    }
+    return result
+  }, [list, statusFilter, storeFilter, categoryFilter, search])
+
+  const statusSummary =
+    statusFilter === '' ? 'All statuses' : STATUS_OPTIONS.find((o) => o.value === statusFilter)?.label
+  const storeSummary = storeFilter === '' ? 'All stores' : storeFilter
+  const categorySummary =
+    categoryFilter.length === 0 ? 'All categories' : categoryFilter.slice(0, 2).join(', ') + (categoryFilter.length > 2 ? '…' : '')
 
   return (
     <EntityListPage
       header={<PageHeader title="Shopping" onRefresh={load} loading={loading} />}
       filters={
-        <FilterBar>
-          <FilterDropdown
-            label="Status"
-            summary={statusSummary}
-            options={STATUS_OPTIONS}
-            value={statusFilter}
-            onChange={setStatusFilter}
-          />
-        </FilterBar>
+        <div className="space-y-3">
+          <div className="relative w-full max-w-md">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none">
+              <IconSearch size={18} />
+            </span>
+            <input
+              type="search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search…"
+              className="w-full pl-9 pr-3 py-2 rounded-lg border border-border bg-surface text-text text-sm"
+              aria-label="Search shopping list"
+            />
+          </div>
+          <FilterBar>
+            <FilterDropdown
+              label="Status"
+              summary={statusSummary}
+              options={STATUS_OPTIONS}
+              value={statusFilter}
+              onChange={setStatusFilter}
+            />
+            {uniqueStores.length > 0 && (
+              <FilterDropdown
+                label="Store"
+                summary={storeSummary}
+                options={uniqueStores}
+                value={storeFilter}
+                onChange={setStoreFilter}
+              />
+            )}
+            <FilterDropdown
+              label="Category"
+              summary={categorySummary}
+              options={categoryOptions}
+              value={categoryFilter}
+              onChange={setCategoryFilter}
+              multi
+            />
+          </FilterBar>
+        </div>
       }
       showEmptyState={!loading && filtered.length === 0}
       emptyState={
@@ -145,9 +246,25 @@ export function ShoppingPage() {
       ) : (
         <CardList>
           {filtered.map((item) => (
-            <ShoppingCard key={item.id} item={item} onToggleStatus={updateStatus} />
+            <ShoppingCard
+              key={item.id}
+              item={item}
+              onToggleStatus={updateStatus}
+              onOpenModal={setModalItem}
+            />
           ))}
         </CardList>
+      )}
+      <Fab onClick={() => setCreateOpen(true)} ariaLabel="Add shopping item" />
+      {createOpen && (
+        <ShoppingItemModal item={null} onClose={() => setCreateOpen(false)} onSaved={load} />
+      )}
+      {modalItem && (
+        <ShoppingItemModal
+          item={modalItem}
+          onClose={() => setModalItem(null)}
+          onSaved={load}
+        />
       )}
     </EntityListPage>
   )

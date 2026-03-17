@@ -25,7 +25,7 @@ export function PlannerApiProvider({ children }) {
       } catch (networkErr) {
         const msg =
           networkErr.message?.includes('Failed to fetch') || networkErr.message?.includes('NetworkError')
-            ? 'Cannot reach planner-api. Is it running? Start it with: cd apps/planner-api && npm start'
+            ? 'API not found. Is planner-api running? Start it with: cd apps/planner-api && npm start. If planner-api runs on another port, restart Vite with: API_PORT=3009 npm run dev (or set VITE_PLANNER_API_URL).'
             : networkErr.message || 'Network error'
         throw new Error(msg)
       }

@@ -12,6 +12,7 @@ export { createAirtableKeyResultsRepository } from './airtable/AirtableKeyResult
 export { createAirtableMealsRepository } from './airtable/AirtableMealsRepository.js'
 export { createAirtableRecipesRepository } from './airtable/AirtableRecipesRepository.js'
 export { createAirtableIngredientsRepository } from './airtable/AirtableIngredientsRepository.js'
+export { createAirtableRecipeIngredientsRepository } from './airtable/AirtableRecipeIngredientsRepository.js'
 export { createAirtableShoppingRepository } from './airtable/AirtableShoppingRepository.js'
 export { createAirtableDiscoveryRepository } from './airtable/AirtableDiscoveryRepository.js'
 
@@ -23,6 +24,7 @@ import { createAirtableKeyResultsRepository } from './airtable/AirtableKeyResult
 import { createAirtableMealsRepository } from './airtable/AirtableMealsRepository.js'
 import { createAirtableRecipesRepository } from './airtable/AirtableRecipesRepository.js'
 import { createAirtableIngredientsRepository } from './airtable/AirtableIngredientsRepository.js'
+import { createAirtableRecipeIngredientsRepository } from './airtable/AirtableRecipeIngredientsRepository.js'
 import { createAirtableShoppingRepository } from './airtable/AirtableShoppingRepository.js'
 import { createAirtableDiscoveryRepository } from './airtable/AirtableDiscoveryRepository.js'
 
@@ -44,6 +46,7 @@ export async function getRepositoriesAsync() {
       { createPostgresMealsRepository },
       { createPostgresRecipesRepository },
       { createPostgresIngredientsRepository },
+      { createPostgresRecipeIngredientsRepository },
       { createPostgresShoppingRepository },
       { createPostgresDiscoveryRepository },
     ] = await Promise.all([
@@ -55,6 +58,7 @@ export async function getRepositoriesAsync() {
       import('./postgres/PostgresMealsRepository.js'),
       import('./postgres/PostgresRecipesRepository.js'),
       import('./postgres/PostgresIngredientsRepository.js'),
+      import('./postgres/PostgresRecipeIngredientsRepository.js'),
       import('./postgres/PostgresShoppingRepository.js'),
       import('./postgres/PostgresDiscoveryRepository.js'),
     ])
@@ -67,6 +71,7 @@ export async function getRepositoriesAsync() {
       meals: createPostgresMealsRepository(),
       recipes: createPostgresRecipesRepository(),
       ingredients: createPostgresIngredientsRepository(),
+      recipeIngredients: createPostgresRecipeIngredientsRepository(),
       shopping: createPostgresShoppingRepository(),
       discovery: createPostgresDiscoveryRepository(),
     }
@@ -91,6 +96,7 @@ export function getRepositories() {
     meals: createAirtableMealsRepository(),
     recipes: createAirtableRecipesRepository(),
     ingredients: createAirtableIngredientsRepository(),
+    recipeIngredients: createAirtableRecipeIngredientsRepository(),
     shopping: createAirtableShoppingRepository(),
     discovery: createAirtableDiscoveryRepository(),
   }

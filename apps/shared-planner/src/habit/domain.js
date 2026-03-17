@@ -1,4 +1,4 @@
-// Habit domain helpers shared by planner web and mobile.
+// Habit domain helpers shared by the planner web app.
 
 // Returns true if a habit tracking record is successful.
 export function isHabitSuccess(record, { fieldAccessor } = {}) {

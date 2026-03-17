@@ -1,6 +1,5 @@
 // Task status helpers for planner domain.
-// These functions are intentionally UI-agnostic so they can be reused
-// from web and mobile front-ends.
+// UI-agnostic so they can be reused from the web app.
 
 // Groups a raw task record into a normalized status bucket.
 // Buckets: 'pending' | 'in_progress' | 'done' | 'other'

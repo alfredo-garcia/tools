@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { useAuth } from '../contexts/AuthContext.jsx'
 
 const AUTH_HEADER = 'Authorization'
+const apiBase = import.meta.env.VITE_PLANNER_API_URL || ''
+const validateUrl = apiBase ? `${apiBase}/api/validate` : '/api/validate'
 
 export function LoginScreen() {
   const { login } = useAuth()
@@ -18,7 +20,7 @@ export function LoginScreen() {
     }
     setLoading(true)
     try {
-      const res = await fetch('/api/validate', {
+      const res = await fetch(validateUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', [AUTH_HEADER]: code.trim() },
         body: JSON.stringify({})

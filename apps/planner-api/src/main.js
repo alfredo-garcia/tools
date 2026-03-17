@@ -12,8 +12,10 @@ async function run() {
 
   await app.register(cors, {
     origin: true,
+    credentials: true,
     methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-app-access-code'],
+    exposedHeaders: ['Content-Type', 'Authorization'],
   })
 
   // Explicit preflight routes to ensure Cloud Run + browser OPTIONS succeed.

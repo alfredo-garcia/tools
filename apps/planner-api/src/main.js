@@ -10,7 +10,15 @@ const PORT = Number(process.env.PORT) || 4000
 async function run() {
   const app = Fastify({ logger: true })
 
-  await app.register(cors, { origin: true })
+  await app.register(cors, {
+    origin: true,
+    methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  })
+
+  // Explicit preflight routes to ensure Cloud Run + browser OPTIONS succeed.
+  app.options('/api/*', async (_, reply) => reply.status(204).send())
+  app.options('/graphql', async (_, reply) => reply.status(204).send())
 
   app.post('/api/validate', async (request, reply) => {
     const auth = validateAccess(request)

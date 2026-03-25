@@ -82,7 +82,7 @@ variable "n8n_generic_timezone" {
 
 variable "n8n_public_url" {
   type        = string
-  description = "Optional. After first apply, set to terraform output n8n_service_url (https://...) and apply again so WEBHOOK_URL/N8N_HOST are set for webhooks."
+  description = "Public https URL of Cloud Run (terraform output n8n_service_url). Required for a working UI: sets WEBHOOK_URL, N8N_EDITOR_BASE_URL, N8N_HOST. Without it, the browser calls https://localhost:5678 and shows Offline / telemetry errors."
   default     = ""
 }
 

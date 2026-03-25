@@ -23,8 +23,8 @@ n8n_timeout_seconds       = 900
 n8n_allow_unauthenticated = true
 n8n_generic_timezone      = "Europe/Madrid"
 
-# After first terraform apply, copy output n8n_service_url here and apply again (webhooks).
-# n8n_public_url = "https://tools-n8n-xxxxx-ew.a.run.app"
+# Copy terraform output n8n_service_url after first deploy. Sets WEBHOOK_URL + N8N_EDITOR_BASE_URL (fixes localhost / Offline in the browser).
+# n8n_public_url = "https://tools-n8n-xxxxx-northamerica-south1.run.app"
 
 neon_api_key        = "napi_xxxxxxxx"
 neon_org_id         = "org-xxxxxxxx"

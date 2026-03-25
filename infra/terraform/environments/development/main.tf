@@ -11,11 +11,18 @@ locals {
   effective_postgres_database = var.manage_neon ? module.neon[0].database_name : var.external_postgres_database
   effective_postgres_user     = var.manage_neon ? module.neon[0].role_name : var.external_postgres_user
 
-  n8n_host_from_url = trimspace(var.n8n_public_url) != "" ? split("/", trimprefix(trimprefix(var.n8n_public_url, "https://"), "http://"))[0] : ""
+  # Trailing slash matches n8n / reverse-proxy examples; avoids SPA calling https://localhost:5678 for /rest/*
+  n8n_public_url_normalized = trimspace(var.n8n_public_url) != "" ? (
+    endswith(trimspace(var.n8n_public_url), "/") ? trimspace(var.n8n_public_url) : "${trimspace(var.n8n_public_url)}/"
+  ) : ""
 
-  n8n_env_from_public_url = trimspace(var.n8n_public_url) != "" ? {
-    WEBHOOK_URL = var.n8n_public_url
-    N8N_HOST    = local.n8n_host_from_url
+  n8n_host_from_url = local.n8n_public_url_normalized != "" ? split("/", trimprefix(trimprefix(local.n8n_public_url_normalized, "https://"), "http://"))[0] : ""
+
+  # N8N_EDITOR_BASE_URL: public editor URL (docs). Required with Cloud Run or browser uses localhost for API/telemetry.
+  n8n_env_from_public_url = local.n8n_public_url_normalized != "" ? {
+    WEBHOOK_URL         = local.n8n_public_url_normalized
+    N8N_EDITOR_BASE_URL = local.n8n_public_url_normalized
+    N8N_HOST              = local.n8n_host_from_url
   } : {}
 }
 
@@ -174,6 +181,17 @@ module "n8n" {
       NODE_ENV                              = "production"
       N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS = "true"
       N8N_PROTOCOL                          = "https"
+      # Cloud Run sits behind Google load balancer; trust X-Forwarded-* for URL generation.
+      N8N_PROXY_HOPS = "1"
+      # HTTPS in browser; required for correct cookies / URLs behind TLS termination.
+      N8N_SECURE_COOKIE = "true"
+      # Stops RudderStack/PostHog trying to POST to /rest/telemetry/proxy (often still resolves to localhost in bundled analytics).
+      N8N_DIAGNOSTICS_ENABLED = "false"
+      # Default is websocket; SSE (/rest/push) often returns 500 behind Cloud Run (long-lived stream + proxy limits).
+      N8N_PUSH_BACKEND = "websocket"
+      # Cloud Run blocks some paths ending in "z" (e.g. GET /healthz never reaches the container; Google returns 404).
+      # Default segment "healthz" breaks the editor heartbeat; use a non-"z" segment (see N8N_ENDPOINT_HEALTH in n8n docs).
+      N8N_ENDPOINT_HEALTH = "liveness"
     },
     local.n8n_env_from_public_url
   )

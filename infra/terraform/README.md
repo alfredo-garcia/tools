@@ -47,7 +47,27 @@ y vuelve a aplicar.
 
 ## URL pública y webhooks
 
-Tras el primer `apply`, copia el output `n8n_service_url` a `n8n_public_url` en `terraform.tfvars` y aplica de nuevo para fijar `WEBHOOK_URL` y `N8N_HOST` en Cloud Run.
+Tras el primer `apply`, copia el output `n8n_service_url` a `n8n_public_url` en `terraform.tfvars` y vuelve a aplicar. Así se fijan `WEBHOOK_URL`, **`N8N_EDITOR_BASE_URL`** y `N8N_HOST`. Sin esto, el navegador sigue usando **`https://localhost:5678`** para `/rest/*`, telemetría y push → UI “Offline” y errores en consola.
+
+También se define `N8N_PROXY_HOPS=1` (Cloud Run detrás del balanceador de Google), `N8N_SECURE_COOKIE=true`, `N8N_DIAGNOSTICS_ENABLED=false` (evita telemetría contra `localhost:5678`; si necesitas “Ask AI” en el nodo Code, pon `true` otra vez), **`N8N_PUSH_BACKEND=websocket`**, y **`N8N_ENDPOINT_HEALTH=liveness`** (Cloud Run no enruta bien el path por defecto `/healthz`; ver sección siguiente). Con **`sse`**, `/rest/push` suele dar **500** en Cloud Run (stream largo + límites del proxy); el código de n8n también desactiva colaboración si el push no es websocket.
+
+### Sigue saliendo `localhost:5678` en la consola
+
+1. Asegúrate de haber ejecutado **`terraform apply`** después de poner `n8n_public_url` y de que Cloud Run tenga esas variables (consola GCP → Cloud Run → revisión del servicio → **Variables y secretos**).
+2. **Hard refresh** del navegador (Ctrl+Shift+R) o ventana de incógnito.
+3. n8n puede haber **guardado la URL de instancia en Postgres** en el primer arranque. Si tras aplicar env sigue mal, en la base Neon revisa la tabla de ajustes / documentación de n8n para `instance` / URL pública, o plantéate un backup de workflows y recrear solo los datos de instancia (operación delicada).
+
+### `GET .../healthz` → 404 (Cloud Run)
+
+[Cloud Run documenta](https://cloud.google.com/run/docs/known-issues#ah) que **no se pueden usar** ciertos paths; entre ellos, **algunos que terminan en `z`**. **`GET /healthz`** (sin más segmentos) **no llega al contenedor**: la respuesta 404 es la página HTML de Google, no n8n. **`/healthz/readiness`** sí puede llegar porque no es exactamente `/healthz`. El editor hace heartbeat a la ruta configurada en **`N8N_ENDPOINT_HEALTH`** (por defecto el segmento `healthz` → `/healthz`). En este repo Terraform fija **`N8N_ENDPOINT_HEALTH=liveness`**, así el heartbeat va a **`/liveness`** y **`/liveness/readiness`**, que no chocan con la restricción. Tras `terraform apply`, nueva revisión de Cloud Run y recarga dura del navegador.
+
+### `GET /rest/push` → 500
+
+Suele ir ligado a **`N8N_PUSH_BACKEND=sse`**. Este proyecto fuerza **`websocket`** (ver arriba). Tras `terraform apply`, recarga la app.
+
+### `Could not resolve undefined` (Vue / `useInjectWorkflowId`)
+
+Suele ser la **SPA** al navegar sin `workflowId` en la ruta (p. ej. transición desde lista vacía). Prueba **crear workflow** desde el botón y abrir el editor con URL completa; si persiste, actualiza la imagen de n8n.
 
 ## GitHub Actions — secretos del repositorio
 

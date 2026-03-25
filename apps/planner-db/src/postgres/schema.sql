@@ -1,6 +1,8 @@
 -- Planner Postgres schema (Neon/compatible). Run once to create tables.
 -- Ids are UUIDs; last_modified for conflict detection.
 
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
 CREATE TABLE IF NOT EXISTS tasks (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   task_name TEXT,
@@ -93,6 +95,20 @@ CREATE TABLE IF NOT EXISTS ingredients (
   notes TEXT,
   last_modified TIMESTAMPTZ DEFAULT NOW()
 );
+
+CREATE TABLE IF NOT EXISTS recipe_ingredients (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  recipe_id UUID NOT NULL REFERENCES recipes(id) ON DELETE CASCADE,
+  ingredient_id UUID NOT NULL REFERENCES ingredients(id) ON DELETE CASCADE,
+  quantity DOUBLE PRECISION,
+  unit TEXT,
+  optional_ingredient BOOLEAN DEFAULT false,
+  notes TEXT,
+  last_modified TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS recipe_ingredients_recipe_id_idx ON recipe_ingredients(recipe_id);
+CREATE INDEX IF NOT EXISTS recipe_ingredients_ingredient_id_idx ON recipe_ingredients(ingredient_id);
 
 CREATE TABLE IF NOT EXISTS shopping_items (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

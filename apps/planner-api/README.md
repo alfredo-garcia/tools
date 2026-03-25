@@ -8,9 +8,17 @@ GraphQL BFF for planner apps. Uses **@tools/planner-db** for data (Airtable by d
 # Required for auth (all GraphQL requests must send this)
 export APP_ACCESS_CODE=your-secret-code
 
-# Optional: Airtable (required for real data)
+# Select data backend
+# - airtable (default): requires Airtable env vars below
+# - postgres: requires DATABASE_URL (Neon)
+export DATA_BACKEND=airtable
+
+# Airtable (required when DATA_BACKEND=airtable)
 export AIRTABLE_PAT=...
 export AIRTABLE_BASE_ID=...
+
+# Neon (required when DATA_BACKEND=postgres)
+export DATABASE_URL=postgresql://...
 
 # Calendar (Google Calendar) — required to list calendar events
 # Tokens are read from Airtable "Settings" table (Key/Value) using CAL_1_*, CAL_2_*, CAL_3_* keys.

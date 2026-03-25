@@ -33,4 +33,49 @@ const tasksRepo = createAirtableTasksRepository()
 
 - `DATA_BACKEND`: `airtable` (default) or `postgres`.
 - **Airtable**: `AIRTABLE_PAT`, `AIRTABLE_BASE_ID`; optional `AIRTABLE_BASE_ID_SHOPPING`, `AIRTABLE_BASE_ID_RECIPES`, and table name env vars (e.g. `AIRTABLE_TABLE_TASKS`, `AIRTABLE_TABLE_HABITS`).
-- **Postgres (Neon)**: `DATABASE_URL` (connection string). Run the schema once: `psql $DATABASE_URL -f src/postgres/schema.sql`.
+- **Postgres (Neon)**: `DATABASE_URL` (connection string).
+  - One-time schema init (includes `pgcrypto` extension):
+
+```bash
+psql "$DATABASE_URL" -f apps/planner-db/src/postgres/schema.sql
+```
+
+## Airtable → Neon migration (seed export/import)
+
+This package includes two scripts to migrate Airtable content into Neon Postgres using **deterministic UUIDv5 ids** derived from Airtable `record.id` values (so linked-record relationships remain intact).
+
+### 1) Export Airtable to seed JSON
+
+Required env:
+- `AIRTABLE_PAT`
+- `AIRTABLE_BASE_ID`
+- `AIRTABLE_BASE_ID_RECIPES`
+- Optional: `AIRTABLE_BASE_ID_SHOPPING` (defaults to `AIRTABLE_BASE_ID`)
+- Optional: `AIRTABLE_TABLE_*` overrides (see `apps/planner-api/.env.example`)
+
+Run:
+
+```bash
+node apps/planner-db/scripts/airtable-export-seed.mjs
+# or choose output dir:
+node apps/planner-db/scripts/airtable-export-seed.mjs --outDir ./apps/planner-db/seeds/my-export
+```
+
+Output:
+- A timestamped folder under `apps/planner-db/seeds/`
+- `meta.json` with counts per table
+
+### 2) Import seed JSON into Neon
+
+Required env:
+- `DATABASE_URL` (Neon connection string)
+
+Run:
+
+```bash
+node apps/planner-db/scripts/neon-import-seed.mjs --seedDir ./apps/planner-db/seeds/<your-export>
+```
+
+Options:
+- `--truncate`: wipes tables (with CASCADE) before importing
+- `--dry-run`: prints what it would do (no DB writes)

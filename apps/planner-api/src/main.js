@@ -3,7 +3,7 @@ import Fastify from 'fastify'
 import cors from '@fastify/cors'
 import mercurius from 'mercurius'
 import { validateAccess } from './shared/auth.js'
-import { getSchema, getResolvers } from './resolvers.js'
+import { getSchema, getResolversAsync } from './resolvers.js'
 
 const PORT = Number(process.env.PORT) || 4000
 const CORS_ORIGINS = (process.env.CORS_ORIGINS || '')
@@ -44,9 +44,10 @@ async function run() {
     request.auth = auth
   })
 
+  const resolvers = await getResolversAsync()
   await app.register(mercurius, {
     schema: getSchema(),
-    resolvers: getResolvers(),
+    resolvers,
     context: (request) => ({ auth: request.auth }),
   })
 

@@ -1,0 +1,79 @@
+# Deploy n8n → Cloud Run (Artifact Registry + gcloud run deploy).
+# Service name and secrets must match Terraform: infra/terraform/environments/development/terraform.tfvars
+
+name: Deploy n8n to Cloud Run
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "n8n/**"
+      - "scripts/cloudrun/**"
+
+  workflow_dispatch:
+    inputs:
+      import_workflows:
+        description: "After deploy, POST workflows from n8n/workflows/ to the API (needs N8N_SERVICE_URL + N8N_API_KEY secrets)"
+        type: boolean
+        default: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+      GCP_REGION: ${{ secrets.GCP_REGION }}
+      GCP_ARTIFACT_REPO: ${{ secrets.GCP_ARTIFACT_REPO }}
+      IMAGE_TAG: ${{ github.sha }}
+      ENVIRONMENT: development
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Target Cloud Run service (development)
+        shell: bash
+        run: |
+          echo "SERVICE_NAME=tools-n8n" >> "$GITHUB_ENV"
+          # Must match n8n_runtime_sa_account_id in Terraform (development tfvars).
+          RUNTIME_SA_ID="${N8N_RUNTIME_SA_ACCOUNT_ID:-tools-n8n-dev-runtime}"
+          echo "CLOUD_RUN_SERVICE_ACCOUNT=${RUNTIME_SA_ID}@${GCP_PROJECT_ID}.iam.gserviceaccount.com" >> "$GITHUB_ENV"
+          # If the service was created only by CI without Terraform, attach secrets (same IDs as Terraform).
+          echo "CLOUD_RUN_SET_SECRETS=DB_POSTGRESDB_PASSWORD=n8n-postgres-password-development:latest,N8N_ENCRYPTION_KEY=n8n-encryption-key-development:latest" >> "$GITHUB_ENV"
+
+      - name: Deploy n8n (Cloud Run)
+        run: |
+          chmod +x scripts/cloudrun/*.sh
+          scripts/cloudrun/deploy-n8n.sh
+
+  # Optional: import workflow JSON files (requires N8N_SERVICE_URL + N8N_API_KEY repo secrets and API access enabled on n8n).
+  import-workflows:
+    needs: deploy
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.import_workflows == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Import workflows via API
+        continue-on-error: true
+        env:
+          N8N_SERVICE_URL: ${{ secrets.N8N_SERVICE_URL }}
+          N8N_API_KEY: ${{ secrets.N8N_API_KEY }}
+        run: |
+          set -euo pipefail
+          for f in n8n/workflows/*.json; do
+            echo "Importing $f"
+            curl -fsS -X POST "${N8N_SERVICE_URL%/}/api/v1/workflows" \
+              -H "Content-Type: application/json" \
+              -H "X-N8N-API-KEY: ${N8N_API_KEY}" \
+              --data-binary "@${f}"
+          done

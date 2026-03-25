@@ -39,3 +39,10 @@ Copia `.env.example` a `.env` y cambia `GENERIC_TIMEZONE` y `TZ` (valores IANA, 
 ## Workflows
 
 Los workflows en JSON están en [workflows/](workflows/). Importa desde n8n: menú ⋮ → Import from File.
+
+## Imagen de producción (GCP / Cloud Run)
+
+El archivo [Dockerfile](Dockerfile) extiende la imagen oficial de n8n (`docker.n8n.io` o `docker.io/n8nio/n8n`) sin el entrypoint de ngrok de desarrollo ([Dockerfile.n8n-local](Dockerfile.n8n-local)). Expone el puerto **5678** (mismo que el proceso por defecto de n8n). En **Google Cloud Run**, Terraform usa `docker.io/n8nio/n8n` porque ese host está permitido como origen de imagen.
+
+- Build desde la raíz del repo: `docker build -f n8n/Dockerfile -t n8n .`
+- En Cloud Run, Postgres y secretos (`N8N_ENCRYPTION_KEY`, contraseña DB) los define Terraform; ver [../infra/terraform/README.md](../infra/terraform/README.md).

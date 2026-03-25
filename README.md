@@ -12,3 +12,5 @@ Las apps del monorepo son **web PWA** únicamente. Dos paquetes compartidos:
 ## n8n
 
 Servidor n8n en local con Docker. Ver [n8n/README.md](n8n/README.md). Arranque: `cd n8n && docker compose up -d`, luego http://localhost:5678.
+
+Despliegue en **GCP (Artifact Registry + Cloud Run) y Neon** con Terraform: [infra/terraform/README.md](infra/terraform/README.md).

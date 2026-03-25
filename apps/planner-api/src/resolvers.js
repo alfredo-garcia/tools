@@ -1,7 +1,7 @@
 import { readFileSync } from 'fs'
 import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
-import { getRepositories } from '@tools/planner-db'
+import { getRepositories, getRepositoriesAsync } from '@tools/planner-db'
 import { tasksResolvers } from './modules/tasks/tasks.resolver.js'
 import { habitsResolvers } from './modules/habits/habits.resolver.js'
 import { okrResolvers } from './modules/okr/okr.resolver.js'
@@ -15,7 +15,15 @@ import { calendarResolvers } from './modules/calendar/calendar.resolver.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
-const repos = getRepositories()
+let reposPromise = null
+
+async function getRepos() {
+  if (!reposPromise) {
+    const backend = process.env.DATA_BACKEND || 'airtable'
+    reposPromise = backend === 'postgres' ? getRepositoriesAsync() : Promise.resolve(getRepositories())
+  }
+  return reposPromise
+}
 
 function mergeResolvers(resolverMaps) {
   const merged = { Query: {}, Mutation: {} }
@@ -34,7 +42,8 @@ export function getSchema() {
   return readFileSync(join(__dirname, 'schema.graphql'), 'utf8')
 }
 
-export function getResolvers() {
+export async function getResolversAsync() {
+  const repos = await getRepos()
   return mergeResolvers([
     tasksResolvers(repos),
     habitsResolvers(repos),
@@ -46,5 +55,21 @@ export function getResolvers() {
     discoveryResolvers(repos),
     calendarResolvers(repos),
     summaryResolvers(repos),
+  ])
+}
+
+// Backwards compatible: Airtable only (sync init)
+export function getResolvers() {
+  return mergeResolvers([
+    tasksResolvers(getRepositories()),
+    habitsResolvers(getRepositories()),
+    okrResolvers(getRepositories()),
+    mealsResolvers(getRepositories()),
+    recipesResolvers(getRepositories()),
+    recipeIngredientsResolvers(getRepositories()),
+    shoppingResolvers(getRepositories()),
+    discoveryResolvers(getRepositories()),
+    calendarResolvers(getRepositories()),
+    summaryResolvers(getRepositories()),
   ])
 }

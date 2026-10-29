@@ -14,6 +14,7 @@
 | Component | Category | Platform | Status | Import path |
 |---|---|---|---|---|
 | `AppShell` | Layout | Web | Beta | `components/layout/AppShell` |
+| `AppFrame` | Layout | Web | Beta | `components/layout/AppFrame` |
 | `BottomNav` / `SideNav` | Navigation | Web | Beta | `components/navigation/Nav` |
 | `Button` | Inputs | Web | Beta | `components/inputs/Button` |
 | `Chip` | Inputs | Web | Beta | `components/inputs/Chip` |
@@ -38,21 +39,28 @@
 | `Toast` | Feedback/Overlays | Web | Beta | `components/overlays/Toast` |
 | `SyncBadge` | Feedback/Overlays | Web | Beta | `components/feedback/SyncBadge` |
 | `EmptyState` | Feedback/Overlays | Web | Beta | `components/feedback/EmptyState` |
+| `TmpComingSoon` | Feedback/Overlays | Web | Beta (temporary) | `components/feedback/TmpComingSoon` |
 | `PersonPicker` | Inputs | Web | Beta | `components/inputs/PersonPicker` |
 
 ## 3. Component Entries
 
 ### AppShell
 - **Category:** Layout. **Import:** `components/layout/AppShell`. **Status:** Beta.
-- **Description:** page frame with header slot, scrolling content and the navigation (bottom bar on mobile, sidebar on desktop). Shows `SyncBadge` when offline.
-- **Props:** `title: string`, `action?: ReactNode`, `children`.
-- **Notes:** one per page; pages never render their own nav.
+- **Description:** page frame of the recipe list: title, `SyncBadge`, refresh button, pull-to-refresh and content. It does not contain the navigation (that is `AppFrame`).
+- **Props:** `title: string`, `children`.
+- **Notes:** used by the recipe list only; other sections render their own content inside `AppFrame`.
+
+### AppFrame
+- **Category:** Layout. **Import:** `components/layout/AppFrame`. **Status:** Beta (feature `my-food-manager/006`).
+- **Description:** client frame in the root layout that holds the main navigation around every screen: `BottomNav` below 640px (not rendered while a recipe detail is open) and `SideNav` from 640px, plus the content region. Keeps the sidebar choice on the device (key `sidebar-expanded`).
+- **Props:** `children`.
+- **Rules:** destinations come from `lib/domain/navigation.ts` (`DESTINATIONS`, `currentDestination`, `sidebarExpanded`, `showBottomNav`); pages never render their own navigation.
 
 ### BottomNav / SideNav (`Nav`)
 - **Category:** Navigation. **Import:** `components/navigation/Nav`. **Status:** Beta.
-- **Description:** the four destinations (Inicio, Recetas, Lista, Despensa) with lucide icons; current item uses `aria-current="page"` and `color.primary.500`.
-- **Props:** `items: {href, label, icon}[]`, `current: string`.
-- **A11y:** items are links, min 44px, label always visible.
+- **Description:** the four destinations (Recetas, Plan, Despensa, Perfil) with lucide icons (`ChefHat`, `CalendarDays`, `Refrigerator`, `User`). `BottomNav` (below 640px): fixed bar, icon above label, min height 64px, bottom safe-area inset respected; the current item has `aria-current="page"`, `color.primary.500`, a heavier icon and a 3px top bar. `SideNav` (from 640px): sticky, full height, 72px collapsed (icons only, labels visually hidden but kept for assistive technology) or 224px expanded; a brand row with the PWA icon and "My Food", and a collapse/expand button at the bottom (`aria-expanded`, label "Contraer menú" / "Expandir menú").
+- **Props:** both: `items: Destination[]` (`id`, `href`, `label`), `currentId: DestinationId | null`; `SideNav` also `expanded: boolean`, `onToggle()`.
+- **A11y:** `<nav aria-label="Principal">`, items are links, min 44px, label always visible in `BottomNav`.
 
 ### Button
 - **Category:** Inputs. **Import:** `components/inputs/Button`. **Status:** Beta.
@@ -151,16 +159,21 @@
 - **SyncBadge props:** `status: "offline" | "pending" | "synced"`, `pendingCount?: number`. Offline/pending use `color.warning.500`, synced uses lime.
 - **EmptyState props:** `emoji`, `title`, `hint?`, `action?: {label, onClick}`.
 
+### TmpComingSoon
+- **Category:** Feedback/Overlays. **Import:** `components/feedback/TmpComingSoon`. **Status:** Beta, temporary until each section has its own content.
+- **Description:** centered placeholder for a section without content: a 72px circle with the section icon, the title (`heading-1`) and "Próximamente" in `color.text.muted`. No actions.
+- **Props:** `icon: LucideIcon`, `title: string`.
+
 ### PersonPicker
 - **Props:** `people: {id, name}[]`, `current`, `onChange`. Round avatar button in the header opening a `Sheet` with the household members; stores choice in the device.
 
 ## 4. Temporary / Not-Yet-Formalized Components
-None. The components introduced by feature `my-food-manager/002` (recipe detail) are registered above; the prototype names `TmpRecipeDetailLayer`, `TmpDetailBar`, `TmpCollapsibleSection`, `TmpStaticChip` and the info/ingredient/step lists in its UX Flow map to `DetailLayer`, `CollapsibleSection`, `TagChip` and the `RecipeDetail` sections.
+`TmpComingSoon` (feature `my-food-manager/006`) is registered above and is removed when Plan, Despensa and Perfil have their own content. The components introduced by feature `my-food-manager/002` (recipe detail) are registered above; the prototype names `TmpRecipeDetailLayer`, `TmpDetailBar`, `TmpCollapsibleSection`, `TmpStaticChip` and the info/ingredient/step lists in its UX Flow map to `DetailLayer`, `CollapsibleSection`, `TagChip` and the `RecipeDetail` sections.
 
 ## 5. Web / React Native Parity Notes
 Not applicable (web only).
 
 ## 6. Versioning
-- **Last updated:** 2026-10-29 (responsive layout: DetailLayer modes, RecipeLibrary, RecipeLink props; added FilterChip, FilterOptions, RecipeFilters, useListReorder; recipe detail components; `RecipePhoto` props corrected to the implementation)
+- **Last updated:** 2026-10-29 (main navigation of feature `my-food-manager/006`: `AppFrame`, `BottomNav` / `SideNav` rewritten, `TmpComingSoon`, `AppShell` corrected; earlier: responsive layout: DetailLayer modes, RecipeLibrary, RecipeLink props; added FilterChip, FilterOptions, RecipeFilters, useListReorder; recipe detail components; `RecipePhoto` props corrected to the implementation)
 - **Owner:** Al
 - Initial registry, all entries Beta pending implementation.

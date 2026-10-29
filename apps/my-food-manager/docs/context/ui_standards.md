@@ -5,6 +5,7 @@
 > Reference render: `prototypes/style-guide.html` (clickable approximation; tokens below are authoritative)
 
 ## 1. Brand Voice & Tone
+- **Name:** the app is called "My Food" in everything the user sees (sidebar, page titles, PWA). "My Food Manager" is the project and workspace name only.
 - **Personality:** appetizing, direct, warm, quick. Nothing corporate.
 - **Voice in UI copy:** Spanish (Spain), second person informal, short. Good: "Te faltan 3 ingredientes". Bad: "Se han detectado ingredientes no disponibles en su despensa".
 - **What to avoid:** exclamation-heavy cheer, jokes in error messages, English strings in the UI, long explanations. Errors say what happened and what to do next ("Sin conexión. Se guardará al volver").
@@ -83,7 +84,7 @@ Aisle headers use caption, uppercase, 800 weight, +0.06em tracking.
 ## 9. Platform Conventions
 Web only (responsive PWA, mobile-first).
 - **Interaction model:** touch first. No hover-only affordances; anything revealed on hover (desktop) must be always visible on touch.
-- **Navigation container:** mobile: bottom tab bar (Inicio, Recetas, Lista, Despensa). Desktop (>1024px): the same four destinations as a left sidebar.
+- **Navigation container:** four destinations, always in this order: Recetas (`/`), Plan (`/plan`), Despensa (`/ingredients`, which will hold the pantry and the shopping list as tabs) and Perfil (`/profile`). Small (<640px): fixed bottom bar with icon and label, hidden while a recipe detail is open. Medium and large (>=640px): left sidebar, collapsible (icons only, 72px) or expanded (icons and text, 224px); starts expanded on large and collapsed on medium; the user's choice is stored on the device and applies to both. The current destination is marked with `aria-current="page"`, `color.primary.500` and a heavier icon stroke. The sidebar brand is the PWA icon (pot with steam) and the name "My Food". Sections without content show a centered icon, the section title and "Próximamente".
 - **Overlays:** small: bottom sheet for quick actions (rate, pick); medium: centered modal; large: side panel for the same content. The recipe detail is full screen on small, a modal (max 720px) on medium and a panel beside the list on large. Full-screen takeover only for the cook view.
 - **Gestures:** horizontal scroll for chip rows; pull-to-refresh triggers a Drive sync; no other custom gestures in the MVP.
 - **Offline:** an offline badge appears at the top of every screen when disconnected; pending changes are counted; never block reads.
@@ -102,6 +103,6 @@ Web only (responsive PWA, mobile-first).
 - Don't add a raw hex color in components; add a token here first.
 
 ## 12. Versioning
-- **Last updated:** 2026-10-28
+- **Last updated:** 2026-10-29 (§9 navigation container replaced by the four-destination navigation of feature `my-food-manager/006`; user-facing name "My Food")
 - **Owner:** Al
-- Initial version.
+- Initial version 2026-10-28.

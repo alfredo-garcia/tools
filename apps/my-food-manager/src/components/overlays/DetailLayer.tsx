@@ -23,7 +23,7 @@ const FOCUSABLE = "a[href], button:not([disabled]), [tabindex]:not([tabindex='-1
 /**
  * Full screen below 1024 px, large modal above it. Owns the top bar (back/close and the compact
  * title that appears once the in-body `[data-detail-title]` scrolls under the bar), focus trap,
- * Esc/backdrop close and the page scroll lock.
+ * Esc/backdrop close and the page scroll lock. In the desktop modal the title is always in the bar.
  */
 export function DetailLayer({
   title,
@@ -111,9 +111,10 @@ export function DetailLayer({
 
   const compactTitle = (
     <div
-      aria-hidden
+      aria-hidden={!isDesktop}
+      title={title}
       className={`min-w-0 flex-1 truncate text-base font-bold transition duration-150 ${
-        compact ? "translate-y-0 opacity-100" : "translate-y-1 opacity-0"
+        compact || isDesktop ? "translate-y-0 opacity-100" : "translate-y-1 opacity-0"
       }`}
     >
       {title}

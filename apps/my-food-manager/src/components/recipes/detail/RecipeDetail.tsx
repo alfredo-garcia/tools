@@ -24,7 +24,7 @@ function RecipeContent({ recipe, library }: { recipe: Recipe; library: Library }
         className="aspect-video w-full"
       />
       <div className="mx-auto w-full max-w-3xl px-4 pt-4 pb-10">
-        <h1 data-detail-title className="text-2xl leading-[1.15] font-extrabold">
+        <h1 data-detail-title className="text-2xl leading-[1.15] font-extrabold lg:hidden">
           {recipe.title}
         </h1>
         <InfoSection recipe={recipe} library={library} />

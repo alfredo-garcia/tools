@@ -1,14 +1,20 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { AppShell } from "@/components/layout/AppShell";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { Button } from "@/components/inputs/Button";
 import { RecipePhoto } from "@/components/recipes/RecipePhoto";
 import { categoryLabel } from "@/lib/domain/categories";
 import { useLibrary } from "@/lib/offline/use-library";
+import { RecipeDetail } from "@/components/recipes/detail/RecipeDetail";
+import { recipeIdFromPath } from "@/components/recipes/detail/use-detail-navigation";
+import { RecipeLink } from "@/components/recipes/RecipeLink";
 
-/** Minimal proof screen for the library (feature my-food-manager/001); browse UI comes with backlog #2. */
-export default function Home() {
+/** Minimal proof screen for the library (feature my-food-manager/001); browse UI comes with backlog #2. Rows open the recipe detail (feature my-food-manager/002). */
+export function RecipeLibrary() {
+  // A recipe detail (`/recipes/<id>`) renders over the list, which stays mounted to keep its scroll.
+  const detailId = recipeIdFromPath(usePathname());
   const { hydrated, library, status, warnings, storageOk, refresh } = useLibrary();
 
   let content: React.ReactNode;
@@ -48,22 +54,24 @@ export default function Home() {
         </p>
         <ul className="flex flex-col gap-2">
           {library.recipes.map((r) => (
-            <li
-              key={r.id}
-              className="flex items-center gap-3 rounded-md border border-border bg-surface-1 p-2 shadow-elevation-1"
-            >
-              <RecipePhoto
+            <li key={r.id}>
+              <RecipeLink
                 recipeId={r.id}
-                photoVersion={r.photoVersion}
-                category={r.category}
-                className="size-14 shrink-0 rounded-sm"
-              />
-              <div className="min-w-0">
-                <div className="truncate font-semibold">{r.title}</div>
-                <div className="text-xs text-text-muted">
-                  {categoryLabel(library.vocab.categories, r.category)}
+                className="flex min-h-14 items-center gap-3 rounded-md border border-border bg-surface-1 p-2 shadow-elevation-1"
+              >
+                <RecipePhoto
+                  recipeId={r.id}
+                  photoVersion={r.photoVersion}
+                  category={r.category}
+                  className="size-14 shrink-0 rounded-sm"
+                />
+                <div className="min-w-0">
+                  <div className="truncate font-semibold">{r.title}</div>
+                  <div className="text-xs text-text-muted">
+                    {categoryLabel(library.vocab.categories, r.category)}
+                  </div>
                 </div>
-              </div>
+              </RecipeLink>
             </li>
           ))}
         </ul>
@@ -76,5 +84,12 @@ export default function Home() {
     );
   }
 
-  return <AppShell title="Recetas">{content}</AppShell>;
+  return (
+    <>
+      <div inert={detailId !== undefined}>
+        <AppShell title="Recetas">{content}</AppShell>
+      </div>
+      {detailId !== undefined && <RecipeDetail id={detailId} />}
+    </>
+  );
 }

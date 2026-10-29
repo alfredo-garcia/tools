@@ -35,14 +35,6 @@ const SHORT_UNIT: Record<string, string> = { g: "g", kg: "kg", ml: "ml", l: "l" 
 export const findRecipe = (library: Library, id: string): Recipe | undefined =>
   library.recipes.find((r) => r.id === id);
 
-/** prep + cook + rest, missing parts as 0; undefined when the recipe has no time data at all. */
-export function totalMinutes(time: Recipe["time"]): number | undefined {
-  if (!time) return undefined;
-  const { prep, cook, rest } = time;
-  if (prep === undefined && cook === undefined && rest === undefined) return undefined;
-  return (prep ?? 0) + (cook ?? 0) + (rest ?? 0);
-}
-
 /** "25 min" under an hour, "1 h 30 min" or "2 h" from an hour up. */
 export function formatMinutes(min: number | undefined): string {
   if (min === undefined) return MISSING;

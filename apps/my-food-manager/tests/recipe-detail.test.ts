@@ -10,8 +10,8 @@ import {
   notesView,
   servingsLabel,
   tagLabels,
-  totalMinutes,
 } from "@/lib/domain/recipe-detail";
+import { totalMinutes } from "@/lib/domain/filters";
 import { buildSnapshot } from "@/lib/domain/snapshot";
 import type { Library, Recipe } from "@/lib/schema";
 import { fixtureDrive } from "./helpers";

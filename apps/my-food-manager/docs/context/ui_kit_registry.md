@@ -18,6 +18,10 @@
 | `Button` | Inputs | Web | Beta | `components/inputs/Button` |
 | `Chip` | Inputs | Web | Beta | `components/inputs/Chip` |
 | `SearchInput` | Inputs | Web | Beta | `components/inputs/SearchInput` |
+| `FilterChip` | Inputs | Web | Beta | `components/inputs/FilterChip` |
+| `FilterOptions` | Inputs | Web | Beta | `components/inputs/FilterOptions` |
+| `RecipeFilters` | Data Display | Web | Beta | `components/recipes/RecipeFilters` |
+| `useListReorder` | Data Display (hook) | Web | Beta | `components/recipes/use-list-reorder` |
 | `RecipeTile` | Data Display | Web | Beta | `components/recipes/RecipeTile` |
 | `RecipePhoto` | Data Display | Web | Beta | `components/recipes/RecipePhoto` |
 | `TagChip` | Data Display | Web | Beta | `components/recipes/TagChip` |
@@ -59,6 +63,27 @@
 - **Category:** Inputs. **Import:** `components/inputs/Chip`. **Status:** Beta.
 - **Props:** `pressed: boolean`, `tone?: "default" | "lime"`, `icon?: ReactNode`, `onToggle`.
 - **Guidance:** quick filters in a horizontally scrolling row; `aria-pressed`; min height 44px.
+
+### FilterChip
+- **Category:** Inputs. **Import:** `components/inputs/FilterChip`. **Status:** Beta (feature `my-food-manager/003`).
+- **Description:** dropdown-style filter trigger. Idle shows only the filter name with a chevron; active shows the chosen value in a soft-tinted chip (`primary-500` at 15% fill + border) with an "x" that clears it. Differs from `Chip` (a plain on/off toggle).
+- **Props:** `label: string`, `value?: string` (set = active), `open: boolean`, `disabled?: boolean`, `onToggle`, `onClear`.
+- **A11y:** `aria-expanded`, `aria-haspopup="listbox"`; the "x" is its own 44px button labelled "Quitar filtro <label>".
+
+### FilterOptions
+- **Category:** Inputs. **Import:** `components/inputs/FilterOptions`. **Status:** Beta.
+- **Description:** listbox of pills for one filter, each with its recipe count; selected shows a check, options with count 0 are disabled.
+- **Props:** `label`, `options: {value, label, count}[]`, `selected?: string`, `onSelect(value)`. Empty list shows "Sin opciones".
+
+### RecipeFilters
+- **Category:** Data Display (assembly). **Import:** `components/recipes/RecipeFilters`. **Status:** Beta.
+- **Description:** the six recipe filters (Categoría, Tiempo, Dieta, Cocina, Dificultad, Proteína) in a horizontal scrolling row, the options panel of the open one below it, and the "N de M recetas" count with "Limpiar".
+- **Props:** `library: Pick<Library, "recipes" | "vocab">`, `state: FilterState`, `onChange(state)`, `shown: number`. Logic lives in `lib/domain/filters.ts`.
+
+### useListReorder
+- **Category:** hook. **Import:** `components/recipes/use-list-reorder`. **Status:** Beta.
+- **Description:** FLIP animation for a vertical list. Children carry `data-flip-key`; survivors slide to their new position, new ones fade in. Disabled under `prefers-reduced-motion`.
+- **Usage:** `const ref = useListReorder<HTMLUListElement>(ids.join("|"))` on a `relative` container.
 
 ### SearchInput
 - **Props:** `value`, `onChange`, `placeholder`, `error?: string`. Pill input with search icon; focus ring; error state with message below.
@@ -129,6 +154,6 @@ None. The components introduced by feature `my-food-manager/002` (recipe detail)
 Not applicable (web only).
 
 ## 6. Versioning
-- **Last updated:** 2026-10-29 (recipe detail components; `RecipePhoto` props corrected to the implementation)
+- **Last updated:** 2026-10-29 (added FilterChip, FilterOptions, RecipeFilters, useListReorder; recipe detail components; `RecipePhoto` props corrected to the implementation)
 - **Owner:** Al
 - Initial registry, all entries Beta pending implementation.

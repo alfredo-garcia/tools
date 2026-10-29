@@ -11,8 +11,8 @@ import {
   formatMinutes,
   servingsLabel,
   tagLabels,
-  totalMinutes,
 } from "@/lib/domain/recipe-detail";
+import { totalMinutes } from "@/lib/domain/filters";
 import type { Library, Recipe } from "@/lib/schema";
 import { CollapsibleSection } from "./CollapsibleSection";
 

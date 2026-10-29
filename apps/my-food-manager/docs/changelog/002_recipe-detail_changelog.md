@@ -40,6 +40,5 @@ The PRD was updated to match both rows before merge; they are recorded here so t
 
 ## Open Questions / Follow-Ups
 
-1. Opening the address of a recipe never visited, directly and with no connection, is not covered; it depends on the service worker having that page cached.
-2. Not verified: offline use on a real device, a production build, and pull-to-refresh behavior on a real touch screen.
-3. Mass and volume units are shown abbreviated and other units pluralized, instead of the raw vocabulary label ("gramos").
+1. Verified by the user after merge: opening a recipe address directly with no connection, a production build, offline use on a real device and pull-to-refresh on a real touch screen all work.
+2. Mass and volume units are shown abbreviated and other units pluralized, instead of the raw vocabulary label ("gramos").

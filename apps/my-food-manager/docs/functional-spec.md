@@ -236,7 +236,7 @@ Filtering the recipe list and reading a recipe. Everything works from the stored
 - **Goal / trigger:** read a recipe and return to where you were.
 - **Screens involved (in sequence):** SCR-library-list → SCR-recipe-detail → (back, close, Esc, backdrop or device back gesture) → SCR-library-list.
 - **Business rules governing the flow:** each recipe has its own address, `/recipes/<id>`. Opening from the list or from an ingredient link needs no network. Closing goes back one step; a detail opened directly closes to the list, never out of the app. The list keeps its scroll position and cannot be used while the detail is open.
-- **Edge cases & error handling:** an unknown address shows the not-found state. If a sync removes the open recipe, the detail switches to not found. Opening the address of a recipe never visited, directly and with no connection, is not covered.
+- **Edge cases & error handling:** an unknown address shows the not-found state. If a sync removes the open recipe, the detail switches to not found. Opening a recipe address directly with no connection works.
 - **Source:** `002_recipe-detail_prd.md` (US-1, US-2, §10).
 
 #### FLW-filter-recipes Filter the list

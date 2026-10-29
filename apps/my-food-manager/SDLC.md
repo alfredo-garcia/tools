@@ -32,9 +32,9 @@
 - slug_case: kebab-case
 
 ## Phase 0
-- product_vision: approved (2026-10-28)
-- tech_foundations: approved (2026-10-28)
-- ui_foundations: approved (2026-10-28)
+- product_vision: approved (2026-10-29)           # v2, stage 2
+- tech_foundations: review needed (2026-10-29)   # vision v2 adds plan/pantry data and writes
+- ui_foundations: approved (2026-10-29)           # ui_standards §9 updated for feature 006
 
 ## Notes
 - Data source: Google Drive folder `food` (local mirror at ~/knowledge-base/food), contract in food/_system/schema.md (recipes schema 3, ingredients, pantry, per-user reviews).

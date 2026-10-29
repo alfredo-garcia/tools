@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>My Food Manager — Prototipo 005 Buscador de recetas</title>
+<style>
+/* Tokens: ui_standards §2-§6 (same names as src/app/globals.css) */
+:root{
+  --color-bg:#15130F; --color-surface-1:#1F1C17; --color-surface-2:#2A2620; --color-border:#38332B;
+  --color-text:#F6EFE4; --color-text-muted:#A99F90;
+  --color-primary-500:#FF7A45; --color-primary-contrast:#15130F; --color-primary-soft:rgba(255,122,69,.16);
+  --cat-breakfast:#F2C14E; --cat-starters:#F28B6B; --cat-soups:#E0A458; --cat-salads:#7BD88F; --cat-mains:#FF7A45;
+  --cat-sides:#B7E04A; --cat-sauces:#E4572E; --cat-breads:#D9A66B; --cat-desserts:#F58FB5; --cat-drinks:#6FC3E8; --cat-unclassified:#A99F90;
+  --radius-sm:10px; --radius-md:18px; --radius-full:999px;
+  --elevation-1:0 1px 2px rgba(0,0,0,.4);
+  --focus:0 0 0 3px rgba(255,122,69,.55);
+  --font:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+:root[data-theme="light"]{
+  --color-bg:#FBF7F1; --color-surface-1:#FFFFFF; --color-surface-2:#F3EDE3; --color-border:#E4DACB;
+  --color-text:#1E1A14; --color-text-muted:#6B6254;
+  --color-primary-500:#C2410C; --color-primary-contrast:#FFFFFF; --color-primary-soft:rgba(194,65,12,.1);
+  --elevation-1:0 1px 2px rgba(60,40,10,.12); --focus:0 0 0 3px rgba(194,65,12,.4);
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--color-bg);color:var(--color-text);font:400 16px/1.5 var(--font);display:flex;flex-direction:column}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+:focus-visible{outline:none;box-shadow:var(--focus)}
+svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+svg.i.sm{width:14px;height:14px}
+
+/* Prototype-only toolbar */
+.proto{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;padding:8px 16px;background:var(--color-surface-2);border-bottom:1px solid var(--color-border);font-size:12px;color:var(--color-text-muted)}
+.proto b{color:var(--color-text)}
+.proto .seg{display:inline-flex;border:1px solid var(--color-border);border-radius:var(--radius-full);overflow:hidden}
+.proto .seg button{padding:4px 12px;font-size:12px;font-weight:600}
+.proto .seg button[aria-pressed="true"]{background:var(--color-primary-500);color:var(--color-primary-contrast)}
+.proto a{color:var(--color-primary-500)}
+.stage{flex:1;min-height:0;display:flex;justify-content:center;background:var(--color-bg)}
+.frame{position:relative;width:100%;overflow:hidden;background:var(--color-bg)}
+.frame.phone{width:390px;margin:12px 0;border:8px solid #000;border-radius:36px;max-height:820px;align-self:center;height:calc(100% - 24px)}
+.frame.col{width:400px;border-left:1px solid var(--color-border);border-right:1px solid var(--color-border)}
+.page{position:absolute;inset:0;overflow:auto}
+
+/* AppShell + list (SCR-library-list) */
+.shell{max-width:720px;margin:0 auto;padding:16px}
+.frame.col .shell{max-width:none}
+.shell h1{font:800 24px/1.15 var(--font);margin:0 0 12px}
+
+/* SearchInput (registry, Beta) extended with the clear button */
+.search{position:relative;margin:0 0 12px}
+.search .lead{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--color-text-muted);pointer-events:none}
+.search input{width:100%;min-height:48px;padding:0 52px 0 44px;border-radius:var(--radius-full);border:1px solid var(--color-border);background:var(--color-surface-2);color:var(--color-text);font:500 16px/1.3 var(--font);appearance:none}
+.search input::placeholder{color:var(--color-text-muted)}
+.search input::-webkit-search-cancel-button{display:none}
+.search input:focus{outline:none;border-color:var(--color-primary-500);box-shadow:var(--focus)}
+.search .clear{position:absolute;right:2px;top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:var(--radius-full);display:grid;place-items:center;color:var(--color-text-muted)}
+.search .clear:hover{color:var(--color-text);background:var(--color-surface-1)}
+.search .clear[hidden]{display:none}
+
+/* Filters (feature 003, unchanged) */
+.fchips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 8px}
+.fchip{display:inline-flex;align-items:center;min-height:44px;border:1px solid var(--color-border);background:var(--color-surface-2);border-radius:var(--radius-full);font:600 14px/1.3 var(--font);overflow:hidden}
+.fchip button{min-height:44px;padding:0 12px;display:inline-flex;align-items:center;gap:4px}
+.fchip.active{border-color:var(--color-primary-500);background:var(--color-primary-soft)}
+.fchip.active .fx{padding:0 12px 0 0}
+.fopts{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px;padding:12px;background:var(--color-surface-1);border:1px solid var(--color-border);border-radius:var(--radius-md);box-shadow:var(--elevation-1)}
+.fopt{min-height:44px;padding:0 14px;border-radius:var(--radius-full);border:1px solid var(--color-border);background:var(--color-surface-2);font:600 14px/1.3 var(--font)}
+.fopt[aria-selected="true"]{border-color:var(--color-primary-500);background:var(--color-primary-soft)}
+.fopt:disabled{opacity:.4;cursor:not-allowed}
+.fopt small{color:var(--color-text-muted);font-weight:500;margin-left:4px}
+.fbar{display:flex;align-items:center;justify-content:space-between;margin:0 0 12px;font-size:14px;color:var(--color-text-muted)}
+.fbar button{color:var(--color-primary-500);font-weight:700;min-height:44px;padding:0 8px}
+
+/* Rows + TmpResultGroup */
+.list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.row{display:flex;align-items:center;gap:12px;width:100%;text-align:left;min-height:56px;padding:8px;background:var(--color-surface-1);border:1px solid var(--color-border);border-radius:var(--radius-md);box-shadow:var(--elevation-1);text-decoration:none;color:inherit}
+.row .meta{min-width:0}.row .t{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.row .c{font-size:12px;color:var(--color-text-muted)}
+.row .hit{font-size:12px;color:var(--color-primary-500);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.photo{display:grid;place-items:center;flex:none;overflow:hidden;width:56px;height:56px;border-radius:var(--radius-sm)}
+.photo .emo{font-size:24px}
+.group{margin:0 0 20px}
+.group>h2{margin:0 0 8px;font:800 12px/1.35 var(--font);text-transform:uppercase;letter-spacing:.06em;color:var(--color-text-muted)}
+.group>h2 b{color:var(--color-text)}
+
+/* States */
+.state{display:grid;place-items:center;text-align:center;padding:40px 24px;gap:8px}
+.state .emo{font-size:48px}.state h2{margin:0;font:700 18px/1.25 var(--font)}.state p{margin:0;color:var(--color-text-muted)}
+.state .acts{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 24px;border-radius:var(--radius-full);background:var(--color-primary-500);color:var(--color-primary-contrast);font-weight:700;margin-top:8px}
+.btn.sec{background:var(--color-surface-2);color:var(--color-text);border:1px solid var(--color-border)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.toast{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);background:var(--color-surface-2);border:1px solid var(--color-border);padding:8px 16px;border-radius:var(--radius-full);font-size:14px;box-shadow:var(--elevation-1)}
+.toast[hidden]{display:none}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="proto">
+  <b>Prototipo my-food-manager/005 · Buscador de recetas</b>
+  <span>Vista:
+    <span class="seg" id="seg-view">
+      <button data-v="auto" aria-pressed="true">Auto</button><button data-v="small" aria-pressed="false">Móvil 390</button><button data-v="col" aria-pressed="false">Columna grande 400</button>
+    </span>
+  </span>
+  <span>Tema:
+    <span class="seg" id="seg-theme"><button data-t="dark" aria-pressed="true">Oscuro</button><button data-t="light" aria-pressed="false">Claro</button></span>
+  </span>
+  <span>Prueba:
+    <a href="#" data-try="poll">poll</a> · <a href="#" data-try="pollo asado">pollo asado</a> · <a href="#" data-try="huevo">huevo</a> · <a href="#" data-try="cafe">cafe</a> · <a href="#" data-try="piña">piña</a> · <a href="#" data-try="zzz">zzz (sin resultados)</a> · <a href="#" data-try="po">po (&lt;3)</a>
+  </span>
+  <span>Espera 1 s sin teclear, Enter aplica ya, Esc y × borran. Datos de ejemplo.</span>
+</div>
+<div class="stage" id="stage"><div class="frame" id="frame">
+  <div class="page" id="page"><div class="shell">
+    <h1>Recetas</h1>
+    <div class="search" role="search">
+      <svg class="i lead" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <input id="q" type="search" autocomplete="off" enterkeyhint="search" placeholder="Buscar por nombre, proteína o ingrediente" aria-label="Buscar recetas">
+      <button class="clear" id="clear" hidden aria-label="Borrar búsqueda"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+    </div>
+    <div id="filters"></div>
+    <div id="results"></div>
+    <div class="sr" id="live" aria-live="polite"></div>
+  </div></div>
+  <div class="toast" id="toast" hidden></div>
+</div></div>
+
+<script>
+/* ---------- Sample data (names, protein labels and ingredient names as the app resolves them) ---------- */
+const CATS={breakfast:'Desayunos',soups:'Sopas y cremas',mains:'Principales',desserts:'Postres',breads:'Panes y masas',salads:'Ensaladas',unclassified:'Sin clasificar'};
+const EMOJI={breakfast:'🍳',soups:'🍲',mains:'🍽️',desserts:'🍰',breads:'🍞',salads:'🥗'};
+const PROT={chicken:'pollo',egg:'huevo',fish:'pescado',none:'ninguna',beef:'ternera'};
+const DIET={vegetarian:'vegetariana','gluten-free':'sin gluten'};
+const CUIS={spanish:'española',other:'otra'};
+const DIFF={easy:'Fácil',medium:'Media',hard:'Difícil'};
+const ING={'pechuga-de-pollo':'pechuga de pollo','caldo-de-pollo':'caldo de pollo',huevo:'huevo',leche:'leche',sal:'sal',arroz:'arroz',cafe:'café',azucar:'azúcar','harina-de-trigo':'harina de trigo','pina':'pina','pina-tilde':'piña',tomate:'tomate',lechuga:'lechuga',aguacate:'aguacate',mantequilla:'mantequilla',limon:'limón',pan:'pan',beicon:'beicon','merluza':'merluza','crema-de-chocolate':'crema de chocolate','maicena':'maicena'};
+const R=[
+{id:'pollo-al-horno',title:'Pollo al horno',category:'mains',tags:{protein:['chicken'],diet:[],cuisine:['spanish']},time:50,difficulty:'easy',ings:['pechuga-de-pollo','sal','limon']},
+{id:'pollo-crujiente',title:'Pollo crujiente en freidora de aire',category:'mains',tags:{protein:['chicken'],diet:[],cuisine:['other']},time:30,difficulty:'easy',ings:['pechuga-de-pollo','huevo','leche','sal']},
+{id:'arroz-con-pollo',title:'Arroz con pollo',category:'mains',tags:{protein:['chicken'],diet:[],cuisine:['spanish']},time:60,difficulty:'medium',ings:['arroz','caldo-de-pollo','pechuga-de-pollo','sal']},
+{id:'sopa-de-fideos',title:'Sopa de fideos',category:'soups',tags:{protein:['none'],diet:[],cuisine:['spanish']},time:25,difficulty:'easy',ings:['caldo-de-pollo','sal']},
+{id:'ensalada-cesar',title:'Ensalada César',category:'salads',tags:{protein:['chicken'],diet:[],cuisine:['other']},time:20,difficulty:'easy',ings:['lechuga','pechuga-de-pollo','pan']},
+{id:'huevos-benedictinos',title:'Huevos benedictinos',category:'breakfast',tags:{protein:['egg'],diet:[],cuisine:['other']},time:40,difficulty:'hard',ings:['mantequilla','limon','huevo','pan','aguacate','beicon']},
+{id:'tortilla-de-patata',title:'Tortilla de patata',category:'mains',tags:{protein:['egg'],diet:['vegetarian'],cuisine:['spanish']},time:35,difficulty:'medium',ings:['huevo','sal']},
+{id:'merluza-en-salsa',title:'Merluza en salsa verde',category:'mains',tags:{protein:['fish'],diet:['gluten-free'],cuisine:['spanish']},time:35,difficulty:'medium',ings:['merluza','sal','limon']},
+{id:'tarta-de-cafe',title:'Tarta de café',category:'desserts',tags:{protein:['none'],diet:['vegetarian'],cuisine:['other']},time:90,difficulty:'medium',ings:['cafe','azucar','harina-de-trigo','huevo']},
+{id:'pina-colada',title:'Tarta de piña',category:'desserts',tags:{protein:['none'],diet:['vegetarian'],cuisine:['other']},time:70,difficulty:'easy',ings:['pina-tilde','azucar','huevo']},
+{id:'panecillos',title:'Panecillos trenzados de chocolate',category:'breads',tags:{protein:['none'],diet:['vegetarian'],cuisine:['other']},time:25,difficulty:'medium',ings:['harina-de-trigo','leche','huevo','crema-de-chocolate']},
+{id:'crema-pastelera',title:'Crema pastelera',category:'desserts',tags:{protein:['none'],diet:['vegetarian','gluten-free'],cuisine:['spanish']},time:8,difficulty:'easy',ings:['leche','huevo','maicena','limon','azucar']}
+].sort((a,b)=>a.title.localeCompare(b.title,'es'));
+
+/* ---------- Domain: normalization + groups (FR-4..FR-8) ---------- */
+const norm=s=>s.toLowerCase().replace(/ñ/g,'\u0001').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\u0001/g,'ñ');
+const words=t=>norm(t).split(/\s+/).filter(Boolean);
+const allIn=(ws,text)=>{const n=norm(text);return ws.every(w=>n.includes(w))};
+function groupsFor(applied,list){
+  const ws=words(applied);
+  const byTitle=list.filter(r=>allIn(ws,r.title));
+  const byProt=list.filter(r=>(r.tags.protein||[]).some(id=>allIn(ws,PROT[id]||id)||allIn(ws,id)));
+  const byIng=list.filter(r=>r.ings.some(i=>allIn(ws,ING[i]||i.replace(/-/g,' '))));
+  return [['Recetas',byTitle],['Proteína',byProt],['Ingredientes',byIng]].filter(g=>g[1].length);
+}
+
+/* ---------- Filters (feature 003 behavior, unchanged) ---------- */
+const TIME=[['15','Hasta 15 min',m=>m<=15],['30','Hasta 30 min',m=>m<=30],['60','Hasta 1 h',m=>m<=60],['over60','Más de 1 h',m=>m>60]];
+const FK=[['category','Categoría'],['time','Tiempo'],['diet','Dieta'],['cuisine','Cocina'],['difficulty','Dificultad'],['protein','Proteína']];
+const F={};let openF=null;
+const fvals=(r,k)=>k==='category'?[r.category]:k==='difficulty'?[r.difficulty]:k==='time'?TIME.filter(x=>x[2](r.time)).map(x=>x[0]):(r.tags[k]||[]);
+const fmatch=(r,except)=>FK.every(([k])=>k===except||!F[k]||fvals(r,k).includes(F[k]));
+const MAPS={category:CATS,difficulty:DIFF,diet:DIET,cuisine:CUIS,protein:PROT};
+const cap=s=>s[0].toUpperCase()+s.slice(1);
+const flabel=(k,v)=>k==='time'?TIME.find(x=>x[0]===v)[1]:cap(MAPS[k][v]||v);
+function foptions(k){const present=new Set();R.forEach(r=>fvals(r,k).forEach(v=>present.add(v)));
+  return [...present].map(v=>({v,label:flabel(k,v),count:R.filter(r=>fmatch(r,k)&&fvals(r,k).includes(v)).length}))}
+
+/* ---------- Icons / photo ---------- */
+const X='<svg class="i sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>';
+const DOWN='<svg class="i sm" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>';
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const photo=r=>{const t=`var(--cat-${r.category})`;return `<div class="photo" aria-hidden="true" style="background:linear-gradient(135deg,color-mix(in srgb,${t} 55%,var(--color-surface-2)),color-mix(in srgb,${t} 18%,var(--color-surface-1)))"><span class="emo">${EMOJI[r.category]||'🍴'}</span></div>`};
+const row=r=>`<li><a class="row" href="#/recipes/${r.id}" data-row="${r.id}">${photo(r)}<div class="meta"><div class="t">${esc(r.title)}</div><div class="c">${esc(CATS[r.category])}</div></div></a></li>`;
+
+/* ---------- Page state (FR-1, FR-2) ---------- */
+const q=document.getElementById('q'),clearBtn=document.getElementById('clear');
+let applied='',timer=null;
+const MIN=3,WAIT=1000;
+function setApplied(){const t=q.value.trim();applied=t.length>=MIN?t:'';render()}
+q.addEventListener('input',()=>{clearBtn.hidden=!q.value;clearTimeout(timer);timer=setTimeout(setApplied,WAIT)});
+q.addEventListener('keydown',e=>{
+  if(e.key==='Enter'){e.preventDefault();clearTimeout(timer);setApplied()}
+  if(e.key==='Escape'&&q.value){e.preventDefault();clearSearch(false)}
+});
+function clearSearch(refocus=true){clearTimeout(timer);q.value='';clearBtn.hidden=true;applied='';render();if(refocus)q.focus()}
+clearBtn.addEventListener('click',()=>clearSearch(true));
+document.querySelectorAll('[data-try]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();q.value=a.dataset.try;clearBtn.hidden=false;clearTimeout(timer);timer=setTimeout(setApplied,WAIT);q.focus()}));
+
+/* ---------- Render ---------- */
+function render(){
+  /* filters + count */
+  const active=FK.filter(([k])=>F[k]).length;
+  const base=R.filter(r=>fmatch(r));
+  const groups=applied?groupsFor(applied,base):null;
+  const distinct=groups?new Set(groups.flatMap(g=>g[1].map(r=>r.id))).size:base.length;
+  let h='<div class="fchips">'+FK.map(([k,name])=>F[k]
+   ?`<span class="fchip active"><button data-f="${k}" aria-expanded="${openF===k}" aria-haspopup="listbox">${esc(flabel(k,F[k]))}</button><button class="fx" data-fx="${k}" aria-label="Quitar filtro ${name}">${X}</button></span>`
+   :`<span class="fchip"><button data-f="${k}" aria-expanded="${openF===k}" aria-haspopup="listbox">${name}${DOWN}</button></span>`).join('')+'</div>';
+  if(openF)h+=`<div class="fopts" role="listbox">${foptions(openF).map(o=>`<button class="fopt" role="option" aria-selected="${F[openF]===o.v}" data-fo="${o.v}" ${o.count===0&&F[openF]!==o.v?'disabled':''}>${esc(o.label)}<small>${o.count}</small></button>`).join('')}</div>`;
+  const filtered=active||applied;
+  const countTxt=filtered?`${distinct} de ${R.length} recetas`:`${R.length} recetas`;
+  h+=`<div class="fbar"><span>${countTxt}</span>${active>=2?'<button data-fclear>Limpiar</button>':''}</div>`;
+  document.getElementById('filters').innerHTML=h;
+  document.getElementById('live').textContent=filtered?countTxt:'';
+
+  /* results */
+  let out;
+  if(applied&&!groups.length||!applied&&!base.length){
+    out=`<div class="state"><div class="emo">🔎</div><h2>Ninguna receta coincide</h2><p>${applied&&active?'Prueba con otro texto o quita filtros.':applied?'Prueba con otro texto.':'Prueba con otra combinación de filtros.'}</p><div class="acts">${applied?'<button class="btn" data-clear-search>Borrar búsqueda</button>':''}${active?`<button class="btn${applied?' sec':''}" data-fclear>Quitar filtros</button>`:''}</div></div>`;
+  }else if(applied){
+    out=groups.map(([name,rs])=>`<section class="group"><h2>${name} · <b>${rs.length}</b></h2><ul class="list">${rs.map(r=>row(r)).join('')}</ul></section>`).join('');
+  }else{
+    out=`<ul class="list">${base.map(r=>row(r)).join('')}</ul>`;
+  }
+  document.getElementById('results').innerHTML=out;
+}
+/* Filters / empty-state actions */
+document.addEventListener('click',e=>{
+  const f=e.target.closest('[data-f]'),x=e.target.closest('[data-fx]'),o=e.target.closest('[data-fo]');
+  if(x){delete F[x.dataset.fx];openF=null}
+  else if(o){F[openF]=o.dataset.fo;openF=null}
+  else if(f){openF=openF===f.dataset.f?null:f.dataset.f}
+  else if(e.target.closest('[data-fclear]')){Object.keys(F).forEach(k=>delete F[k]);openF=null}
+  else if(e.target.closest('[data-clear-search]')){clearSearch(true);return}
+  else{
+    const a=e.target.closest('[data-row]');
+    if(a){e.preventDefault();toast('Abre el detalle de la receta (feature 002, sin cambios)')}
+    return;
+  }
+  render();
+});
+let tt;function toast(m){const t=document.getElementById('toast');t.textContent=m;t.hidden=false;clearTimeout(tt);tt=setTimeout(()=>t.hidden=true,1800)}
+
+/* Toolbar */
+const frame=document.getElementById('frame');let view='auto';
+function applyView(){frame.classList.toggle('phone',view==='small');frame.classList.toggle('col',view==='col');
+  document.querySelectorAll('#seg-view button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===view))}
+document.getElementById('seg-view').addEventListener('click',e=>{const b=e.target.closest('button');if(b){view=b.dataset.v;applyView()}});
+document.getElementById('seg-theme').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;document.documentElement.dataset.theme=b.dataset.t;document.querySelectorAll('#seg-theme button').forEach(x=>x.setAttribute('aria-pressed',x===b))});
+render();applyView();
+</script>
+</body>
+</html>

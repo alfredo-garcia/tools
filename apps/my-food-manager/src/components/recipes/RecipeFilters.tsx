@@ -20,11 +20,14 @@ export function RecipeFilters({
   state,
   onChange,
   shown,
+  searching = false,
 }: {
   library: Pick<Library, "recipes" | "vocab">;
   state: FilterState;
   onChange: (next: FilterState) => void;
   shown: number;
+  /** A search text is in effect, so the count reads "N de M" even with no filter. */
+  searching?: boolean;
 }) {
   const [open, setOpen] = useState<FilterKey | null>(null);
   const root = useRef<HTMLDivElement>(null);
@@ -97,7 +100,7 @@ export function RecipeFilters({
 
       <div className="mt-2 flex min-h-8 items-center justify-between text-sm text-text-muted">
         <p aria-live="polite">
-          {active > 0
+          {active > 0 || searching
             ? `${shown} de ${library.recipes.length} recetas`
             : `${library.recipes.length} ${library.recipes.length === 1 ? "receta" : "recetas"}`}
         </p>

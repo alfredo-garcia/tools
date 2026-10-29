@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "My Food Manager",
-    short_name: "My Food Manager",
+    name: "My Food",
+    short_name: "My Food",
     description: "Tus recetas, tu despensa y tu lista de la compra.",
     start_url: "/",
     display: "standalone",

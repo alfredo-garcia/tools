@@ -57,7 +57,7 @@ export function AppShell({ title, children }: { title: string; children: React.R
   }, [manualRefresh]);
 
   return (
-    <div className="mx-auto min-h-dvh w-full max-w-3xl px-4 pb-16">
+    <div className="mx-auto min-h-dvh w-full max-w-3xl px-4 pb-6">
       <div
         aria-hidden
         className="flex items-center justify-center overflow-hidden text-text-muted transition-[height]"

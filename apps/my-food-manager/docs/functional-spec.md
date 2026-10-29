@@ -8,9 +8,9 @@
 
 ## 1. Product Overview
 
-My Food Manager is a personal, visual, mobile-first web app (installable PWA) that helps Al and his household partner decide what to cook and shop without forgetting anything. It reads the Google Drive folder `food`, which the food-manager skill maintains, and keeps working without a connection. There are no logins. Platform: web only.
+My Food Manager (shown to users as "My Food") is a personal, visual, mobile-first web app (installable PWA) that helps Al and his household partner decide what to cook and shop without forgetting anything. It reads the Google Drive folder `food`, which the food-manager skill maintains, and keeps working without a connection. There are no logins. Platform: web only.
 
-Today the app lets you browse the library with filters and open each recipe's detail. Pantry, shopping list, picks and reviews are the next features (see `product/product_vision.md` §7).
+Today the app lets you browse the library with filters and open each recipe's detail, and it has a main navigation with four sections: Recetas, Plan, Despensa and Perfil. Plan, Despensa and Perfil are placeholders that say "Próximamente". The meal-plan calendar, the pantry and shopping list, and the profile are the next features (see `product/product_vision.md` §7).
 
 ## 2. How to Read This Documentation
 
@@ -25,10 +25,16 @@ Today the app lets you browse the library with filters and open each recipe's de
 |---|---|---|---|
 | library | Library sync, offline storage and the recipe list | inline below | Active |
 | recipes | Filtering the recipe list and reading a recipe | inline below | Active |
+| navigation | Main navigation between sections and their placeholders | inline below | Active |
 
 ## 4. Navigation Structure
 
-There is no persistent navigation yet. The app has the recipe list at `/` and the recipe detail at `/recipes/<id>`. The screen adapts to the window width in three layouts: small (under 640 px), medium (640 to 1279 px) and large (1280 px and above). In small and medium the detail opens over the list; in large the list is a column and the detail opens beside it. The bottom bar and the sidebar are still to come.
+The app has four sections, always reachable from a main navigation: Recetas (`/`, with the recipe detail at `/recipes/<id>`), Plan (`/plan`), Despensa (`/ingredients`) and Perfil (`/profile`). Plan, Despensa and Perfil show only "Próximamente" for now; Despensa will hold the pantry and the shopping list. The screen adapts to the window width in three layouts: small (under 640 px), medium (640 to 1279 px) and large (1280 px and above).
+
+- **Small:** a bottom bar with the four sections. It is hidden while a recipe detail is open (the detail is a full screen) and comes back when it closes.
+- **Medium and large:** a sidebar on the left with the same four sections, collapsible to icons only or expandable to icons and text. It stays visible when a recipe opens (modal on medium, panel beside the list on large).
+- **Recipes:** in small and medium the detail opens over the list; in large the list is a column and the detail opens beside it.
+- An address that matches no section shows the standard "page not found" page.
 
 ## 5. Screen & Flow Index
 
@@ -38,6 +44,9 @@ There is no persistent navigation yet. The app has the recipe list at `/` and th
 |---|---|---|---|
 | SCR-library-list | Recipe list | library | Web |
 | SCR-recipe-detail | Recipe detail | recipes | Web |
+| SCR-plan | Plan (placeholder) | navigation | Web |
+| SCR-ingredients | Despensa (placeholder) | navigation | Web |
+| SCR-profile | Perfil (placeholder) | navigation | Web |
 
 **Flows**
 
@@ -47,6 +56,8 @@ There is no persistent navigation yet. The app has the recipe list at `/` and th
 | FLW-library-refresh | Keeping the library fresh | library | Web |
 | FLW-filter-recipes | Filter the list | recipes | Web |
 | FLW-open-recipe | Open and close a recipe | recipes | Web |
+| FLW-switch-section | Switch section | navigation | Web |
+| FLW-toggle-sidebar | Collapse or expand the sidebar | navigation | Web |
 
 ## 6. Cross-Cutting Concepts
 
@@ -55,6 +66,7 @@ There is no persistent navigation yet. The app has the recipe list at `/` and th
 - **Freshness.** A sync runs on app open, every 5 minutes while the app is visible and online, within 5 seconds of regaining a connection, and on a manual request. If Drive has no changes, only the "last synced" time updates. A failed sync leaves the stored data untouched.
 - **Invalid data.** A malformed recipe file is skipped and counted as a warning. It never breaks the rest of the library.
 - **Access.** No login. Read endpoints are open, which is accepted for low-sensitivity personal data.
+- **Navigation everywhere.** The main navigation frames every screen of every section and works offline: switching section needs no data. Library sync keeps running whatever section is open.
 - **Browsing works from the device.** Filtering and the recipe detail read only the stored library, so they work offline and never wait for the network.
 
 ## 7. Shared Functional Components
@@ -78,10 +90,15 @@ None.
 - **Compact bar:** the fixed top bar of the detail on small windows, which shows the recipe title once the title scrolls out of view. On medium and large windows the bar always shows the title.
 - **Info general:** the first section of the detail, with the recipe's key facts and tags.
 - **Total time:** preparation + cooking + resting minutes of a recipe, counting missing parts as 0; used by the Tiempo filter.
+- **Section / destination:** one of the four options of the main navigation: Recetas, Plan, Despensa or Perfil.
+- **Bottom bar:** the navigation on small windows.
+- **Sidebar:** the navigation on medium and large windows; collapsed shows only icons, expanded shows icons and text.
+- **Placeholder section:** a section with no content yet, which shows its title and "Próximamente".
 - **Filter:** one of Categoría, Tiempo, Dieta, Cocina, Dificultad or Proteína; each holds one chosen value at a time.
 
 ## 11. Recent Changes
 
+- 2026-10-29 — navigation: main navigation with a bottom bar and a collapsible sidebar, and placeholder sections Plan, Despensa and Perfil (see `changelog/006_main-navigation_changelog.md`).
 - 2026-10-29 — library: Drive sync and offline library (see `changelog/001_drive-sync-offline-library_changelog.md`).
 - 2026-10-29 — recipes: recipe filters on the list (see `changelog/003_recipe-filters_changelog.md`).
 - 2026-10-29 — recipes: recipe detail (see `changelog/002_recipe-detail_changelog.md`).
@@ -100,9 +117,9 @@ How data travels from Drive to the device, and how its state is shown. It is the
 #### SCR-library-list Recipe list
 
 - **Platform:** Web
-- **Platform divergence:** on large windows (1280 px and above) the list is a 400 px column on the left with its own scroll, and the title, sync badge, refresh button, filters and rows scroll together inside it; the open recipe's row is highlighted. Below 1280 px it is a single page as before. In both cases the filters wrap onto several lines instead of scrolling sideways.
+- **Platform divergence:** on large windows (1280 px and above) the list is a 400 px column on the left with its own scroll, and the title, sync badge, refresh button, filters and rows scroll together inside it; the open recipe's row is highlighted. Below 1280 px it is a single page as before. In both cases the filters wrap onto several lines instead of scrolling sideways. The main navigation (CMP-main-navigation) frames the list: on large windows the sidebar sits to the left of the column. Navigating to another section and back shows the list in its initial state.
 - **Purpose:** browse the library and open a recipe. Rows open SCR-recipe-detail.
-- **Entry points:** opening the app (`/`); FLW-first-sync.
+- **Entry points:** opening the app (`/`); Recetas in the main navigation; FLW-first-sync.
 - **Functional composition:** CMP-app-shell, CMP-sync-badge, CMP-recipe-photo, CMP-recipe-filters.
 - **Data & business rules:** lists recipes alphabetically by title (Spanish collation). Each row shows the photo or fallback tile, the title and the category name, and opens the recipe's detail (rows are at least 56 px high). Above the list are six filters (see CMP-recipe-filters) and, when any is active, "N de M recetas" and "Limpiar". "N con avisos" shows when there are warnings. There is no text search or sort. If the browser cannot store data, a notice says that offline only shows what is already loaded.
 - **States (business meaning):**
@@ -172,7 +189,7 @@ Filtering the recipe list and reading a recipe. Everything works from the stored
 #### SCR-recipe-detail Recipe detail
 
 - **Platform:** Web.
-- **Platform divergence:** by window width. Small (under 640 px): a full screen with an "Atrás" button. Medium (640 to 1279 px): a modal (max width 720 px) over the list, with a "Cerrar" button, Esc and a click on the backdrop to close. Large (1280 px and above): a panel on the right of the list column that uses all the width left, with a "Cerrar" button; it is not a modal, so the list stays usable and Esc does nothing. Resizing across a breakpoint keeps the open recipe, its scroll position, its open sections and the open time breakdown.
+- **Platform divergence:** by window width. Small (under 640 px): a full screen with an "Atrás" button. Medium (640 to 1279 px): a modal (max width 720 px) over the list, with a "Cerrar" button, Esc and a click on the backdrop to close. Large (1280 px and above): a panel on the right of the list column that uses all the width left, with a "Cerrar" button; it is not a modal, so the list stays usable and Esc does nothing. On small windows the bottom bar is hidden while it is open; on medium and large the sidebar stays visible. Resizing across a breakpoint keeps the open recipe, its scroll position, its open sections and the open time breakdown.
 - **Purpose:** read everything needed to decide on and cook a recipe.
 - **Entry points:** a row of SCR-library-list; an ingredient that links to another recipe; opening `/recipes/<id>` directly.
 - **Functional composition:** CMP-detail-layer, CMP-recipe-photo, CMP-collapsible-section, CMP-recipe-link.
@@ -250,3 +267,78 @@ Filtering the recipe list and reading a recipe. Everything works from the stored
 - **Business rules governing the flow:** tapping a filter opens its options; choosing one applies it and the filter shows the chosen value with an "x" to remove it. "Limpiar" removes all filters when two or more are active. Time options: hasta 15 min, hasta 30 min, hasta 1 h, más de 1 h, measured on total time. Recipes with no time or difficulty never match those options. Filters are not kept across reloads.
 - **Edge cases & error handling:** filters that match nothing show "Ninguna receta coincide" with "Quitar filtros". A sync re-applies the active filters in place.
 - **Source:** `003_recipe-filters_prd.md` (US-1 to US-6).
+
+---
+
+## Domain: navigation
+
+### Overview
+
+How the user moves between the sections of the app, and the sections that have no content yet. It writes nothing to Drive and needs no data, so it works offline.
+
+### Screens / Pages
+
+#### SCR-plan Plan (placeholder)
+
+- **Platform:** Web.
+- **Purpose:** reserve the Plan section (the future calendar of what will be eaten each day). Address `/plan`.
+- **Entry points:** Plan in the main navigation; direct address.
+- **Functional composition:** CMP-main-navigation.
+- **Data & business rules:** shows the title "Plan" and "Próximamente", centered, with no actions. It uses no data. The browser tab is titled "Plan · My Food".
+- **States (business meaning):** one state, always the same; it also opens offline, even if never visited before.
+- **Related flows:** FLW-switch-section.
+- **Source:** `006_main-navigation_prd.md` / `_ux_flow.md`; implementation in `src/app/plan/page.tsx`.
+
+#### SCR-ingredients Despensa (placeholder)
+
+- **Platform:** Web.
+- **Purpose:** reserve the Despensa section, which will hold the pantry and the shopping list as tabs. Address `/ingredients`.
+- **Entry points:** Despensa in the main navigation; direct address.
+- **Functional composition:** CMP-main-navigation.
+- **Data & business rules:** same as SCR-plan with the title "Despensa"; the browser tab is titled "Despensa · My Food".
+- **States (business meaning):** as SCR-plan.
+- **Related flows:** FLW-switch-section.
+- **Source:** `006_main-navigation_prd.md` / `_ux_flow.md`; implementation in `src/app/ingredients/page.tsx`.
+
+#### SCR-profile Perfil (placeholder)
+
+- **Platform:** Web.
+- **Purpose:** reserve the Perfil section (the future user, favorites, ratings and comments). Address `/profile`.
+- **Entry points:** Perfil in the main navigation; direct address.
+- **Functional composition:** CMP-main-navigation.
+- **Data & business rules:** same as SCR-plan with the title "Perfil"; the browser tab is titled "Perfil · My Food".
+- **States (business meaning):** as SCR-plan.
+- **Related flows:** FLW-switch-section.
+- **Source:** `006_main-navigation_prd.md` / `_ux_flow.md`; implementation in `src/app/profile/page.tsx`.
+
+### Functionally-Significant Components
+
+#### CMP-main-navigation Main navigation
+
+- **Design system reference:** `AppFrame`, `components/layout/AppFrame`; `BottomNav` and `SideNav`, `components/navigation/Nav` (see `context/ui_kit_registry.md`).
+- **Functional role:** lets the user go to Recetas, Plan, Despensa or Perfil from any screen, and shows which section is current.
+- **Behavior rules:**
+  - The four sections are always in this order. The current section is the one whose address matches, including addresses below it; Recetas is current for `/` and for any recipe detail. For an unknown address no section is marked.
+  - Below 640 px it is a bottom bar with icon and text; from 640 px it is a sidebar. Crossing 640 px switches between them at once without changing the section or the open recipe.
+  - The bottom bar is not shown while a recipe detail is open on a small window.
+  - The sidebar can be collapsed (icons only; the names stay available to assistive technology) or expanded. With no saved choice it starts expanded on large windows and collapsed on medium ones. The choice is saved on the device and applies to both sizes; if the browser cannot save it, the default applies and the app works as usual.
+  - The sidebar shows the app icon (a pot with steam) and the name "My Food" beside it when expanded.
+  - Switching sections does not reload the page and needs no connection.
+- **Used on:** every screen.
+- **Source:** `006_main-navigation_prd.md` / `_ux_flow.md`; implementation in `src/components/layout/AppFrame.tsx`, `src/components/navigation/Nav.tsx` and `src/lib/domain/navigation.ts`.
+
+### Flows
+
+#### FLW-switch-section Switch section
+
+- **Goal / trigger:** go to another part of the app.
+- **Screens involved (in sequence):** any screen → (tap a section in the bottom bar or sidebar) → SCR-library-list, SCR-plan, SCR-ingredients or SCR-profile.
+- **Business rules governing the flow:** the tapped section becomes the current one. Browser back and forward follow the address and the current section follows it. Leaving Recetas and coming back shows the list with no filters, no search text and scrolled to the top. Library sync is unaffected.
+- **Source:** `006_main-navigation_prd.md` / `_ux_flow.md`.
+
+#### FLW-toggle-sidebar Collapse or expand the sidebar
+
+- **Goal / trigger:** give more room to the content, or show the section names.
+- **Screens involved (in sequence):** any screen on a medium or large window → (tap the collapse or expand button at the bottom of the sidebar) → the same screen with the sidebar in the other state.
+- **Business rules governing the flow:** the new state is saved on the device and used on the next visit, on both medium and large windows.
+- **Source:** `006_main-navigation_prd.md` / `_ux_flow.md`.

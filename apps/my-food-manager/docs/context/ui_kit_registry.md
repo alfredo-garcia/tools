@@ -131,7 +131,7 @@
 
 ### RecipeDetail
 - **Category:** Data Display. **Import:** `components/recipes/detail/RecipeDetail` (sections in the same folder: `InfoSection`, `IngredientsSection`, `StepsSection`, `NotesSection`). **Status:** Beta.
-- **Description:** the recipe detail screen content inside a `DetailLayer`: photo (16:9), title (`heading-1`), then the sections Info general, Ingredientes, Pasos and Notas, each a `CollapsibleSection`. Handles loading, no-library and not-found states with `EmptyState`.
+- **Description:** the recipe detail screen content inside a `DetailLayer`: photo (16:9; in the `panel` mode it sits beside Info general, two fifths and three fifths), title (`heading-1`, shown in fullscreen only), then the sections Info general, Ingredientes, Pasos and Notas, each a `CollapsibleSection`. Handles loading, no-library and not-found states with `EmptyState`.
 - **Props:** `RecipeDetail`: `id: string` (recipe id from the address). Sections: `recipe: Recipe`, plus `library: Library` for `InfoSection` and `IngredientsSection`.
 - **Rules:** missing values show "-"; the time row in `InfoSection` is a disclosure with the prep/cook/rest breakdown; ingredient lines show quantity, name, note, an "opcional" tag, and a `RecipeLink` when the line points to a recipe in the library; `NotesSection` renders nothing when there are no notes, variations or source.
 

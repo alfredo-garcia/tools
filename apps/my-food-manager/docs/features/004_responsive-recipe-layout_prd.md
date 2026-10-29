@@ -42,7 +42,7 @@ Carried from the feature doc: changes to the detail content or the list rows (ot
 4. Given an open recipe, when I scroll the list or change filters, then the panel does not scroll or change.
 
 **US-4 Large: detail panel.** As Al, I want the recipe to use the room I have.
-1. Given the panel, then it fills the width left by the column, with no maximum width, and shows the same content as the modal: 16:9 photo, then Info general, Ingredientes, Pasos and Notas.
+1. Given the panel, then it fills the width left by the column, with no maximum width, and shows the same content as the modal. The 16:9 photo takes two fifths of the width and, beside it, Info general takes three fifths; Ingredientes, Pasos and Notas follow below, across the full width.
 2. Given the panel, then its header shows the recipe title from the start and a "Cerrar" button; there is no backdrop and the list stays interactive.
 3. Given nothing selected, then the panel shows the icon, the title "Elige una receta" and the hint "Se abrirá aquí, sin perder la lista.".
 4. Given a panel header, then it stays visible while the content scrolls.
@@ -78,7 +78,7 @@ Carried from the feature doc: changes to the detail content or the list rows (ot
 6. FR-6: Closing in large (button or back) leaves `/` and an empty panel; no recipe is selected automatically.
 7. FR-7: The list column is 400 px wide; the panel takes the remaining width, with no maximum.
 8. FR-8: The header of the modal and of the panel always shows the title; on small it appears when the in-body title scrolls out of view, as today.
-9. FR-9: The photo is 16:9 in every layout.
+9. FR-9: The photo is 16:9 in every layout. In the large layout it sits beside Info general (two fifths / three fifths), aligned to the top; in the other layouts it is above everything, as in feature 002.
 10. FR-10: Changing layout never refetches data or reloads the page.
 11. FR-11: The detail's state (scroll, section state, time breakdown) survives a layout change.
 12. FR-12: The selected row has `aria-current="true"` and the panel is a labelled region, not a dialog.

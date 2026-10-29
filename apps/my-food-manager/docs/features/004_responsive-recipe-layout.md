@@ -15,7 +15,7 @@
   - The layout depends on the window width: small (under 640 px), medium (640 to 1279 px) and large (1280 px and above).
   - Small: unchanged from today; the detail opens full screen with an "Atrás" button.
   - Medium: the detail opens as a modal over the list, as it does on desktop today, with the recipe title always visible in its header and a "Cerrar" button.
-  - Large: the list is a fixed-width column on the left, with its own scroll and the filters inside it (the filters wrap onto several lines instead of scrolling sideways); the detail opens in a panel on the right that uses all the width available, with no modal and no dimmed backdrop, and the list stays usable.
+  - Large: the list is a fixed-width column on the left, with its own scroll and the filters inside it (the filters wrap onto several lines instead of scrolling sideways); the detail opens in a panel on the right that uses all the width available, with the photo beside the general info (two fifths and three fifths) instead of above it, with no modal and no dimmed backdrop, and the list stays usable.
   - In the large layout the selected recipe is highlighted in the list; choosing another recipe replaces the one in the panel, and the panel's close button empties it. With nothing selected, the panel shows "Elige una receta".
   - Each recipe keeps its own address, and resizing the window across a breakpoint keeps the open recipe and its scroll position.
 

@@ -66,6 +66,7 @@ The recipe list and the recipe detail adapt to three window widths. Small keeps 
 - `fullscreen`: as in feature 002 (back button at the left, compact title appears when the in-body title leaves the view, page scroll locked, focus trapped, list inert).
 - `modal`: centered, max width 720 px, 90% height, dimmed backdrop, `role="dialog" aria-modal="true"`. The bar always shows the recipe title (one line, truncated, full title in the `title` attribute) at the left and `<Button variant="ghost" icon={X} aria-label="Cerrar" />` at the right. The in-body `<h1>` is not rendered visibly. Esc and backdrop click close it. Page scroll locked, focus trapped, list inert.
 - `panel`: fills the right region, no maximum width, no backdrop, no border radius or shadow, `role="region"` with an accessible name equal to the recipe title. The bar is the same as in `modal` (title always visible, "Cerrar" at the right) and stays fixed while the content scrolls. Page scroll is not locked, focus is not trapped, the list is not inert, Esc does nothing.
+- In `panel` the content is a grid of two columns, `2fr` and `3fr`, with a 1rem gap and 1rem padding: the photo (16:9, `radius.md`) in the first column and the Info general section in the second, both in the first row and aligned to the top. Ingredientes, Pasos and Notas follow in the next rows across both columns. In `fullscreen` and `modal` the photo is above all sections, full width, as in feature 002.
 - The scroll area of the detail is the only scrolling element inside the layer in every mode.
 
 **Conditional rendering states**

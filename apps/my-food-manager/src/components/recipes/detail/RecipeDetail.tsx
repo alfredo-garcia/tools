@@ -17,14 +17,14 @@ import { useCloseDetail } from "./use-detail-navigation";
 /** Keyed by recipe id by the caller, so section state resets when another recipe opens. */
 function RecipeContent({ recipe, library }: { recipe: Recipe; library: Library }) {
   return (
-    <>
+    <div className="detail-grid mx-auto w-full max-w-3xl pb-10">
       <RecipePhoto
         recipeId={recipe.id}
         photoVersion={recipe.photoVersion}
         category={recipe.category}
-        className="aspect-video w-full"
+        className="detail-photo aspect-video w-full"
       />
-      <div className="mx-auto w-full max-w-3xl px-4 pt-4 pb-10 group-data-[detail-mode=panel]:max-w-none">
+      <div className="detail-sections px-4 pt-4">
         <h1
           data-detail-title
           className="text-2xl leading-[1.15] font-extrabold group-data-[detail-mode=modal]:hidden group-data-[detail-mode=panel]:hidden"
@@ -36,7 +36,7 @@ function RecipeContent({ recipe, library }: { recipe: Recipe; library: Library }
         <StepsSection recipe={recipe} />
         <NotesSection recipe={recipe} />
       </div>
-    </>
+    </div>
   );
 }
 

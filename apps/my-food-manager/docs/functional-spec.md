@@ -28,7 +28,7 @@ Today the app lets you browse the library with filters and open each recipe's de
 
 ## 4. Navigation Structure
 
-There is no persistent navigation yet. The app has the recipe list at `/` and the recipe detail at `/recipes/<id>`, which opens over the list. The bottom bar (mobile) and sidebar (desktop) are still to come.
+There is no persistent navigation yet. The app has the recipe list at `/` and the recipe detail at `/recipes/<id>`. The screen adapts to the window width in three layouts: small (under 640 px), medium (640 to 1279 px) and large (1280 px and above). In small and medium the detail opens over the list; in large the list is a column and the detail opens beside it. The bottom bar and the sidebar are still to come.
 
 ## 5. Screen & Flow Index
 
@@ -73,8 +73,9 @@ None.
 
 - **Snapshot:** the normalized library.
 - **Fallback tile:** the category-colored tile shown when a recipe has no photo.
-- **Detail:** the recipe screen, a modal on desktop and a full screen on mobile.
-- **Compact bar:** the fixed top bar of the detail that shows the recipe title once the title scrolls out of view.
+- **Detail:** the recipe screen: a full screen on small windows, a modal on medium ones and a panel beside the list on large ones.
+- **Column / Panel:** in the large layout, the list on the left and the detail on the right.
+- **Compact bar:** the fixed top bar of the detail on small windows, which shows the recipe title once the title scrolls out of view. On medium and large windows the bar always shows the title.
 - **Info general:** the first section of the detail, with the recipe's key facts and tags.
 - **Total time:** preparation + cooking + resting minutes of a recipe, counting missing parts as 0; used by the Tiempo filter.
 - **Filter:** one of Categoría, Tiempo, Dieta, Cocina, Dificultad or Proteína; each holds one chosen value at a time.
@@ -84,6 +85,7 @@ None.
 - 2026-10-29 — library: Drive sync and offline library (see `changelog/001_drive-sync-offline-library_changelog.md`).
 - 2026-10-29 — recipes: recipe filters on the list (see `changelog/003_recipe-filters_changelog.md`).
 - 2026-10-29 — recipes: recipe detail (see `changelog/002_recipe-detail_changelog.md`).
+- 2026-10-29 — recipes: responsive layout, with the list as a column and the detail as a side panel on large windows (see `changelog/004_responsive-recipe-layout_changelog.md`).
 
 ---
 
@@ -98,6 +100,7 @@ How data travels from Drive to the device, and how its state is shown. It is the
 #### SCR-library-list Recipe list
 
 - **Platform:** Web
+- **Platform divergence:** on large windows (1280 px and above) the list is a 400 px column on the left with its own scroll, and the title, sync badge, refresh button, filters and rows scroll together inside it; the open recipe's row is highlighted. Below 1280 px it is a single page as before. In both cases the filters wrap onto several lines instead of scrolling sideways.
 - **Purpose:** browse the library and open a recipe. Rows open SCR-recipe-detail.
 - **Entry points:** opening the app (`/`); FLW-first-sync.
 - **Functional composition:** CMP-app-shell, CMP-sync-badge, CMP-recipe-photo, CMP-recipe-filters.
@@ -110,7 +113,7 @@ How data travels from Drive to the device, and how its state is shown. It is the
   - List: the stored library is shown immediately, online or offline.
   - No results: the active filters match nothing; "Ninguna receta coincide" with a "Quitar filtros" button.
 - **Related flows:** FLW-first-sync, FLW-library-refresh, FLW-filter-recipes, FLW-open-recipe.
-- **Source:** `001_drive-sync-offline-library_prd.md` (no UX Flow exists for that feature), `003_recipe-filters_prd.md` / `_ux_flow.md`, `002_recipe-detail_prd.md` / `_ux_flow.md`; implementation in `src/components/recipes/RecipeLibrary.tsx`.
+- **Source:** `001_drive-sync-offline-library_prd.md` (no UX Flow exists for that feature), `003_recipe-filters_prd.md` / `_ux_flow.md`, `002_recipe-detail_prd.md` / `_ux_flow.md`, `004_responsive-recipe-layout_prd.md` / `_ux_flow.md`; implementation in `src/components/recipes/RecipeLibrary.tsx`.
 
 ### Functionally-Significant Components
 
@@ -169,24 +172,25 @@ Filtering the recipe list and reading a recipe. Everything works from the stored
 #### SCR-recipe-detail Recipe detail
 
 - **Platform:** Web.
-- **Platform divergence:** below 1024 px it is a full screen with an "Atrás" button; from 1024 px it is a modal (max width 720 px) with a "Cerrar" button, Esc and a click on the backdrop to close.
+- **Platform divergence:** by window width. Small (under 640 px): a full screen with an "Atrás" button. Medium (640 to 1279 px): a modal (max width 720 px) over the list, with a "Cerrar" button, Esc and a click on the backdrop to close. Large (1280 px and above): a panel on the right of the list column that uses all the width left, with a "Cerrar" button; it is not a modal, so the list stays usable and Esc does nothing. Resizing across a breakpoint keeps the open recipe, its scroll position, its open sections and the open time breakdown.
 - **Purpose:** read everything needed to decide on and cook a recipe.
 - **Entry points:** a row of SCR-library-list; an ingredient that links to another recipe; opening `/recipes/<id>` directly.
 - **Functional composition:** CMP-detail-layer, CMP-recipe-photo, CMP-collapsible-section, CMP-recipe-link.
 - **Data & business rules:**
-  - The header has the photo (the category tile when there is none) and the title.
+  - The top has the photo (16:9; the category tile when there is none) and the title. On medium and large windows the title is always in the bar at the top of the modal or panel; on small windows it is under the photo. On large windows the photo takes two fifths of the width and Info general sits beside it, in the other three fifths.
   - Four sections, in this order, each open on entry and collapsible on its own (the state is not remembered): Info general, Ingredientes, Pasos, Notas.
   - Info general: Categoría, Tiempo, Dificultad, Raciones, Técnica, Cocina, Dieta, Proteína and Ocasión. Tiempo shows the total (preparation + cooking + resting) as "N min" or "H h M min"; tapping it shows Preparación, Cocción and Reposo. Anything the recipe lacks shows "-" and its row stays. Servings units are fixed: personas, unidades, porciones.
   - Ingredientes: ungrouped lines first, then each named group (for example masa, relleno) in order of first appearance. A line shows quantity, name and note. Mass and volume units are abbreviated (g, kg, ml, l); other units are pluralized by quantity; lines "al gusto", "cantidad suficiente" or "pizca" show no number; a measurable line without quantity shows "-"; optional lines carry an "opcional" tag. A line that points to a recipe in the library is a link that opens its detail.
   - Pasos: numbered, in order. Notas: notes, variations and source (with its link); the section is absent when there is nothing to show. Empty ingredients or steps show "-".
-  - On mobile, while scrolling, a fixed bar keeps the back button and shows the title once the title leaves the view.
+  - On small windows, while scrolling, a fixed bar keeps the back button and shows the title once the title leaves the view.
+  - On large windows, with nothing selected the panel shows "Elige una receta" with the hint "Se abrirá aquí, sin perder la lista.".
 - **States (business meaning):**
   - Loading: the library is still loading; "Cargando tu receta…".
   - No library and offline, or error: the same messages as the list, with "Reintentar".
   - Not found: "Receta no encontrada" with "Volver a recetas".
   - Recipe: the content described above.
 - **Related flows:** FLW-open-recipe.
-- **Source:** `002_recipe-detail_prd.md`, `002_recipe-detail_ux_flow.md`; implementation in `src/components/recipes/detail/`.
+- **Source:** `002_recipe-detail_prd.md`, `002_recipe-detail_ux_flow.md`, `004_responsive-recipe-layout_prd.md`, `004_responsive-recipe-layout_ux_flow.md`; implementation in `src/components/recipes/detail/`.
 
 ### Functionally-Significant Components
 
@@ -208,10 +212,10 @@ Filtering the recipe list and reading a recipe. Everything works from the stored
 #### CMP-detail-layer Detail layer
 
 - **Design system reference:** `DetailLayer`, `components/overlays/DetailLayer`.
-- **Functional role:** shows the recipe detail as a full screen or a modal.
-- **Behavior rules:** closes with the back or close button, Esc or the backdrop (desktop); locks the page behind it; focus stays inside it and returns to the row that opened it on close; switching between full screen and modal does not close it.
+- **Functional role:** shows the recipe detail as a full screen, a modal or a side panel, depending on the window width.
+- **Behavior rules:** as a full screen or a modal it closes with the back or close button (the modal also with Esc or the backdrop), locks the page behind it, keeps focus inside and returns focus to the row that opened it on close. As a panel it does none of that: the page is not locked, focus is not trapped and Esc does nothing; closing it empties the panel and returns focus to the row that was selected. Switching between the three never closes the recipe or rebuilds its content.
 - **Used on:** SCR-recipe-detail.
-- **Source:** `002_recipe-detail_prd.md`, `002_recipe-detail_ux_flow.md`; implementation in `src/components/overlays/DetailLayer.tsx`.
+- **Source:** `002_recipe-detail_prd.md`, `004_responsive-recipe-layout_prd.md`; implementation in `src/components/overlays/DetailLayer.tsx`.
 
 #### CMP-collapsible-section Collapsible section
 
@@ -225,7 +229,7 @@ Filtering the recipe list and reading a recipe. Everything works from the stored
 
 - **Design system reference:** `RecipeLink`, `components/recipes/RecipeLink`.
 - **Functional role:** a link to a recipe's detail.
-- **Behavior rules:** a normal click opens the detail in place, with no network request; opening it in a new tab or copying the link works as for any link.
+- **Behavior rules:** a normal click opens the detail in place, with no network request; opening it in a new tab or copying the link works as for any link. In the side panel the link of the open recipe is marked as the current one, and choosing another recipe replaces the history entry instead of adding one.
 - **Used on:** SCR-library-list, SCR-recipe-detail.
 - **Source:** `002_recipe-detail_prd.md`; implementation in `src/components/recipes/RecipeLink.tsx`.
 
@@ -235,9 +239,9 @@ Filtering the recipe list and reading a recipe. Everything works from the stored
 
 - **Goal / trigger:** read a recipe and return to where you were.
 - **Screens involved (in sequence):** SCR-library-list → SCR-recipe-detail → (back, close, Esc, backdrop or device back gesture) → SCR-library-list.
-- **Business rules governing the flow:** each recipe has its own address, `/recipes/<id>`. Opening from the list or from an ingredient link needs no network. Closing goes back one step; a detail opened directly closes to the list, never out of the app. The list keeps its scroll position and cannot be used while the detail is open.
+- **Business rules governing the flow:** each recipe has its own address, `/recipes/<id>`. Opening from the list or from an ingredient link needs no network. Closing goes back one step; a detail opened directly closes to the list, never out of the app. On small and medium windows the list keeps its scroll position and cannot be used while the detail is open. On large windows the list stays usable beside the panel: choosing the first recipe adds a history entry, choosing another one replaces it, an ingredient link adds one, and closing or going back leaves `/` with an empty panel (no recipe is selected on its own). Opening `/recipes/<id>` directly on a large window shows the list with that recipe in the panel.
 - **Edge cases & error handling:** an unknown address shows the not-found state. If a sync removes the open recipe, the detail switches to not found. Opening a recipe address directly with no connection works.
-- **Source:** `002_recipe-detail_prd.md` (US-1, US-2, §10).
+- **Source:** `002_recipe-detail_prd.md` (US-1, US-2, §10), `004_responsive-recipe-layout_prd.md` (US-1 to US-7).
 
 #### FLW-filter-recipes Filter the list
 

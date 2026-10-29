@@ -10,7 +10,7 @@
 
 My Food Manager is a personal, visual, mobile-first web app (installable PWA) that helps Al and his household partner decide what to cook and shop without forgetting anything. It reads the Google Drive folder `food`, which the food-manager skill maintains, and keeps working without a connection. There are no logins. Platform: web only.
 
-Today only the data layer and a proof screen exist. Browsing, pantry, shopping list and reviews are the next features (see `product/product_vision.md` §7).
+Today the app lets you browse the library with filters and open each recipe's detail. Pantry, shopping list, picks and reviews are the next features (see `product/product_vision.md` §7).
 
 ## 2. How to Read This Documentation
 
@@ -24,10 +24,11 @@ Today only the data layer and a proof screen exist. Browsing, pantry, shopping l
 | Domain | One-line description | File | Status |
 |---|---|---|---|
 | library | Library sync, offline storage and the recipe list | inline below | Active |
+| recipes | Filtering the recipe list and reading a recipe | inline below | Active |
 
 ## 4. Navigation Structure
 
-There is no persistent navigation yet. The app has a single screen at `/`. The bottom bar (mobile) and sidebar (desktop) arrive with the browse feature (backlog #2).
+There is no persistent navigation yet. The app has the recipe list at `/` and the recipe detail at `/recipes/<id>`, which opens over the list. The bottom bar (mobile) and sidebar (desktop) are still to come.
 
 ## 5. Screen & Flow Index
 
@@ -35,7 +36,8 @@ There is no persistent navigation yet. The app has a single screen at `/`. The b
 
 | ID | Name | Domain | Platform |
 |---|---|---|---|
-| SCR-library-list | Recipe list (proof screen) | library | Web |
+| SCR-library-list | Recipe list | library | Web |
+| SCR-recipe-detail | Recipe detail | recipes | Web |
 
 **Flows**
 
@@ -43,6 +45,8 @@ There is no persistent navigation yet. The app has a single screen at `/`. The b
 |---|---|---|---|
 | FLW-first-sync | First load | library | Web |
 | FLW-library-refresh | Keeping the library fresh | library | Web |
+| FLW-filter-recipes | Filter the list | recipes | Web |
+| FLW-open-recipe | Open and close a recipe | recipes | Web |
 
 ## 6. Cross-Cutting Concepts
 
@@ -51,6 +55,7 @@ There is no persistent navigation yet. The app has a single screen at `/`. The b
 - **Freshness.** A sync runs on app open, every 5 minutes while the app is visible and online, within 5 seconds of regaining a connection, and on a manual request. If Drive has no changes, only the "last synced" time updates. A failed sync leaves the stored data untouched.
 - **Invalid data.** A malformed recipe file is skipped and counted as a warning. It never breaks the rest of the library.
 - **Access.** No login. Read endpoints are open, which is accepted for low-sensitivity personal data.
+- **Browsing works from the device.** Filtering and the recipe detail read only the stored library, so they work offline and never wait for the network.
 
 ## 7. Shared Functional Components
 
@@ -68,10 +73,15 @@ None.
 
 - **Snapshot:** the normalized library.
 - **Fallback tile:** the category-colored tile shown when a recipe has no photo.
+- **Detail:** the recipe screen, a modal on desktop and a full screen on mobile.
+- **Compact bar:** the fixed top bar of the detail that shows the recipe title once the title scrolls out of view.
+- **Info general:** the first section of the detail, with the recipe's key facts and tags.
 
 ## 11. Recent Changes
 
 - 2026-10-29 — library: Drive sync and offline library (see `changelog/001_drive-sync-offline-library_changelog.md`).
+- 2026-10-29 — recipes: recipe filters on the list (see `changelog/003_recipe-filters_changelog.md`).
+- 2026-10-29 — recipes: recipe detail (see `changelog/002_recipe-detail_changelog.md`).
 
 ---
 
@@ -83,21 +93,22 @@ How data travels from Drive to the device, and how its state is shown. It is the
 
 ### Screens / Pages
 
-#### SCR-library-list Recipe list (proof screen)
+#### SCR-library-list Recipe list
 
 - **Platform:** Web
-- **Purpose:** show that the library is loaded and fresh. Provisional until the browse feature replaces it.
+- **Purpose:** browse the library and open a recipe. Rows open SCR-recipe-detail.
 - **Entry points:** opening the app (`/`); FLW-first-sync.
-- **Functional composition:** CMP-app-shell, CMP-sync-badge, CMP-recipe-photo.
-- **Data & business rules:** lists recipes alphabetically by title (Spanish collation). Each row shows the photo or fallback tile, the title and the category name. Above the list: the recipe count and, when there are any, "N con avisos". There are no filters or search. If the browser cannot store data, a notice says that offline only shows what is already loaded.
+- **Functional composition:** CMP-app-shell, CMP-sync-badge, CMP-recipe-photo, CMP-recipe-filters.
+- **Data & business rules:** lists recipes alphabetically by title (Spanish collation). Each row shows the photo or fallback tile, the title and the category name, and opens the recipe's detail (rows are at least 56 px high). Above the list are six filters (see CMP-recipe-filters) and, when any is active, "N de M recetas" and "Limpiar". "N con avisos" shows when there are warnings. There is no text search or sort. If the browser cannot store data, a notice says that offline only shows what is already loaded.
 - **States (business meaning):**
   - Loading: no stored library and the first sync is running; "Cargando tus recetas…".
   - Offline with no data: "Necesitas conexión la primera vez", with a "Reintentar" button.
   - Error with no data: "No se pudo cargar tu biblioteca", with a "Reintentar" button.
   - Empty: a stored library with no recipes; "No hay recetas todavía".
   - List: the stored library is shown immediately, online or offline.
-- **Related flows:** FLW-first-sync, FLW-library-refresh.
-- **Source:** `001_drive-sync-offline-library_prd.md` (no UX Flow exists for this feature); implementation in `src/app/page.tsx`.
+  - No results: the active filters match nothing; "Ninguna receta coincide" with a "Quitar filtros" button.
+- **Related flows:** FLW-first-sync, FLW-library-refresh, FLW-filter-recipes, FLW-open-recipe.
+- **Source:** `001_drive-sync-offline-library_prd.md` (no UX Flow exists for that feature), `003_recipe-filters_prd.md` / `_ux_flow.md`, `002_recipe-detail_prd.md` / `_ux_flow.md`; implementation in `src/components/recipes/RecipeLibrary.tsx`.
 
 ### Functionally-Significant Components
 
@@ -114,14 +125,14 @@ How data travels from Drive to the device, and how its state is shown. It is the
 - **Design system reference:** `RecipePhoto`, `components/recipes/RecipePhoto` (see `context/ui_kit_registry.md`).
 - **Functional role:** shows the recipe photo. With no photo, or if it cannot be loaded, it shows the category fallback tile with its emoji, never a broken image.
 - **Behavior rules:** a photo seen once is stored on the device (up to 200) and shows offline. A photo not yet seen shows the fallback tile while offline. The photo is renewed when it changes in Drive.
-- **Used on:** SCR-library-list.
-- **Source:** `001_drive-sync-offline-library_prd.md`; implementation in `src/components/recipes/RecipePhoto.tsx`.
+- **Used on:** SCR-library-list, SCR-recipe-detail (16:9 in the detail).
+- **Source:** `001_drive-sync-offline-library_prd.md`; `002_recipe-detail_prd.md`; implementation in `src/components/recipes/RecipePhoto.tsx`.
 
 #### CMP-app-shell Page frame
 
 - **Design system reference:** `AppShell`, `components/layout/AppShell` (see `context/ui_kit_registry.md`).
 - **Functional role:** page frame with the title, the sync badge and the refresh control.
-- **Behavior rules:** the refresh button is always available and is disabled while a sync runs. On touch devices, pulling down from the top of the page forces a sync. A failed manual refresh shows a notice and keeps the stored data.
+- **Behavior rules:** the refresh button is always available and is disabled while a sync runs. On touch devices, pulling down from the top of the page forces a sync. A failed manual refresh shows a notice and keeps the stored data. Pulling down while scrolling inside the recipe detail does not start a refresh.
 - **Used on:** SCR-library-list.
 - **Source:** `001_drive-sync-offline-library_prd.md`; implementation in `src/components/layout/AppShell.tsx`.
 
@@ -142,3 +153,87 @@ How data travels from Drive to the device, and how its state is shown. It is the
 - **Business rules governing the flow:** triggers and freshness rules are in §6. Triggers that fire together share a single sync. The list updates in place without losing scroll position. A manual refresh (button or pull down) shows a notice if it fails.
 - **Edge cases & error handling:** with the app hidden or offline, no periodic requests are made. A recipe deleted in Drive disappears at the next sync. Two tabs or devices sync independently.
 - **Source:** `001_drive-sync-offline-library_prd.md` (US-2 to US-4, §10).
+
+---
+
+## Domain: recipes
+
+### Overview
+
+Filtering the recipe list and reading a recipe. Everything works from the stored library, online or offline, and writes nothing to Drive.
+
+### Screens / Pages
+
+#### SCR-recipe-detail Recipe detail
+
+- **Platform:** Web.
+- **Platform divergence:** below 1024 px it is a full screen with an "Atrás" button; from 1024 px it is a modal (max width 720 px) with a "Cerrar" button, Esc and a click on the backdrop to close.
+- **Purpose:** read everything needed to decide on and cook a recipe.
+- **Entry points:** a row of SCR-library-list; an ingredient that links to another recipe; opening `/recipes/<id>` directly.
+- **Functional composition:** CMP-detail-layer, CMP-recipe-photo, CMP-collapsible-section, CMP-recipe-link.
+- **Data & business rules:**
+  - The header has the photo (the category tile when there is none) and the title.
+  - Four sections, in this order, each open on entry and collapsible on its own (the state is not remembered): Info general, Ingredientes, Pasos, Notas.
+  - Info general: Categoría, Tiempo, Dificultad, Raciones, Técnica, Cocina, Dieta, Proteína and Ocasión. Tiempo shows the total (preparation + cooking + resting) as "N min" or "H h M min"; tapping it shows Preparación, Cocción and Reposo. Anything the recipe lacks shows "-" and its row stays. Servings units are fixed: personas, unidades, porciones.
+  - Ingredientes: ungrouped lines first, then each named group (for example masa, relleno) in order of first appearance. A line shows quantity, name and note. Mass and volume units are abbreviated (g, kg, ml, l); other units are pluralized by quantity; lines "al gusto", "cantidad suficiente" or "pizca" show no number; a measurable line without quantity shows "-"; optional lines carry an "opcional" tag. A line that points to a recipe in the library is a link that opens its detail.
+  - Pasos: numbered, in order. Notas: notes, variations and source (with its link); the section is absent when there is nothing to show. Empty ingredients or steps show "-".
+  - On mobile, while scrolling, a fixed bar keeps the back button and shows the title once the title leaves the view.
+- **States (business meaning):**
+  - Loading: the library is still loading; "Cargando tu receta…".
+  - No library and offline, or error: the same messages as the list, with "Reintentar".
+  - Not found: "Receta no encontrada" with "Volver a recetas".
+  - Recipe: the content described above.
+- **Related flows:** FLW-open-recipe.
+- **Source:** `002_recipe-detail_prd.md`, `002_recipe-detail_ux_flow.md`; implementation in `src/components/recipes/detail/`.
+
+### Functionally-Significant Components
+
+#### CMP-recipe-filters Recipe filters
+
+- **Design system reference:** `RecipeFilters`, `components/recipes/RecipeFilters` (see `context/ui_kit_registry.md`).
+- **Functional role:** the filter row above the list, its option panel, the count and "Limpiar".
+- **Behavior rules:** six filters: Categoría, Tiempo, Dieta, Cocina, Dificultad, Proteína. One value each, combined so that a recipe must match all active ones. Options are the values present in the library, each with the number of recipes it would give with the other filters; an option with 0 is disabled. The list reorders with animation, which is off when the device asks for reduced motion.
+- **Used on:** SCR-library-list.
+- **Source:** `003_recipe-filters_prd.md`, `003_recipe-filters_ux_flow.md`; implementation in `src/components/recipes/RecipeFilters.tsx`.
+
+#### CMP-detail-layer Detail layer
+
+- **Design system reference:** `DetailLayer`, `components/overlays/DetailLayer`.
+- **Functional role:** shows the recipe detail as a full screen or a modal.
+- **Behavior rules:** closes with the back or close button, Esc or the backdrop (desktop); locks the page behind it; focus stays inside it and returns to the row that opened it on close; switching between full screen and modal does not close it.
+- **Used on:** SCR-recipe-detail.
+- **Source:** `002_recipe-detail_prd.md`, `002_recipe-detail_ux_flow.md`; implementation in `src/components/overlays/DetailLayer.tsx`.
+
+#### CMP-collapsible-section Collapsible section
+
+- **Design system reference:** `CollapsibleSection`, `components/recipes/detail/CollapsibleSection`.
+- **Functional role:** a titled section of the detail that folds and unfolds.
+- **Behavior rules:** starts open; folds independently of the others; announced to screen readers as expanded or collapsed.
+- **Used on:** SCR-recipe-detail.
+- **Source:** `002_recipe-detail_prd.md`; implementation in `src/components/recipes/detail/CollapsibleSection.tsx`.
+
+#### CMP-recipe-link Recipe link
+
+- **Design system reference:** `RecipeLink`, `components/recipes/RecipeLink`.
+- **Functional role:** a link to a recipe's detail.
+- **Behavior rules:** a normal click opens the detail in place, with no network request; opening it in a new tab or copying the link works as for any link.
+- **Used on:** SCR-library-list, SCR-recipe-detail.
+- **Source:** `002_recipe-detail_prd.md`; implementation in `src/components/recipes/RecipeLink.tsx`.
+
+### Flows
+
+#### FLW-open-recipe Open and close a recipe
+
+- **Goal / trigger:** read a recipe and return to where you were.
+- **Screens involved (in sequence):** SCR-library-list → SCR-recipe-detail → (back, close, Esc, backdrop or device back gesture) → SCR-library-list.
+- **Business rules governing the flow:** each recipe has its own address, `/recipes/<id>`. Opening from the list or from an ingredient link needs no network. Closing goes back one step; a detail opened directly closes to the list, never out of the app. The list keeps its scroll position and cannot be used while the detail is open.
+- **Edge cases & error handling:** an unknown address shows the not-found state. If a sync removes the open recipe, the detail switches to not found. Opening the address of a recipe never visited, directly and with no connection, is not covered.
+- **Source:** `002_recipe-detail_prd.md` (US-1, US-2, §10).
+
+#### FLW-filter-recipes Filter the list
+
+- **Goal / trigger:** narrow the list in two taps.
+- **Screens involved (in sequence):** SCR-library-list.
+- **Business rules governing the flow:** tapping a filter opens its options; choosing one applies it and the filter shows the chosen value with an "x" to remove it. "Limpiar" removes all filters when two or more are active. Time options: hasta 15 min, hasta 30 min, hasta 1 h, más de 1 h, measured on total time. Recipes with no time or difficulty never match those options. Filters are not kept across reloads.
+- **Edge cases & error handling:** filters that match nothing show "Ninguna receta coincide" with "Quitar filtros". A sync re-applies the active filters in place.
+- **Source:** `003_recipe-filters_prd.md` (US-1 to US-6).

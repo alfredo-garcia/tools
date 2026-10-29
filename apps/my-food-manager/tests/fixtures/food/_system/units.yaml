@@ -1,0 +1,18 @@
+# Units for ingredient lines. id: { label, kind }
+g: { label: gramos, kind: mass }
+kg: { label: kilos, kind: mass }
+ml: { label: mililitros, kind: volume }
+l: { label: litros, kind: volume }
+cup: { label: taza, kind: volume }
+tbsp: { label: cucharada, kind: volume }
+tsp: { label: cucharadita, kind: volume }
+unit: { label: unidad, kind: piece }
+clove: { label: diente, kind: piece }
+sprig: { label: rama, kind: piece }
+leaf: { label: hoja, kind: piece }
+can: { label: lata, kind: piece }
+packet: { label: sobre, kind: piece }
+bunch: { label: manojo, kind: piece }
+pinch: { label: pizca, kind: unmeasured }
+to-taste: { label: al gusto, kind: unmeasured }
+as-needed: { label: cantidad suficiente, kind: unmeasured }

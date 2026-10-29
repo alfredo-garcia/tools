@@ -1,0 +1,7 @@
+# Al's opinions about recipes. Recipe ids from food/recipes/items/**.
+user: al
+updated: 2026-10-28T09:00:00-05:00
+favorites: []
+ratings: {}
+# ratings:
+#   tortilla-de-patatas: { stars: 4, comment: "Mejor con cebolla", date: 2026-10-28 }

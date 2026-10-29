@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>My Food Manager — Style Guide (approximation)</title>
+<style>
+/* Tokens: name.dot.step -> --name-dot-step (ui_standards §10) */
+:root{
+  --color-bg:#15130F; --color-surface-1:#1F1C17; --color-surface-2:#2A2620; --color-border:#38332B;
+  --color-text:#F6EFE4; --color-text-muted:#A99F90;
+  --color-primary-500:#FF7A45; --color-primary-contrast:#15130F; --color-primary-soft:rgba(255,122,69,.16);
+  --color-accent-lime:#B7E04A; --color-accent-lime-soft:rgba(183,224,74,.16);
+  --color-danger-500:#FF6B6B; --color-success-500:#7BD88F; --color-warning-500:#F2C14E;
+  --cat-breakfast:#F2C14E; --cat-starters:#F28B6B; --cat-soups:#E0A458; --cat-salads:#7BD88F; --cat-mains:#FF7A45;
+  --cat-sides:#B7E04A; --cat-sauces:#E4572E; --cat-breads:#D9A66B; --cat-desserts:#F58FB5; --cat-drinks:#6FC3E8;
+  --radius-sm:10px; --radius-md:18px; --radius-lg:28px; --radius-full:999px;
+  --elevation-1:0 1px 2px rgba(0,0,0,.4); --elevation-3:0 18px 40px rgba(0,0,0,.55);
+  --focus:0 0 0 3px rgba(255,122,69,.55);
+  --space-xs:4px; --space-sm:8px; --space-md:16px; --space-lg:24px; --space-xl:32px;
+  --font:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){
+  --color-bg:#FBF7F1; --color-surface-1:#FFFFFF; --color-surface-2:#F3EDE3; --color-border:#E4DACB;
+  --color-text:#1E1A14; --color-text-muted:#6B6254;
+  --color-primary-500:#C2410C; --color-primary-contrast:#FFFFFF; --color-primary-soft:rgba(194,65,12,.1);
+  --color-accent-lime:#4D7C0F; --color-accent-lime-soft:rgba(77,124,15,.12);
+  --color-danger-500:#B42318; --color-success-500:#2E7D32; --color-warning-500:#B7791F;
+  --elevation-1:0 1px 2px rgba(60,40,10,.12); --elevation-3:0 18px 40px rgba(60,40,10,.2);
+  --focus:0 0 0 3px rgba(194,65,12,.4);
+}}
+:root[data-theme="light"]{
+  --color-bg:#FBF7F1; --color-surface-1:#FFFFFF; --color-surface-2:#F3EDE3; --color-border:#E4DACB;
+  --color-text:#1E1A14; --color-text-muted:#6B6254;
+  --color-primary-500:#C2410C; --color-primary-contrast:#FFFFFF; --color-primary-soft:rgba(194,65,12,.1);
+  --color-accent-lime:#4D7C0F; --color-accent-lime-soft:rgba(77,124,15,.12);
+  --color-danger-500:#B42318; --color-success-500:#2E7D32; --color-warning-500:#B7791F;
+  --elevation-1:0 1px 2px rgba(60,40,10,.12); --elevation-3:0 18px 40px rgba(60,40,10,.2);
+  --focus:0 0 0 3px rgba(194,65,12,.4);
+}
+*{box-sizing:border-box} html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--color-bg);color:var(--color-text);font:400 16px/1.5 var(--font)}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:none;box-shadow:var(--focus)}
+h1,h2,h3{margin:0;line-height:1.15}
+.wrap{max-width:1180px;margin:0 auto;padding:var(--space-lg) var(--space-md) 80px}
+header.top{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+h1{font-size:28px;font-weight:800;letter-spacing:-.02em}
+.sub{color:var(--color-text-muted);margin:4px 0 0}
+h2{font-size:20px;font-weight:700;margin:48px 0 12px;letter-spacing:-.01em}
+.note{color:var(--color-text-muted);font-size:14px;margin:0 0 12px}
+.theme{display:flex;background:var(--color-surface-2);border-radius:var(--radius-full);padding:3px}
+.theme button{border:0;background:none;padding:8px 14px;border-radius:var(--radius-full);cursor:pointer;min-height:40px;color:var(--color-text-muted);font-weight:600}
+.theme button[aria-pressed="true"]{background:var(--color-primary-500);color:var(--color-primary-contrast)}
+.grid{display:grid;gap:12px}
+.swatches{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+.sw{border:1px solid var(--color-border);border-radius:var(--radius-md);overflow:hidden;background:var(--color-surface-1)}
+.sw i{display:block;height:56px}
+.sw div{padding:8px 10px;font-size:12px;line-height:1.35}
+.sw b{display:block;font-size:13px}
+.card{background:var(--color-surface-1);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-md);box-shadow:var(--elevation-1)}
+.types div{margin:6px 0}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+/* components */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 20px;border-radius:var(--radius-full);border:1px solid transparent;font-weight:700;cursor:pointer;transition:transform .12s,background .12s}
+.btn:active{transform:scale(.97)}
+.btn.primary{background:var(--color-primary-500);color:var(--color-primary-contrast)}
+.btn.secondary{background:var(--color-surface-2);color:var(--color-text);border-color:var(--color-border)}
+.btn.ghost{background:none;color:var(--color-primary-500)}
+.btn.danger{background:none;border-color:var(--color-danger-500);color:var(--color-danger-500)}
+.btn[disabled]{opacity:.4;cursor:not-allowed}
+.btn.loading::after{content:"";width:16px;height:16px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.chip{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 14px;border-radius:var(--radius-full);background:var(--color-surface-2);border:1px solid var(--color-border);cursor:pointer;font-weight:600;font-size:14px;white-space:nowrap}
+.chip[aria-pressed="true"]{background:var(--color-primary-soft);border-color:var(--color-primary-500);color:var(--color-primary-500)}
+.chip.lime[aria-pressed="true"]{background:var(--color-accent-lime-soft);border-color:var(--color-accent-lime);color:var(--color-accent-lime)}
+.input{display:flex;align-items:center;gap:10px;min-height:52px;padding:0 16px;border-radius:var(--radius-full);background:var(--color-surface-1);border:1px solid var(--color-border)}
+.input:focus-within{border-color:var(--color-primary-500);box-shadow:var(--focus)}
+.input input{flex:1;background:none;border:0;outline:none;min-width:0}
+.input input::placeholder{color:var(--color-text-muted)}
+.input.error{border-color:var(--color-danger-500)}
+svg.ic{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.toast{display:flex;gap:10px;align-items:center;padding:12px 16px;border-radius:var(--radius-md);background:var(--color-surface-2);border:1px solid var(--color-border);box-shadow:var(--elevation-3)}
+.badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;padding:4px 10px;border-radius:var(--radius-full)}
+.badge.off{background:rgba(242,193,78,.18);color:var(--color-warning-500)}
+.badge.ok{background:var(--color-accent-lime-soft);color:var(--color-accent-lime)}
+.empty{text-align:center;padding:28px 16px}
+.empty .big{font-size:44px}
+.listitem{display:flex;align-items:center;gap:12px;min-height:56px;padding:6px 4px}
+.check{width:28px;height:28px;border-radius:9px;border:2px solid var(--color-border);display:grid;place-items:center;flex:none;background:none;cursor:pointer;color:transparent;padding:0}
+.listitem.done .check{background:var(--color-success-500);border-color:var(--color-success-500);color:var(--color-bg)}
+.listitem.done .nm{text-decoration:line-through;color:var(--color-text-muted)}
+.listitem .nm{flex:1;font-weight:600}
+.listitem small{color:var(--color-text-muted)}
+/* recipe tile */
+.tile{border-radius:var(--radius-md);overflow:hidden;background:var(--color-surface-1);border:1px solid var(--color-border);cursor:pointer;position:relative;transition:transform .15s}
+.tile:active{transform:scale(.98)}
+.tile .ph{aspect-ratio:4/3;display:grid;place-items:center;font-size:44px;position:relative;background:linear-gradient(135deg,color-mix(in srgb,var(--c) 85%,black),color-mix(in srgb,var(--c) 45%,black))}
+.tile .fav{position:absolute;top:8px;right:8px;width:40px;height:40px;border-radius:50%;border:0;background:rgba(0,0,0,.45);color:#fff;display:grid;place-items:center;cursor:pointer;padding:0}
+.tile .fav[aria-pressed="true"]{color:#FF6B8A}
+.tile .fav[aria-pressed="true"] svg{fill:currentColor}
+.tile .tag{position:absolute;left:8px;bottom:8px;background:rgba(0,0,0,.6);color:#fff;font-size:11px;font-weight:700;padding:3px 8px;border-radius:var(--radius-full)}
+.tile .body{padding:10px 12px 12px}
+.tile h3{font-size:15px;font-weight:700;line-height:1.25}
+.meta{display:flex;gap:10px;color:var(--color-text-muted);font-size:12px;margin-top:6px;align-items:center}
+.meta span{display:inline-flex;gap:4px;align-items:center}
+.meta svg{width:14px;height:14px}
+/* phone frames */
+.phones{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:24px;justify-items:center}
+.phone{width:100%;max-width:390px;height:780px;border-radius:40px;border:1px solid var(--color-border);background:var(--color-bg);overflow:hidden;display:flex;flex-direction:column;box-shadow:var(--elevation-3);position:relative}
+.phone .scroll{flex:1;overflow:auto;padding:16px}
+.phone .nav{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--color-border);background:var(--color-surface-1);padding:6px 6px 14px}
+.nav button{background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:2px;min-height:52px;font-size:11px;font-weight:700;color:var(--color-text-muted);cursor:pointer;border-radius:14px}
+.nav button[aria-current="page"]{color:var(--color-primary-500)}
+.screen-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.screen-h h2{margin:0;font-size:24px}
+.who{width:40px;height:40px;border-radius:50%;background:var(--color-primary-500);color:var(--color-primary-contrast);font-weight:800;display:grid;place-items:center;border:0;cursor:pointer}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:12px 0 4px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.inspire{margin-top:14px;border-radius:var(--radius-md);padding:16px;background:linear-gradient(135deg,var(--color-primary-500),color-mix(in srgb,var(--color-primary-500) 55%,#7a1d00));color:var(--color-primary-contrast);display:flex;gap:12px;align-items:center;cursor:pointer;border:0;width:100%;text-align:left}
+.inspire b{font-size:17px;display:block}
+.fam{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--color-text-muted);margin:18px 0 4px}
+.sheet{position:absolute;inset:auto 0 0 0;background:var(--color-surface-1);border-radius:var(--radius-lg) var(--radius-lg) 0 0;padding:12px 16px 24px;box-shadow:var(--elevation-3);border-top:1px solid var(--color-border);transform:translateY(105%);transition:transform .25s ease-out}
+.sheet.open{transform:none}
+.sheet .grab{width:40px;height:4px;background:var(--color-border);border-radius:4px;margin:0 auto 12px}
+.stars{display:flex;gap:2px}
+.stars button{background:none;border:0;padding:6px;cursor:pointer;color:var(--color-border)}
+.stars button[aria-pressed="true"]{color:var(--color-warning-500)}
+.stars button[aria-pressed="true"] svg{fill:currentColor}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media (min-width:900px){.tiles.wide{grid-template-columns:repeat(4,1fr)}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
+    <symbol id="i-heart" viewBox="0 0 24 24"><path d="M19 14c1.5-1.5 3-3.2 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.8 0-3 .5-4.5 2-1.5-1.5-2.7-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4 3 5.5l7 7Z"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
+    <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+    <symbol id="i-shuffle" viewBox="0 0 24 24"><path d="M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></symbol>
+    <symbol id="i-cart" viewBox="0 0 24 24"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></symbol>
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></symbol>
+    <symbol id="i-box" viewBox="0 0 24 24"><path d="M21 8a2 2 0 0 0-1-1.7l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.7l7 4a2 2 0 0 0 2 0l7-4a2 2 0 0 0 1-1.7Z"/><path d="m3.3 7 8.7 5 8.7-5M12 22V12"/></symbol>
+    <symbol id="i-wifi-off" viewBox="0 0 24 24"><path d="M12 20h.01M8.5 16.4a5 5 0 0 1 7 0M2 8.8a15 15 0 0 1 4.2-2.6M22 8.8a15 15 0 0 0-8.4-3.7M5 12.8a10 10 0 0 1 5.2-2.6M19 12.8a10 10 0 0 0-2-1.5M2 2l20 20"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14M12 5v14"/></symbol>
+    <symbol id="i-flame" viewBox="0 0 24 24"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.4-.5-2-1-3-1-2 0-4 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.2.4-2.4 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></symbol>
+  </defs>
+</svg>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>My Food Manager — Style Guide</h1>
+      <p class="sub">Direction: bold &amp; dark-first, light theme follows the system. Clickable approximation in plain HTML/CSS; tokens map 1:1 to Tailwind CSS variables.</p>
+    </div>
+    <div class="theme" role="group" aria-label="Theme">
+      <button data-t="auto" aria-pressed="true">Auto</button><button data-t="dark" aria-pressed="false">Dark</button><button data-t="light" aria-pressed="false">Light</button>
+    </div>
+  </header>
+
+  <h2>1. Color tokens</h2>
+  <p class="note">Semantic tokens only; components never use raw hex. Category colors tint the photo fallback tile.</p>
+  <div class="grid swatches" id="swatches"></div>
+
+  <h2>2. Typography</h2>
+  <div class="card types">
+    <div style="font-size:32px;font-weight:800;letter-spacing:-.02em">display · 32/800 · “Qué cocinamos hoy”</div>
+    <div style="font-size:24px;font-weight:800">heading-1 · 24/800 · Pollo al ajillo</div>
+    <div style="font-size:18px;font-weight:700">heading-2 · 18/700 · Ingredientes</div>
+    <div style="font-size:16px">body · 16/400 · Dorar el ajo en láminas con el aceite hasta que cambie de color.</div>
+    <div style="font-size:14px;font-weight:600">label · 14/600 · Filtros rápidos</div>
+    <div style="font-size:12px;color:var(--color-text-muted)">caption · 12/500 · 25 min · fácil</div>
+    <p class="note" style="margin-top:12px">Font: Inter with system fallback (<code>--font</code>). Numbers in cooking times are always shown with the clock icon.</p>
+  </div>
+
+  <h2>3. Spacing, radius, elevation</h2>
+  <div class="card row" id="scale"></div>
+
+  <h2>4. Components and states</h2>
+  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr))">
+    <div class="card"><h3 style="margin-bottom:12px">Button</h3>
+      <div class="row">
+        <button class="btn primary">Primary</button><button class="btn secondary">Secondary</button>
+        <button class="btn ghost">Ghost</button><button class="btn danger">Danger</button>
+        <button class="btn primary" disabled>Disabled</button><button class="btn primary loading">Saving</button>
+      </div>
+    </div>
+    <div class="card"><h3 style="margin-bottom:12px">Filter chip (toggle)</h3>
+      <div class="row" id="chipdemo">
+        <button class="chip" aria-pressed="true">🍽️ Principales</button>
+        <button class="chip" aria-pressed="false">⏱️ &lt; 30 min</button>
+        <button class="chip lime" aria-pressed="true">♥ Favoritas</button>
+        <button class="chip" aria-pressed="false">🥗 Vegetariana</button>
+      </div>
+    </div>
+    <div class="card"><h3 style="margin-bottom:12px">Search input</h3>
+      <div class="input" style="margin-bottom:10px"><svg class="ic"><use href="#i-search"/></svg><input placeholder="Buscar receta o ingrediente"></div>
+      <div class="input error"><svg class="ic"><use href="#i-search"/></svg><input value="xx"></div>
+      <p class="note" style="margin:6px 0 0;color:var(--color-danger-500)">Error: no hay resultados para “xx”.</p>
+    </div>
+    <div class="card"><h3 style="margin-bottom:12px">Toast &amp; status badges</h3>
+      <div class="toast"><svg class="ic" style="color:var(--color-success-500)"><use href="#i-check"/></svg>Guardado en Drive</div>
+      <div class="row" style="margin-top:12px"><span class="badge off"><svg class="ic" style="width:14px;height:14px"><use href="#i-wifi-off"/></svg>Sin conexión · 3 cambios pendientes</span><span class="badge ok">Sincronizado</span></div>
+    </div>
+    <div class="card"><h3 style="margin-bottom:12px">List item (shopping)</h3>
+      <div id="listdemo">
+        <div class="listitem"><button class="check" aria-label="Marcar"><svg class="ic"><use href="#i-check"/></svg></button><span class="nm">Pimiento rojo</span><small>Pollo al ajillo</small></div>
+        <div class="listitem done"><button class="check" aria-label="Marcar"><svg class="ic"><use href="#i-check"/></svg></button><span class="nm">Nata</span><small>Pasta bolonesa</small></div>
+      </div>
+    </div>
+    <div class="card empty"><div class="big">🍳</div><h3>Nada que comprar</h3><p class="note">Elige recetas y aquí aparecerá lo que te falta.</p><button class="btn primary">Elegir recetas</button></div>
+  </div>
+
+  <h2>5. Sample screens (clickable)</h2>
+  <p class="note">Tap chips, hearts, the “Sorpréndeme” card, a recipe tile (opens a rating sheet) and the bottom tabs. Photo fallback = category color + emoji.</p>
+  <div class="phones">
+    <!-- Browse -->
+    <div class="phone" id="phone1">
+      <div class="scroll" id="browse">
+        <div class="screen-h"><div><div class="note" style="margin:0">Hola, Al</div><h2>¿Qué cocinamos?</h2></div><button class="who" aria-label="Cambiar persona">A</button></div>
+        <div class="input"><svg class="ic"><use href="#i-search"/></svg><input id="q" placeholder="Buscar receta o ingrediente"></div>
+        <div class="chips" id="chips">
+          <button class="chip" data-f="can" aria-pressed="false">✅ Puedo cocinar ya</button>
+          <button class="chip lime" data-f="fav" aria-pressed="false">♥ Favoritas</button>
+          <button class="chip" data-f="quick" aria-pressed="false">⏱️ &lt; 30 min</button>
+          <button class="chip" data-f="mains" aria-pressed="false">🍽️ Principales</button>
+          <button class="chip" data-f="desserts" aria-pressed="false">🍰 Postres</button>
+          <button class="chip" data-f="starters" aria-pressed="false">🥂 Entrantes</button>
+        </div>
+        <button class="inspire" id="surprise"><svg class="ic" style="width:28px;height:28px"><use href="#i-shuffle"/></svg><span><b>Sorpréndeme</b><span style="opacity:.85;font-size:13px">Una idea según lo que tienes en casa</span></span></button>
+        <div class="tiles" id="tiles"></div>
+      </div>
+      <div class="sheet" id="sheet">
+        <div class="grab"></div>
+        <h3 id="sh-title" style="font-size:20px"></h3>
+        <div class="meta" id="sh-meta" style="margin-bottom:8px"></div>
+        <div class="stars" id="stars" aria-label="Valoración"></div>
+        <div class="row" style="margin-top:12px"><button class="btn primary" id="pick" style="flex:1">Añadir a mis próximas</button><button class="btn secondary" id="close">Cerrar</button></div>
+      </div>
+      <nav class="nav" data-phone="1">
+        <button aria-current="page"><svg class="ic"><use href="#i-home"/></svg>Inicio</button>
+        <button><svg class="ic"><use href="#i-book"/></svg>Recetas</button>
+        <button data-go="list"><svg class="ic"><use href="#i-cart"/></svg>Lista</button>
+        <button><svg class="ic"><use href="#i-box"/></svg>Despensa</button>
+      </nav>
+    </div>
+    <!-- Shopping -->
+    <div class="phone" id="phone2">
+      <div class="scroll">
+        <div class="screen-h"><div><span class="badge off"><svg class="ic" style="width:14px;height:14px"><use href="#i-wifi-off"/></svg>Sin conexión</span><h2 style="margin-top:8px">La compra</h2></div><span class="badge ok" id="count">0/7</span></div>
+        <div class="note">Para: Pollo al ajillo, Pasta bolonesa</div>
+        <div id="shop"></div>
+        <button class="btn secondary" style="width:100%;margin-top:18px">Pasar lo comprado a la despensa</button>
+      </div>
+      <nav class="nav">
+        <button><svg class="ic"><use href="#i-home"/></svg>Inicio</button>
+        <button><svg class="ic"><use href="#i-book"/></svg>Recetas</button>
+        <button aria-current="page"><svg class="ic"><use href="#i-cart"/></svg>Lista</button>
+        <button><svg class="ic"><use href="#i-box"/></svg>Despensa</button>
+      </nav>
+    </div>
+  </div>
+</div>
+
+<script>
+// theme toggle
+const root=document.documentElement;
+document.querySelectorAll('.theme button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('.theme button').forEach(x=>x.setAttribute('aria-pressed',x===b));
+  b.dataset.t==='auto'?root.removeAttribute('data-theme'):root.setAttribute('data-theme',b.dataset.t);
+  paintSwatches();
+});
+// swatches
+const tokens=[['color.bg','--color-bg','Page background'],['color.surface.1','--color-surface-1','Cards, nav'],['color.surface.2','--color-surface-2','Chips, inputs'],['color.border','--color-border','Dividers'],
+['color.text','--color-text','Body text'],['color.text.muted','--color-text-muted','Secondary text'],['color.primary.500','--color-primary-500','Primary action, active'],['color.accent.lime','--color-accent-lime','Favorites, success accent'],
+['color.success.500','--color-success-500','Done, synced'],['color.warning.500','--color-warning-500','Offline, pending'],['color.danger.500','--color-danger-500','Errors, destructive'],
+['cat.mains','--cat-mains','Category tile'],['cat.desserts','--cat-desserts','Category tile'],['cat.salads','--cat-salads','Category tile'],['cat.breakfast','--cat-breakfast','Category tile'],['cat.drinks','--cat-drinks','Category tile']];
+function paintSwatches(){
+  const cs=getComputedStyle(root);
+  document.getElementById('swatches').innerHTML=tokens.map(([n,v,u])=>`<div class="sw"><i style="background:var(${v})"></i><div><b>${n}</b>${cs.getPropertyValue(v).trim()}<br>${u}</div></div>`).join('');
+}
+paintSwatches();
+matchMedia('(prefers-color-scheme:light)').addEventListener('change',paintSwatches);
+document.getElementById('scale').innerHTML=
+ [['xs 4',4],['sm 8',8],['md 16',16],['lg 24',24],['xl 32',32]].map(([l,p])=>`<div style="text-align:center;font-size:12px"><div style="width:${p*2}px;height:${p*2}px;background:var(--color-primary-soft);border:1px solid var(--color-primary-500);margin:auto"></div>space.${l}</div>`).join('')+
+ [['sm 10','--radius-sm'],['md 18','--radius-md'],['lg 28','--radius-lg'],['full','--radius-full']].map(([l,v])=>`<div style="text-align:center;font-size:12px"><div style="width:64px;height:64px;background:var(--color-surface-2);border:1px solid var(--color-border);border-radius:var(${v});margin:auto"></div>radius.${l}</div>`).join('');
+// generic toggles
+document.querySelectorAll('#chipdemo .chip').forEach(c=>c.onclick=()=>c.setAttribute('aria-pressed',c.getAttribute('aria-pressed')!=='true'));
+document.querySelectorAll('#listdemo .check').forEach(c=>c.onclick=()=>c.parentElement.classList.toggle('done'));
+// sample data (real recipe titles from the Drive folder)
+const R=[
+ {t:'Pollo al ajillo',c:'mains',e:'🍗',min:25,d:'Fácil',fav:true,can:true,tag:'Principal'},
+ {t:'Pasta bolonesa',c:'mains',e:'🍝',min:60,d:'Media',fav:false,can:false,tag:'Principal'},
+ {t:'Tartar de atún',c:'starters',e:'🐟',min:15,d:'Fácil',fav:false,can:false,tag:'Entrante'},
+ {t:'Calamares a la romana',c:'starters',e:'🦑',min:30,d:'Media',fav:false,can:true,tag:'Entrante'},
+ {t:'Red velvet',c:'desserts',e:'🍰',min:90,d:'Difícil',fav:true,can:false,tag:'Postre'},
+ {t:'Bizcocho',c:'desserts',e:'🧁',min:50,d:'Fácil',fav:false,can:true,tag:'Postre'}
+];
+const on=new Set(), ic=n=>`<svg class="ic"><use href="#i-${n}"/></svg>`;
+function render(){
+  const q=document.getElementById('q').value.toLowerCase();
+  const list=R.filter(r=>r.t.toLowerCase().includes(q)&&(!on.has('can')||r.can)&&(!on.has('fav')||r.fav)&&(!on.has('quick')||r.min<30)&&(!on.has('mains')||r.c==='mains')&&(!on.has('desserts')||r.c==='desserts')&&(!on.has('starters')||r.c==='starters'));
+  document.getElementById('tiles').innerHTML=list.length?list.map(r=>`<div class="tile" data-t="${r.t}" style="--c:var(--cat-${r.c})"><div class="ph"><span>${r.e}</span><button class="fav" aria-label="Favorita" aria-pressed="${r.fav}">${ic('heart')}</button><span class="tag">${r.tag}</span></div><div class="body"><h3>${r.t}</h3><div class="meta"><span>${ic('clock')}${r.min} min</span><span>${ic('flame')}${r.d}</span></div></div></div>`).join(''):`<div class="empty" style="grid-column:1/-1"><div class="big">🔍</div><h3>Sin resultados</h3><p class="note">Prueba quitando algún filtro.</p></div>`;
+  document.querySelectorAll('#tiles .fav').forEach(b=>b.onclick=e=>{e.stopPropagation();const r=R.find(x=>x.t===b.closest('.tile').dataset.t);r.fav=!r.fav;render()});
+  document.querySelectorAll('#tiles .tile').forEach(t=>t.onclick=()=>openSheet(R.find(x=>x.t===t.dataset.t)));
+}
+document.querySelectorAll('#chips .chip').forEach(c=>c.onclick=()=>{const f=c.dataset.f;on.has(f)?on.delete(f):on.add(f);c.setAttribute('aria-pressed',on.has(f));render()});
+document.getElementById('q').oninput=render;
+document.getElementById('surprise').onclick=()=>{const pool=R.filter(r=>r.can);openSheet(pool[Math.floor(Math.random()*pool.length)])};
+const sheet=document.getElementById('sheet');
+function openSheet(r){
+  document.getElementById('sh-title').textContent=r.e+' '+r.t;
+  document.getElementById('sh-meta').innerHTML=`<span>${ic('clock')}${r.min} min</span><span>${ic('flame')}${r.d}</span>${r.can?'<span class="badge ok">Puedes cocinarla ya</span>':'<span class="badge off">Te faltan ingredientes</span>'}`;
+  document.getElementById('stars').innerHTML=[1,2,3,4,5].map(n=>`<button aria-label="${n} estrellas" aria-pressed="false" data-n="${n}">${ic('star').replace('class="ic"','class="ic" style="width:28px;height:28px"')}</button>`).join('');
+  document.querySelectorAll('#stars button').forEach(b=>b.onclick=()=>document.querySelectorAll('#stars button').forEach(x=>x.setAttribute('aria-pressed',+x.dataset.n<=+b.dataset.n)));
+  sheet.classList.add('open');
+}
+document.getElementById('close').onclick=()=>sheet.classList.remove('open');
+document.getElementById('pick').onclick=e=>{e.target.textContent='✓ Añadida';setTimeout(()=>{e.target.textContent='Añadir a mis próximas';sheet.classList.remove('open')},700)};
+render();
+// shopping list
+const S={'Verduras y hortalizas':[['Pimiento rojo','Pollo al ajillo'],['Cebolla','Pasta bolonesa'],['Perejil','Pollo al ajillo']],'Carnes':[['Pollo 1,5 kg','Pollo al ajillo'],['Carne picada','Pasta bolonesa']],'Huevos y lácteos':[['Nata','Pasta bolonesa']],'Despensa seca':[['Pasta','Pasta bolonesa']]};
+const shop=document.getElementById('shop');
+shop.innerHTML=Object.entries(S).map(([f,items])=>`<div class="fam">${f}</div>`+items.map(([n,r])=>`<div class="listitem"><button class="check" aria-label="Marcar ${n}">${ic('check')}</button><span class="nm">${n}</span><small>${r}</small></div>`).join('')).join('');
+const cnt=()=>document.getElementById('count').textContent=shop.querySelectorAll('.done').length+'/'+shop.querySelectorAll('.listitem').length;
+shop.querySelectorAll('.check').forEach(c=>c.onclick=()=>{c.parentElement.classList.toggle('done');cnt()});cnt();
+</script>
+</body>
+</html>

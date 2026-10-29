@@ -1,0 +1,83 @@
+@import "tailwindcss";
+
+/* Tokens from docs/context/ui_standards.md. Dark is the default; light follows the system. */
+@theme {
+  --color-bg: #15130f;
+  --color-surface-1: #1f1c17;
+  --color-surface-2: #2a2620;
+  --color-border: #38332b;
+  --color-text: #f6efe4;
+  --color-text-muted: #a99f90;
+  --color-primary-500: #ff7a45;
+  --color-primary-contrast: #15130f;
+  --color-accent-lime: #b7e04a;
+  --color-success-500: #7bd88f;
+  --color-warning-500: #f2c14e;
+  --color-danger-500: #ff6b6b;
+
+  --color-cat-breakfast: #f2c14e;
+  --color-cat-starters: #f28b6b;
+  --color-cat-soups: #e0a458;
+  --color-cat-salads: #7bd88f;
+  --color-cat-mains: #ff7a45;
+  --color-cat-sides: #b7e04a;
+  --color-cat-sauces: #e4572e;
+  --color-cat-breads: #d9a66b;
+  --color-cat-desserts: #f58fb5;
+  --color-cat-drinks: #6fc3e8;
+  --color-cat-unclassified: #a99f90;
+
+  --radius-sm: 10px;
+  --radius-md: 18px;
+  --radius-lg: 28px;
+
+  --shadow-elevation-1: 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-elevation-3: 0 18px 40px rgb(0 0 0 / 0.55);
+
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --color-bg: #fbf7f1;
+    --color-surface-1: #ffffff;
+    --color-surface-2: #f3ede3;
+    --color-border: #e4dacb;
+    --color-text: #1e1a14;
+    --color-text-muted: #6b6254;
+    --color-primary-500: #c2410c;
+    --color-primary-contrast: #ffffff;
+    --color-accent-lime: #4d7c0f;
+    --color-success-500: #2e7d32;
+    --color-warning-500: #b7791f;
+    --color-danger-500: #b42318;
+    --shadow-elevation-1: 0 1px 2px rgb(60 40 10 / 0.12);
+    --shadow-elevation-3: 0 18px 40px rgb(60 40 10 / 0.2);
+  }
+}
+
+html {
+  background: var(--color-bg);
+  color-scheme: dark light;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  -webkit-text-size-adjust: 100%;
+}
+
+:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary-500) 55%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

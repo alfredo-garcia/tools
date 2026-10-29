@@ -1,0 +1,13 @@
+# Ingredient families (shopping aisles). id: { label }
+vegetables: { label: Verduras y hortalizas }
+fruits: { label: Frutas }
+meat: { label: Carnes }
+fish-and-seafood: { label: Pescados y mariscos }
+eggs-and-dairy: { label: Huevos y lácteos }
+legumes: { label: Legumbres }
+grains-and-flours: { label: Cereales y harinas }
+pantry-staples: { label: Despensa seca }
+oils-and-fats: { label: Aceites y grasas }
+spices-and-herbs: { label: Especias y hierbas }
+canned: { label: Conservas }
+other: { label: Otros }

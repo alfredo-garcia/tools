@@ -1,0 +1,12 @@
+# What's at home. Ids from food/ingredients/items.yaml.
+# Anything not in `have` is considered missing; staples are always available.
+updated: 2026-10-26T15:00:00-05:00
+have:
+  - arroz
+  - patata
+  - cebolla
+  - ajo
+  - huevo
+to_buy:
+  - pimiento-rojo
+  - nata

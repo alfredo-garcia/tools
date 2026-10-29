@@ -1,0 +1,375 @@
+# Ingredient catalog. id: { name, synonyms, family, staple }
+# Ids and names in Spanish (Spain); regional variants as synonyms.
+
+# Staples (always assumed available)
+sal: { name: sal, synonyms: [], family: spices-and-herbs, staple: true }
+pimienta-negra:
+  { name: pimienta negra, synonyms: [pimienta], family: spices-and-herbs, staple: true }
+aceite-de-oliva:
+  {
+    name: aceite de oliva,
+    synonyms: [aceite, aove, aceite de oliva virgen extra],
+    family: oils-and-fats,
+    staple: true,
+  }
+agua: { name: agua, synonyms: [], family: other, staple: true }
+
+# Vegetables
+patata: { name: patata, synonyms: [papa, potato], family: vegetables, staple: false }
+cebolla:
+  {
+    name: cebolla,
+    synonyms: [cebolla blanca, cebolla cabezona, onion],
+    family: vegetables,
+    staple: false,
+  }
+cebolla-morada:
+  { name: cebolla morada, synonyms: [cebolla roja], family: vegetables, staple: false }
+cebolleta:
+  {
+    name: cebolleta,
+    synonyms: [cebolla larga, cebolla de verdeo],
+    family: vegetables,
+    staple: false,
+  }
+ajo: { name: ajo, synonyms: [garlic], family: vegetables, staple: false }
+tomate: { name: tomate, synonyms: [jitomate], family: vegetables, staple: false }
+pimiento-rojo:
+  { name: pimiento rojo, synonyms: [pimentón rojo, morrón rojo], family: vegetables, staple: false }
+pimiento-verde:
+  {
+    name: pimiento verde,
+    synonyms: [pimentón verde, morrón verde],
+    family: vegetables,
+    staple: false,
+  }
+zanahoria: { name: zanahoria, synonyms: [], family: vegetables, staple: false }
+calabacin: { name: calabacín, synonyms: [zucchini], family: vegetables, staple: false }
+berenjena: { name: berenjena, synonyms: [], family: vegetables, staple: false }
+puerro: { name: puerro, synonyms: [], family: vegetables, staple: false }
+judia-verde:
+  { name: judía verde, synonyms: [habichuela, ejote, vainita], family: vegetables, staple: false }
+maiz: { name: maíz, synonyms: [choclo, mazorca, elote], family: vegetables, staple: false }
+aguacate: { name: aguacate, synonyms: [palta], family: vegetables, staple: false }
+
+# Fruits
+limon: { name: limón, synonyms: [], family: fruits, staple: false }
+lima: { name: lima, synonyms: [limón verde, limón tahití], family: fruits, staple: false }
+
+# Meat
+pechuga-de-pollo: { name: pechuga de pollo, synonyms: [pechuga], family: meat, staple: false }
+muslo-de-pollo: { name: muslo de pollo, synonyms: [contramuslo], family: meat, staple: false }
+carne-picada: { name: carne picada, synonyms: [carne molida], family: meat, staple: false }
+
+# Eggs and dairy
+huevo: { name: huevo, synonyms: [], family: eggs-and-dairy, staple: false }
+leche: { name: leche, synonyms: [], family: eggs-and-dairy, staple: false }
+nata:
+  {
+    name: nata,
+    synonyms: [crema de leche, nata para cocinar],
+    family: eggs-and-dairy,
+    staple: false,
+  }
+mantequilla: { name: mantequilla, synonyms: [manteca], family: eggs-and-dairy, staple: false }
+queso-parmesano:
+  { name: queso parmesano, synonyms: [parmesano], family: eggs-and-dairy, staple: false }
+
+# Grains, flours and legumes
+arroz: { name: arroz, synonyms: [], family: grains-and-flours, staple: false }
+pasta: { name: pasta, synonyms: [], family: grains-and-flours, staple: false }
+harina-de-trigo:
+  { name: harina de trigo, synonyms: [harina], family: grains-and-flours, staple: false }
+garbanzo: { name: garbanzo, synonyms: [], family: legumes, staple: false }
+lenteja: { name: lenteja, synonyms: [], family: legumes, staple: false }
+
+# Pantry staples, spices and canned
+azucar: { name: azúcar, synonyms: [], family: pantry-staples, staple: false }
+pimenton-dulce:
+  { name: pimentón dulce, synonyms: [paprika], family: spices-and-herbs, staple: false }
+comino: { name: comino, synonyms: [], family: spices-and-herbs, staple: false }
+perejil: { name: perejil, synonyms: [], family: spices-and-herbs, staple: false }
+cilantro: { name: cilantro, synonyms: [culantro], family: spices-and-herbs, staple: false }
+laurel: { name: laurel, synonyms: [hoja de laurel], family: spices-and-herbs, staple: false }
+tomate-triturado:
+  { name: tomate triturado, synonyms: [tomate en lata], family: canned, staple: false }
+caldo-de-pollo: { name: caldo de pollo, synonyms: [fondo de pollo], family: canned, staple: false }
+
+# Added by food-manager (costillas-bbq-al-horno)
+costilla-de-cerdo:
+  {
+    name: costilla de cerdo,
+    synonyms: [costillas, costillas de cerdo, ribs],
+    family: meat,
+    staple: false,
+  }
+ajo-en-polvo:
+  { name: ajo en polvo, synonyms: [garlic powder], family: spices-and-herbs, staple: false }
+cayena-molida:
+  {
+    name: cayena molida,
+    synonyms: [cayena, cayena en polvo, pimienta de cayena],
+    family: spices-and-herbs,
+    staple: false,
+  }
+ketchup:
+  { name: kétchup, synonyms: [ketchup, salsa de tomate], family: pantry-staples, staple: false }
+concentrado-de-tomate:
+  {
+    name: concentrado de tomate,
+    synonyms: [pasta de tomate, tomate concentrado],
+    family: canned,
+    staple: false,
+  }
+salsa-de-soja:
+  {
+    name: salsa de soja,
+    synonyms: [soja, soya, salsa de soya],
+    family: pantry-staples,
+    staple: false,
+  }
+miel: { name: miel, synonyms: [], family: pantry-staples, staple: false }
+mostaza-dijon:
+  {
+    name: mostaza de Dijon,
+    synonyms: [mostaza dijon, dijon],
+    family: pantry-staples,
+    staple: false,
+  }
+
+# Added by food-manager (tartar-de-atun) — atún rojo fresco, no en conserva
+atun-rojo:
+  { name: atún rojo, synonyms: [atún fresco, bluefin], family: fish-and-seafood, staple: false }
+mango: { name: mango, synonyms: [], family: fruits, staple: false }
+
+# Added by food-manager (ensalada-de-manzana-verde-y-nueces)
+rucula: { name: rúcula, synonyms: [rúgula, arúgula, rucola], family: vegetables, staple: false }
+espinaca-baby:
+  {
+    name: espinaca baby,
+    synonyms: [espinaca tierna, brotes de espinaca],
+    family: vegetables,
+    staple: false,
+  }
+manzana-verde:
+  { name: manzana verde, synonyms: [manzana granny smith], family: fruits, staple: false }
+nuez: { name: nuez, synonyms: [nueces], family: pantry-staples, staple: false }
+queso-feta: { name: queso feta, synonyms: [feta], family: eggs-and-dairy, staple: false }
+mostaza-antigua:
+  {
+    name: mostaza antigua,
+    synonyms: [mostaza en grano, mostaza a la antigua],
+    family: pantry-staples,
+    staple: false,
+  }
+vinagre-de-manzana:
+  { name: vinagre de manzana, synonyms: [], family: pantry-staples, staple: false }
+
+# Added by food-manager (importación de Google Keep, 2026-10-28)
+platano: { name: plátano, synonyms: [banana, banano], family: fruits, staple: false }
+cacao-en-polvo:
+  { name: cacao en polvo, synonyms: [cacao, cocoa], family: pantry-staples, staple: false }
+mantequilla-de-cacahuete:
+  {
+    name: mantequilla de cacahuete,
+    synonyms: [crema de cacahuete, mantequilla de maní, peanut butter],
+    family: pantry-staples,
+    staple: false,
+  }
+levadura-quimica:
+  {
+    name: levadura química,
+    synonyms: [polvo de hornear, polvo para hornear, impulsor, royal],
+    family: pantry-staples,
+    staple: false,
+  }
+levadura-de-panadero:
+  {
+    name: levadura de panadero,
+    synonyms: [levadura seca, levadura en polvo de panadería],
+    family: pantry-staples,
+    staple: false,
+  }
+esencia-de-vainilla:
+  {
+    name: esencia de vainilla,
+    synonyms: [extracto de vainilla, vainilla],
+    family: pantry-staples,
+    staple: false,
+  }
+vinagre-de-vino-blanco:
+  { name: vinagre de vino blanco, synonyms: [], family: pantry-staples, staple: false }
+vinagre: { name: vinagre, synonyms: [vinagre blanco], family: pantry-staples, staple: false }
+vinagre-balsamico:
+  { name: vinagre balsámico, synonyms: [balsámico], family: pantry-staples, staple: false }
+bicarbonato:
+  { name: bicarbonato, synonyms: [bicarbonato de sodio], family: pantry-staples, staple: false }
+colorante-rojo:
+  {
+    name: colorante alimentario rojo,
+    synonyms: [colorante rojo en gel],
+    family: pantry-staples,
+    staple: false,
+  }
+azucar-glas:
+  {
+    name: azúcar glas,
+    synonyms: [azúcar glass, azúcar impalpable, azúcar en polvo],
+    family: pantry-staples,
+    staple: false,
+  }
+azucar-moreno:
+  {
+    name: azúcar moreno,
+    synonyms: [azúcar morena, panela rallada],
+    family: pantry-staples,
+    staple: false,
+  }
+chocolate-blanco: { name: chocolate blanco, synonyms: [], family: pantry-staples, staple: false }
+chocolate-negro:
+  {
+    name: chocolate negro,
+    synonyms: [chocolate oscuro, chocolate para fundir],
+    family: pantry-staples,
+    staple: false,
+  }
+crema-de-chocolate:
+  {
+    name: crema de chocolate,
+    synonyms: [nutella, crema de cacao],
+    family: pantry-staples,
+    staple: false,
+  }
+maicena:
+  {
+    name: maicena,
+    synonyms: [maizena, almidón de maíz, fécula de maíz, cornstarch],
+    family: grains-and-flours,
+    staple: false,
+  }
+harina-de-almendra:
+  {
+    name: harina de almendra,
+    synonyms: [almendra molida, almond flour],
+    family: grains-and-flours,
+    staple: false,
+  }
+almendra: { name: almendra, synonyms: [almendras], family: pantry-staples, staple: false }
+leche-de-almendras:
+  { name: leche de almendras, synonyms: [bebida de almendras], family: other, staple: false }
+canela: { name: canela, synonyms: [canela en polvo], family: spices-and-herbs, staple: false }
+nuez-moscada: { name: nuez moscada, synonyms: [], family: spices-and-herbs, staple: false }
+clavo: { name: clavo, synonyms: [clavo de olor], family: spices-and-herbs, staple: false }
+pimenton-ahumado: { name: pimentón ahumado, synonyms: [], family: spices-and-herbs, staple: false }
+oregano: { name: orégano, synonyms: [], family: spices-and-herbs, staple: false }
+guindilla:
+  {
+    name: guindilla,
+    synonyms: [ají, chile, guindilla roja, hojuelas de chile],
+    family: spices-and-herbs,
+    staple: false,
+  }
+achiote:
+  {
+    name: achiote,
+    synonyms: [color, color natural, onoto],
+    family: spices-and-herbs,
+    staple: false,
+  }
+curcuma: { name: cúrcuma, synonyms: [], family: spices-and-herbs, staple: false }
+cebollino: { name: cebollino, synonyms: [ciboulette], family: spices-and-herbs, staple: false }
+albahaca: { name: albahaca, synonyms: [], family: spices-and-herbs, staple: false }
+eneldo: { name: eneldo, synonyms: [], family: spices-and-herbs, staple: false }
+romero: { name: romero, synonyms: [], family: spices-and-herbs, staple: false }
+tomillo: { name: tomillo, synonyms: [], family: spices-and-herbs, staple: false }
+aceite-vegetal: { name: aceite vegetal, synonyms: [], family: oils-and-fats, staple: false }
+aceite-de-girasol: { name: aceite de girasol, synonyms: [], family: oils-and-fats, staple: false }
+corn-flakes:
+  {
+    name: copos de maíz,
+    synonyms: [corn flakes, cornflakes],
+    family: grains-and-flours,
+    staple: false,
+  }
+pan:
+  {
+    name: pan,
+    synonyms: [pan de molde, pan tostado, rebanada de pan, hogaza],
+    family: grains-and-flours,
+    staple: false,
+  }
+mayonesa: { name: mayonesa, synonyms: [], family: pantry-staples, staple: false }
+mostaza: { name: mostaza, synonyms: [mostaza amarilla], family: pantry-staples, staple: false }
+yogur-griego:
+  {
+    name: yogur griego,
+    synonyms: [yogurt griego, greek yogurt],
+    family: eggs-and-dairy,
+    staple: false,
+  }
+queso-crema:
+  {
+    name: queso crema,
+    synonyms: [queso de untar, philadelphia],
+    family: eggs-and-dairy,
+    staple: false,
+  }
+queso-cottage:
+  {
+    name: queso cottage,
+    synonyms: [cottage cheese, requesón, queso cuajada],
+    family: eggs-and-dairy,
+    staple: false,
+  }
+nata-para-montar:
+  {
+    name: nata para montar,
+    synonyms: [crema para batir, crema de leche para batir],
+    family: eggs-and-dairy,
+    staple: false,
+  }
+beicon: { name: beicon, synonyms: [bacon, tocineta, tocino ahumado], family: meat, staple: false }
+jamon-serrano:
+  { name: jamón serrano, synonyms: [jamón, virutas de jamón], family: meat, staple: false }
+carne-picada-de-cerdo:
+  { name: carne picada de cerdo, synonyms: [carne de cerdo molida], family: meat, staple: false }
+pollo: { name: pollo, synonyms: [pollo entero, pollo troceado], family: meat, staple: false }
+calamar:
+  {
+    name: calamar,
+    synonyms: [calamares, anillas de calamar],
+    family: fish-and-seafood,
+    staple: false,
+  }
+salmon: { name: salmón, synonyms: [filete de salmón], family: fish-and-seafood, staple: false }
+apio: { name: apio, synonyms: [], family: vegetables, staple: false }
+guisante:
+  { name: guisante, synonyms: [arveja, arvejas, chícharo], family: vegetables, staple: false }
+champinon: { name: champiñón, synonyms: [champiñones, hongos], family: vegetables, staple: false }
+chalota: { name: chalota, synonyms: [chalote, echalote], family: vegetables, staple: false }
+tomate-cherry:
+  { name: tomate cherry, synonyms: [tomates cherry], family: vegetables, staple: false }
+arandano:
+  { name: arándano, synonyms: [arándanos, blueberry, blueberries], family: fruits, staple: false }
+fresa: { name: fresa, synonyms: [fresas, frutilla], family: fruits, staple: false }
+tomate-seco: { name: tomate seco, synonyms: [tomates secos], family: canned, staple: false }
+aceituna-negra: { name: aceituna negra, synonyms: [olivas negras], family: canned, staple: false }
+alcaparra: { name: alcaparra, synonyms: [alcaparras], family: canned, staple: false }
+cacahuete: { name: cacahuete, synonyms: [maní, cacahuetes], family: pantry-staples, staple: false }
+pistacho: { name: pistacho, synonyms: [pistachos], family: pantry-staples, staple: false }
+galleta-lotus:
+  {
+    name: galleta Lotus,
+    synonyms: [galletas Lotus, galleta speculoos],
+    family: pantry-staples,
+    staple: false,
+  }
+cafe: { name: café, synonyms: [], family: pantry-staples, staple: false }
+sirope-de-arce:
+  { name: sirope de arce, synonyms: [maple, maple syrup], family: pantry-staples, staple: false }
+cerveza: { name: cerveza, synonyms: [], family: other, staple: false }
+vino-tinto: { name: vino tinto, synonyms: [], family: other, staple: false }
+vino-blanco: { name: vino blanco, synonyms: [vino blanco seco], family: other, staple: false }
+caldo-de-carne: { name: caldo de carne, synonyms: [fondo de carne], family: canned, staple: false }
+crema-pastelera: { name: crema pastelera, synonyms: [], family: other, staple: false }
+bizcocho: { name: bizcocho, synonyms: [bizcocho base], family: other, staple: false }

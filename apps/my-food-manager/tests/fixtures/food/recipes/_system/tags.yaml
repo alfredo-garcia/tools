@@ -1,0 +1,51 @@
+# Closed tag vocabulary. family: { label, values: { id: label } }
+cuisine:
+  label: Cocina
+  values:
+    spanish: española
+    colombian: colombiana
+    italian: italiana
+    mexican: mexicana
+    asian: asiática
+    indian: india
+    mediterranean: mediterránea
+    french: francesa
+    other: otra
+diet:
+  label: Dieta
+  values:
+    vegetarian: vegetariana
+    vegan: vegana
+    gluten-free: sin gluten
+    lactose-free: sin lactosa
+protein:
+  label: Proteína
+  values:
+    chicken: pollo
+    beef: ternera
+    pork: cerdo
+    fish: pescado
+    seafood: marisco
+    egg: huevo
+    legumes: legumbres
+    none: ninguna
+occasion:
+  label: Ocasión
+  values:
+    everyday: diario
+    quick: rápida
+    sunday: domingo
+    guests: invitados
+    freezer-friendly: para congelar
+    meal-prep: tupper
+    party: fiesta
+technique:
+  label: Técnica
+  values:
+    oven: horno
+    pot: olla
+    pan: sartén
+    pressure-cooker: olla a presión
+    air-fryer: freidora de aire
+    griddle: plancha
+    no-cook: sin cocción

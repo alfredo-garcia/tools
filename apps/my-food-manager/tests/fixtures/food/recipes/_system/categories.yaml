@@ -1,0 +1,13 @@
+# One main category per recipe; drives the folder items/<folder>/.
+# Provisional list, to be refined with real recipes.
+unclassified: { folder: 00-unclassified, label: Sin clasificar }
+breakfast: { folder: 01-breakfast, label: Desayunos }
+starters: { folder: 02-starters, label: Entrantes y picoteo }
+soups: { folder: 03-soups, label: Sopas y cremas }
+salads: { folder: 04-salads, label: Ensaladas }
+mains: { folder: 05-mains, label: Principales }
+sides: { folder: 06-sides, label: Guarniciones }
+sauces: { folder: 07-sauces, label: Salsas y bases }
+breads: { folder: 08-breads, label: Panes y masas }
+desserts: { folder: 09-desserts, label: Postres }
+drinks: { folder: 10-drinks, label: Bebidas }

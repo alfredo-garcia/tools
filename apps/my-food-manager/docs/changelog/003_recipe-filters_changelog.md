@@ -28,9 +28,15 @@ None.
 
 ## Deviations from PRD Carried Into the Docs
 
-None. The UX Flow has no deviations section; the prototype was the implemented screen itself.
+The UX Flow has no deviations section (the prototype was the implemented screen itself). The following deviation was found when documenting and approved by the user on 2026-10-29.
+
+| PRD said | We documented instead | Why / who approved |
+|---|---|---|
+| A value missing from the vocabulary shows its raw id (US-4.3) | It shows its id with the first letter capitalized, like the vocabulary labels ("tofu" → "Tofu") | Shipped that way; user approved documenting the implementation and updating the PRD to match |
 
 ## Open Questions / Follow-Ups
 
 1. Filters are not kept when the page reloads; persisting them was deferred in the PRD.
 2. `FilterChip` and `FilterOptions` live under `components/inputs`; the UI kit registry already lists them.
+3. Not yet verified offline, in light mode or on a real phone.
+4. The PRD's "Sin opciones" text for a filter with no values is never reached: such a filter is disabled and cannot open its panel.

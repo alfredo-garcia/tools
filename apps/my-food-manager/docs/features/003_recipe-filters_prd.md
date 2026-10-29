@@ -44,10 +44,10 @@ Text search; sort controls; multi-select inside one filter; saved filters or fil
 **US-4 Useful options.** As Al, I want only options that make sense.
 1. Given a filter, then its options are the values that exist in the library, in vocabulary order, each with the number of recipes it would show given the other active filters.
 2. Given an option whose count is 0, then it is shown disabled; the currently selected option is always enabled.
-3. Given a value not in the vocabulary, then its raw id shows as label.
+3. Given a value not in the vocabulary, then its id shows as label with the first letter capitalized. Vocabulary labels are also shown with the first letter capitalized.
 
 **US-5 Visual feedback.** As Al, I want to see the list react.
-1. Given a filter change, then recipes that stay move smoothly to their new position, recipes that appear fade in, and the visible count ("N de M recetas") updates.
+1. Given a filter change, then recipes that stay move smoothly to their new position, recipes that appear fade in, and the visible count updates ("N recetas" with no filter, "N de M recetas" with filters).
 2. Given `prefers-reduced-motion`, then no animation plays and the list updates instantly.
 
 **US-6 No results.** As Al, I want a way out.
@@ -74,7 +74,7 @@ None. New domain module `src/lib/domain/filters.ts`.
 
 ## 10. Edge Cases & Error Handling
 - Library not loaded or empty: no filters shown.
-- A filter with no values in the library: shown but with no options ("Sin opciones"), disabled.
+- A filter with no values in the library: shown disabled, so it cannot open its panel.
 - Very long option labels truncate with ellipsis inside the chip; they wrap in the options panel.
 - Filter changes while a sync is running: result follows the latest library.
 

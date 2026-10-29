@@ -76,6 +76,8 @@ None.
 - **Detail:** the recipe screen, a modal on desktop and a full screen on mobile.
 - **Compact bar:** the fixed top bar of the detail that shows the recipe title once the title scrolls out of view.
 - **Info general:** the first section of the detail, with the recipe's key facts and tags.
+- **Total time:** preparation + cooking + resting minutes of a recipe, counting missing parts as 0; used by the Tiempo filter.
+- **Filter:** one of Categoría, Tiempo, Dieta, Cocina, Dificultad or Proteína; each holds one chosen value at a time.
 
 ## 11. Recent Changes
 
@@ -192,7 +194,14 @@ Filtering the recipe list and reading a recipe. Everything works from the stored
 
 - **Design system reference:** `RecipeFilters`, `components/recipes/RecipeFilters` (see `context/ui_kit_registry.md`).
 - **Functional role:** the filter row above the list, its option panel, the count and "Limpiar".
-- **Behavior rules:** six filters: Categoría, Tiempo, Dieta, Cocina, Dificultad, Proteína. One value each, combined so that a recipe must match all active ones. Options are the values present in the library, each with the number of recipes it would give with the other filters; an option with 0 is disabled. The list reorders with animation, which is off when the device asks for reduced motion.
+- **Behavior rules:**
+  - Six filters, in this order: Categoría, Tiempo, Dieta, Cocina, Dificultad, Proteína. A filter shows only its name until a value is chosen; then it shows the value with an "x" that removes it and brings the name back. Opening one filter closes any other; Esc or a tap outside closes the options.
+  - One value per filter. Filters combine, so a recipe must match all active ones. With several tags in a family (cuisine, diet, protein), a recipe matches if any of them equals the chosen value.
+  - Options are the values present in the library, in vocabulary order (values missing from the vocabulary come last, alphabetically), each with the number of recipes it would give with the other active filters. An option with 0 is disabled; the chosen one never is. A filter with no values in the library is disabled.
+  - Tiempo uses total time with four options: "Hasta 15 min", "Hasta 30 min", "Hasta 1 h", "Más de 1 h". Dificultad shows "Fácil", "Media", "Difícil". A recipe with no time or no difficulty never matches those filters when active.
+  - Option and chip labels come from the vocabularies with the first letter capitalized; a value missing from the vocabulary shows its id, also capitalized.
+  - The count reads "N recetas" with no filter and "N de M recetas" with filters. "Limpiar" clears all filters and appears when two or more are active.
+  - The list reorders with animation, which is off when the device asks for reduced motion.
 - **Used on:** SCR-library-list.
 - **Source:** `003_recipe-filters_prd.md`, `003_recipe-filters_ux_flow.md`; implementation in `src/components/recipes/RecipeFilters.tsx`.
 

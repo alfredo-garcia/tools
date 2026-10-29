@@ -1,6 +1,7 @@
 "use client";
 
 import { DetailLayer } from "@/components/overlays/DetailLayer";
+import { useLayout } from "@/components/layout/use-layout";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { Button } from "@/components/inputs/Button";
 import { RecipePhoto } from "@/components/recipes/RecipePhoto";
@@ -23,8 +24,11 @@ function RecipeContent({ recipe, library }: { recipe: Recipe; library: Library }
         category={recipe.category}
         className="aspect-video w-full"
       />
-      <div className="mx-auto w-full max-w-3xl px-4 pt-4 pb-10">
-        <h1 data-detail-title className="text-2xl leading-[1.15] font-extrabold lg:hidden">
+      <div className="mx-auto w-full max-w-3xl px-4 pt-4 pb-10 group-data-[detail-mode=panel]:max-w-none">
+        <h1
+          data-detail-title
+          className="text-2xl leading-[1.15] font-extrabold group-data-[detail-mode=modal]:hidden group-data-[detail-mode=panel]:hidden"
+        >
           {recipe.title}
         </h1>
         <InfoSection recipe={recipe} library={library} />
@@ -39,7 +43,15 @@ function RecipeContent({ recipe, library }: { recipe: Recipe; library: Library }
 /** SCR-recipe-detail: reads the recipe `id` (from the `/recipes/<id>` address) from the stored library. */
 export function RecipeDetail({ id }: { id: string }) {
   const { hydrated, library, status, refresh } = useLibrary();
-  const close = useCloseDetail();
+  const closeDetail = useCloseDetail();
+  const layout = useLayout();
+  const mode = layout === "small" ? "fullscreen" : layout === "medium" ? "modal" : "panel";
+  const close = () => {
+    // In the side panel focus is not trapped: hand it back to the row that was selected.
+    if (mode === "panel")
+      document.querySelector<HTMLElement>('[data-recipe-row="current"]')?.focus();
+    closeDetail();
+  };
 
   const recipe = library ? findRecipe(library, id) : undefined;
   let body: React.ReactNode;
@@ -69,7 +81,7 @@ export function RecipeDetail({ id }: { id: string }) {
   }
 
   return (
-    <DetailLayer title={recipe?.title} resetKey={id} onClose={close}>
+    <DetailLayer mode={mode} title={recipe?.title} resetKey={id} onClose={close}>
       {recipe && library ? (
         <RecipeContent key={recipe.id} recipe={recipe} library={library} />
       ) : (

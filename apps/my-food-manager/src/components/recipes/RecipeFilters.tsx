@@ -57,11 +57,7 @@ export function RecipeFilters({
 
   return (
     <div ref={root} className="mb-4">
-      <div
-        role="group"
-        aria-label="Filtros"
-        className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-      >
+      <div role="group" aria-label="Filtros" className="flex flex-wrap gap-2">
         {FILTERS.map(({ key, label }) => {
           const value = state[key];
           const options = filterOptions(library, key, state);

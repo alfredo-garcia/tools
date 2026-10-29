@@ -20,6 +20,7 @@
 | `SearchInput` | Inputs | Web | Beta | `components/inputs/SearchInput` |
 | `FilterChip` | Inputs | Web | Beta | `components/inputs/FilterChip` |
 | `FilterOptions` | Inputs | Web | Beta | `components/inputs/FilterOptions` |
+| `RecipeLibrary` | Data Display | Web | Beta | `components/recipes/RecipeLibrary` |
 | `RecipeFilters` | Data Display | Web | Beta | `components/recipes/RecipeFilters` |
 | `useListReorder` | Data Display (hook) | Web | Beta | `components/recipes/use-list-reorder` |
 | `RecipeTile` | Data Display | Web | Beta | `components/recipes/RecipeTile` |
@@ -107,14 +108,20 @@
 ### RecipeLink
 - **Category:** Navigation. **Import:** `components/recipes/RecipeLink`. **Status:** Beta.
 - **Description:** link to a recipe detail (`/recipes/<id>`). Keeps a real `href` (new tab, copy link) but a plain click opens the detail in place with the History API, so no request is made and it works offline.
-- **Props:** `recipeId: string`, `className?: string`, `children`.
+- **Props:** `recipeId: string`, `className?: string`, `current?: boolean` (marks the recipe open in the side panel: `aria-current="true"`), `replace?: boolean` (replaces the history entry instead of adding one, used when switching recipes in the side panel), `children`.
 - **Guidance:** use it for every link to a recipe detail; do not use `next/link` for them. Modified clicks (Ctrl/Cmd/Shift/Alt, middle button) keep the browser default.
 
 ### DetailLayer
 - **Category:** Feedback/Overlays. **Import:** `components/overlays/DetailLayer`. **Status:** Beta.
-- **Description:** full-screen layer below 1024px, large modal (max 720px, 90% height, `radius.lg`, `elevation.3`, dimmed backdrop) from 1024px. Owns the top bar: mobile "Atrás" button, desktop "Cerrar" icon button; a compact title fades into the bar once the element marked `data-detail-title` scrolls under it. Traps focus, closes on Esc and backdrop click (desktop), locks page scroll, returns focus to the opener on close, respects `prefers-reduced-motion`.
-- **Props:** `title?: string` (dialog name and compact title), `resetKey?: string` (scroll returns to the top when it changes), `onClose: () => void`, `children`.
-- **Guidance:** one scrolling area; children render inside it. Distinct from `Sheet`, which is a bottom sheet on mobile.
+- **Description:** hosts the recipe detail in one of three modes, switching between them without rebuilding its content. `fullscreen` (small windows): full screen, "Atrás" button, the compact title fades into the bar once the element marked `data-detail-title` scrolls under it. `modal` (medium): centered, max 720px, 90% height, `radius.lg`, `elevation.3`, dimmed backdrop, "Cerrar" at the right of the bar, the title always in the bar. `panel` (large): fills the right region beside the list, no backdrop, radius or shadow, "Cerrar" and the title always in the bar, not a dialog (`role="region"`). Fullscreen and modal trap focus, lock page scroll and return focus to the opener; the modal also closes on Esc and backdrop click. The panel does none of these.
+- **Props:** `mode: "fullscreen" | "modal" | "panel"`, `title?: string` (accessible name and bar title), `resetKey?: string` (scroll returns to the top when it changes), `onClose: () => void`, `children`.
+- **Guidance:** one scrolling area; children render inside it. Descendants can style by mode with `group-data-[detail-mode=panel]:` and `group-data-[detail-mode=modal]:`. Distinct from `Sheet`, which is a bottom sheet on small windows.
+
+### RecipeLibrary
+- **Category:** Data Display (assembly). **Import:** `components/recipes/RecipeLibrary`. **Status:** Beta.
+- **Description:** the recipe list with filters and the recipe detail, laid out by window width. Small and medium: the list as a page and the detail over it. Large (>=1280px): a 400px list column with its own scroll (title, sync badge, filters and rows scroll together) and the detail in a panel on the right; the selected row is highlighted and, with nothing selected, the panel shows "Elige una receta".
+- **Props:** none (reads the library and the address).
+- **Rules:** choosing a recipe in the large layout adds a history entry when the panel is empty and replaces it otherwise; the list offset is carried over when the layout changes.
 
 ### CollapsibleSection
 - **Category:** Data Display. **Import:** `components/recipes/detail/CollapsibleSection`. **Status:** Beta.
@@ -154,6 +161,6 @@ None. The components introduced by feature `my-food-manager/002` (recipe detail)
 Not applicable (web only).
 
 ## 6. Versioning
-- **Last updated:** 2026-10-29 (added FilterChip, FilterOptions, RecipeFilters, useListReorder; recipe detail components; `RecipePhoto` props corrected to the implementation)
+- **Last updated:** 2026-10-29 (responsive layout: DetailLayer modes, RecipeLibrary, RecipeLink props; added FilterChip, FilterOptions, RecipeFilters, useListReorder; recipe detail components; `RecipePhoto` props corrected to the implementation)
 - **Owner:** Al
 - Initial registry, all entries Beta pending implementation.

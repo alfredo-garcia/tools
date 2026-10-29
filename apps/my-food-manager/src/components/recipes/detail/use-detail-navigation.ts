@@ -21,8 +21,12 @@ export function recipeIdFromPath(pathname: string): string | undefined {
   }
 }
 
-/** Opens a recipe detail as a new history entry. */
-export function openRecipe(recipeId: string) {
+/** Opens a recipe detail as a new history entry, or replaces the current one (switching recipes in the side panel). */
+export function openRecipe(recipeId: string, { replace = false } = {}) {
+  if (replace) {
+    window.history.replaceState(null, "", detailHref(recipeId));
+    return;
+  }
   inAppEntries += 1;
   window.history.pushState(null, "", detailHref(recipeId));
 }

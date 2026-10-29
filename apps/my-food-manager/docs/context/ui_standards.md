@@ -49,8 +49,8 @@ Aisle headers use caption, uppercase, 800 weight, +0.06em tracking.
 
 ## 4. Spacing & Layout Scale
 - **Base unit:** 4px. `space.xs 4`, `sm 8`, `md 16`, `lg 24`, `xl 32`. No in-between values.
-- **Breakpoints:** `mobile <640`, `tablet 640-1024`, `desktop >1024` (px).
-- **Grid:** recipe tiles 2 columns on mobile, 3 on tablet, 4 on desktop; gutter `space.md` (12px for tile grids); page margin `space.md`. Desktop content max width 1180px; list/detail screens max 720px centered.
+- **Breakpoints:** `small <640`, `medium 640-1279`, `large >=1280` (px). The width is the window width; there is no separate mobile/desktop detection.
+- **Grid:** recipe tiles 2 columns on small, 3 on medium, 4 on large; gutter `space.md` (12px for tile grids); page margin `space.md`. Desktop content max width 1180px; list/detail screens max 720px centered, except the recipe detail side panel in the large layout, which fills the width left by the 400px list column.
 
 ## 5. Iconography
 - **Set:** `lucide-react` only.
@@ -84,7 +84,7 @@ Aisle headers use caption, uppercase, 800 weight, +0.06em tracking.
 Web only (responsive PWA, mobile-first).
 - **Interaction model:** touch first. No hover-only affordances; anything revealed on hover (desktop) must be always visible on touch.
 - **Navigation container:** mobile: bottom tab bar (Inicio, Recetas, Lista, Despensa). Desktop (>1024px): the same four destinations as a left sidebar.
-- **Overlays:** mobile: bottom sheet for quick actions (rate, pick); desktop: centered modal or side panel for the same content. Full-screen takeover only for the cook view.
+- **Overlays:** small: bottom sheet for quick actions (rate, pick); medium: centered modal; large: side panel for the same content. The recipe detail is full screen on small, a modal (max 720px) on medium and a panel beside the list on large. Full-screen takeover only for the cook view.
 - **Gestures:** horizontal scroll for chip rows; pull-to-refresh triggers a Drive sync; no other custom gestures in the MVP.
 - **Offline:** an offline badge appears at the top of every screen when disconnected; pending changes are counted; never block reads.
 

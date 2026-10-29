@@ -6,16 +6,24 @@ import { detailHref, openRecipe } from "@/components/recipes/detail/use-detail-n
 export function RecipeLink({
   recipeId,
   className,
+  current = false,
+  replace = false,
   children,
 }: {
   recipeId: string;
   className?: string;
+  /** Marks the link as the recipe currently open (side panel). */
+  current?: boolean;
+  /** Replace the history entry instead of adding one. */
+  replace?: boolean;
   children: React.ReactNode;
 }) {
   return (
     <a
       href={detailHref(recipeId)}
       className={className}
+      data-recipe-row={current ? "current" : "row"}
+      aria-current={current ? "true" : undefined}
       onClick={(e) => {
         if (
           e.defaultPrevented ||
@@ -27,7 +35,7 @@ export function RecipeLink({
         )
           return;
         e.preventDefault();
-        openRecipe(recipeId);
+        openRecipe(recipeId, { replace });
       }}
     >
       {children}

@@ -27,8 +27,12 @@ export function AppShell({ title, children }: { title: string; children: React.R
     let startY: number | null = null;
     const onStart = (e: TouchEvent) => {
       // Touches inside the recipe detail layer scroll the detail, not the page behind it.
-      const inDetail = (e.target as Element | null)?.closest?.("[data-detail-layer]");
-      startY = window.scrollY <= 0 && !inDetail ? e.touches[0].clientY : null;
+      const target = e.target as Element | null;
+      const inDetail = target?.closest?.("[data-detail-layer]");
+      // In the large layout the list scrolls inside its own column, not the page.
+      const region = target?.closest?.("[data-scroll-region]");
+      const scrollTop = region ? region.scrollTop : window.scrollY;
+      startY = scrollTop <= 0 && !inDetail ? e.touches[0].clientY : null;
     };
     const onMove = (e: TouchEvent) => {
       if (startY === null) return;

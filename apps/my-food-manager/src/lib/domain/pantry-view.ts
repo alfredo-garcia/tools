@@ -1,8 +1,11 @@
 import type { FilterOption } from "@/lib/domain/filters";
 import { normalize } from "@/lib/domain/search";
-import type { Library, PantryOp } from "@/lib/schema";
+import type { Library, PantryOp, PlanOp } from "@/lib/schema";
 
-export type PendingOp = PantryOp;
+/** A change made on this device and not confirmed by the server yet. */
+export type PendingOp = PantryOp | PlanOp;
+export const isPantryOp = (op: PendingOp): op is PantryOp =>
+  op.kind === "pantry.setHave" || op.kind === "pantry.setBuy";
 export type PantryTab = "despensa" | "lista";
 export type StateFilter = "tengo" | "notengo" | "todos";
 
@@ -52,6 +55,7 @@ export function pantryWithPending(
   const have = new Set(pantry.have);
   const buy = new Set(pantry.to_buy);
   for (const op of pending) {
+    if (!isPantryOp(op)) continue;
     const set = op.kind === "pantry.setHave" ? have : buy;
     if (op.value) set.add(op.ingredient);
     else set.delete(op.ingredient);

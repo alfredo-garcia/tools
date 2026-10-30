@@ -41,12 +41,24 @@ function RecipeContent({ recipe, library }: { recipe: Recipe; library: Library }
 }
 
 /** SCR-recipe-detail: reads the recipe `id` (from the `/recipes/<id>` address) from the stored library. */
-export function RecipeDetail({ id }: { id: string }) {
+export function RecipeDetail({
+  id,
+  onClose,
+  overlay = false,
+}: {
+  id: string;
+  /** Closes the detail when it is not driven by the address (e.g. over the Plan). */
+  onClose?: () => void;
+  /** Never use the side panel: large windows show a modal (screens with no list beside it). */
+  overlay?: boolean;
+}) {
   const { hydrated, library, status, refresh } = useLibrary();
   const closeDetail = useCloseDetail();
   const layout = useLayout();
-  const mode = layout === "small" ? "fullscreen" : layout === "medium" ? "modal" : "panel";
+  const mode =
+    layout === "small" ? "fullscreen" : layout === "medium" || overlay ? "modal" : "panel";
   const close = () => {
+    if (onClose) return onClose();
     // In the side panel focus is not trapped: hand it back to the row that was selected.
     if (mode === "panel")
       document.querySelector<HTMLElement>('[data-recipe-row="current"]')?.focus();

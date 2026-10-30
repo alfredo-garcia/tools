@@ -8,7 +8,16 @@ import { useLibrary } from "@/lib/offline/use-library";
 
 const PULL_THRESHOLD = 70;
 
-export function AppShell({ title, children }: { title: string; children: React.ReactNode }) {
+export function AppShell({
+  title,
+  wide = false,
+  children,
+}: {
+  title: string;
+  /** Content uses the whole available width instead of 768 px (weekly Plan columns). */
+  wide?: boolean;
+  children: React.ReactNode;
+}) {
   const { status, syncedAt, refresh } = useLibrary();
   const [toast, setToast] = useState<string>();
   const [pull, setPull] = useState(0);
@@ -57,7 +66,7 @@ export function AppShell({ title, children }: { title: string; children: React.R
   }, [manualRefresh]);
 
   return (
-    <div className="mx-auto min-h-dvh w-full max-w-3xl px-4 pb-6">
+    <div className={`mx-auto min-h-dvh w-full px-4 pb-6 ${wide ? "" : "max-w-3xl"}`}>
       <div
         aria-hidden
         className="flex items-center justify-center overflow-hidden text-text-muted transition-[height]"

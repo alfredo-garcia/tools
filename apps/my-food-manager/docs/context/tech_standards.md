@@ -65,16 +65,16 @@ prototypes/              # scratch (gitignored)
 - Comments only where intent is non-obvious. User-facing copy is in Spanish; code, identifiers and docs are English.
 
 ## 5. Data & Persistence Conventions
-- **Contract:** `food/_system/schema.md` in the Drive folder is authoritative (recipes schema 3, ingredients 1, pantry 2, reviews 1). `src/lib/schema` mirrors it with zod; unknown extra fields are preserved, never dropped, on write.
+- **Contract:** `food/_system/schema.md` in the Drive folder is authoritative (recipes schema 3, ingredients 1, pantry 2, reviews 1, plan 1). `src/lib/schema` mirrors it with zod; unknown extra fields are preserved, never dropped, on write.
 - IDs are recipe/ingredient slugs from the files; the app never mints ids.
 - Timestamps are ISO 8601 with offset `-05:00`, as in the files; the app sets `updated` on every write.
-- **The app writes only:** `pantry/pantry.yaml`, `reviews/<user>.yaml`, and `curated` on a recipe. It never edits other recipe fields, the ingredient catalog or vocabularies (food-manager owns them).
-- Writes are intent operations (e.g. `pantry.setHave`, `review.setRating`), applied server-side as read-modify-write against the latest file, with a Drive `modifiedTime` check and one retry (ADR 001).
-- No deletes of Drive files from the app.
+- **The app writes only:** `pantry/pantry.yaml`, `plan/plan.yaml` (add/remove recipe dishes per day and meal only, ADR 003), `reviews/<user>.yaml`, and `curated` on a recipe. It never edits other recipe fields, the ingredient catalog or vocabularies (food-manager owns them).
+- Writes are intent operations (e.g. `pantry.setHave`, `plan.addRecipe`, `review.setRating`), applied server-side as read-modify-write against the latest file, with a Drive `modifiedTime` check and one retry (ADR 001). A batch touching several files is grouped per file, each written and retried independently and not atomically across files (ADR 003).
+- No deletes of Drive files from the app, and no creation of them: `plan/plan.yaml` is created by the food-manager skill (ADR 002, ADR 003).
 - Offline cache: one IndexedDB store with the last snapshot and an ordered outbox of pending operations.
 
 ## 6. API & Integration Conventions
-- REST-ish JSON route handlers under `src/app/api`: `GET /api/snapshot` (everything the UI needs, ETag-based), `GET /api/photo/[id]` (proxy with long cache headers), `POST /api/ops` (operations batch).
+- REST-ish JSON route handlers under `src/app/api`: `GET /api/snapshot` (everything the UI needs, ETag-based), `GET /api/photo/[id]` (proxy with long cache headers), `POST /api/ops` (operations batch, may span pantry and plan).
 - All inputs validated with zod; errors return `{ "error": { "code": string, "message": string } }` with the proper HTTP status.
 - Drive is wrapped in `src/lib/drive`; no other module calls the Drive API. Listing uses `modifiedTime` to skip unchanged files; per-instance in-memory cache is allowed, never required for correctness.
 - No pagination: the snapshot is one document (100+ recipes, tens of KB of metadata; recipe bodies may load lazily).

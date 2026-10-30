@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import type { PendingOp } from "@/lib/domain/pantry-view";
+import type { PantryOp } from "@/lib/schema";
 import { RETRY_DELAYS_MS, createOutbox, type OutboxDeps } from "@/lib/offline/outbox";
 
 const json = (body: unknown, status = 200) =>
@@ -60,7 +61,10 @@ describe("outbox", () => {
       { id: "op1", kind: "pantry.setHave", ingredient: "leche", value: true },
     ]);
     expect(t.outbox.getState().pending).toEqual([]);
-    expect(t.deps.onSaved).toHaveBeenCalledWith({ have: ["leche"], to_buy: [] });
+    expect(t.deps.onSaved).toHaveBeenCalledWith({
+      pantry: { have: ["leche"], to_buy: [] },
+      plan: undefined,
+    });
     expect(t.persisted()).toEqual([]);
   });
 
@@ -71,14 +75,17 @@ describe("outbox", () => {
     await t.outbox.enqueue("pantry.setHave", "leche", true, false);
     await t.outbox.enqueue("pantry.setBuy", "nata", true, false);
     expect(t.fetchMock).not.toHaveBeenCalled();
-    expect(t.outbox.getState().pending.map((o) => o.ingredient)).toEqual(["leche", "nata"]);
+    expect(t.outbox.getState().pending.map((o) => (o as PantryOp).ingredient)).toEqual([
+      "leche",
+      "nata",
+    ]);
     expect(t.persisted()).toHaveLength(2);
 
     t.setOnline(true);
     t.fetchMock.mockResolvedValue(saved("op1", "op2"));
     await t.outbox.flush();
     expect(
-      JSON.parse(t.fetchMock.mock.calls[0][1].body).ops.map((o: PendingOp) => o.ingredient),
+      JSON.parse(t.fetchMock.mock.calls[0][1].body).ops.map((o: PantryOp) => o.ingredient),
     ).toEqual(["leche", "nata"]);
     expect(t.outbox.getState().pending).toEqual([]);
   });
@@ -91,7 +98,7 @@ describe("outbox", () => {
     await t.outbox.enqueue("pantry.setHave", "leche", false, false);
     await t.outbox.enqueue("pantry.setHave", "leche", true, false);
     expect(t.outbox.getState().pending).toHaveLength(1);
-    expect(t.outbox.getState().pending[0].value).toBe(true);
+    expect((t.outbox.getState().pending[0] as PantryOp).value).toBe(true);
   });
 
   it("drops a change that returns a switch to its stored value", async () => {
@@ -191,7 +198,7 @@ describe("outbox", () => {
     await t.outbox.hydrate();
     await t.outbox.enqueue("pantry.setHave", "leche", true, false);
     await t.outbox.enqueue("pantry.setHave", "leche", false, false);
-    expect(t.outbox.getState().pending.map((o) => o.value)).toEqual([true, false]);
+    expect(t.outbox.getState().pending.map((o) => (o as PantryOp).value)).toEqual([true, false]);
 
     t.fetchMock.mockResolvedValue(saved("op2"));
     release(saved("op1"));
@@ -215,6 +222,50 @@ describe("outbox", () => {
     await t.outbox.hydrate();
     await tick();
     expect(t.fetchMock.mock.calls.map((c) => JSON.parse(c[1].body).ops.length)).toEqual([100, 50]);
+    expect(t.outbox.getState().pending).toEqual([]);
+  });
+
+  it("sends plan changes in order beside pantry ones, never collapsing a repeated recipe", async () => {
+    const t = setup();
+    t.setOnline(false);
+    await t.outbox.hydrate();
+    await t.outbox.enqueuePlan("plan.addRecipe", "2026-11-02", "lunch", "bizcocho");
+    await t.outbox.enqueuePlan("plan.addRecipe", "2026-11-02", "lunch", "bizcocho");
+    await t.outbox.enqueue("pantry.setBuy", "nata", true, false);
+    expect(t.outbox.getState().pending).toHaveLength(3);
+
+    t.setOnline(true);
+    t.fetchMock.mockResolvedValue(
+      json({
+        results: ["op1", "op2", "op3"].map((id) => ({ id, status: "applied" })),
+        pantry: { have: [], to_buy: ["nata"] },
+        plan: { days: {} },
+      }),
+    );
+    await t.outbox.flush();
+    expect(JSON.parse(t.fetchMock.mock.calls[0][1].body).ops).toEqual([
+      { id: "op1", kind: "plan.addRecipe", date: "2026-11-02", meal: "lunch", recipe: "bizcocho" },
+      { id: "op2", kind: "plan.addRecipe", date: "2026-11-02", meal: "lunch", recipe: "bizcocho" },
+      { id: "op3", kind: "pantry.setBuy", ingredient: "nata", value: true },
+    ]);
+    expect(t.deps.onSaved).toHaveBeenCalledWith({
+      pantry: { have: [], to_buy: ["nata"] },
+      plan: { days: {} },
+    });
+    expect(t.outbox.getState().pending).toEqual([]);
+  });
+
+  it("reports a rejected plan change by its recipe", async () => {
+    const t = setup();
+    await t.outbox.hydrate();
+    t.fetchMock.mockResolvedValue(
+      json({
+        results: [{ id: "op1", status: "rejected", error: { code: "INVALID_OP", message: "x" } }],
+      }),
+    );
+    await t.outbox.enqueuePlan("plan.addRecipe", "2026-11-02", "dinner", "bizcocho");
+    await tick();
+    expect(t.outbox.getState().notices).toEqual([{ id: 1, recipe: "bizcocho" }]);
     expect(t.outbox.getState().pending).toEqual([]);
   });
 });

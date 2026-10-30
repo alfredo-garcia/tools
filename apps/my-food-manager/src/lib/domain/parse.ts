@@ -1,4 +1,5 @@
 import { parse as parseYaml } from "yaml";
+import { z } from "zod";
 import {
   ingredientCatalogEntrySchema,
   pantryFileSchema,
@@ -6,6 +7,8 @@ import {
   reviewsSchema,
   type IngredientCatalogEntry,
   type Pantry,
+  type Plan,
+  type PlanDish,
   type Recipe,
   type Reviews,
 } from "@/lib/schema";
@@ -101,4 +104,36 @@ export function parseReviews(text: string): Reviews {
 export function parseVocab(text: string): Record<string, unknown> {
   const raw = yaml(text);
   return raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {};
+}
+
+const planFileSchema = z.looseObject({
+  updated: z.unknown().optional(),
+  days: z
+    .record(z.string(), z.unknown())
+    .nullish()
+    .transform((v) => v ?? {}),
+});
+
+/** `plan.yaml` as the snapshot carries it: meals with recipe and text dishes; labels, notes and servings stay in the file only. */
+export function parsePlan(text: string): Plan {
+  const r = planFileSchema.safeParse(yaml(text) ?? {});
+  if (!r.success) throw new ParseError("Plan inválido: se esperaba `days`");
+  const days: Plan["days"] = {};
+  for (const [date, meals] of Object.entries(r.data.days)) {
+    if (!Array.isArray(meals)) continue;
+    const list: Plan["days"][string] = [];
+    for (const meal of meals) {
+      const m = meal as { slot?: unknown; dishes?: unknown } | null;
+      if (!m || typeof m.slot !== "string" || !Array.isArray(m.dishes)) continue;
+      const dishes: PlanDish[] = [];
+      for (const d of m.dishes as Record<string, unknown>[]) {
+        if (d && typeof d.recipe === "string") dishes.push({ recipe: d.recipe });
+        else if (d && typeof d.text === "string") dishes.push({ text: d.text });
+      }
+      list.push({ slot: m.slot, dishes });
+    }
+    if (list.length) days[date] = list;
+  }
+  const updated = r.data.updated;
+  return { updated: typeof updated === "string" ? updated : undefined, days };
 }

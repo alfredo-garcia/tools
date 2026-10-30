@@ -8,8 +8,12 @@ const KIND_FIELD = { "pantry.setHave": "have", "pantry.setBuy": "to_buy" } as co
 export interface RawOp {
   id: string;
   kind: string;
-  ingredient: string;
-  value: unknown;
+  ingredient?: string;
+  value?: unknown;
+  /** Plan operations (ADR 003). */
+  date?: string;
+  meal?: string;
+  recipe?: string;
 }
 
 /** What the catalog says about each ingredient id; staples never appear in the pantry. */
@@ -128,7 +132,8 @@ export function applyPantryOps(
 
   for (const op of ops) {
     const field = KIND_FIELD[op.kind as keyof typeof KIND_FIELD];
-    const entry = catalog[op.ingredient];
+    const ingredient = op.ingredient ?? "";
+    const entry = catalog[ingredient];
     if (!field) {
       results.push(reject(op.id, "Tipo de operación desconocido"));
     } else if (typeof op.value !== "boolean") {
@@ -138,16 +143,16 @@ export function applyPantryOps(
     } else if (entry.staple) {
       results.push(reject(op.id, "Los básicos no se guardan en la despensa"));
     } else {
-      const current = doc.getIn(["items", op.ingredient, field]) === true;
+      const current = doc.getIn(["items", ingredient, field]) === true;
       if (current === op.value) {
         results.push({ id: op.id, status: "unchanged" });
       } else {
-        if (!isMap(doc.getIn(["items", op.ingredient])))
+        if (!isMap(doc.getIn(["items", ingredient])))
           doc.setIn(
-            ["items", op.ingredient],
+            ["items", ingredient],
             doc.createNode({ have: false, to_buy: false }, { flow: true }),
           );
-        doc.setIn(["items", op.ingredient, field], op.value);
+        doc.setIn(["items", ingredient, field], op.value);
         results.push({ id: op.id, status: "applied" });
       }
     }

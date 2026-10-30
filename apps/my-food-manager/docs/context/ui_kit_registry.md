@@ -36,7 +36,7 @@
 | `ChecklistItem` | Data Display | Web | Beta | `components/lists/ChecklistItem` |
 | `AisleHeader` | Data Display | Web | Beta | `components/lists/AisleHeader` |
 | `Sheet` | Feedback/Overlays | Web | Beta | `components/overlays/Sheet` |
-| `Toast` | Feedback/Overlays | Web | Beta | `components/overlays/Toast` |
+| `Toast` | Feedback/Overlays | Web | Beta | `components/feedback/Toast` |
 | `SyncBadge` | Feedback/Overlays | Web | Beta | `components/feedback/SyncBadge` |
 | `EmptyState` | Feedback/Overlays | Web | Beta | `components/feedback/EmptyState` |
 | `TmpComingSoon` | Feedback/Overlays | Web | Beta (temporary) | `components/feedback/TmpComingSoon` |
@@ -45,14 +45,20 @@
 | `TmpSegmentedControl` | Inputs | Web | Beta (temporary) | `components/inputs/TmpSegmentedControl` |
 | `TmpPendingChanges` | Feedback/Overlays | Web | Beta (temporary) | `components/feedback/TmpPendingChanges` |
 | `PersonPicker` | Inputs | Web | Beta | `components/inputs/PersonPicker` |
+| `PlanScreen` | Data Display (assembly) | Web | Beta | `components/plan/PlanScreen` |
+| `PlanDayList` / `PlanDay` | Data Display | Web | Beta | `components/plan/PlanDayList`, `components/plan/PlanDay` |
+| `PlanWeek` / `PlanColumn` / `WeekNav` | Data Display | Web | Beta | `components/plan/PlanWeek`, `components/plan/PlanColumn`, `components/plan/WeekNav` |
+| `PlanSlot` / `PlanRecipeItem` | Data Display | Web | Beta | `components/plan/PlanSlot`, `components/plan/PlanRecipeItem` |
+| `RecipePickerSheet` | Feedback/Overlays | Web | Beta | `components/plan/RecipePickerSheet` |
+| `MissingIngredientsSheet` | Feedback/Overlays | Web | Beta | `components/plan/MissingIngredientsSheet` |
 
 ## 3. Component Entries
 
 ### AppShell
 - **Category:** Layout. **Import:** `components/layout/AppShell`. **Status:** Beta.
 - **Description:** page frame of the recipe list: title, `SyncBadge`, refresh button, pull-to-refresh and content. It does not contain the navigation (that is `AppFrame`).
-- **Props:** `title: string`, `children`.
-- **Notes:** used by the recipe list only; other sections render their own content inside `AppFrame`.
+- **Props:** `title: string`, `wide?: boolean` (content takes the whole available width instead of 768 px; the weekly Plan), `children`.
+- **Notes:** used by the recipe list, Despensa and Plan; other sections render their own content inside `AppFrame`.
 
 ### AppFrame
 - **Category:** Layout. **Import:** `components/layout/AppFrame`. **Status:** Beta (feature `my-food-manager/006`).
@@ -152,8 +158,19 @@
 ### RecipeDetail
 - **Category:** Data Display. **Import:** `components/recipes/detail/RecipeDetail` (sections in the same folder: `InfoSection`, `IngredientsSection`, `StepsSection`, `NotesSection`). **Status:** Beta.
 - **Description:** the recipe detail screen content inside a `DetailLayer`: photo (16:9; in the `panel` mode it sits beside Info general, two fifths and three fifths), title (`heading-1`, shown in fullscreen only), then the sections Info general, Ingredientes, Pasos and Notas, each a `CollapsibleSection`. Handles loading, no-library and not-found states with `EmptyState`.
-- **Props:** `RecipeDetail`: `id: string` (recipe id from the address). Sections: `recipe: Recipe`, plus `library: Library` for `InfoSection` and `IngredientsSection`.
+- **Props:** `RecipeDetail`: `id: string` (recipe id from the address), `onClose?: () => void` (when the detail is not driven by the address, e.g. over the Plan) and `overlay?: boolean` (never the side panel: large windows show a modal). Sections: `recipe: Recipe`, plus `library: Library` for `InfoSection` and `IngredientsSection`.
 - **Rules:** missing values show "-"; the time row in `InfoSection` is a disclosure with the prep/cook/rest breakdown; ingredient lines show quantity, name, note, an "opcional" tag, and a `RecipeLink` when the line points to a recipe in the library; `NotesSection` renders nothing when there are no notes, variations or source.
+
+### PlanScreen (and its parts)
+- **Category:** Data Display (assembly). **Import:** `components/plan/*`. **Status:** Beta (feature `my-food-manager/008`).
+- **Description:** the Plan section. `PlanScreen` holds the state (days loaded, week, picker, missing ingredients, key dialog) and composes: `PlanDayList` of `PlanDay` (small windows, 8 days then +7 at the end), `PlanWeek` of `PlanColumn` plus `WeekNav` (from 640px, Monday–Sunday, 132px minimum column, previous week disabled at the current one), each day with three `PlanSlot` (Desayuno, Almuerzo, Cena) listing `PlanRecipeItem` (photo or emoji, title, X to remove; text dishes read only). Days before today are dimmed and read only.
+- **Props:** `PlanSlot`: `date`, `meal`, `label`, `dishes`, `past`, `columns`, `actions: PlanActions` (`recipes`, `onAdd`, `onRemove`, `onOpen`). `PlanWeek`: `today`, `offset`, `view`, `actions`, `onOffset`. `PlanDayList`: `today`, `count`, `view`, `actions`, `onMore`. `WeekNav`: `canGoBack`, `onPrevious`, `onNext`.
+- **Guidance:** domain logic is in `lib/domain/plan-view` and `plan-calendar`; the screen never writes by itself, it enqueues operations in the outbox.
+
+### RecipePickerSheet / MissingIngredientsSheet
+- **Category:** Feedback/Overlays. **Import:** `components/plan/RecipePickerSheet`, `components/plan/MissingIngredientsSheet`. **Status:** Beta.
+- **Props:** `RecipePickerSheet`: `date`, `meal`, `recipes: Recipe[]`, `onClose`, `onConfirm(recipeId)`; search (3 letters, 1 s) over titles, single selection, "Añadir receta" enabled with a selection. `MissingIngredientsSheet`: `recipeTitle`, `ingredients: string[]` (names), `onContinue`, `onAddToList`; closing by Esc or backdrop equals `onContinue`.
+- **Notes:** both are `Sheet` with their own content; the picker is `size="tall"`, the missing sheet uses `hideClose`.
 
 ### RatingStars / FavoriteButton
 - **RatingStars props:** `value: 0-5`, `onChange(n)`, `size?`; each star is a button with `aria-pressed` and label "N estrellas".
@@ -164,12 +181,12 @@
 - **AisleHeader props:** `label: string` (ingredient family label). Caption style, uppercase.
 
 ### Sheet
-- **Props:** `open`, `onClose`, `title`, `children`. Bottom sheet on mobile (top radius `radius.lg`), centered modal on desktop. Traps focus, closes on Escape/backdrop.
+- **Props:** `open`, `onClose`, `title`, `subtitle?`, `size?: "auto" | "tall"`, `hideClose?: boolean`, `children`. Bottom sheet below 640px (top radius `radius.lg`), centered modal (max width 520px) from 640px, including large windows. `subtitle` is a `caption` line under the title; `size="tall"` fills 88% of the window height on small and min(640px, 100%) on larger ones (recipe picker). Traps focus, locks page scroll, closes on Escape/backdrop, returns focus to the opener. `hideClose` removes the close button when the content has its own way out. Implemented in feature `my-food-manager/008`.
 
 ### Toast / SyncBadge / EmptyState
-- **Toast:** `message`, `tone?: "success" | "error"`; auto-dismiss, announced politely.
-- **SyncBadge props:** `status: "offline" | "pending" | "synced"`, `pendingCount?: number`. Offline/pending use `color.warning.500`, synced uses lime.
-- **EmptyState props:** `emoji`, `title`, `hint?`, `action?: {label, onClick}`.
+- **Toast:** `message`; announced politely (`role="status"`). The screen that shows it dismisses it after 4 s.
+- **SyncBadge props:** `status: "idle" | "syncing" | "offline" | "error"`, `syncedAt?: string` (shows "Sincronizado · hace X"). Offline and error use `color.warning.500`, idle uses lime.
+- **EmptyState props:** `emoji`, `title`, `hint?`, `action?: ReactNode` (usually a `Button`).
 
 ### TmpComingSoon
 - **Category:** Feedback/Overlays. **Import:** `components/feedback/TmpComingSoon`. **Status:** Beta, temporary until each section has its own content.

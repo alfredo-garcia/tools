@@ -1,3 +1,4 @@
+import { SNAPSHOT_SCHEMA_VERSION } from "@/lib/schema";
 import { describe, expect, it, vi } from "vitest";
 import { createLibraryStore, type Deps } from "@/lib/offline/store";
 import { buildSnapshot } from "@/lib/domain/snapshot";
@@ -57,7 +58,7 @@ describe("library store", () => {
   it("renders the stored copy on hydrate, before any network", async () => {
     const snap = await snapshot();
     const storage = memoryStorage({
-      schemaVersion: 1,
+      schemaVersion: SNAPSHOT_SCHEMA_VERSION,
       etag: snap.etag,
       syncedAt: "2026-10-28T11:00:00.000Z",
       data: snap.data,
@@ -74,7 +75,7 @@ describe("library store", () => {
     const snap = await snapshot();
     const fetchMock = vi.fn(async () => new Response(null, { status: 304 }));
     const storage = memoryStorage({
-      schemaVersion: 1,
+      schemaVersion: SNAPSHOT_SCHEMA_VERSION,
       etag: snap.etag,
       syncedAt: "2026-10-28T11:00:00.000Z",
       data: snap.data,
@@ -95,7 +96,7 @@ describe("library store", () => {
   it("keeps the stored copy when a sync fails", async () => {
     const snap = await snapshot();
     const storage = memoryStorage({
-      schemaVersion: 1,
+      schemaVersion: SNAPSHOT_SCHEMA_VERSION,
       etag: snap.etag,
       syncedAt: "x",
       data: snap.data,
@@ -179,7 +180,7 @@ describe("library store", () => {
       "/api/snapshot",
       expect.objectContaining({ headers: {} }),
     );
-    expect(storage.peek()?.schemaVersion).toBe(1);
+    expect(storage.peek()?.schemaVersion).toBe(SNAPSHOT_SCHEMA_VERSION);
   });
 
   it("works in memory when device storage is unavailable", async () => {

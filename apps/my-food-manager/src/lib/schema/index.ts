@@ -2,7 +2,7 @@ import { z } from "zod";
 
 // Mirrors food/_system/schema.md. Unknown fields are preserved (looseObject).
 
-export const SNAPSHOT_SCHEMA_VERSION = 1;
+export const SNAPSHOT_SCHEMA_VERSION = 2;
 
 const optionalString = z
   .string()
@@ -119,6 +119,27 @@ export const pantrySchema = z.looseObject({
 });
 export type Pantry = z.infer<typeof pantrySchema>;
 
+/** Meals of the plan the app shows and edits; `snack` meals in the file are kept but never shown (ADR 003). */
+export const PLAN_MEALS = ["breakfast", "lunch", "dinner"] as const;
+export type PlanMeal = (typeof PLAN_MEALS)[number];
+
+const planDishSchema = z.object({ recipe: z.string().optional(), text: z.string().optional() });
+/** The plan as the snapshot carries it: days from yesterday on, each a list of meals with their dishes. */
+export const planSchema = z.object({
+  updated: z.string().optional(),
+  days: z.record(
+    z.string(),
+    z.array(
+      z.object({
+        slot: z.string(),
+        dishes: z.array(planDishSchema),
+      }),
+    ),
+  ),
+});
+export type Plan = z.infer<typeof planSchema>;
+export type PlanDish = Plan["days"][string][number]["dishes"][number];
+
 export const PANTRY_OP_KINDS = ["pantry.setHave", "pantry.setBuy"] as const;
 export type PantryOpKind = (typeof PANTRY_OP_KINDS)[number];
 
@@ -130,15 +151,30 @@ export interface PantryOp {
   value: boolean;
 }
 
-/** Request body of POST /api/ops. Kind and value are checked per operation so one bad op never rejects the batch. */
+export const PLAN_OP_KINDS = ["plan.addRecipe", "plan.removeRecipe"] as const;
+export type PlanOpKind = (typeof PLAN_OP_KINDS)[number];
+
+/** One change to the plan, as the app sends it. `date` is `YYYY-MM-DD`. */
+export interface PlanOp {
+  id: string;
+  kind: PlanOpKind;
+  date: string;
+  meal: PlanMeal;
+  recipe: string;
+}
+
+/** Request body of POST /api/ops. Kind and fields are checked per operation so one bad op never rejects the batch. */
 export const opsRequestSchema = z.object({
   ops: z
     .array(
       z.object({
         id: z.string().min(1).max(100),
         kind: z.string(),
-        ingredient: z.string(),
-        value: z.unknown(),
+        ingredient: z.string().optional(),
+        value: z.unknown().optional(),
+        date: z.string().optional(),
+        meal: z.string().optional(),
+        recipe: z.string().optional(),
       }),
     )
     .min(1)
@@ -155,11 +191,16 @@ export type OpResult = z.infer<typeof opResultSchema>;
 
 export const opsResponseSchema = z.object({
   results: z.array(opResultSchema),
-  pantry: z.object({
-    updated: z.string().optional(),
-    have: z.array(z.string()),
-    to_buy: z.array(z.string()),
-  }),
+  /** Present when the batch had pantry operations. */
+  pantry: z
+    .object({
+      updated: z.string().optional(),
+      have: z.array(z.string()),
+      to_buy: z.array(z.string()),
+    })
+    .optional(),
+  /** Present when the batch had plan operations. */
+  plan: planSchema.optional(),
 });
 export type OpsResponse = z.infer<typeof opsResponseSchema>;
 
@@ -187,6 +228,8 @@ export const librarySchema = z.object({
   recipes: z.array(z.looseObject({ id: z.string(), title: z.string() })),
   ingredients: z.record(z.string(), z.looseObject({ name: z.string() })),
   pantry: z.looseObject({ have: z.array(z.string()), to_buy: z.array(z.string()) }),
+  /** Absent when `plan/plan.yaml` does not exist (the Plan then shows its unavailable state). */
+  plan: planSchema.optional(),
   reviews: z.record(z.string(), z.looseObject({ user: z.string() })),
   vocab: z.object({
     categories: z.record(z.string(), z.unknown()),
@@ -199,8 +242,9 @@ export const librarySchema = z.object({
 
 export type Library = Omit<
   z.infer<typeof librarySchema>,
-  "recipes" | "ingredients" | "pantry" | "reviews"
+  "recipes" | "ingredients" | "pantry" | "reviews" | "plan"
 > & {
+  plan?: Plan;
   recipes: Recipe[];
   ingredients: Record<string, IngredientCatalogEntry>;
   pantry: Pantry;

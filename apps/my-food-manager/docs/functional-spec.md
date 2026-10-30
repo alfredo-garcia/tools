@@ -10,7 +10,7 @@
 
 My Food Manager (shown to users as "My Food") is a personal, visual, mobile-first web app (installable PWA) that helps Al and his household partner decide what to cook and shop without forgetting anything. It reads the Google Drive folder `food`, which the food-manager skill maintains, and keeps working without a connection. There are no logins. Platform: web only.
 
-Today the app lets you browse the library with filters and a text search and open each recipe's detail, and it has a main navigation with four sections: Recetas, Plan, Despensa and Perfil. Perfil shows Al's favorite recipes. Recipes can be marked as favorites from the list and from the detail, with a heart; favorites are saved to Drive in the same way as the pantry and the plan. Plan is the household's meal calendar: from today on, each day has Desayuno, Almuerzo and Cena, to which recipes are added and removed, and every recipe added is checked against the pantry, offering to put what is missing on the shopping list. Despensa holds the pantry and the shopping list in two tabs, where each ingredient has two switches, "Tengo" and "Comprar", saved to Drive (also from the device without a connection, with a shared write key). Plan changes are saved to Drive in the same way (offline queue and shared write key). Ratings, comments and the person picker of the profile are still pending (see `product/product_vision.md` §7).
+Today the app lets you browse the library with filters and a text search and open each recipe's detail, and it has a main navigation with four sections: Recetas, Plan, Despensa and Perfil. Perfil shows Al's favorite recipes. Recipes can be marked as favorites from the list and from the detail, with a heart, and shared from the detail; favorites are saved to Drive in the same way as the pantry and the plan. Plan is the household's meal calendar: from today on, each day has Desayuno, Almuerzo and Cena, to which recipes are added and removed, and every recipe added is checked against the pantry, offering to put what is missing on the shopping list. Despensa holds the pantry and the shopping list in two tabs, where each ingredient has two switches, "Tengo" and "Comprar", saved to Drive (also from the device without a connection, with a shared write key). Plan changes are saved to Drive in the same way (offline queue and shared write key). Ratings, comments and the person picker of the profile are still pending (see `product/product_vision.md` §7).
 
 ## 2. How to Read This Documentation
 
@@ -68,6 +68,7 @@ The app has four sections, always reachable from a main navigation: Recetas (`/`
 | FLW-remove-plan-recipe | Remove a recipe from the plan | plan | Web |
 | FLW-browse-plan | Browse days and weeks | plan | Web |
 | FLW-toggle-favorite | Mark or unmark a favorite | profile, library, recipes | Web |
+| FLW-share-recipe | Share a recipe | recipes | Web |
 
 ## 6. Cross-Cutting Concepts
 
@@ -109,6 +110,7 @@ None.
 - **Sidebar:** the navigation on medium and large windows; collapsed shows only icons, expanded shows icons and text.
 - **Placeholder section:** a section with no content yet, which shows its title and "Próximamente" (today none).
 - **Favorite (favorita):** a recipe whose id is in `favorites` of Al's reviews file, counting the changes still pending on the device.
+- **Share menu (menú de compartir):** the device's own sheet of apps to send content to, opened by the Compartir button.
 - **Heart (corazón):** the control that marks or unmarks a favorite; filled when the recipe is a favorite.
 - **Plan:** the household's agenda of recipes per day and meal.
 - **Slot (franja):** one meal time of one day: Desayuno, Almuerzo or Cena (the file also knows `snack`, not shown).
@@ -124,6 +126,7 @@ None.
 
 ## 11. Recent Changes
 
+- 2026-10-30 — recipes: Compartir button in the recipe detail, opening the device share menu with the photo, title and link (see `changelog/010_share-recipe_changelog.md`).
 - 2026-10-30 — profile: favorite recipes, with a heart in the list and the detail and a "Recetas favoritas" tab in Perfil, saved to Drive (see `changelog/009_favorites_changelog.md`).
 - 2026-10-30 — plan: Plan meal calendar with day list and weekly columns, recipe picker, pantry check on add and writes to Drive (see `changelog/008_meal-plan-calendar_changelog.md`).
 - 2026-10-30 — pantry: Despensa with "Despensa" and "Lista de compra" tabs and Tengo/Comprar switches saved to Drive, with an offline queue (see `changelog/007_pantry-shopping-list-switches_changelog.md`).
@@ -223,10 +226,11 @@ Filtering and searching the recipe list and reading a recipe. Everything works f
 - **Platform divergence:** by window width. Small (under 640 px): a full screen with an "Atrás" button. Medium (640 to 1279 px): a modal (max width 720 px) over the list, with a "Cerrar" button, Esc and a click on the backdrop to close. Large (1280 px and above): a panel on the right of the list column that uses all the width left, with a "Cerrar" button; it is not a modal, so the list stays usable and Esc does nothing. On small windows the bottom bar is hidden while it is open; on medium and large the sidebar stays visible. Resizing across a breakpoint keeps the open recipe, its scroll position, its open sections and the open time breakdown.
 - **Purpose:** read everything needed to decide on and cook a recipe.
 - **Entry points:** a row of SCR-library-list; an ingredient that links to another recipe; opening `/recipes/<id>` directly.
-- **Functional composition:** CMP-detail-layer, CMP-recipe-photo, CMP-collapsible-section, CMP-recipe-link, CMP-favorite-button.
+- **Functional composition:** CMP-detail-layer, CMP-recipe-photo, CMP-collapsible-section, CMP-recipe-link, CMP-favorite-button, CMP-share-button.
 - **Data & business rules:**
   - The top has the photo (16:9; the category tile when there is none) and the title. On medium and large windows the title is always in the bar at the top of the modal or panel; on small windows it is under the photo. On large windows the photo takes two fifths of the width and Info general sits beside it, in the other three fifths.
   - Favorite: on small windows the heart (CMP-favorite-button) takes the right end of the title row and the title wraps in the space left. On medium and large windows a button with the heart and the text "Añadir a favoritos" or "Quitar de favoritos" sits under the photo, with the width of its content; on large windows it is in the photo's column, beside Info general. Tapping it changes the recipe's state at once, also in the list row behind. The detail still has no rating, comment or "curated" control.
+  - Share (CMP-share-button): beside the favorite control, an icon on the title row on small windows and a button "Compartir" next to "Añadir a favoritos" under the photo on medium and large windows (on a second line when the photo column is narrow). It is present wherever the detail opens (from Recetas, from the favorites in Perfil and over the Plan) and never in the lists. See FLW-share-recipe.
   - Four sections, in this order, each open on entry and collapsible on its own (the state is not remembered): Info general, Ingredientes, Pasos, Notas.
   - Info general: Categoría, Tiempo, Dificultad, Raciones, Técnica, Cocina, Dieta, Proteína and Ocasión. Tiempo shows the total (preparation + cooking + resting) as "N min" or "H h M min"; tapping it shows Preparación, Cocción and Reposo. Anything the recipe lacks shows "-" and its row stays. Servings units are fixed: personas, unidades, porciones.
   - Ingredientes: ungrouped lines first, then each named group (for example masa, relleno) in order of first appearance. A line shows quantity, name and note. Mass and volume units are abbreviated (g, kg, ml, l); other units are pluralized by quantity; lines "al gusto", "cantidad suficiente" or "pizca" show no number; a measurable line without quantity shows "-"; optional lines carry an "opcional" tag. A line that points to a recipe in the library is a link that opens its detail.
@@ -238,8 +242,8 @@ Filtering and searching the recipe list and reading a recipe. Everything works f
   - No library and offline, or error: the same messages as the list, with "Reintentar".
   - Not found: "Receta no encontrada" with "Volver a recetas".
   - Recipe: the content described above.
-- **Related flows:** FLW-open-recipe, FLW-toggle-favorite.
-- **Source:** `002_recipe-detail_prd.md`, `002_recipe-detail_ux_flow.md`, `004_responsive-recipe-layout_prd.md`, `004_responsive-recipe-layout_ux_flow.md`, `009_favorites_prd.md` / `_ux_flow.md`; implementation in `src/components/recipes/detail/`.
+- **Related flows:** FLW-open-recipe, FLW-toggle-favorite, FLW-share-recipe.
+- **Source:** `002_recipe-detail_prd.md`, `002_recipe-detail_ux_flow.md`, `004_responsive-recipe-layout_prd.md`, `004_responsive-recipe-layout_ux_flow.md`, `009_favorites_prd.md` / `_ux_flow.md`, `010_share-recipe_prd.md` / `_ux_flow.md`; implementation in `src/components/recipes/detail/`.
 
 ### Functionally-Significant Components
 
@@ -299,6 +303,14 @@ Filtering and searching the recipe list and reading a recipe. Everything works f
 - **Used on:** SCR-library-list, SCR-recipe-detail.
 - **Source:** `002_recipe-detail_prd.md`; implementation in `src/components/recipes/RecipeLink.tsx`.
 
+#### CMP-share-button Share button
+
+- **Design system reference:** `ShareButton`, `components/recipes/ShareButton` (see `context/ui_kit_registry.md`).
+- **Functional role:** the control that shares the open recipe.
+- **Behavior rules:** icon-only on the title row of small windows; with the text "Compartir" under the photo on medium and large windows, with the width of its content. Disabled (busy) while the photo is awaited. A tap opens the device's share menu (see FLW-share-recipe); where the browser has none it copies the link.
+- **Used on:** SCR-recipe-detail (never in lists).
+- **Source:** `010_share-recipe_prd.md` (US-1), `010_share-recipe_ux_flow.md` (§2.2); implementation in `src/components/recipes/ShareButton.tsx`.
+
 ### Flows
 
 #### FLW-open-recipe Open and close a recipe
@@ -308,6 +320,14 @@ Filtering and searching the recipe list and reading a recipe. Everything works f
 - **Business rules governing the flow:** each recipe has its own address, `/recipes/<id>`. Opening from the list or from an ingredient link needs no network. Closing goes back one step; a detail opened directly closes to the list, never out of the app. On small and medium windows the list keeps its scroll position and cannot be used while the detail is open. On large windows the list stays usable beside the panel: choosing the first recipe adds a history entry, choosing another one replaces it, an ingredient link adds one, and closing or going back leaves `/` with an empty panel (no recipe is selected on its own). Opening `/recipes/<id>` directly on a large window shows the list with that recipe in the panel.
 - **Edge cases & error handling:** an unknown address shows the not-found state. If a sync removes the open recipe, the detail switches to not found. Opening a recipe address directly with no connection works.
 - **Source:** `002_recipe-detail_prd.md` (US-1, US-2, §10), `004_responsive-recipe-layout_prd.md` (US-1 to US-7).
+
+#### FLW-share-recipe Share a recipe
+
+- **Goal / trigger:** Al taps "Compartir" in a recipe's detail to send it.
+- **Screens involved (in sequence):** SCR-recipe-detail → the device's share menu → SCR-recipe-detail.
+- **Business rules governing the flow:** the menu receives the recipe's title, its photo and the link to its detail, `<app address>/recipes/<id>`, which opens that recipe in the app. The photo is loaded when the detail opens, so the menu opens at once; a tap waits at most 1.5 seconds for a photo still loading. With a photo the link travels in the text next to the title; without it, as the link of the share. The photo is shared as `<id>.jpg` only if the recipe has one and the device can share images. Nothing is written to Drive.
+- **Edge cases & error handling:** no photo, a photo that cannot be loaded (offline and not cached) or a device that cannot share images: it shares the title and the link, with no notice. Cancelling the menu does nothing; any other failure says "No se pudo compartir". A browser with no share menu copies the link and says "Enlace copiado", or "No se pudo copiar el enlace" if the clipboard is refused. While the photo is awaited the button is disabled.
+- **Source:** `010_share-recipe_prd.md` (US-2 to US-5, §10).
 
 #### FLW-filter-recipes Filter the list
 

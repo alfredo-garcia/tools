@@ -268,4 +268,62 @@ describe("outbox", () => {
     expect(t.outbox.getState().notices).toEqual([{ id: 1, recipe: "bizcocho" }]);
     expect(t.outbox.getState().pending).toEqual([]);
   });
+
+  describe("favorites", () => {
+    it("collapses unsent toggles of one recipe and drops one that returns to the stored value", async () => {
+      const t = setup();
+      t.setOnline(false);
+      await t.outbox.hydrate();
+      await t.outbox.enqueueFavorite("bizcocho", true, false);
+      await t.outbox.enqueueFavorite("pasta", true, false);
+      await t.outbox.enqueueFavorite("bizcocho", false, false);
+      expect(t.outbox.getState().pending).toEqual([
+        { id: "op2", kind: "review.setFavorite", recipe: "pasta", value: true },
+      ]);
+    });
+
+    it("sends review operations and hands the saved favorites to onSaved", async () => {
+      const t = setup();
+      const reviews = { user: "al", favorites: ["bizcocho"] };
+      t.fetchMock.mockResolvedValue(json({ results: [{ id: "op1", status: "applied" }], reviews }));
+      await t.outbox.hydrate();
+      await t.outbox.enqueueFavorite("bizcocho", true, false);
+      await tick();
+      expect(JSON.parse(t.fetchMock.mock.calls[0][1].body).ops).toEqual([
+        { id: "op1", kind: "review.setFavorite", recipe: "bizcocho", value: true },
+      ]);
+      expect(t.deps.onSaved).toHaveBeenCalledWith(expect.objectContaining({ reviews }));
+      expect(t.outbox.getState().pending).toEqual([]);
+    });
+
+    it("reports a rejected favorite as a favorite notice and removes it", async () => {
+      const t = setup();
+      t.fetchMock.mockResolvedValue(
+        json({
+          results: [{ id: "op1", status: "rejected", error: { code: "INVALID_OP", message: "x" } }],
+        }),
+      );
+      await t.outbox.hydrate();
+      await t.outbox.enqueueFavorite("bizcocho", true, false);
+      await tick();
+      expect(t.outbox.getState().pending).toEqual([]);
+      expect(t.outbox.getState().notices).toEqual([
+        expect.objectContaining({ recipe: "bizcocho", favorite: true }),
+      ]);
+    });
+
+    it("keeps toggles pending without a stored key", async () => {
+      const t = setup({}, null);
+      await t.outbox.hydrate();
+      await t.outbox.enqueueFavorite("bizcocho", true, false);
+      expect(t.fetchMock).not.toHaveBeenCalled();
+      expect(t.outbox.getState().pending).toHaveLength(1);
+    });
+
+    it("notifies a favorite that could not be queued", async () => {
+      const t = setup();
+      t.outbox.notifyFavoriteFailed("bizcocho");
+      expect(t.outbox.getState().notices[0]).toMatchObject({ recipe: "bizcocho", favorite: true });
+    });
+  });
 });

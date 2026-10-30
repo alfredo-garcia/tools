@@ -1,5 +1,5 @@
 import type { Library, Plan, PlanDish, PlanMeal, Recipe } from "@/lib/schema";
-import { isPantryOp, type PendingOp } from "./pantry-view";
+import { isPantryOp, isReviewOp, type PendingOp } from "./pantry-view";
 import { normalize } from "./search";
 
 export const PLAN_MEAL_LABELS: readonly { meal: PlanMeal; label: string; to: string }[] = [
@@ -31,7 +31,7 @@ export function planWithPending(
       if (m.slot === "breakfast" || m.slot === "lunch" || m.slot === "dinner")
         day(date)[m.slot].push(...m.dishes);
   for (const op of pending) {
-    if (isPantryOp(op)) continue;
+    if (isPantryOp(op) || isReviewOp(op)) continue;
     const list = day(op.date)[op.meal];
     if (op.kind === "plan.addRecipe") list.push({ recipe: op.recipe });
     else {

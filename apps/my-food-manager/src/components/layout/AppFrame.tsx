@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { FavoriteFeedback } from "@/components/feedback/FavoriteFeedback";
 import { BottomNav, SideNav } from "@/components/navigation/Nav";
 import { useLayout } from "@/components/layout/use-layout";
 import { useSidebarPreference } from "@/components/layout/use-sidebar-preference";
@@ -36,6 +37,7 @@ export function AppFrame({ children }: { children: React.ReactNode }) {
         {children}
       </div>
       {bottom && <BottomNav items={DESTINATIONS} currentId={currentId} />}
+      <FavoriteFeedback />
     </div>
   );
 }

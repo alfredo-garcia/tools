@@ -194,3 +194,82 @@ describe("runOps with plan operations (ADR 003)", () => {
     expect(r.plan).toBeUndefined();
   });
 });
+
+describe("runOps with favorite operations", () => {
+  const favOp = (id: string, recipe: string, value = true) => ({
+    id,
+    kind: "review.setFavorite",
+    recipe,
+    value,
+  });
+
+  function reviewSetup(over: { drop?: string; conflicts?: number } = {}) {
+    const drive = fixtureDrive();
+    const files = drive.files.filter((f) => f.path !== over.drop);
+    let left = over.conflicts ?? 0;
+    const writes: { path: string; text: string }[] = [];
+    const source: FoodSource = {
+      list: async () => files,
+      readText: drive.read,
+      readBytes: async () => new Uint8Array(),
+      writeText: vi.fn(async (f, text) => {
+        if (left-- > 0) throw new DriveConflictError();
+        writes.push({ path: f.path, text });
+      }),
+    };
+    const deps = { source, list: async () => files, now: () => new Date("2026-10-30T15:00:00Z") };
+    return { deps, writes, source };
+  }
+
+  it("writes only reviews/al.yaml and returns the new favorites", async () => {
+    const { deps, writes } = reviewSetup();
+    const r = await runOps([favOp("1", "bizcocho")], deps);
+    expect(writes.map((w) => w.path)).toEqual(["reviews/al.yaml"]);
+    expect(r.reviews?.favorites).toEqual(["bizcocho"]);
+    expect(r.results[0].status).toBe("applied");
+    expect(r.pantry).toBeUndefined();
+  });
+
+  it("does not write when the favorite is already as asked", async () => {
+    const { deps, source } = reviewSetup();
+    const r = await runOps([favOp("1", "bizcocho", false)], deps);
+    expect(source.writeText).not.toHaveBeenCalled();
+    expect(r.results[0].status).toBe("unchanged");
+  });
+
+  it("rejects recipes that do not exist and keeps the rest of the batch", async () => {
+    const { deps } = reviewSetup();
+    const r = await runOps([favOp("1", "no-existe"), favOp("2", "bizcocho")], deps);
+    expect(r.results.map((x) => x.status)).toEqual(["rejected", "applied"]);
+  });
+
+  it("mixes pantry and favorites, each file written once", async () => {
+    const { deps, writes } = reviewSetup();
+    const r = await runOps(
+      [
+        { id: "p", kind: "pantry.setHave", ingredient: "leche", value: true },
+        favOp("f", "bizcocho"),
+      ],
+      deps,
+    );
+    expect(writes.map((w) => w.path).sort()).toEqual(["pantry/pantry.yaml", "reviews/al.yaml"]);
+    expect(r.results.map((x) => x.status)).toEqual(["applied", "applied"]);
+  });
+
+  it("retries once on a conflict and gives up after the second", async () => {
+    const one = reviewSetup({ conflicts: 1 });
+    await runOps([favOp("1", "bizcocho")], one.deps);
+    expect(one.writes).toHaveLength(1);
+    const two = reviewSetup({ conflicts: 2 });
+    await expect(runOps([favOp("1", "bizcocho")], two.deps)).rejects.toMatchObject({
+      code: "CONFLICT",
+    });
+  });
+
+  it("rejects the operations when the reviews file is missing, never creating it", async () => {
+    const { deps, source } = reviewSetup({ drop: "reviews/al.yaml" });
+    const r = await runOps([favOp("1", "bizcocho")], deps);
+    expect(r.results[0]).toMatchObject({ status: "rejected", error: { code: "REVIEWS_MISSING" } });
+    expect(source.writeText).not.toHaveBeenCalled();
+  });
+});

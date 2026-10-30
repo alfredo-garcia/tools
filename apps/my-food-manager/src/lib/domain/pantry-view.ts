@@ -1,11 +1,12 @@
 import type { FilterOption } from "@/lib/domain/filters";
 import { normalize } from "@/lib/domain/search";
-import type { Library, PantryOp, PlanOp } from "@/lib/schema";
+import type { Library, PantryOp, PlanOp, ReviewOp } from "@/lib/schema";
 
 /** A change made on this device and not confirmed by the server yet. */
-export type PendingOp = PantryOp | PlanOp;
+export type PendingOp = PantryOp | PlanOp | ReviewOp;
 export const isPantryOp = (op: PendingOp): op is PantryOp =>
   op.kind === "pantry.setHave" || op.kind === "pantry.setBuy";
+export const isReviewOp = (op: PendingOp): op is ReviewOp => op.kind === "review.setFavorite";
 export type PantryTab = "despensa" | "lista";
 export type StateFilter = "tengo" | "notengo" | "todos";
 

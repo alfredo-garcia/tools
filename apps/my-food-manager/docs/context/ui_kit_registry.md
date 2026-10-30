@@ -32,6 +32,7 @@
 | `CollapsibleSection` | Data Display | Web | Beta | `components/recipes/detail/CollapsibleSection` |
 | `DetailLayer` | Feedback/Overlays | Web | Beta | `components/overlays/DetailLayer` |
 | `RatingStars` | Inputs | Web | Beta | `components/recipes/RatingStars` |
+| `RecipeRow` | Data Display | Web | Beta | `components/recipes/RecipeRow` |
 | `FavoriteButton` | Inputs | Web | Beta | `components/recipes/FavoriteButton` |
 | `ChecklistItem` | Data Display | Web | Beta | `components/lists/ChecklistItem` |
 | `AisleHeader` | Data Display | Web | Beta | `components/lists/AisleHeader` |
@@ -174,7 +175,7 @@
 
 ### RatingStars / FavoriteButton
 - **RatingStars props:** `value: 0-5`, `onChange(n)`, `size?`; each star is a button with `aria-pressed` and label "N estrellas".
-- **FavoriteButton props:** `pressed`, `onToggle`; heart fills when pressed; 40-44px hit area.
+- **FavoriteButton props:** `pressed`, `onToggle`, `recipeTitle` (for the accessible name), `label?` (shows the text next to the heart and gives the button the width of its content); heart fills with the lime accent when pressed; 44px hit area; `aria-pressed`. Implemented in feature `my-food-manager/009`: icon-only in rows and the small-window title row, labeled under the photo on medium and large.
 
 ### ChecklistItem / AisleHeader
 - **ChecklistItem props:** `label: string`, `source?: string` (recipe name), `done: boolean`, `onToggle`. Row min height 56px; done = filled success checkbox + strike-through.
@@ -226,3 +227,7 @@ Not applicable (web only).
 - **Last updated:** 2026-10-30 (pantry switches of feature `my-food-manager/007`: `TmpSwitch`, `TmpSegmentedControl`, `TmpPendingChanges`; earlier: 2026-10-29 (recipe search of feature `my-food-manager/005`: `SearchInput` as implemented, `TmpResultGroup`; earlier: main navigation of feature `my-food-manager/006`: `AppFrame`, `BottomNav` / `SideNav` rewritten, `TmpComingSoon`, `AppShell` corrected; earlier: responsive layout: DetailLayer modes, RecipeLibrary, RecipeLink props; added FilterChip, FilterOptions, RecipeFilters, useListReorder; recipe detail components; `RecipePhoto` props corrected to the implementation))
 - **Owner:** Al
 - Initial registry, all entries Beta pending implementation.
+
+### RecipeRow
+- **Props:** `recipe`, `categoryLabel`, `favorite`, `onToggleFavorite`, `current?`, `dimmed?`, `replace?`, `onOpen?`, `flipKey`.
+- **Guidance:** photo, title and category open the detail (a `RecipeLink`, or a button when `onOpen` is given, as in Perfil); the heart is a sibling at the right, never inside the link. `dimmed` is an unfavorited row kept on screen in Perfil. Implemented in feature `my-food-manager/009`.

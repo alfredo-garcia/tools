@@ -1,4 +1,4 @@
-import { isPantryOp, type PendingOp } from "@/lib/domain/pantry-view";
+import { isPantryOp, isReviewOp, type PendingOp } from "@/lib/domain/pantry-view";
 import {
   opsResponseSchema,
   type OpsResponse,
@@ -11,20 +11,28 @@ import {
 export const RETRY_DELAYS_MS = [2_000, 5_000, 15_000, 60_000];
 const MAX_BATCH = 100;
 
-/** A change the server rejected: the ingredient of a pantry switch or the recipe of a plan change. */
+/** A change the server rejected: the ingredient of a pantry switch or the recipe of a plan or favorite change. */
 export interface Notice {
   id: number;
   ingredient?: string;
   recipe?: string;
+  /** The rejected change was a favorite toggle; the screens that show hearts report it. */
+  favorite?: boolean;
 }
 
 const subjectOf = (o: PendingOp): Omit<Notice, "id"> =>
-  isPantryOp(o) ? { ingredient: o.ingredient } : { recipe: o.recipe };
+  isPantryOp(o)
+    ? { ingredient: o.ingredient }
+    : isReviewOp(o)
+      ? { recipe: o.recipe, favorite: true }
+      : { recipe: o.recipe };
 
 const wireOf = (o: PendingOp) =>
   isPantryOp(o)
     ? { id: o.id, kind: o.kind, ingredient: o.ingredient, value: o.value }
-    : { id: o.id, kind: o.kind, date: o.date, meal: o.meal, recipe: o.recipe };
+    : isReviewOp(o)
+      ? { id: o.id, kind: o.kind, recipe: o.recipe, value: o.value }
+      : { id: o.id, kind: o.kind, date: o.date, meal: o.meal, recipe: o.recipe };
 
 export interface OutboxState {
   hydrated: boolean;
@@ -46,8 +54,8 @@ export interface OutboxDeps {
   isOnline: () => boolean;
   isVisible: () => boolean;
   newId: () => string;
-  /** Called with the pantry and plan the server saved, so the stored library matches before the next sync. */
-  onSaved: (saved: Pick<OpsResponse, "pantry" | "plan">) => void;
+  /** Called with the pantry, plan and reviews the server saved, so the stored library matches before the next sync. */
+  onSaved: (saved: Pick<OpsResponse, "pantry" | "plan" | "reviews">) => void;
   setTimeout: (fn: () => void, ms: number) => unknown;
   clearTimeout: (handle: unknown) => void;
 }
@@ -157,7 +165,7 @@ export function createOutbox(deps: OutboxDeps) {
     }
 
     attempt = 0;
-    deps.onSaved({ pantry: body.pantry, plan: body.plan });
+    deps.onSaved({ pantry: body.pantry, plan: body.plan, reviews: body.reviews });
     const rejected = new Map<string, Omit<Notice, "id">>();
     for (const r of body.results)
       if (r.status === "rejected") {
@@ -208,6 +216,23 @@ export function createOutbox(deps: OutboxDeps) {
       void flush();
     },
 
+    /**
+     * Records a favorite toggle. Unsent toggles of the same recipe collapse into the new one; one equal to what is
+     * stored (and not racing a sent one) needs no operation at all.
+     */
+    async enqueueFavorite(recipe: string, value: boolean, storedValue: boolean) {
+      const same = (o: PendingOp) => isReviewOp(o) && o.recipe === recipe;
+      const kept = state.pending.filter((o) => !(same(o) && !inflight.has(o.id)));
+      const racing = kept.some(same);
+      const next =
+        !racing && value === storedValue
+          ? kept
+          : [...kept, { id: deps.newId(), kind: "review.setFavorite" as const, recipe, value }];
+      set({ pending: next });
+      await persist();
+      void flush();
+    },
+
     /** Records a plan change. Changes are ordered and never collapse: a repeated recipe is a second dish. */
     async enqueuePlan(kind: PlanOpKind, date: string, meal: PlanMeal, recipe: string) {
       set({ pending: [...state.pending, { id: deps.newId(), kind, date, meal, recipe }] });
@@ -221,6 +246,11 @@ export function createOutbox(deps: OutboxDeps) {
       set({ hasKey: true, keyRejected: false });
       attempt = 0;
       void flush();
+    },
+
+    /** Reports a favorite that could not even be queued (Al's reviews file is missing). */
+    notifyFavoriteFailed(recipe: string) {
+      set({ notices: [...state.notices, { id: ++noticeSeq, recipe, favorite: true }] });
     },
 
     dismissNotice(id: number) {

@@ -151,6 +151,17 @@ export interface PantryOp {
   value: boolean;
 }
 
+export const REVIEW_OP_KINDS = ["review.setFavorite"] as const;
+export type ReviewOpKind = (typeof REVIEW_OP_KINDS)[number];
+
+/** One change to the household member's favorites, as the app sends it. */
+export interface ReviewOp {
+  id: string;
+  kind: ReviewOpKind;
+  recipe: string;
+  value: boolean;
+}
+
 export const PLAN_OP_KINDS = ["plan.addRecipe", "plan.removeRecipe"] as const;
 export type PlanOpKind = (typeof PLAN_OP_KINDS)[number];
 
@@ -201,6 +212,10 @@ export const opsResponseSchema = z.object({
     .optional(),
   /** Present when the batch had plan operations. */
   plan: planSchema.optional(),
+  /** Present when the batch had review operations. */
+  reviews: z
+    .object({ user: z.string(), updated: z.string().optional(), favorites: z.array(z.string()) })
+    .optional(),
 });
 export type OpsResponse = z.infer<typeof opsResponseSchema>;
 

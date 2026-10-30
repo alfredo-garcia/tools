@@ -86,7 +86,7 @@ export function IngredientsScreen() {
 
   // A key the server refused reopens the dialog with its error until the user closes it.
   const keyDialogOpen = keyOpen || (outbox.keyRejected && !rejectionClosed);
-  const notice = outbox.notices[0];
+  const notice = outbox.notices.find((n) => !n.favorite);
   useEffect(() => {
     if (!notice) return;
     const timer = setTimeout(() => getOutbox().dismissNotice(notice.id), NOTICE_MS);

@@ -10,7 +10,7 @@
 
 My Food Manager (shown to users as "My Food") is a personal, visual, mobile-first web app (installable PWA) that helps Al and his household partner decide what to cook and shop without forgetting anything. It reads the Google Drive folder `food`, which the food-manager skill maintains, and keeps working without a connection. There are no logins. Platform: web only.
 
-Today the app lets you browse the library with filters and a text search and open each recipe's detail, and it has a main navigation with four sections: Recetas, Plan, Despensa and Perfil. Plan, Despensa and Perfil are placeholders that say "Próximamente". The meal-plan calendar, the pantry and shopping list, and the profile are the next features (see `product/product_vision.md` §7).
+Today the app lets you browse the library with filters and a text search and open each recipe's detail, and it has a main navigation with four sections: Recetas, Plan, Despensa and Perfil. Plan and Perfil are placeholders that say "Próximamente". Despensa holds the pantry and the shopping list in two tabs, where each ingredient has two switches, "Tengo" and "Comprar", saved to Drive (also from the device without a connection, with a shared write key). The meal-plan calendar and the profile are the next features (see `product/product_vision.md` §7).
 
 ## 2. How to Read This Documentation
 
@@ -26,10 +26,11 @@ Today the app lets you browse the library with filters and a text search and ope
 | library | Library sync, offline storage and the recipe list | inline below | Active |
 | recipes | Filtering and searching the recipe list and reading a recipe | inline below | Active |
 | navigation | Main navigation between sections and their placeholders | inline below | Active |
+| pantry | Pantry and shopping list, with writes to Drive | inline below | Active |
 
 ## 4. Navigation Structure
 
-The app has four sections, always reachable from a main navigation: Recetas (`/`, with the recipe detail at `/recipes/<id>`), Plan (`/plan`), Despensa (`/ingredients`) and Perfil (`/profile`). Plan, Despensa and Perfil show only "Próximamente" for now; Despensa will hold the pantry and the shopping list. The screen adapts to the window width in three layouts: small (under 640 px), medium (640 to 1279 px) and large (1280 px and above).
+The app has four sections, always reachable from a main navigation: Recetas (`/`, with the recipe detail at `/recipes/<id>`), Plan (`/plan`), Despensa (`/ingredients`) and Perfil (`/profile`). Plan and Perfil show only "Próximamente" for now; Despensa shows the pantry and the shopping list in two tabs. The screen adapts to the window width in three layouts: small (under 640 px), medium (640 to 1279 px) and large (1280 px and above).
 
 - **Small:** a bottom bar with the four sections. It is hidden while a recipe detail is open (the detail is a full screen) and comes back when it closes.
 - **Medium and large:** a sidebar on the left with the same four sections, collapsible to icons only or expandable to icons and text. It stays visible when a recipe opens (modal on medium, panel beside the list on large).
@@ -45,7 +46,7 @@ The app has four sections, always reachable from a main navigation: Recetas (`/`
 | SCR-library-list | Recipe list | library | Web |
 | SCR-recipe-detail | Recipe detail | recipes | Web |
 | SCR-plan | Plan (placeholder) | navigation | Web |
-| SCR-ingredients | Despensa (placeholder) | navigation | Web |
+| SCR-ingredients | Despensa | pantry | Web |
 | SCR-profile | Perfil (placeholder) | navigation | Web |
 
 **Flows**
@@ -59,10 +60,13 @@ The app has four sections, always reachable from a main navigation: Recetas (`/`
 | FLW-open-recipe | Open and close a recipe | recipes | Web |
 | FLW-switch-section | Switch section | navigation | Web |
 | FLW-toggle-sidebar | Collapse or expand the sidebar | navigation | Web |
+| FLW-flip-switch | Flip a switch | pantry | Web |
+| FLW-enter-write-key | Enter the write key | pantry | Web |
 
 ## 6. Cross-Cutting Concepts
 
-- **Read-only.** The app writes nothing to Drive. Writes arrive with the pantry and reviews features.
+- **Writes.** Only the pantry is written to Drive, through operations with an offline queue and a shared household write key (see FLW-flip-switch). Everything else stays read-only; reviews writes arrive with their own feature.
+- **Changes without connection.** A change shows at once, waits on the device and is sent when the connection returns; it is never lost.
 - **Offline-first.** After the first sync, the library is always shown from the device, before any network response. Reads are never blocked by a missing connection.
 - **Freshness.** A sync runs on app open, every 5 minutes while the app is visible and online, within 5 seconds of regaining a connection, and on a manual request. If Drive has no changes, only the "last synced" time updates. A failed sync leaves the stored data untouched.
 - **Invalid data.** A malformed recipe file is skipped and counted as a warning. It never breaks the rest of the library.
@@ -77,6 +81,7 @@ None shared across domains yet.
 ## 8. Shared Data Entities
 
 - **Library snapshot.** The complete normalized copy of the `food` folder: recipes (with steps, notes and variations), the ingredient catalog, the pantry, each person's reviews, the vocabularies (categories, tags, units, families) and the list of household people. The people are derived from the review files that exist. The snapshot is replaced as a whole on every sync that finds changes.
+- **Pantry.** `pantry/pantry.yaml` (schema 2): `updated` plus `items`, a map from ingredient id to `have` and `to_buy`, for non-staple ingredients only. Staples are never listed and are always available. There are no quantities. The app writes only these two flags (and `updated`); Claude and Telegram write the same file.
 
 ## 9. Cross-Domain Flows
 
@@ -97,10 +102,16 @@ None.
 - **Placeholder section:** a section with no content yet, which shows its title and "Próximamente".
 - **Filter:** one of Categoría, Tiempo, Dieta, Cocina, Dificultad or Proteína; each holds one chosen value at a time.
 - **Search / applied text:** the text typed in the search bar is the typed text; the applied text is the trimmed typed text once it has 3 or more characters and 1 second has passed without typing (or Enter was pressed). Only the applied text filters the list.
+- **Tengo / Comprar:** the two independent switches of an ingredient: "Tengo" (it is at home, `have`) and "Comprar" (it must be bought, `to_buy`). Any combination is valid.
+- **Staple (básico):** an ingredient that is always available (water, salt…); it shows "Tengo" on and locked, "Comprar" off and locked.
+- **Outbox (cola de cambios):** the ordered list of changes made on the device that Drive has not confirmed yet.
+- **Write key (clave de escritura):** the household's shared key that authorizes writes; asked once per device.
+- **Family (familia):** the classification of an ingredient (verdura, lácteo…), used by the Despensa filter.
 - **Result group:** one of Recetas (the name matched), Proteína (a protein label matched) or Ingredientes (an ingredient name matched). A recipe appears in every group where it matches.
 
 ## 11. Recent Changes
 
+- 2026-10-30 — pantry: Despensa with "Despensa" and "Lista de compra" tabs and Tengo/Comprar switches saved to Drive, with an offline queue (see `changelog/007_pantry-shopping-list-switches_changelog.md`).
 - 2026-10-29 — recipes: text search on the recipe list, with results grouped by name, protein and ingredient (see `changelog/005_recipe-search_changelog.md`).
 - 2026-10-29 — navigation: main navigation with a bottom bar and a collapsible sidebar, and placeholder sections Plan, Despensa and Perfil (see `changelog/006_main-navigation_changelog.md`).
 - 2026-10-29 — library: Drive sync and offline library (see `changelog/001_drive-sync-offline-library_changelog.md`).
@@ -319,17 +330,6 @@ How the user moves between the sections of the app, and the sections that have n
 - **Related flows:** FLW-switch-section.
 - **Source:** `006_main-navigation_prd.md` / `_ux_flow.md`; implementation in `src/app/plan/page.tsx`.
 
-#### SCR-ingredients Despensa (placeholder)
-
-- **Platform:** Web.
-- **Purpose:** reserve the Despensa section, which will hold the pantry and the shopping list as tabs. Address `/ingredients`.
-- **Entry points:** Despensa in the main navigation; direct address.
-- **Functional composition:** CMP-main-navigation.
-- **Data & business rules:** same as SCR-plan with the title "Despensa"; the browser tab is titled "Despensa · My Food".
-- **States (business meaning):** as SCR-plan.
-- **Related flows:** FLW-switch-section.
-- **Source:** `006_main-navigation_prd.md` / `_ux_flow.md`; implementation in `src/app/ingredients/page.tsx`.
-
 #### SCR-profile Perfil (placeholder)
 
 - **Platform:** Web.
@@ -372,3 +372,79 @@ How the user moves between the sections of the app, and the sections that have n
 - **Screens involved (in sequence):** any screen on a medium or large window → (tap the collapse or expand button at the bottom of the sidebar) → the same screen with the sidebar in the other state.
 - **Business rules governing the flow:** the new state is saved on the device and used on the next visit, on both medium and large windows.
 - **Source:** `006_main-navigation_prd.md` / `_ux_flow.md`.
+
+---
+
+## Domain: pantry
+
+### Overview
+
+The pantry and the shopping list over the ingredient catalog, with writes to Drive. It is the only part of the app that writes: only `have` and `to_buy` of `pantry/pantry.yaml`. Reading works from the stored library, online or offline.
+
+### Screens / Pages
+
+#### SCR-ingredients Despensa
+
+- **Platform:** Web.
+- **Purpose:** record in one tap whether an ingredient is at home and whether it must be bought, and see what is to buy. Address `/ingredients`; the browser tab is titled "Despensa · My Food".
+- **Entry points:** Despensa in the main navigation; direct address; "Ir a Despensa" from an empty shopping list.
+- **Functional composition:** CMP-main-navigation, CMP-app-shell, CMP-pantry-list, CMP-pending-changes, CMP-write-key.
+- **Data & business rules:**
+  - Two tabs, "Despensa" and "Lista de compra"; the second shows how many ingredients are marked "Comprar". It opens on "Despensa". Leaving the section or reloading resets the tab, the search and the filters.
+  - Tab "Despensa": a Tengo / No tengo / Todos filter ("Tengo" by default). Every ingredient row has two independent switches, "Tengo" and "Comprar"; neither changes the other. An active search ignores the Tengo / No tengo / Todos filter. A row whose "Tengo" changes stays in place until the filter, the search or the tab changes.
+  - Tab "Lista de compra": the ingredients with "Comprar" on, with the family filter only. Turning "Comprar" off leaves the row struck through until leaving the tab, so a slip is undone with one tap.
+  - Staples are shown with "Tengo" on and locked and "Comprar" off and locked, labelled "Básico, siempre disponible"; the pantry file never lists them.
+  - Data: ingredient catalog, family vocabulary and the pantry.
+- **States (business meaning):**
+  - Loading, no library while offline, and error: as the recipe list, with "Reintentar".
+  - No match: "Ningún ingrediente coincide", with "Borrar búsqueda" and/or "Quitar filtros".
+  - Empty shopping list: "Tu lista está vacía", with "Ir a Despensa".
+- **Related flows:** FLW-flip-switch, FLW-enter-write-key.
+- **Source:** `007_pantry-shopping-list-switches_prd.md`, `007_pantry-shopping-list-switches_ux_flow.md`; implementation in `src/components/pantry/` and `src/app/ingredients/page.tsx`.
+
+### Functionally-Significant Components
+
+#### CMP-pantry-list Ingredient search and filters
+
+- **Design system reference:** `SearchInput`, `FilterChip`, `FilterOptions` (see `context/ui_kit_registry.md`); temporary `TmpSwitch` and `TmpSegmentedControl`.
+- **Functional role:** the search bar, the family filter and the switch rows of both tabs.
+- **Behavior rules:**
+  - Search: 3 characters minimum; applies 1 second after the last keystroke or on Enter; "x" and Esc clear it. Case and accents are ignored ("ñ" is a different letter); it searches the name and the synonyms, and with several words all must be in the same name or synonym. The text never leaves the device.
+  - Family filter: one family at a time, with the count per option. The options are the families present in the tab's list, in vocabulary order; an ingredient with no family counts under "Otros".
+  - Sorted alphabetically (Spanish).
+- **Used on:** SCR-ingredients.
+- **Source:** `007_pantry-shopping-list-switches_prd.md`, `_ux_flow.md`; implementation in `src/components/pantry/IngredientsScreen.tsx`, `IngredientRow.tsx` and `src/lib/domain/pantry-view.ts`.
+
+#### CMP-pending-changes Pending changes
+
+- **Design system reference:** temporary `TmpPendingChanges`, `components/feedback/TmpPendingChanges`.
+- **Functional role:** shows the state of the outbox.
+- **Behavior rules:** shows "N cambios pendientes" while any change is unconfirmed; offers "Introducir clave" when the device has no key; when the server rejects a change, the switch returns to the stored value and a 4-second notice says "No se pudo guardar <ingrediente>".
+- **Used on:** SCR-ingredients.
+- **Source:** `007_pantry-shopping-list-switches_prd.md`, `_ux_flow.md`; implementation in `src/components/feedback/TmpPendingChanges.tsx`.
+
+#### CMP-write-key Write key dialog
+
+- **Design system reference:** none (own overlay, `KeyDialog`, because the kit has no `Sheet` yet).
+- **Functional role:** asks for the household write key.
+- **Behavior rules:** asked once per device, at the first change (not at launch). If the server rejects the key it reappears with "La clave no es correcta" and the changes stay pending. "Ahora no" closes it and it does not reopen with further switches until the screen is opened again. Bottom sheet on small windows, centered modal from 640 px.
+- **Used on:** SCR-ingredients.
+- **Source:** `007_pantry-shopping-list-switches_prd.md`, `_ux_flow.md`; implementation in `src/components/pantry/KeyDialog.tsx`.
+
+### Flows
+
+#### FLW-flip-switch Flip a switch
+
+- **Goal / trigger:** record that an ingredient is at home or must be bought.
+- **Screens involved (in sequence):** SCR-ingredients → (flip "Tengo" or "Comprar") → SCR-ingredients with the new value and, until confirmed, CMP-pending-changes.
+- **Business rules governing the flow:** the change shows at once and goes to the device's outbox; it is sent as soon as there is a connection and a key. Several changes to the same switch collapse into the last one. Without connection or after a failure it retries after 2, 5, 15 and 60 seconds, then every 60 seconds while the app is visible. The server applies the changes to the latest `pantry.yaml`, retrying once on a conflict, edits only the touched lines and sets `updated` with offset `-05:00`.
+- **Edge cases & error handling:** an unknown ingredient, a staple, or a file that is not schema 2 is rejected with a notice, never merged into another format. A Drive outage or a repeated conflict keeps the change pending. The other phone sees the change at its next sync; the last change to an ingredient wins.
+- **Source:** `007_pantry-shopping-list-switches_prd.md` (§5, §10).
+
+#### FLW-enter-write-key Enter the write key
+
+- **Goal / trigger:** authorize this device to write (first change, a rejected key, or "Introducir clave").
+- **Screens involved (in sequence):** SCR-ingredients → CMP-write-key → SCR-ingredients with the pending changes sent.
+- **Business rules governing the flow:** the key is stored on the device; once accepted, pending changes are sent in order.
+- **Edge cases & error handling:** a wrong key keeps the dialog open with "La clave no es correcta"; "Ahora no" leaves the changes pending.
+- **Source:** `007_pantry-shopping-list-switches_prd.md`, `_ux_flow.md`.

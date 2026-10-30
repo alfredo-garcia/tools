@@ -33,6 +33,7 @@
 | `DetailLayer` | Feedback/Overlays | Web | Beta | `components/overlays/DetailLayer` |
 | `RatingStars` | Inputs | Web | Beta | `components/recipes/RatingStars` |
 | `RecipeRow` | Data Display | Web | Beta | `components/recipes/RecipeRow` |
+| `ShareButton` | Inputs | Web | Beta | `components/recipes/ShareButton` |
 | `FavoriteButton` | Inputs | Web | Beta | `components/recipes/FavoriteButton` |
 | `ChecklistItem` | Data Display | Web | Beta | `components/lists/ChecklistItem` |
 | `AisleHeader` | Data Display | Web | Beta | `components/lists/AisleHeader` |
@@ -231,3 +232,7 @@ Not applicable (web only).
 ### RecipeRow
 - **Props:** `recipe`, `categoryLabel`, `favorite`, `onToggleFavorite`, `current?`, `dimmed?`, `replace?`, `onOpen?`, `flipKey`.
 - **Guidance:** photo, title and category open the detail (a `RecipeLink`, or a button when `onOpen` is given, as in Perfil); the heart is a sibling at the right, never inside the link. `dimmed` is an unfavorited row kept on screen in Perfil. Implemented in feature `my-food-manager/009`.
+
+### ShareButton
+- **Props:** `onShare`, `recipeTitle` (for the accessible name), `busy?` (disabled with `aria-busy`), `label?` (shows the text next to the icon and gives the button the width of its content); icon `Share2`; 44px hit area; no pressed state.
+- **Guidance:** sibling of `FavoriteButton` in the recipe detail (title row on small windows, under the photo on medium and large); never in lists. Implemented in feature `my-food-manager/010`.

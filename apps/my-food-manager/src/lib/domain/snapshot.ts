@@ -3,11 +3,19 @@ import {
   SNAPSHOT_SCHEMA_VERSION,
   type Library,
   type Person,
+  type Plan,
   type Recipe,
   type SnapshotResponse,
   type Warning,
 } from "@/lib/schema";
-import { parseIngredients, parsePantry, parseRecipe, parseReviews, parseVocab } from "./parse";
+import {
+  parseIngredients,
+  parsePantry,
+  parsePlan,
+  parseRecipe,
+  parseReviews,
+  parseVocab,
+} from "./parse";
 
 export interface DriveFileRef {
   id: string;
@@ -19,6 +27,7 @@ export interface DriveFileRef {
 export const LIBRARY_PATHS = {
   ingredients: "ingredients/items.yaml",
   pantry: "pantry/pantry.yaml",
+  plan: "plan/plan.yaml",
   categories: "recipes/_system/categories.yaml",
   tags: "recipes/_system/tags.yaml",
   families: "ingredients/_system/families.yaml",
@@ -38,6 +47,15 @@ export function relevantFiles(files: DriveFileRef[]): DriveFileRef[] {
       RECIPE_PATH.test(f.path) ||
       REVIEWS_PATH.test(f.path) ||
       PHOTO_PATH.test(f.path),
+  );
+}
+
+/** Recipe ids (file names without extension) of a listing; a recipe's id equals its file name. */
+export function recipeIdsOf(files: DriveFileRef[]): Set<string> {
+  return new Set(
+    files
+      .filter((f) => RECIPE_PATH.test(f.path))
+      .map((f) => f.path.slice(f.path.lastIndexOf("/") + 1).replace(/\.md$/, "")),
   );
 }
 
@@ -113,6 +131,12 @@ export async function buildSnapshot(
   }
   people.sort((a, b) => a.name.localeCompare(b.name, "es"));
 
+  // A missing plan file is not a warning: the Plan screen shows its own unavailable state.
+  const planFile = byPath.get(LIBRARY_PATHS.plan);
+  const plan = planFile
+    ? await guarded<Plan | undefined>(LIBRARY_PATHS.plan, undefined, parsePlan)
+    : undefined;
+
   const [ingredients, pantry, categories, tags, families, units] = await Promise.all([
     guarded(LIBRARY_PATHS.ingredients, {}, parseIngredients),
     guarded(LIBRARY_PATHS.pantry, { have: [], to_buy: [], updated: undefined }, parsePantry),
@@ -132,6 +156,7 @@ export async function buildSnapshot(
       recipes,
       ingredients,
       pantry,
+      ...(plan ? { plan } : {}),
       reviews,
       vocab: { categories, tags, units, families },
       people,

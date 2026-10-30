@@ -52,7 +52,7 @@ The "Plan" section (`/plan`) shows one screen: the household's meal calendar fro
 **Component tree**
 
 - `<PlanScreen>` (**NEW**, `components/plan/PlanScreen`, rendered by `src/app/plan/page.tsx` in place of `<TmpComingSoon>`)
-  - Title row: `<h1>` "Plan" and `<SyncBadge status={syncStatus} syncedAt={syncedAt} />` (kit: `components/feedback/SyncBadge`)
+  - Frame: `<AppShell title="Plan" wide={layout !== "small"}>` (kit: `components/layout/AppShell`; the new optional prop `wide` raises the content width from 768 to 1180 px) with the title, `<SyncBadge>`, the refresh button and pull-to-refresh
   - If `pending.length > 0`: `<TmpPendingChanges count={pending.length} keyNeeded={!keyStored} onEnterKey={openKeyDialog} />` (reused, `components/feedback/TmpPendingChanges`)
   - If layout is `small`: `<PlanDayList days={visibleDays} />` (**NEW**, see 2.2)
   - If layout is `medium` or `large`: `<PlanWeek offset={weekOffset} />` (**NEW**, see 2.3)
@@ -63,7 +63,7 @@ The "Plan" section (`/plan`) shows one screen: the household's meal calendar fro
 
 **Conditional rendering states**
 
-- If the library is loading and there is no stored library, render the title row and three `<PlanSkeletonDay />` blocks (**NEW**, part of `PlanScreen`; 120 px tall, `radius.md`, shimmer disabled under `prefers-reduced-motion`).
+- If the library is loading and there is no stored library, render the title row and three skeleton blocks (inline in `PlanScreen`; 128 px tall, `radius.md`, pulse disabled under `prefers-reduced-motion`).
 - If there is no stored library and offline, or the load failed, render the same `<EmptyState>` with "Reintentar" as the recipe list.
 - If `library.plan` is absent (the file `plan/plan.yaml` does not exist or cannot be read), render `<EmptyState emoji="📅" title="El plan todavía no está disponible en Drive" hint="Se activará cuando exista el archivo del plan. Tus recetas siguen disponibles." action={<Button variant="secondary" onClick={retry}>Reintentar</Button>} />` and no days, no "Añadir", no "X".
 - If `isOnline === false`, `<SyncBadge status="offline" />`; everything else behaves the same and changes become pending.
@@ -74,7 +74,7 @@ The "Plan" section (`/plan`) shows one screen: the household's meal calendar fro
 **Interactions / transitions**
 
 - Tap "Añadir" in a slot → `picker = { date, meal, selected: null, typed: "", applied: "" }`.
-- Tap a recipe in a slot (photo or title) → opens `<DetailLayer>` with that recipe (`components/overlays/DetailLayer`); closing returns to the same scroll position.
+- Tap a recipe in a slot (photo or title) → opens `<RecipeDetail id={recipe} overlay onClose={closeDetail} />` (`components/recipes/detail/RecipeDetail`, which hosts `DetailLayer`: fullscreen on small, modal on medium and large, never the side panel) over the Plan without changing the address; closing returns to the same scroll position.
 - Tap X of a recipe → `removeDish(date, meal, recipe)`: appends a `plan.removeRecipe` operation, the recipe disappears at once, announces "<título> quitada" in a polite live region; no confirmation, no undo; the shopping list is not touched.
 - Change of window width across 640 px → the layout changes between `<PlanDayList>` and `<PlanWeek>`; open `picker` and `missing` stay open, keeping text and selection.
 - A sync that updates the library keeps scroll position, `weekOffset`, `visibleDays`, `picker` and `missing`, and re-computes `planShown` from `library` plus `pending`.
@@ -164,7 +164,7 @@ The "Plan" section (`/plan`) shows one screen: the household's meal calendar fro
 
 **Component tree**
 
-- `<Sheet open title="Añadir al <desayuno|almuerzo|cena>" subtitle="<weekday day month>" onClose>` (**NEW implementation of a registered component**, `components/overlays/Sheet`: props `open`, `onClose`, `title`, `children`; this feature adds the optional `subtitle` and `size="tall"`; traps focus, closes on Esc and backdrop, locks page scroll, returns focus to the opener)
+- `<Sheet open title="Añadir al <desayuno|almuerzo|cena>" subtitle="<weekday day month>" onClose>` (**NEW implementation of a registered component**, `components/overlays/Sheet`: props `open`, `onClose`, `title`, `children`; this feature adds the optional `subtitle`, `size="tall"` and `hideClose`; traps focus, closes on Esc and backdrop, locks page scroll, returns focus to the opener)
   - Bar: `<h2 id>` title with the subtitle in `caption`, and a close button `<button aria-label="Cerrar">` with an `X` icon, 44×44 px, `color.surface.2`
   - `<SearchInput value={typed} placeholder="Buscar receta" label="Buscar receta" onChange onClear onSubmit />` (kit: `components/inputs/SearchInput`)
   - `<ul role="listbox" aria-label="Recetas">` scrolling area, one `<li><button role="option" aria-selected={selected === id}>` per recipe (**NEW**, `RecipePickerOption` inside `RecipePickerSheet`): minimum height 64 px, `<RecipePhoto className="size-12 rounded-sm" />`, the title (`label` weight, 600) and, under it, the time ("45 min", `caption`, muted), and a 24 px round check indicator on the right; the selected option has a 2 px `color.primary.500` border, `color.primary.soft` fill and the check filled
@@ -202,7 +202,7 @@ The "Plan" section (`/plan`) shows one screen: the household's meal calendar fro
 
 **Component tree**
 
-- `<Sheet open title={recipe.title} subtitle="Añadida al plan" onClose={continueWithout}>` (reused, `components/overlays/Sheet`)
+- `<Sheet open hideClose title={recipe.title} subtitle="Añadida al plan" onClose={continueWithout}>` (reused, `components/overlays/Sheet`; `hideClose` removes the close button, Esc and backdrop still close)
   - `<MissingIngredientsSheet>` (**NEW**, `components/plan/MissingIngredientsSheet`) content:
     - `<p>` "En tu despensa te faltan estos ingredientes:" (`color.text.muted`)
     - `<ul>` one `<li>` per ingredient, catalog name capitalized, `label` weight 600, 10 px vertical padding, bottom border `color.border`
@@ -223,7 +223,7 @@ The "Plan" section (`/plan`) shows one screen: the household's meal calendar fro
 
 - Reused unchanged from the `007` UX Flow (2.4 and 2.5 there): asked once per device at the first change made, never at launch; "Ahora no" keeps the changes pending; a rejected key asks again and changes stay pending.
 - **Order rule of this feature**: while `picker` or `missing` is open, `KeyDialog` is not opened; it opens right after both are closed if the key is still missing, changes are pending and it was not dismissed.
-- Plan and pantry operations of one action are sent in order (plan first, then pantry) in the same outbox; each shows its own pending or failed state in `<TmpPendingChanges>`.
+- Plan and pantry operations of one action travel in order in the same outbox; the server writes the pantry first and the plan last (ADR 003); each shows its own pending or failed state in `<TmpPendingChanges>`.
 
 ## 3. Navigation Map
 
@@ -275,8 +275,9 @@ The "Plan" section (`/plan`) shows one screen: the household's meal calendar fro
 | `SearchInput` | `components/inputs/SearchInput` | 2.4 |
 | `Button` | `components/inputs/Button` | 2.1, 2.4, 2.5 |
 | `RecipePhoto` | `components/recipes/RecipePhoto` | 2.2.1, 2.4 |
-| `DetailLayer` | `components/overlays/DetailLayer` | 2.1 |
+| `RecipeDetail` (with `DetailLayer`; new props `onClose`, `overlay`) | `components/recipes/detail/RecipeDetail` | 2.1 |
 | `Sheet` (registered, **implemented by this feature**) | `components/overlays/Sheet` | 2.4, 2.5 |
+| `AppShell` (new prop `wide`) | `components/layout/AppShell` | 2.1 |
 
 **New — temporary (needs formalizing before/at ship time)**
 
@@ -288,7 +289,7 @@ The "Plan" section (`/plan`) shows one screen: the household's meal calendar fro
 | `PlanSlot`, `PlanRecipeItem` | A meal slot and a recipe row with remove | 2.2.1 | |
 | `RecipePickerSheet` (with `RecipePickerOption`) | Searchable single-select recipe picker in a `Sheet` | 2.4 | Candidate for reuse by "Inspiración" (backlog #5) |
 | `MissingIngredientsSheet` | List of missing ingredients with two actions | 2.5 | |
-| `PlanSkeletonDay` | Loading placeholder | 2.1 | Inside `PlanScreen` |
+| Loading skeleton | Three pulsing blocks while the library loads | 2.1 | Inline in `PlanScreen`, not a separate component |
 
 All are feature components prefixed by their domain (`Plan…`), registered in `ui_kit_registry.md` when built; none is a `Tmp` of the design system except those already marked above. `KeyDialog` should become a `Sheet` consumer when `Sheet` exists (separate cleanup, not part of this feature).
 

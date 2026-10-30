@@ -288,7 +288,9 @@ export function IngredientsScreen() {
           onClose={closeKey}
         />
       )}
-      {notice && <Toast message={`No se pudo guardar ${nameOf(items, notice.ingredient)}`} />}
+      {notice?.ingredient && (
+        <Toast message={`No se pudo guardar ${nameOf(items, notice.ingredient)}`} />
+      )}
     </AppShell>
   );
 }

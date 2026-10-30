@@ -2,6 +2,7 @@ import {
   SNAPSHOT_SCHEMA_VERSION,
   snapshotResponseSchema,
   type Library,
+  type Plan,
   type SnapshotResponse,
   type Warning,
 } from "@/lib/schema";
@@ -176,6 +177,20 @@ export function createLibraryStore(deps: Deps) {
     });
   }
 
+  /** Replaces the stored plan with the one the server just saved. */
+  function setPlan(plan: Plan) {
+    if (!state.library || !etag) return;
+    const library = { ...state.library, plan };
+    set({ library });
+    void persist({
+      schemaVersion: SNAPSHOT_SCHEMA_VERSION,
+      etag,
+      syncedAt: state.syncedAt ?? deps.now().toISOString(),
+      data: library,
+      warnings: state.warnings,
+    });
+  }
+
   function markOffline() {
     set({ status: "offline" });
   }
@@ -189,6 +204,7 @@ export function createLibraryStore(deps: Deps) {
     hydrate,
     sync,
     setPantry,
+    setPlan,
     markOffline,
   };
 }

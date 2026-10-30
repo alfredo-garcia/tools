@@ -32,9 +32,10 @@ export function getOutbox(): Outbox {
     isOnline: () => navigator.onLine,
     isVisible: () => document.visibilityState === "visible",
     newId: () => crypto.randomUUID(),
-    onSaved: (pantry) => {
+    onSaved: ({ pantry, plan }) => {
       const library = getLibraryStore();
-      library.setPantry(pantry);
+      if (pantry) library.setPantry(pantry);
+      if (plan) library.setPlan(plan);
       void library.sync("manual");
     },
     setTimeout: (fn, ms) => setTimeout(fn, ms),

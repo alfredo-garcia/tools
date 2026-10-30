@@ -37,7 +37,7 @@ describe("runOps", () => {
       deps,
     );
     expect(writes).toHaveLength(1);
-    expect(r.pantry.have).toContain("leche");
+    expect(r.pantry!.have).toContain("leche");
     expect(parsePantry(writes[0]).to_buy).toEqual(["pimiento-rojo"]);
     expect(writes[0]).not.toMatch(/^have:/m);
   });
@@ -104,5 +104,93 @@ describe("assertWriteKey", () => {
     expect(() => assertWriteKey("casa", undefined)).toThrow(
       expect.objectContaining({ code: "CONFIG_MISSING" }),
     );
+  });
+});
+
+describe("runOps with plan operations (ADR 003)", () => {
+  const planOp = (id: string, kind: string, recipe: string, meal = "lunch") => ({
+    id,
+    kind,
+    date: "2026-11-02",
+    meal,
+    recipe,
+  });
+
+  function planSetup(over: { drop?: string; conflicts?: Record<string, number> } = {}) {
+    const drive = fixtureDrive();
+    const files = drive.files.filter((f) => f.path !== over.drop);
+    const left = { ...(over.conflicts ?? {}) };
+    const writes: { path: string; text: string }[] = [];
+    const source: FoodSource = {
+      list: async () => files,
+      readText: drive.read,
+      readBytes: async () => new Uint8Array(),
+      writeText: vi.fn(async (f, text) => {
+        if ((left[f.path] ?? 0) > 0) {
+          left[f.path]--;
+          throw new DriveConflictError();
+        }
+        writes.push({ path: f.path, text });
+        drive.contents.set(f.path, text);
+      }),
+    };
+    const deps = { source, list: async () => files, now: () => new Date("2026-10-30T15:00:00Z") };
+    return { deps, writes, source };
+  }
+
+  it("writes the plan only and returns just the plan", async () => {
+    const { deps, writes } = planSetup();
+    const r = await runOps([planOp("a", "plan.addRecipe", "bizcocho")], deps);
+    expect(writes.map((w) => w.path)).toEqual(["plan/plan.yaml"]);
+    expect(r.pantry).toBeUndefined();
+    expect(r.plan?.days["2026-11-02"].map((m) => m.slot)).toEqual(["breakfast", "lunch"]);
+    expect(r.results).toEqual([{ id: "a", status: "applied" }]);
+  });
+
+  it("writes pantry first and plan last, and answers in request order", async () => {
+    const { deps, writes } = planSetup();
+    const r = await runOps(
+      [
+        planOp("p1", "plan.addRecipe", "bizcocho"),
+        { id: "b1", kind: "pantry.setBuy", ingredient: "leche", value: true },
+        planOp("p2", "plan.addRecipe", "inventada"),
+      ],
+      deps,
+    );
+    expect(writes.map((w) => w.path)).toEqual(["pantry/pantry.yaml", "plan/plan.yaml"]);
+    expect(r.results.map((x) => [x.id, x.status])).toEqual([
+      ["p1", "applied"],
+      ["b1", "applied"],
+      ["p2", "rejected"],
+    ]);
+    expect(r.pantry?.to_buy).toContain("leche");
+  });
+
+  it("retries a plan conflict once and fails with CONFLICT when it persists", async () => {
+    const once = planSetup({ conflicts: { "plan/plan.yaml": 1 } });
+    await runOps([planOp("a", "plan.addRecipe", "bizcocho")], once.deps);
+    expect(once.writes).toHaveLength(1);
+
+    const twice = planSetup({ conflicts: { "plan/plan.yaml": 2 } });
+    await expect(
+      runOps([planOp("a", "plan.addRecipe", "bizcocho")], twice.deps),
+    ).rejects.toMatchObject({
+      code: "CONFLICT",
+      status: 409,
+    });
+  });
+
+  it("rejects plan operations, not the batch, when the plan file is missing", async () => {
+    const { deps } = planSetup({ drop: "plan/plan.yaml" });
+    const r = await runOps(
+      [
+        planOp("p", "plan.addRecipe", "bizcocho"),
+        { id: "b", kind: "pantry.setBuy", ingredient: "leche", value: true },
+      ],
+      deps,
+    );
+    expect(r.results[0]).toMatchObject({ status: "rejected", error: { code: "PLAN_MISSING" } });
+    expect(r.results[1].status).toBe("applied");
+    expect(r.plan).toBeUndefined();
   });
 });

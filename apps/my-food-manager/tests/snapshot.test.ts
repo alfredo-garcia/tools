@@ -1,3 +1,4 @@
+import { SNAPSHOT_SCHEMA_VERSION } from "@/lib/schema";
 import { describe, expect, it } from "vitest";
 import { buildSnapshot, computeEtag, relevantFiles, photoFiles } from "@/lib/domain/snapshot";
 import { fixtureDrive } from "./helpers";
@@ -6,7 +7,7 @@ describe("buildSnapshot", () => {
   it("builds the whole library from the fixture folder", async () => {
     const { files, read } = fixtureDrive();
     const snap = await buildSnapshot(files, read, () => new Date("2026-10-28T12:00:00Z"));
-    expect(snap.schemaVersion).toBe(1);
+    expect(snap.schemaVersion).toBe(SNAPSHOT_SCHEMA_VERSION);
     expect(snap.data.recipes.map((r) => r.id)).toEqual([
       "bizcocho",
       "pasta-bolonesa",
@@ -25,6 +26,32 @@ describe("buildSnapshot", () => {
     expect(snap.data.vocab.units).toHaveProperty("g");
     expect(snap.generatedAt).toBe("2026-10-28T12:00:00.000Z");
     expect(snap.warnings).toEqual([]);
+  });
+
+  it("carries the plan, and leaves it out without a warning when the file does not exist", async () => {
+    const { files, read } = fixtureDrive();
+    const snap = await buildSnapshot(files, read);
+    expect(Object.keys(snap.data.plan!.days)).toEqual(["2026-10-30", "2026-11-02"]);
+    expect(snap.data.plan!.days["2026-10-30"].map((m) => m.slot)).toEqual([
+      "lunch",
+      "snack",
+      "dinner",
+    ]);
+
+    const without = await buildSnapshot(
+      files.filter((f) => f.path !== "plan/plan.yaml"),
+      read,
+    );
+    expect(without.data.plan).toBeUndefined();
+    expect(without.warnings).toEqual([]);
+  });
+
+  it("changes the validator when the plan file changes", async () => {
+    const { files } = fixtureDrive();
+    const changed = files.map((f) =>
+      f.path === "plan/plan.yaml" ? { ...f, modifiedTime: "2026-10-30T10:00:00.000Z" } : f,
+    );
+    expect(computeEtag(changed)).not.toBe(computeEtag(files));
   });
 
   it("skips a malformed recipe, reports it in warnings and keeps the rest", async () => {

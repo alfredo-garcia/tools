@@ -83,7 +83,7 @@ Replaces the "Próximamente" placeholder of Plan (`/plan`) with a calendar from 
 1. Given I add or remove a recipe online with a valid key, then it is saved to `plan/plan.yaml` and shows as saved.
 2. Given I am offline or the key is missing/rejected, then the change shows on screen, waits as pending (same indicator and key dialog as the pantry), and is sent in order when possible.
 3. Given the first change on a device, then the write key is asked once, as in feature 007.
-4. Given a plan change and "Añadir a mi lista de la compra" in one action, then both reach Drive in order (plan, then pantry) and each shows its own pending/failed state.
+4. Given a plan change and "Añadir a mi lista de la compra" in one action, then both reach Drive (the server writes the pantry first and the plan last) and each shows its own pending/failed state.
 
 ## 6. Functional Requirements
 1. FR-1: `/plan` shows the "Plan" screen, titled "Plan · My Food", replacing the placeholder; it opens offline from the cache.
@@ -118,9 +118,9 @@ Replaces the "Próximamente" placeholder of Plan (`/plan`) with a calendar from 
   - `pantry.setHave` / `pantry.setBuy`: `{ id, kind, ingredient, value }` (unchanged).
   - `plan.addRecipe`: `{ id, kind, date: "YYYY-MM-DD", meal: "breakfast"|"lunch"|"dinner", recipe: <recipe-id> }`.
   - `plan.removeRecipe`: same fields; removes one occurrence, no-op if absent.
-- Response: `results[]` per op (`applied` / `rejected` with `{code, message}`, as today) and the refreshed `pantry` and `plan` sections. Operations are grouped by file; each file is read, written and retried independently (ADR 003). `INVALID_OP` rejections for: unknown kind, bad `date` format, `date` earlier than the server's tolerance (below), unknown `meal`, unknown recipe id on add.
+- Response: `results[]` per op (`applied` / `rejected` with `{code, message}`, as today) and the refreshed `pantry` and `plan` sections. Operations are grouped by file; each file is read, written and retried independently, pantry first and plan last (ADR 003). The response carries `pantry` only when the batch had pantry operations and `plan` only when it had plan operations. `INVALID_OP` rejections for: unknown kind, bad `date` format, `date` earlier than the server's tolerance (below), unknown `meal`, unknown recipe id on add.
 - Errors keep the standard format `{ "error": { code, message } }`: `UNAUTHORIZED` for a missing/wrong key, `PLAN_MISSING` (404) if `plan/plan.yaml` does not exist, `PLAN_INVALID` (500) if it cannot be parsed, `CONFLICT` (409) as for the pantry.
-- Replaying an operation with an `id` the server already applied is not applied twice (same guarantee as pantry operations; if the current ops code lacks it for appends, it must be added).
+- Pantry operations are idempotent (set a value). A plan operation whose `id` this server instance applied in the last 10 minutes is answered `unchanged` and not applied again (best effort, ADR 003).
 
 ## 9. UI/UX Requirements
 Reuses ui_standards and the kit; components to define with ux-designer (UX Flow): `PlanScreen`, `PlanDay`, `PlanSlot`, `PlanRecipeItem`, `RecipePickerSheet`, `MissingIngredientsSheet`, `WeekNav`; `Sheet` is implemented as registered, and other overlays reuse it. Copy is Spanish.

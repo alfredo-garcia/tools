@@ -1,15 +1,30 @@
-import type { PendingOp } from "@/lib/domain/pantry-view";
-import { opsResponseSchema, type OpsResponse, type PantryOpKind } from "@/lib/schema";
+import { isPantryOp, type PendingOp } from "@/lib/domain/pantry-view";
+import {
+  opsResponseSchema,
+  type OpsResponse,
+  type PantryOpKind,
+  type PlanMeal,
+  type PlanOpKind,
+} from "@/lib/schema";
 
 /** Waits before each retry after a failed send; the last one repeats (PRD FR-15). */
 export const RETRY_DELAYS_MS = [2_000, 5_000, 15_000, 60_000];
 const MAX_BATCH = 100;
 
+/** A change the server rejected: the ingredient of a pantry switch or the recipe of a plan change. */
 export interface Notice {
   id: number;
-  /** Ingredient whose change the server rejected. */
-  ingredient: string;
+  ingredient?: string;
+  recipe?: string;
 }
+
+const subjectOf = (o: PendingOp): Omit<Notice, "id"> =>
+  isPantryOp(o) ? { ingredient: o.ingredient } : { recipe: o.recipe };
+
+const wireOf = (o: PendingOp) =>
+  isPantryOp(o)
+    ? { id: o.id, kind: o.kind, ingredient: o.ingredient, value: o.value }
+    : { id: o.id, kind: o.kind, date: o.date, meal: o.meal, recipe: o.recipe };
 
 export interface OutboxState {
   hydrated: boolean;
@@ -31,8 +46,8 @@ export interface OutboxDeps {
   isOnline: () => boolean;
   isVisible: () => boolean;
   newId: () => string;
-  /** Called with the pantry the server saved, so the stored library matches before the next sync. */
-  onSaved: (pantry: OpsResponse["pantry"]) => void;
+  /** Called with the pantry and plan the server saved, so the stored library matches before the next sync. */
+  onSaved: (saved: Pick<OpsResponse, "pantry" | "plan">) => void;
   setTimeout: (fn: () => void, ms: number) => unknown;
   clearTimeout: (handle: unknown) => void;
 }
@@ -74,8 +89,8 @@ export function createOutbox(deps: OutboxDeps) {
   }
 
   /** Removes sent operations that the server answered for (or that it can never accept). */
-  function settle(ids: Set<string>, rejected: Map<string, string> = new Map()) {
-    const notices = [...rejected.values()].map((ingredient) => ({ id: ++noticeSeq, ingredient }));
+  function settle(ids: Set<string>, rejected: Map<string, Omit<Notice, "id">> = new Map()) {
+    const notices = [...rejected.values()].map((subject) => ({ id: ++noticeSeq, ...subject }));
     set({
       pending: state.pending.filter((o) => !ids.has(o.id)),
       notices: [...state.notices, ...notices],
@@ -104,7 +119,7 @@ export function createOutbox(deps: OutboxDeps) {
         method: "POST",
         headers: { "content-type": "application/json", "x-app-key": key },
         body: JSON.stringify({
-          ops: batch.map(({ id, kind, ingredient, value }) => ({ id, kind, ingredient, value })),
+          ops: batch.map(wireOf),
         }),
       });
     } catch {
@@ -121,7 +136,7 @@ export function createOutbox(deps: OutboxDeps) {
     }
     if (res.status === 400) {
       // The server can never accept this batch as written: drop it instead of retrying forever.
-      const byId = new Map(batch.map((o) => [o.id, o.ingredient]));
+      const byId = new Map(batch.map((o) => [o.id, subjectOf(o)]));
       inflight = new Set();
       await settle(ids, byId);
       set({ sending: false });
@@ -142,12 +157,12 @@ export function createOutbox(deps: OutboxDeps) {
     }
 
     attempt = 0;
-    deps.onSaved(body.pantry);
-    const rejected = new Map<string, string>();
+    deps.onSaved({ pantry: body.pantry, plan: body.plan });
+    const rejected = new Map<string, Omit<Notice, "id">>();
     for (const r of body.results)
       if (r.status === "rejected") {
         const op = batch.find((o) => o.id === r.id);
-        if (op) rejected.set(r.id, op.ingredient);
+        if (op) rejected.set(r.id, subjectOf(op));
       }
     inflight = new Set();
     await settle(ids, rejected);
@@ -180,7 +195,8 @@ export function createOutbox(deps: OutboxDeps) {
      * what is stored (and not racing a sent one) needs no operation at all (PRD FR-14).
      */
     async enqueue(kind: PantryOpKind, ingredient: string, value: boolean, storedValue: boolean) {
-      const same = (o: PendingOp) => o.ingredient === ingredient && o.kind === kind;
+      const same = (o: PendingOp) =>
+        isPantryOp(o) && o.ingredient === ingredient && o.kind === kind;
       const kept = state.pending.filter((o) => !(same(o) && !inflight.has(o.id)));
       const racing = kept.some(same);
       const next =
@@ -188,6 +204,13 @@ export function createOutbox(deps: OutboxDeps) {
           ? kept
           : [...kept, { id: deps.newId(), kind, ingredient, value }];
       set({ pending: next });
+      await persist();
+      void flush();
+    },
+
+    /** Records a plan change. Changes are ordered and never collapse: a repeated recipe is a second dish. */
+    async enqueuePlan(kind: PlanOpKind, date: string, meal: PlanMeal, recipe: string) {
+      set({ pending: [...state.pending, { id: deps.newId(), kind, date, meal, recipe }] });
       await persist();
       void flush();
     },

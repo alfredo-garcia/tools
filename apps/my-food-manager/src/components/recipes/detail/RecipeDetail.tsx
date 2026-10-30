@@ -6,6 +6,8 @@ import { EmptyState } from "@/components/feedback/EmptyState";
 import { Button } from "@/components/inputs/Button";
 import { FavoriteButton } from "@/components/recipes/FavoriteButton";
 import { RecipePhoto } from "@/components/recipes/RecipePhoto";
+import { ShareButton } from "@/components/recipes/ShareButton";
+import { Toast } from "@/components/feedback/Toast";
 import { findRecipe } from "@/lib/domain/recipe-detail";
 import { useFavorites } from "@/lib/offline/use-favorites";
 import { useLibrary } from "@/lib/offline/use-library";
@@ -15,11 +17,13 @@ import { IngredientsSection } from "./IngredientsSection";
 import { NotesSection } from "./NotesSection";
 import { StepsSection } from "./StepsSection";
 import { useCloseDetail } from "./use-detail-navigation";
+import { useRecipeShare } from "./use-recipe-share";
 
 /** Keyed by recipe id by the caller, so section state resets when another recipe opens. */
 function RecipeContent({ recipe, library }: { recipe: Recipe; library: Library }) {
   const { favorites, toggle } = useFavorites();
   const pressed = favorites.has(recipe.id);
+  const { share, busy, notice } = useRecipeShare(recipe);
   return (
     <div className="detail-grid mx-auto w-full max-w-3xl pb-10">
       <div className="detail-photo-col">
@@ -30,13 +34,14 @@ function RecipeContent({ recipe, library }: { recipe: Recipe; library: Library }
           className="detail-photo aspect-video w-full"
         />
         {/* Medium and large windows: the labeled button under the photo (the title lives in the layer bar). */}
-        <div className="px-4 pt-3 group-data-[detail-mode=fullscreen]:hidden group-data-[detail-mode=panel]:px-0">
+        <div className="flex flex-wrap gap-2 px-4 pt-3 group-data-[detail-mode=fullscreen]:hidden group-data-[detail-mode=panel]:px-0">
           <FavoriteButton
             pressed={pressed}
             onToggle={() => toggle(recipe.id)}
             recipeTitle={recipe.title}
             label={pressed ? "Quitar de favoritos" : "Añadir a favoritos"}
           />
+          <ShareButton onShare={share} busy={busy} recipeTitle={recipe.title} label="Compartir" />
         </div>
       </div>
       <div className="detail-sections px-4 pt-4">
@@ -53,12 +58,14 @@ function RecipeContent({ recipe, library }: { recipe: Recipe; library: Library }
             onToggle={() => toggle(recipe.id)}
             recipeTitle={recipe.title}
           />
+          <ShareButton onShare={share} busy={busy} recipeTitle={recipe.title} />
         </div>
         <InfoSection recipe={recipe} library={library} />
         <IngredientsSection recipe={recipe} library={library} />
         <StepsSection recipe={recipe} />
         <NotesSection recipe={recipe} />
       </div>
+      {notice && <Toast message={notice} />}
     </div>
   );
 }

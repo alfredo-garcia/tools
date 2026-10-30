@@ -162,6 +162,20 @@ export function createLibraryStore(deps: Deps) {
     return inflight;
   }
 
+  /** Replaces the stored pantry with the one the server just saved, so the screen never shows the old value. */
+  function setPantry(pantry: Pick<Library["pantry"], "have" | "to_buy"> & { updated?: string }) {
+    if (!state.library || !etag) return;
+    const library = { ...state.library, pantry: { ...state.library.pantry, ...pantry } };
+    set({ library });
+    void persist({
+      schemaVersion: SNAPSHOT_SCHEMA_VERSION,
+      etag,
+      syncedAt: state.syncedAt ?? deps.now().toISOString(),
+      data: library,
+      warnings: state.warnings,
+    });
+  }
+
   function markOffline() {
     set({ status: "offline" });
   }
@@ -174,6 +188,7 @@ export function createLibraryStore(deps: Deps) {
     },
     hydrate,
     sync,
+    setPantry,
     markOffline,
   };
 }

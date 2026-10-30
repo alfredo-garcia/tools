@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import type { DriveFileRef } from "@/lib/domain/snapshot";
-import type { FoodSource } from "./types";
+import { DriveConflictError, type FoodSource } from "./types";
 
 /** Development-only source: a local mirror of the Drive folder (e.g. ~/knowledge-base/food). */
 export function createLocalSource(root: string): FoodSource {
@@ -22,5 +22,11 @@ export function createLocalSource(root: string): FoodSource {
     list: () => walk(root, ""),
     readText: (f) => fs.readFile(path.join(root, f.path), "utf8"),
     readBytes: async (f) => new Uint8Array(await fs.readFile(path.join(root, f.path))),
+    writeText: async (f, text) => {
+      const full = path.join(root, f.path);
+      if ((await fs.stat(full)).mtime.toISOString() !== f.modifiedTime)
+        throw new DriveConflictError();
+      await fs.writeFile(full, text, "utf8");
+    },
   };
 }

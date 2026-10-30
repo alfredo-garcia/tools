@@ -5,6 +5,18 @@ export interface FoodSource {
   list(): Promise<DriveFileRef[]>;
   readText(file: DriveFileRef): Promise<string>;
   readBytes(file: DriveFileRef): Promise<Uint8Array>;
+  /**
+   * Replaces the text of an existing file. Fails with `DriveConflictError` when the file's
+   * modified time is not `file.modifiedTime` (someone else wrote it since it was listed).
+   */
+  writeText(file: DriveFileRef, text: string): Promise<void>;
+}
+
+export class DriveConflictError extends Error {
+  constructor() {
+    super("El archivo cambió en Drive mientras se guardaba");
+    this.name = "DriveConflictError";
+  }
 }
 
 export class DriveReadError extends Error {

@@ -40,6 +40,11 @@ export function asApiError(e: unknown): unknown {
   return e;
 }
 
+/** Forget the cached listing, e.g. after a write changed a file. */
+export function invalidateListing() {
+  listing = undefined;
+}
+
 async function listFiles(maxAgeMs: number): Promise<DriveFileRef[]> {
   if (listing && Date.now() - listing.at < maxAgeMs) return listing.files;
   const files = await getSource().list();
@@ -48,6 +53,15 @@ async function listFiles(maxAgeMs: number): Promise<DriveFileRef[]> {
 }
 
 /** Cheap validator: one listing, no file contents. */
+/** Fresh listing, bypassing the cache (used before and after a write). */
+export async function freshListing(): Promise<DriveFileRef[]> {
+  try {
+    return await listFiles(0);
+  } catch (e) {
+    throw asApiError(e);
+  }
+}
+
 export async function currentEtag(): Promise<string> {
   try {
     return computeEtag(await listFiles(0));

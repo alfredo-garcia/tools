@@ -10,7 +10,7 @@
 
 My Food Manager (shown to users as "My Food") is a personal, visual, mobile-first web app (installable PWA) that helps Al and his household partner decide what to cook and shop without forgetting anything. It reads the Google Drive folder `food`, which the food-manager skill maintains, and keeps working without a connection. There are no logins. Platform: web only.
 
-Today the app lets you browse the library with filters and a text search and open each recipe's detail, and it has a main navigation with four sections: Recetas, Plan, Despensa and Perfil. Perfil is a placeholder that says "Próximamente". Plan is the household's meal calendar: from today on, each day has Desayuno, Almuerzo and Cena, to which recipes are added and removed, and every recipe added is checked against the pantry, offering to put what is missing on the shopping list. Despensa holds the pantry and the shopping list in two tabs, where each ingredient has two switches, "Tengo" and "Comprar", saved to Drive (also from the device without a connection, with a shared write key). Plan changes are saved to Drive in the same way (offline queue and shared write key). The profile is the next feature (see `product/product_vision.md` §7).
+Today the app lets you browse the library with filters and a text search and open each recipe's detail, and it has a main navigation with four sections: Recetas, Plan, Despensa and Perfil. Perfil shows Al's favorite recipes. Recipes can be marked as favorites from the list and from the detail, with a heart; favorites are saved to Drive in the same way as the pantry and the plan. Plan is the household's meal calendar: from today on, each day has Desayuno, Almuerzo and Cena, to which recipes are added and removed, and every recipe added is checked against the pantry, offering to put what is missing on the shopping list. Despensa holds the pantry and the shopping list in two tabs, where each ingredient has two switches, "Tengo" and "Comprar", saved to Drive (also from the device without a connection, with a shared write key). Plan changes are saved to Drive in the same way (offline queue and shared write key). Ratings, comments and the person picker of the profile are still pending (see `product/product_vision.md` §7).
 
 ## 2. How to Read This Documentation
 
@@ -28,10 +28,11 @@ Today the app lets you browse the library with filters and a text search and ope
 | navigation | Main navigation between sections and their placeholders | inline below | Active |
 | pantry | Pantry and shopping list, with writes to Drive | inline below | Active |
 | plan | Meal-plan calendar with recipe picking and a pantry check, with writes to Drive | inline below | Active |
+| profile | Perfil: Al's favorite recipes and the heart to mark them, with writes to Drive | inline below | Active |
 
 ## 4. Navigation Structure
 
-The app has four sections, always reachable from a main navigation: Recetas (`/`, with the recipe detail at `/recipes/<id>`), Plan (`/plan`), Despensa (`/ingredients`) and Perfil (`/profile`). Perfil shows only "Próximamente" for now; Plan shows the meal calendar; Despensa shows the pantry and the shopping list in two tabs. The screen adapts to the window width in three layouts: small (under 640 px), medium (640 to 1279 px) and large (1280 px and above).
+The app has four sections, always reachable from a main navigation: Recetas (`/`, with the recipe detail at `/recipes/<id>`), Plan (`/plan`), Despensa (`/ingredients`) and Perfil (`/profile`). Perfil shows Al's favorite recipes; Plan shows the meal calendar; Despensa shows the pantry and the shopping list in two tabs. The screen adapts to the window width in three layouts: small (under 640 px), medium (640 to 1279 px) and large (1280 px and above).
 
 - **Small:** a bottom bar with the four sections. It is hidden while a recipe detail is open (the detail is a full screen) and comes back when it closes.
 - **Medium and large:** a sidebar on the left with the same four sections, collapsible to icons only or expandable to icons and text. It stays visible when a recipe opens (modal on medium, panel beside the list on large).
@@ -48,7 +49,7 @@ The app has four sections, always reachable from a main navigation: Recetas (`/`
 | SCR-recipe-detail | Recipe detail | recipes | Web |
 | SCR-plan | Plan | plan | Web |
 | SCR-ingredients | Despensa | pantry | Web |
-| SCR-profile | Perfil (placeholder) | navigation | Web |
+| SCR-profile | Perfil | profile | Web |
 
 **Flows**
 
@@ -66,10 +67,11 @@ The app has four sections, always reachable from a main navigation: Recetas (`/`
 | FLW-add-recipe-to-plan | Add a recipe to the plan | plan | Web |
 | FLW-remove-plan-recipe | Remove a recipe from the plan | plan | Web |
 | FLW-browse-plan | Browse days and weeks | plan | Web |
+| FLW-toggle-favorite | Mark or unmark a favorite | profile, library, recipes | Web |
 
 ## 6. Cross-Cutting Concepts
 
-- **Writes.** Only the pantry and the plan are written to Drive, through operations with an offline queue and a shared household write key (see FLW-flip-switch and FLW-add-recipe-to-plan). Everything else stays read-only; reviews writes arrive with their own feature. A batch that touches both files is written pantry first and plan last, each file on its own.
+- **Writes.** Only the pantry, the plan and Al's favorites are written to Drive, through operations with an offline queue and a shared household write key (see FLW-flip-switch, FLW-add-recipe-to-plan and FLW-toggle-favorite). Everything else stays read-only; ratings and comments arrive with their own feature. A batch that touches several files is written pantry first, then favorites, then plan last, each file on its own.
 - **Changes without connection.** A change shows at once, waits on the device and is sent when the connection returns; it is never lost.
 - **Offline-first.** After the first sync, the library is always shown from the device, before any network response. Reads are never blocked by a missing connection.
 - **Freshness.** A sync runs on app open, every 5 minutes while the app is visible and online, within 5 seconds of regaining a connection, and on a manual request. If Drive has no changes, only the "last synced" time updates. A failed sync leaves the stored data untouched.
@@ -86,6 +88,7 @@ None shared across domains yet.
 
 - **Library snapshot.** The complete normalized copy of the `food` folder: recipes (with steps, notes and variations), the ingredient catalog, the pantry, each person's reviews, the vocabularies (categories, tags, units, families) and the list of household people. The people are derived from the review files that exist. The snapshot is replaced as a whole on every sync that finds changes.
 - **Plan.** `plan/plan.yaml` (plan schema 1, created by the food-manager skill, never by the app): `updated` plus `days`, a map from date (`YYYY-MM-DD`) to a list of meals `{ slot, label, note, dishes }`, where `slot` is `breakfast`, `lunch`, `snack` or `dinner` and a dish is `{ recipe, servings }` (a recipe id) or `{ text }` (free description). Several meals may share a slot. The app shows and edits only the dishes that are recipes of breakfast, lunch and dinner, and writes only the add or removal of one recipe dish (and `updated`); labels, notes, servings, text dishes and snack meals stay as they are. Past days are never shown; any writer may remove them.
+- **Reviews (Al).** `reviews/al.yaml` (reviews schema 1, created by the food-manager skill, never by the app): `user`, `updated`, `favorites` (recipe ids) and `ratings`. The app writes only `favorites` (a recipe is added at the end or removed) and `updated`; ratings, comments and unknown fields stay as they are, and a recipe that does not exist is rejected. Until the person picker exists, the person is always Al; the file of the household partner is neither read for favorites nor written.
 - **Pantry.** `pantry/pantry.yaml` (schema 2): `updated` plus `items`, a map from ingredient id to `have` and `to_buy`, for non-staple ingredients only. Staples are never listed and are always available. There are no quantities. The app writes only these two flags (and `updated`); Claude and Telegram write the same file.
 
 ## 9. Cross-Domain Flows
@@ -104,7 +107,9 @@ None.
 - **Section / destination:** one of the four options of the main navigation: Recetas, Plan, Despensa or Perfil.
 - **Bottom bar:** the navigation on small windows.
 - **Sidebar:** the navigation on medium and large windows; collapsed shows only icons, expanded shows icons and text.
-- **Placeholder section:** a section with no content yet, which shows its title and "Próximamente" (today only Perfil).
+- **Placeholder section:** a section with no content yet, which shows its title and "Próximamente" (today none).
+- **Favorite (favorita):** a recipe whose id is in `favorites` of Al's reviews file, counting the changes still pending on the device.
+- **Heart (corazón):** the control that marks or unmarks a favorite; filled when the recipe is a favorite.
 - **Plan:** the household's agenda of recipes per day and meal.
 - **Slot (franja):** one meal time of one day: Desayuno, Almuerzo or Cena (the file also knows `snack`, not shown).
 - **Faltante:** a non-staple ingredient of a recipe that is not "Tengo"; optional ingredients count.
@@ -119,6 +124,7 @@ None.
 
 ## 11. Recent Changes
 
+- 2026-10-30 — profile: favorite recipes, with a heart in the list and the detail and a "Recetas favoritas" tab in Perfil, saved to Drive (see `changelog/009_favorites_changelog.md`).
 - 2026-10-30 — plan: Plan meal calendar with day list and weekly columns, recipe picker, pantry check on add and writes to Drive (see `changelog/008_meal-plan-calendar_changelog.md`).
 - 2026-10-30 — pantry: Despensa with "Despensa" and "Lista de compra" tabs and Tengo/Comprar switches saved to Drive, with an offline queue (see `changelog/007_pantry-shopping-list-switches_changelog.md`).
 - 2026-10-29 — recipes: text search on the recipe list, with results grouped by name, protein and ingredient (see `changelog/005_recipe-search_changelog.md`).
@@ -144,8 +150,8 @@ How data travels from Drive to the device, and how its state is shown. It is the
 - **Platform divergence:** on large windows (1280 px and above) the list is a 400 px column on the left with its own scroll, and the title, sync badge, refresh button, filters and rows scroll together inside it; the open recipe's row is highlighted. Below 1280 px it is a single page as before. In both cases the filters wrap onto several lines instead of scrolling sideways. The main navigation (CMP-main-navigation) frames the list: on large windows the sidebar sits to the left of the column. Navigating to another section and back shows the list in its initial state.
 - **Purpose:** browse the library and open a recipe. Rows open SCR-recipe-detail.
 - **Entry points:** opening the app (`/`); Recetas in the main navigation; FLW-first-sync.
-- **Functional composition:** CMP-app-shell, CMP-sync-badge, CMP-recipe-photo, CMP-recipe-search, CMP-recipe-filters.
-- **Data & business rules:** lists recipes alphabetically by title (Spanish collation). Each row shows the photo or fallback tile, the title and the category name, and opens the recipe's detail (rows are at least 56 px high). Under the title is the search bar (see CMP-recipe-search) and below it the six filters (see CMP-recipe-filters). The count line "N de M recetas" and "Limpiar" show when a filter is active, and the count also shows while a search is applied. With an applied search, the list becomes up to three groups of rows (Recetas, Proteína, Ingredientes), each headed by its name and its number of recipes, e.g. "Proteína · 3"; empty groups are not shown, and N counts the different recipes shown. "N con avisos" shows when there are warnings. There is no sort. If the browser cannot store data, a notice says that offline only shows what is already loaded.
+- **Functional composition:** CMP-app-shell, CMP-sync-badge, CMP-recipe-photo, CMP-recipe-search, CMP-recipe-filters, CMP-favorite-button, CMP-pending-changes.
+- **Data & business rules:** lists recipes alphabetically by title (Spanish collation). Each row shows the photo or fallback tile, the title and the category name, and opens the recipe's detail (rows are at least 56 px high). At the right of every row is a heart (CMP-favorite-button) that marks or unmarks the recipe as a favorite without opening it; the row stays where it is and the list does not reorder. "N cambios pendientes" (CMP-pending-changes) shows above the list while changes wait. Under the title is the search bar (see CMP-recipe-search) and below it the six filters (see CMP-recipe-filters). The count line "N de M recetas" and "Limpiar" show when a filter is active, and the count also shows while a search is applied. With an applied search, the list becomes up to three groups of rows (Recetas, Proteína, Ingredientes), each headed by its name and its number of recipes, e.g. "Proteína · 3"; empty groups are not shown, and N counts the different recipes shown. "N con avisos" shows when there are warnings. There is no sort. If the browser cannot store data, a notice says that offline only shows what is already loaded.
 - **States (business meaning):**
   - Loading: no stored library and the first sync is running; "Cargando tus recetas…".
   - Offline with no data: "Necesitas conexión la primera vez", with a "Reintentar" button.
@@ -154,8 +160,8 @@ How data travels from Drive to the device, and how its state is shown. It is the
   - List: the stored library is shown immediately, online or offline.
   - Grouped results: a search is applied and at least one recipe matches; the groups described above.
   - No results: the active filters, or the applied search with the filters, match nothing; "Ninguna receta coincide" with a hint and the buttons that apply: "Borrar búsqueda" when a search is applied and "Quitar filtros" when a filter is active.
-- **Related flows:** FLW-first-sync, FLW-library-refresh, FLW-filter-recipes, FLW-search-recipes, FLW-open-recipe.
-- **Source:** `001_drive-sync-offline-library_prd.md` (no UX Flow exists for that feature), `003_recipe-filters_prd.md` / `_ux_flow.md`, `002_recipe-detail_prd.md` / `_ux_flow.md`, `004_responsive-recipe-layout_prd.md` / `_ux_flow.md`, `005_recipe-search_prd.md` / `_ux_flow.md`; implementation in `src/components/recipes/RecipeLibrary.tsx`.
+- **Related flows:** FLW-first-sync, FLW-library-refresh, FLW-filter-recipes, FLW-search-recipes, FLW-open-recipe, FLW-toggle-favorite.
+- **Source:** `001_drive-sync-offline-library_prd.md` (no UX Flow exists for that feature), `003_recipe-filters_prd.md` / `_ux_flow.md`, `002_recipe-detail_prd.md` / `_ux_flow.md`, `004_responsive-recipe-layout_prd.md` / `_ux_flow.md`, `005_recipe-search_prd.md` / `_ux_flow.md`, `009_favorites_prd.md` / `_ux_flow.md`; implementation in `src/components/recipes/RecipeLibrary.tsx` and `src/components/recipes/RecipeRow.tsx`.
 
 ### Functionally-Significant Components
 
@@ -217,9 +223,10 @@ Filtering and searching the recipe list and reading a recipe. Everything works f
 - **Platform divergence:** by window width. Small (under 640 px): a full screen with an "Atrás" button. Medium (640 to 1279 px): a modal (max width 720 px) over the list, with a "Cerrar" button, Esc and a click on the backdrop to close. Large (1280 px and above): a panel on the right of the list column that uses all the width left, with a "Cerrar" button; it is not a modal, so the list stays usable and Esc does nothing. On small windows the bottom bar is hidden while it is open; on medium and large the sidebar stays visible. Resizing across a breakpoint keeps the open recipe, its scroll position, its open sections and the open time breakdown.
 - **Purpose:** read everything needed to decide on and cook a recipe.
 - **Entry points:** a row of SCR-library-list; an ingredient that links to another recipe; opening `/recipes/<id>` directly.
-- **Functional composition:** CMP-detail-layer, CMP-recipe-photo, CMP-collapsible-section, CMP-recipe-link.
+- **Functional composition:** CMP-detail-layer, CMP-recipe-photo, CMP-collapsible-section, CMP-recipe-link, CMP-favorite-button.
 - **Data & business rules:**
   - The top has the photo (16:9; the category tile when there is none) and the title. On medium and large windows the title is always in the bar at the top of the modal or panel; on small windows it is under the photo. On large windows the photo takes two fifths of the width and Info general sits beside it, in the other three fifths.
+  - Favorite: on small windows the heart (CMP-favorite-button) takes the right end of the title row and the title wraps in the space left. On medium and large windows a button with the heart and the text "Añadir a favoritos" or "Quitar de favoritos" sits under the photo, with the width of its content; on large windows it is in the photo's column, beside Info general. Tapping it changes the recipe's state at once, also in the list row behind. The detail still has no rating, comment or "curated" control.
   - Four sections, in this order, each open on entry and collapsible on its own (the state is not remembered): Info general, Ingredientes, Pasos, Notas.
   - Info general: Categoría, Tiempo, Dificultad, Raciones, Técnica, Cocina, Dieta, Proteína and Ocasión. Tiempo shows the total (preparation + cooking + resting) as "N min" or "H h M min"; tapping it shows Preparación, Cocción and Reposo. Anything the recipe lacks shows "-" and its row stays. Servings units are fixed: personas, unidades, porciones.
   - Ingredientes: ungrouped lines first, then each named group (for example masa, relleno) in order of first appearance. A line shows quantity, name and note. Mass and volume units are abbreviated (g, kg, ml, l); other units are pluralized by quantity; lines "al gusto", "cantidad suficiente" or "pizca" show no number; a measurable line without quantity shows "-"; optional lines carry an "opcional" tag. A line that points to a recipe in the library is a link that opens its detail.
@@ -231,8 +238,8 @@ Filtering and searching the recipe list and reading a recipe. Everything works f
   - No library and offline, or error: the same messages as the list, with "Reintentar".
   - Not found: "Receta no encontrada" with "Volver a recetas".
   - Recipe: the content described above.
-- **Related flows:** FLW-open-recipe.
-- **Source:** `002_recipe-detail_prd.md`, `002_recipe-detail_ux_flow.md`, `004_responsive-recipe-layout_prd.md`, `004_responsive-recipe-layout_ux_flow.md`; implementation in `src/components/recipes/detail/`.
+- **Related flows:** FLW-open-recipe, FLW-toggle-favorite.
+- **Source:** `002_recipe-detail_prd.md`, `002_recipe-detail_ux_flow.md`, `004_responsive-recipe-layout_prd.md`, `004_responsive-recipe-layout_ux_flow.md`, `009_favorites_prd.md` / `_ux_flow.md`; implementation in `src/components/recipes/detail/`.
 
 ### Functionally-Significant Components
 
@@ -324,20 +331,11 @@ Filtering and searching the recipe list and reading a recipe. Everything works f
 
 ### Overview
 
-How the user moves between the sections of the app, and the sections that have no content yet. It writes nothing to Drive and needs no data, so it works offline.
+How the user moves between the sections of the app, and (when there are any) the sections that have no content yet. It writes nothing to Drive and needs no data, so it works offline.
 
 ### Screens / Pages
 
-#### SCR-profile Perfil (placeholder)
-
-- **Platform:** Web.
-- **Purpose:** reserve the Perfil section (the future user, favorites, ratings and comments). Address `/profile`.
-- **Entry points:** Perfil in the main navigation; direct address.
-- **Functional composition:** CMP-main-navigation.
-- **Data & business rules:** shows the title "Perfil" and "Próximamente", centered, with no actions. It uses no data. The browser tab is titled "Perfil · My Food".
-- **States (business meaning):** one state, always the same; it also opens offline, even if never visited before.
-- **Related flows:** FLW-switch-section.
-- **Source:** `006_main-navigation_prd.md` / `_ux_flow.md`; implementation in `src/app/profile/page.tsx`.
+No section is a placeholder today: every section has its own screen.
 
 ### Functionally-Significant Components
 
@@ -418,16 +416,16 @@ The pantry and the shopping list over the ingredient catalog, with writes to Dri
 - **Design system reference:** temporary `TmpPendingChanges`, `components/feedback/TmpPendingChanges`.
 - **Functional role:** shows the state of the outbox.
 - **Behavior rules:** shows "N cambios pendientes" while any change is unconfirmed; offers "Introducir clave" when the device has no key; when the server rejects a change, the switch returns to the stored value and a 4-second notice says "No se pudo guardar <ingrediente>".
-- **Used on:** SCR-ingredients.
-- **Source:** `007_pantry-shopping-list-switches_prd.md`, `_ux_flow.md`; implementation in `src/components/feedback/TmpPendingChanges.tsx`.
+- **Used on:** SCR-ingredients, SCR-plan, SCR-library-list, SCR-profile. A rejected favorite reads "No se pudo guardar <receta>".
+- **Source:** `007_pantry-shopping-list-switches_prd.md`, `_ux_flow.md`, `009_favorites_prd.md`; implementation in `src/components/feedback/TmpPendingChanges.tsx`.
 
 #### CMP-write-key Write key dialog
 
 - **Design system reference:** none (own overlay, `KeyDialog`, because the kit has no `Sheet` yet).
 - **Functional role:** asks for the household write key.
 - **Behavior rules:** asked once per device, at the first change (not at launch). If the server rejects the key it reappears with "La clave no es correcta" and the changes stay pending. "Ahora no" closes it and it does not reopen with further switches until the screen is opened again. Bottom sheet on small windows, centered modal from 640 px.
-- **Used on:** SCR-ingredients.
-- **Source:** `007_pantry-shopping-list-switches_prd.md`, `_ux_flow.md`; implementation in `src/components/pantry/KeyDialog.tsx`.
+- **Used on:** SCR-ingredients, SCR-plan and, for favorites, wherever a heart is (SCR-library-list, SCR-recipe-detail, SCR-profile).
+- **Source:** `007_pantry-shopping-list-switches_prd.md`, `_ux_flow.md`, `009_favorites_prd.md`; implementation in `src/components/pantry/KeyDialog.tsx` and `src/components/feedback/FavoriteFeedback.tsx`.
 
 ### Flows
 
@@ -537,3 +535,54 @@ The household's meal calendar. Every day from today has three slots, Desayuno, A
 - **Business rules governing the flow:** see SCR-plan. The earliest reachable day is today (small windows) or the Monday of the current week; there is no later limit. The week and the loaded days reset when the section is left or the screen is reloaded. If midnight passes while the app is open, the new day is taken at the next focus.
 - **Edge cases & error handling:** loading more days offline is never blocked. Resizing the window between the two layouts keeps the plan and any open picker.
 - **Source:** `008_meal-plan-calendar_prd.md` (§5, §10), `008_meal-plan-calendar_ux_flow.md`.
+
+---
+
+## Domain: profile
+
+### Overview
+
+Perfil: Al's favorite recipes and the heart that marks them. Favorites are saved to `reviews/al.yaml` in Drive through the same operations, offline queue and write key as the pantry and the plan. Ratings, comments, the "curated" flag and the person picker are not part of this domain yet; the person is always Al.
+
+### Screens / Pages
+
+#### SCR-profile Perfil
+
+- **Platform:** Web, one column in every layout.
+- **Purpose:** see and manage Al's favorite recipes. Address `/profile`; the browser tab is titled "Perfil · My Food".
+- **Entry points:** Perfil in the main navigation; direct address; "Ver recetas" is the way out, to SCR-library-list.
+- **Functional composition:** CMP-app-shell, CMP-recipe-search, CMP-recipe-filters, CMP-favorite-button, CMP-pending-changes, CMP-write-key, SCR-recipe-detail.
+- **Data & business rules:**
+  - A tab bar with a single tab, "Recetas favoritas", selected. Under it, the search bar and the six filters of Recetas, working only among the favorites (filter options and counts are computed over them).
+  - The list shows the favorite recipes in the same row format as SCR-library-list (photo or fallback tile, title, category), alphabetical, each with its heart filled. "N cambios pendientes" shows while changes wait.
+  - Tapping a heart unmarks the recipe; its row stays, dimmed with an empty heart, until the search or the filters change or Perfil is left, and can be marked again. Nothing else reorders.
+  - Tapping a row opens SCR-recipe-detail over Perfil without changing the address (full screen on small windows, modal on medium and large). Closing returns to Perfil as it was.
+  - Search text and filters are emptied when Perfil is left or reloaded.
+- **States (business meaning):**
+  - Loading: "Cargando tus recetas…".
+  - No library and offline, or error: the same messages as the list, with "Reintentar".
+  - No favorites: "Aún no tienes favoritas", with the hint "Toca el corazón de una receta para guardarla aquí." and the button "Ver recetas".
+  - Favorites: the list described above.
+  - No results: "Ninguna receta coincide" with "Borrar búsqueda" and "Quitar filtros" as they apply.
+- **Related flows:** FLW-toggle-favorite, FLW-switch-section.
+- **Source:** `009_favorites_prd.md` / `_ux_flow.md`; implementation in `src/components/profile/ProfileScreen.tsx`.
+
+### Functionally-Significant Components
+
+#### CMP-favorite-button Favorite button
+
+- **Design system reference:** `FavoriteButton`, `components/recipes/FavoriteButton` (see `context/ui_kit_registry.md`).
+- **Functional role:** the heart that marks or unmarks a recipe as a favorite.
+- **Behavior rules:** filled when the recipe is a favorite, empty when not, with the state also stated to assistive technology. Icon-only in rows and in the title row of the detail on small windows; with the text "Añadir a favoritos" or "Quitar de favoritos" under the photo on medium and large windows. Its touch area is at least 44 px. It never opens the recipe it belongs to, and all hearts of the same recipe agree at once.
+- **Used on:** SCR-library-list, SCR-recipe-detail, SCR-profile.
+- **Source:** `009_favorites_prd.md` (US-1, US-2), `009_favorites_ux_flow.md` (§2.4); implementation in `src/components/recipes/FavoriteButton.tsx`.
+
+### Flows
+
+#### FLW-toggle-favorite Mark or unmark a favorite
+
+- **Goal / trigger:** Al taps a heart, or the button under the photo of a recipe.
+- **Screens involved (in sequence):** SCR-library-list, SCR-recipe-detail or SCR-profile → the same screen with the new state.
+- **Business rules governing the flow:** the new state shows at once and is saved to `favorites` of `reviews/al.yaml`. Offline, or while Drive is unavailable, the change waits on the device and is sent in order when possible. Toggling the same recipe several times while pending ends with the last state, and returning it to the saved state sends nothing. With no key on the device, the change stays pending and the write key dialog (CMP-write-key) opens at the first toggle; "Ahora no" leaves it pending, with "Introducir clave" in the pending indicator. The server writes only `favorites` and `updated` of the file and keeps ratings, comments and the layout.
+- **Edge cases & error handling:** if the server rejects a change (for example the recipe no longer exists) the heart returns to the saved state and "No se pudo guardar <receta>" shows for 4 seconds. If `reviews/al.yaml` does not exist, toggling is refused with the same notice and the app never creates the file. A favorite whose recipe no longer exists is not shown and is not removed from the file.
+- **Source:** `009_favorites_prd.md` (US-4, US-5, §10).

@@ -4,8 +4,10 @@ import { DetailLayer } from "@/components/overlays/DetailLayer";
 import { useLayout } from "@/components/layout/use-layout";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { Button } from "@/components/inputs/Button";
+import { FavoriteButton } from "@/components/recipes/FavoriteButton";
 import { RecipePhoto } from "@/components/recipes/RecipePhoto";
 import { findRecipe } from "@/lib/domain/recipe-detail";
+import { useFavorites } from "@/lib/offline/use-favorites";
 import { useLibrary } from "@/lib/offline/use-library";
 import type { Library, Recipe } from "@/lib/schema";
 import { InfoSection } from "./InfoSection";
@@ -16,21 +18,42 @@ import { useCloseDetail } from "./use-detail-navigation";
 
 /** Keyed by recipe id by the caller, so section state resets when another recipe opens. */
 function RecipeContent({ recipe, library }: { recipe: Recipe; library: Library }) {
+  const { favorites, toggle } = useFavorites();
+  const pressed = favorites.has(recipe.id);
   return (
     <div className="detail-grid mx-auto w-full max-w-3xl pb-10">
-      <RecipePhoto
-        recipeId={recipe.id}
-        photoVersion={recipe.photoVersion}
-        category={recipe.category}
-        className="detail-photo aspect-video w-full"
-      />
+      <div className="detail-photo-col">
+        <RecipePhoto
+          recipeId={recipe.id}
+          photoVersion={recipe.photoVersion}
+          category={recipe.category}
+          className="detail-photo aspect-video w-full"
+        />
+        {/* Medium and large windows: the labeled button under the photo (the title lives in the layer bar). */}
+        <div className="px-4 pt-3 group-data-[detail-mode=fullscreen]:hidden group-data-[detail-mode=panel]:px-0">
+          <FavoriteButton
+            pressed={pressed}
+            onToggle={() => toggle(recipe.id)}
+            recipeTitle={recipe.title}
+            label={pressed ? "Quitar de favoritos" : "Añadir a favoritos"}
+          />
+        </div>
+      </div>
       <div className="detail-sections px-4 pt-4">
-        <h1
-          data-detail-title
-          className="text-2xl leading-[1.15] font-extrabold group-data-[detail-mode=modal]:hidden group-data-[detail-mode=panel]:hidden"
-        >
-          {recipe.title}
-        </h1>
+        {/* Small windows: the heart takes the right end of the title row. */}
+        <div className="flex items-start gap-2 group-data-[detail-mode=modal]:hidden group-data-[detail-mode=panel]:hidden">
+          <h1
+            data-detail-title
+            className="min-w-0 flex-1 pt-2 text-2xl leading-[1.15] font-extrabold"
+          >
+            {recipe.title}
+          </h1>
+          <FavoriteButton
+            pressed={pressed}
+            onToggle={() => toggle(recipe.id)}
+            recipeTitle={recipe.title}
+          />
+        </div>
         <InfoSection recipe={recipe} library={library} />
         <IngredientsSection recipe={recipe} library={library} />
         <StepsSection recipe={recipe} />

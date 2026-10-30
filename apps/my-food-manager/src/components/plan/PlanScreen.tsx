@@ -70,7 +70,7 @@ export function PlanScreen() {
     [library, outbox.pending],
   );
 
-  const notice = outbox.notices[0];
+  const notice = outbox.notices.find((n) => !n.favorite);
   useEffect(() => {
     if (!notice) return;
     const timer = setTimeout(() => getOutbox().dismissNotice(notice.id), NOTICE_MS);

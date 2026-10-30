@@ -1,6 +1,7 @@
 import { ApiError } from "@/lib/api/errors";
 import { PantryParseError, applyPantryOps, type RawOp } from "@/lib/domain/pantry-ops";
 import { PlanParseError, applyPlanOps } from "@/lib/domain/plan-ops";
+import { REVIEWS_USER, ReviewParseError, applyReviewOps } from "@/lib/domain/review-ops";
 import { parseIngredients } from "@/lib/domain/parse";
 import { LIBRARY_PATHS, recipeIdsOf, type DriveFileRef } from "@/lib/domain/snapshot";
 import type { OpResult, OpsResponse } from "@/lib/schema";
@@ -33,6 +34,8 @@ const conflict = (what: string) =>
   new ApiError("CONFLICT", 409, `${what} cambió en Drive. Se reintentará.`);
 
 const isPlanOp = (op: RawOp) => op.kind.startsWith("plan.");
+const isReviewOp = (op: RawOp) => op.kind.startsWith("review.");
+const REVIEWS_PATH = `reviews/${REVIEWS_USER}.yaml`;
 
 interface Group<T> {
   results: OpResult[];
@@ -115,13 +118,55 @@ async function runPlanGroup(
   throw conflict("El plan");
 }
 
+/** Same as the plan, for Al's `reviews/al.yaml` (favorites only). */
+async function runReviewsGroup(
+  ops: RawOp[],
+  deps: OpsDeps,
+): Promise<Group<NonNullable<OpsResponse["reviews"]>>> {
+  const rejectAll = (code: string, message: string): Group<never> => ({
+    results: ops.map((o) => ({ id: o.id, status: "rejected", error: { code, message } })),
+    value: undefined,
+  });
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const files = await deps.list();
+    const reviewsFile = files.find((f) => f.path === REVIEWS_PATH);
+    if (!reviewsFile)
+      return rejectAll("REVIEWS_MISSING", `No existe ${REVIEWS_PATH} en la carpeta food`);
+
+    let applied;
+    try {
+      applied = applyReviewOps(
+        await deps.source.readText(reviewsFile),
+        ops,
+        recipeIdsOf(files),
+        deps.now(),
+      );
+    } catch (e) {
+      if (e instanceof ReviewParseError) return rejectAll("REVIEWS_INVALID", e.message);
+      throw e;
+    }
+    const group = { results: applied.results, value: applied.reviews };
+    if (!applied.changed) return group;
+
+    try {
+      await deps.source.writeText(reviewsFile, applied.text);
+      return group;
+    } catch (e) {
+      if (!(e instanceof DriveConflictError)) throw e;
+      if (attempt === 1) throw conflict("Tus favoritos");
+    }
+  }
+  throw conflict("Tus favoritos");
+}
+
 /**
  * Applies a batch. Operations are grouped by file and each file is read, written and retried on its own;
- * the pantry goes first and the plan last, so a retry after a partial failure only repeats idempotent
- * pantry changes (ADR 003). Results come back in the order of the request.
+ * the pantry and the favorites go first and the plan last, so a retry after a partial failure only repeats
+ * idempotent changes (ADR 003). Results come back in the order of the request.
  */
 export async function runOps(ops: RawOp[], deps: OpsDeps): Promise<OpsResponse> {
-  const pantryOps = ops.filter((o) => !isPlanOp(o));
+  const pantryOps = ops.filter((o) => !isPlanOp(o) && !isReviewOp(o));
+  const reviewOps = ops.filter(isReviewOp);
   const planOps = ops.filter(isPlanOp);
   const response: OpsResponse = { results: [] };
   const byId = new Map<string, OpResult>();
@@ -130,6 +175,11 @@ export async function runOps(ops: RawOp[], deps: OpsDeps): Promise<OpsResponse> 
     const group = await runPantryGroup(pantryOps, deps);
     group.results.forEach((r) => byId.set(r.id, r));
     response.pantry = group.value;
+  }
+  if (reviewOps.length > 0) {
+    const group = await runReviewsGroup(reviewOps, deps);
+    group.results.forEach((r) => byId.set(r.id, r));
+    response.reviews = group.value;
   }
   if (planOps.length > 0) {
     const group = await runPlanGroup(planOps, deps);

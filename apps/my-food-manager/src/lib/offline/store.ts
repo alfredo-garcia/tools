@@ -2,6 +2,7 @@ import {
   SNAPSHOT_SCHEMA_VERSION,
   snapshotResponseSchema,
   type Library,
+  type OpsResponse,
   type Plan,
   type SnapshotResponse,
   type Warning,
@@ -191,6 +192,30 @@ export function createLibraryStore(deps: Deps) {
     });
   }
 
+  /** Replaces Al's stored favorites with the ones the server just saved. */
+  function setReviews(saved: NonNullable<OpsResponse["reviews"]>) {
+    if (!state.library || !etag) return;
+    const current = state.library.reviews[saved.user];
+    if (!current) return;
+    const reviews = {
+      ...state.library.reviews,
+      [saved.user]: {
+        ...current,
+        favorites: saved.favorites,
+        updated: saved.updated ?? current.updated,
+      },
+    };
+    const library = { ...state.library, reviews };
+    set({ library });
+    void persist({
+      schemaVersion: SNAPSHOT_SCHEMA_VERSION,
+      etag,
+      syncedAt: state.syncedAt ?? deps.now().toISOString(),
+      data: library,
+      warnings: state.warnings,
+    });
+  }
+
   function markOffline() {
     set({ status: "offline" });
   }
@@ -205,6 +230,7 @@ export function createLibraryStore(deps: Deps) {
     sync,
     setPantry,
     setPlan,
+    setReviews,
     markOffline,
   };
 }

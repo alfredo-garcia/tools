@@ -8,17 +8,19 @@ import { EmptyState } from "@/components/feedback/EmptyState";
 import { Button } from "@/components/inputs/Button";
 import { SearchInput } from "@/components/inputs/SearchInput";
 import { RecipeFilters } from "@/components/recipes/RecipeFilters";
-import { RecipePhoto } from "@/components/recipes/RecipePhoto";
+import { RecipeRow } from "@/components/recipes/RecipeRow";
+import { TmpPendingChanges } from "@/components/feedback/TmpPendingChanges";
 import { TmpResultGroup } from "@/components/recipes/TmpResultGroup";
 import { useListReorder } from "@/components/recipes/use-list-reorder";
 import { useSearchQuery } from "@/components/recipes/use-search-query";
 import { categoryLabel } from "@/lib/domain/categories";
 import { activeFilterCount, filterRecipes, type FilterState } from "@/lib/domain/filters";
 import { searchRecipes } from "@/lib/domain/search";
+import { OPEN_KEY_DIALOG, useFavorites } from "@/lib/offline/use-favorites";
 import { useLibrary } from "@/lib/offline/use-library";
+import { useOutbox } from "@/lib/offline/use-outbox";
 import { RecipeDetail } from "@/components/recipes/detail/RecipeDetail";
 import { recipeIdFromPath } from "@/components/recipes/detail/use-detail-navigation";
-import { RecipeLink } from "@/components/recipes/RecipeLink";
 
 /**
  * Recipe list with filters (features my-food-manager/001 and 003) and the recipe detail
@@ -33,6 +35,8 @@ export function RecipeLibrary() {
   const columnRef = useRef<HTMLDivElement>(null);
   const previousLayout = useRef(layout);
   const { hydrated, library, status, warnings, storageOk, refresh } = useLibrary();
+  const { favorites, toggle: toggleFavorite } = useFavorites();
+  const outbox = useOutbox();
   const [filters, setFilters] = useState<FilterState>({});
   const { typed, applied, setTyped, applyNow, clear } = useSearchQuery();
   const searching = applied !== "";
@@ -105,33 +109,16 @@ export function RecipeLibrary() {
     );
   } else {
     const row = (r: (typeof visible)[number], key: string) => (
-      <li
+      <RecipeRow
         key={key}
-        data-flip-key={key}
-        className={`rounded-md border shadow-elevation-1 ${
-          r.id === detailId ? "border-primary-500 bg-primary-500/15" : "border-border bg-surface-1"
-        }`}
-      >
-        <RecipeLink
-          recipeId={r.id}
-          current={r.id === detailId}
-          replace={large && detailId !== undefined}
-          className="flex min-h-14 items-center gap-3 rounded-md p-2"
-        >
-          <RecipePhoto
-            recipeId={r.id}
-            photoVersion={r.photoVersion}
-            category={r.category}
-            className="size-14 shrink-0 rounded-sm"
-          />
-          <div className="min-w-0">
-            <div className="truncate font-semibold">{r.title}</div>
-            <div className="text-xs text-text-muted">
-              {categoryLabel(library.vocab.categories, r.category)}
-            </div>
-          </div>
-        </RecipeLink>
-      </li>
+        flipKey={key}
+        recipe={r}
+        categoryLabel={categoryLabel(library.vocab.categories, r.category)}
+        favorite={favorites.has(r.id)}
+        onToggleFavorite={() => toggleFavorite(r.id)}
+        current={r.id === detailId}
+        replace={large && detailId !== undefined}
+      />
     );
     const noResults = results ? results.groups.length === 0 : visible.length === 0;
     content = (
@@ -151,6 +138,13 @@ export function RecipeLibrary() {
           shown={shown}
           searching={searching}
         />
+        {outbox.pending.length > 0 && (
+          <TmpPendingChanges
+            count={outbox.pending.length}
+            keyNeeded={!outbox.hasKey || outbox.keyRejected}
+            onEnterKey={() => window.dispatchEvent(new Event(OPEN_KEY_DIALOG))}
+          />
+        )}
         {warnings.length > 0 && (
           <p className="mb-3 text-sm text-text-muted">{warnings.length} con avisos</p>
         )}

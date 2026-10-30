@@ -14,7 +14,7 @@ export function AppShell({
   children,
 }: {
   title: string;
-  /** Content up to 1180 px instead of 768 px (weekly Plan columns). */
+  /** Content uses the whole available width instead of 768 px (weekly Plan columns). */
   wide?: boolean;
   children: React.ReactNode;
 }) {
@@ -66,7 +66,7 @@ export function AppShell({
   }, [manualRefresh]);
 
   return (
-    <div className={`mx-auto min-h-dvh w-full px-4 pb-6 ${wide ? "max-w-[1180px]" : "max-w-3xl"}`}>
+    <div className={`mx-auto min-h-dvh w-full px-4 pb-6 ${wide ? "" : "max-w-3xl"}`}>
       <div
         aria-hidden
         className="flex items-center justify-center overflow-hidden text-text-muted transition-[height]"

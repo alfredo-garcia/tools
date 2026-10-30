@@ -57,7 +57,7 @@
 ### AppShell
 - **Category:** Layout. **Import:** `components/layout/AppShell`. **Status:** Beta.
 - **Description:** page frame of the recipe list: title, `SyncBadge`, refresh button, pull-to-refresh and content. It does not contain the navigation (that is `AppFrame`).
-- **Props:** `title: string`, `wide?: boolean` (content up to 1180 px instead of 768 px; the weekly Plan), `children`.
+- **Props:** `title: string`, `wide?: boolean` (content takes the whole available width instead of 768 px; the weekly Plan), `children`.
 - **Notes:** used by the recipe list, Despensa and Plan; other sections render their own content inside `AppFrame`.
 
 ### AppFrame

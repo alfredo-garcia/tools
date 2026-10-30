@@ -52,7 +52,7 @@ The "Plan" section (`/plan`) shows one screen: the household's meal calendar fro
 **Component tree**
 
 - `<PlanScreen>` (**NEW**, `components/plan/PlanScreen`, rendered by `src/app/plan/page.tsx` in place of `<TmpComingSoon>`)
-  - Frame: `<AppShell title="Plan" wide={layout !== "small"}>` (kit: `components/layout/AppShell`; the new optional prop `wide` raises the content width from 768 to 1180 px) with the title, `<SyncBadge>`, the refresh button and pull-to-refresh
+  - Frame: `<AppShell title="Plan" wide={layout !== "small"}>` (kit: `components/layout/AppShell`; the new optional prop `wide` lets the content take the whole available width instead of 768 px) with the title, `<SyncBadge>`, the refresh button and pull-to-refresh
   - If `pending.length > 0`: `<TmpPendingChanges count={pending.length} keyNeeded={!keyStored} onEnterKey={openKeyDialog} />` (reused, `components/feedback/TmpPendingChanges`)
   - If layout is `small`: `<PlanDayList days={visibleDays} />` (**NEW**, see 2.2)
   - If layout is `medium` or `large`: `<PlanWeek offset={weekOffset} />` (**NEW**, see 2.3)
@@ -127,7 +127,7 @@ The "Plan" section (`/plan`) shows one screen: the household's meal calendar fro
 
 **Component tree**
 
-- `<PlanWeek>` (**NEW**, `components/plan/PlanWeek`; max width 1180 px, centered)
+- `<PlanWeek>` (**NEW**, `components/plan/PlanWeek`; uses the whole available width, no maximum)
   - Header row: `<h2>` with the range ("26 oct – 1 nov", `heading-2`) and, if `weekOffset === 0`, a tag "Esta semana" (`caption`, `color.primary.500` on `color.primary.soft`, `radius.full`)
   - `<WeekNav>` (**NEW**, `components/plan/WeekNav`): two round buttons, 44×44 px, `color.surface.1`, border `color.border`, `elevation.1`, positioned at the left and right edge of the week area (half over the page margin), 120 px below the top of the week area. Left: `ChevronLeft`, `aria-label="Semana anterior"`; right: `ChevronRight`, `aria-label="Semana siguiente"`.
   - `<div role="group" aria-label="Semana">` grid with 7 columns, `grid-template-columns: repeat(7, minmax(132px, 1fr))`, gap 6 px, horizontal scroll (`overflow-x: auto`) when the columns do not fit (medium)

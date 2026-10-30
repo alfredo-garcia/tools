@@ -10,7 +10,7 @@
 
 My Food Manager (shown to users as "My Food") is a personal, visual, mobile-first web app (installable PWA) that helps Al and his household partner decide what to cook and shop without forgetting anything. It reads the Google Drive folder `food`, which the food-manager skill maintains, and keeps working without a connection. There are no logins. Platform: web only.
 
-Today the app lets you browse the library with filters and open each recipe's detail, and it has a main navigation with four sections: Recetas, Plan, Despensa and Perfil. Plan, Despensa and Perfil are placeholders that say "Próximamente". The meal-plan calendar, the pantry and shopping list, and the profile are the next features (see `product/product_vision.md` §7).
+Today the app lets you browse the library with filters and a text search and open each recipe's detail, and it has a main navigation with four sections: Recetas, Plan, Despensa and Perfil. Plan, Despensa and Perfil are placeholders that say "Próximamente". The meal-plan calendar, the pantry and shopping list, and the profile are the next features (see `product/product_vision.md` §7).
 
 ## 2. How to Read This Documentation
 
@@ -24,7 +24,7 @@ Today the app lets you browse the library with filters and open each recipe's de
 | Domain | One-line description | File | Status |
 |---|---|---|---|
 | library | Library sync, offline storage and the recipe list | inline below | Active |
-| recipes | Filtering the recipe list and reading a recipe | inline below | Active |
+| recipes | Filtering and searching the recipe list and reading a recipe | inline below | Active |
 | navigation | Main navigation between sections and their placeholders | inline below | Active |
 
 ## 4. Navigation Structure
@@ -55,6 +55,7 @@ The app has four sections, always reachable from a main navigation: Recetas (`/`
 | FLW-first-sync | First load | library | Web |
 | FLW-library-refresh | Keeping the library fresh | library | Web |
 | FLW-filter-recipes | Filter the list | recipes | Web |
+| FLW-search-recipes | Search the list | recipes | Web |
 | FLW-open-recipe | Open and close a recipe | recipes | Web |
 | FLW-switch-section | Switch section | navigation | Web |
 | FLW-toggle-sidebar | Collapse or expand the sidebar | navigation | Web |
@@ -67,7 +68,7 @@ The app has four sections, always reachable from a main navigation: Recetas (`/`
 - **Invalid data.** A malformed recipe file is skipped and counted as a warning. It never breaks the rest of the library.
 - **Access.** No login. Read endpoints are open, which is accepted for low-sensitivity personal data.
 - **Navigation everywhere.** The main navigation frames every screen of every section and works offline: switching section needs no data. Library sync keeps running whatever section is open.
-- **Browsing works from the device.** Filtering and the recipe detail read only the stored library, so they work offline and never wait for the network.
+- **Browsing works from the device.** Filtering, searching and the recipe detail read only the stored library, so they work offline and never wait for the network. The search text never leaves the device.
 
 ## 7. Shared Functional Components
 
@@ -95,9 +96,12 @@ None.
 - **Sidebar:** the navigation on medium and large windows; collapsed shows only icons, expanded shows icons and text.
 - **Placeholder section:** a section with no content yet, which shows its title and "Próximamente".
 - **Filter:** one of Categoría, Tiempo, Dieta, Cocina, Dificultad or Proteína; each holds one chosen value at a time.
+- **Search / applied text:** the text typed in the search bar is the typed text; the applied text is the trimmed typed text once it has 3 or more characters and 1 second has passed without typing (or Enter was pressed). Only the applied text filters the list.
+- **Result group:** one of Recetas (the name matched), Proteína (a protein label matched) or Ingredientes (an ingredient name matched). A recipe appears in every group where it matches.
 
 ## 11. Recent Changes
 
+- 2026-10-29 — recipes: text search on the recipe list, with results grouped by name, protein and ingredient (see `changelog/005_recipe-search_changelog.md`).
 - 2026-10-29 — navigation: main navigation with a bottom bar and a collapsible sidebar, and placeholder sections Plan, Despensa and Perfil (see `changelog/006_main-navigation_changelog.md`).
 - 2026-10-29 — library: Drive sync and offline library (see `changelog/001_drive-sync-offline-library_changelog.md`).
 - 2026-10-29 — recipes: recipe filters on the list (see `changelog/003_recipe-filters_changelog.md`).
@@ -120,17 +124,18 @@ How data travels from Drive to the device, and how its state is shown. It is the
 - **Platform divergence:** on large windows (1280 px and above) the list is a 400 px column on the left with its own scroll, and the title, sync badge, refresh button, filters and rows scroll together inside it; the open recipe's row is highlighted. Below 1280 px it is a single page as before. In both cases the filters wrap onto several lines instead of scrolling sideways. The main navigation (CMP-main-navigation) frames the list: on large windows the sidebar sits to the left of the column. Navigating to another section and back shows the list in its initial state.
 - **Purpose:** browse the library and open a recipe. Rows open SCR-recipe-detail.
 - **Entry points:** opening the app (`/`); Recetas in the main navigation; FLW-first-sync.
-- **Functional composition:** CMP-app-shell, CMP-sync-badge, CMP-recipe-photo, CMP-recipe-filters.
-- **Data & business rules:** lists recipes alphabetically by title (Spanish collation). Each row shows the photo or fallback tile, the title and the category name, and opens the recipe's detail (rows are at least 56 px high). Above the list are six filters (see CMP-recipe-filters) and, when any is active, "N de M recetas" and "Limpiar". "N con avisos" shows when there are warnings. There is no text search or sort. If the browser cannot store data, a notice says that offline only shows what is already loaded.
+- **Functional composition:** CMP-app-shell, CMP-sync-badge, CMP-recipe-photo, CMP-recipe-search, CMP-recipe-filters.
+- **Data & business rules:** lists recipes alphabetically by title (Spanish collation). Each row shows the photo or fallback tile, the title and the category name, and opens the recipe's detail (rows are at least 56 px high). Under the title is the search bar (see CMP-recipe-search) and below it the six filters (see CMP-recipe-filters). The count line "N de M recetas" and "Limpiar" show when a filter is active, and the count also shows while a search is applied. With an applied search, the list becomes up to three groups of rows (Recetas, Proteína, Ingredientes), each headed by its name and its number of recipes, e.g. "Proteína · 3"; empty groups are not shown, and N counts the different recipes shown. "N con avisos" shows when there are warnings. There is no sort. If the browser cannot store data, a notice says that offline only shows what is already loaded.
 - **States (business meaning):**
   - Loading: no stored library and the first sync is running; "Cargando tus recetas…".
   - Offline with no data: "Necesitas conexión la primera vez", with a "Reintentar" button.
   - Error with no data: "No se pudo cargar tu biblioteca", with a "Reintentar" button.
   - Empty: a stored library with no recipes; "No hay recetas todavía".
   - List: the stored library is shown immediately, online or offline.
-  - No results: the active filters match nothing; "Ninguna receta coincide" with a "Quitar filtros" button.
-- **Related flows:** FLW-first-sync, FLW-library-refresh, FLW-filter-recipes, FLW-open-recipe.
-- **Source:** `001_drive-sync-offline-library_prd.md` (no UX Flow exists for that feature), `003_recipe-filters_prd.md` / `_ux_flow.md`, `002_recipe-detail_prd.md` / `_ux_flow.md`, `004_responsive-recipe-layout_prd.md` / `_ux_flow.md`; implementation in `src/components/recipes/RecipeLibrary.tsx`.
+  - Grouped results: a search is applied and at least one recipe matches; the groups described above.
+  - No results: the active filters, or the applied search with the filters, match nothing; "Ninguna receta coincide" with a hint and the buttons that apply: "Borrar búsqueda" when a search is applied and "Quitar filtros" when a filter is active.
+- **Related flows:** FLW-first-sync, FLW-library-refresh, FLW-filter-recipes, FLW-search-recipes, FLW-open-recipe.
+- **Source:** `001_drive-sync-offline-library_prd.md` (no UX Flow exists for that feature), `003_recipe-filters_prd.md` / `_ux_flow.md`, `002_recipe-detail_prd.md` / `_ux_flow.md`, `004_responsive-recipe-layout_prd.md` / `_ux_flow.md`, `005_recipe-search_prd.md` / `_ux_flow.md`; implementation in `src/components/recipes/RecipeLibrary.tsx`.
 
 ### Functionally-Significant Components
 
@@ -182,7 +187,7 @@ How data travels from Drive to the device, and how its state is shown. It is the
 
 ### Overview
 
-Filtering the recipe list and reading a recipe. Everything works from the stored library, online or offline, and writes nothing to Drive.
+Filtering and searching the recipe list and reading a recipe. Everything works from the stored library, online or offline, and writes nothing to Drive.
 
 ### Screens / Pages
 
@@ -210,6 +215,23 @@ Filtering the recipe list and reading a recipe. Everything works from the stored
 - **Source:** `002_recipe-detail_prd.md`, `002_recipe-detail_ux_flow.md`, `004_responsive-recipe-layout_prd.md`, `004_responsive-recipe-layout_ux_flow.md`; implementation in `src/components/recipes/detail/`.
 
 ### Functionally-Significant Components
+
+#### CMP-recipe-search Recipe search
+
+- **Design system reference:** `SearchInput`, `components/inputs/SearchInput`; the result headings use the temporary `TmpResultGroup`, `components/recipes/TmpResultGroup` (see `context/ui_kit_registry.md`).
+- **Functional role:** the search bar between the "Recetas" title and the filters, and the grouped results it produces.
+- **Behavior rules:**
+  - Placeholder "Buscar por nombre, proteína o ingrediente". The bar is not shown while the library is loading, empty or failed.
+  - With fewer than 3 characters (after trimming) nothing is filtered and no message appears. With 3 or more, the search applies 1 second after the last keystroke; Enter applies it at once. Typing again restarts the wait and the list keeps showing the previous result meanwhile, with no spinner.
+  - The "x" at the right of the bar shows only when there is text. It, and Esc inside the bar, erase the text, drop the results at once and return focus to the bar. "Limpiar" and "Quitar filtros" never touch the text, and the search never touches the filters.
+  - Three places are searched, in this order: the recipe name ("Recetas"), the protein labels ("Proteína"), and the names of the ingredient lines ("Ingredientes", optional ones included; quantities, units and notes are not searched). The ingredient name comes from the catalog, or from the id with hyphens as spaces if the catalog has none.
+  - Case and accents are ignored ("cafe" finds "café") and parts of words match ("pol" finds "Pollo"); "ñ" is a different letter from "n". With several words, all must be found in the same place: in the name, in one protein label, or in the name of one single ingredient.
+  - Active filters are applied first and the three groups are computed on what remains. A recipe is listed in every group where it matches. Rows keep the alphabetical order and the same look as the plain list; on large windows the open recipe's row is highlighted in every group.
+  - The filters' option counts ignore the search.
+  - A sync that updates the library re-applies the search and the filters in place. The text is not saved: reloading, or leaving Recetas and coming back, empties it.
+  - Category, cuisine, diet, difficulty, time, steps, notes, comments and sources are not searched; there is no relevance order, highlighting or typo tolerance.
+- **Used on:** SCR-library-list.
+- **Source:** `005_recipe-search_prd.md`, `005_recipe-search_ux_flow.md`; implementation in `src/components/inputs/SearchInput.tsx`, `src/components/recipes/use-search-query.ts`, `src/components/recipes/RecipeLibrary.tsx` and `src/lib/domain/search.ts`.
 
 #### CMP-recipe-filters Recipe filters
 
@@ -267,6 +289,14 @@ Filtering the recipe list and reading a recipe. Everything works from the stored
 - **Business rules governing the flow:** tapping a filter opens its options; choosing one applies it and the filter shows the chosen value with an "x" to remove it. "Limpiar" removes all filters when two or more are active. Time options: hasta 15 min, hasta 30 min, hasta 1 h, más de 1 h, measured on total time. Recipes with no time or difficulty never match those options. Filters are not kept across reloads.
 - **Edge cases & error handling:** filters that match nothing show "Ninguna receta coincide" with "Quitar filtros". A sync re-applies the active filters in place.
 - **Source:** `003_recipe-filters_prd.md` (US-1 to US-6).
+
+#### FLW-search-recipes Search the list
+
+- **Goal / trigger:** find a known recipe by a few letters of its name, its protein or an ingredient.
+- **Screens involved (in sequence):** SCR-library-list (plain list) → (type 3 or more characters and pause 1 second, or press Enter) → SCR-library-list (grouped results) → (tap "x", press Esc, or delete letters until fewer than 3 remain) → SCR-library-list (plain list).
+- **Business rules governing the flow:** see CMP-recipe-search. Search and filters combine and are independent of each other. Opening a recipe from any group keeps the text and the scroll position while the detail is open; on large windows the list stays usable beside the panel.
+- **Edge cases & error handling:** text of only spaces counts as fewer than 3 characters. Pasted text applies after the same 1-second wait. Very long text simply matches nothing. Special characters are plain text. If nothing matches, "Ninguna receta coincide" offers "Borrar búsqueda" (and "Quitar filtros" when filters are active). Offline behaves exactly as online, with no request.
+- **Source:** `005_recipe-search_prd.md` (US-1 to US-5, §10).
 
 ---
 

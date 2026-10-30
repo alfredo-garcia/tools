@@ -39,7 +39,7 @@ None.
 
 ## Open Questions / Follow-Ups
 
-1. Feature `my-food-manager/005` (recipe search) is merged but not yet in the master doc: SCR-library-list still says "There is no text search". It needs its own documentation pass.
+1. Resolved 2026-10-29: feature `my-food-manager/005` (recipe search) is now documented in the master doc (see `005_recipe-search_changelog.md`).
 2. `ui_standards.md` §9 and the UI kit registry were updated for this feature before the merge, ahead of the usual order.
 3. The product vision was revised to v2 (stage 2) and `tech_foundations` is marked "review needed"; the tech-lead should review the standards for plan and pantry data.
 4. Despensa will hold two tabs (pantry and shopping list); their sub-addresses under `/ingredients` are undecided.

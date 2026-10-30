@@ -31,10 +31,10 @@ Compared with memory and manual lists: browse by photo with quick filters instea
 - **Out of scope for the MVP and still out:** in-app recipe import/editing (capture stays in Claude/Telegram via food-manager); nutrition, prices and store integrations.
 
 ### Stage 2: connected day-to-day (current)
-- **Hypothesis:** if Al can plan what to eat each day on a calendar, get a shopping list that follows that plan, and keep the pantry counted, he will run his daily food routine from the app.
+- **Hypothesis:** if Al can plan what to eat each day on a calendar, get a shopping list that follows that plan, and keep track of what is in the pantry, he will run his daily food routine from the app.
 - **Direction (each item becomes its own feature, defined with product-manager):**
-  - **Plan:** a calendar of what will be eaten each day (new data structure, replacing the old "meal-plan calendar" exclusion).
-  - **Despensa:** one section, tabs for the pantry and the shopping list. The pantry is accounted for (what is at home); the shopping list is generated from the plan minus the pantry, grouped for the store, with tick-off; bought items update the pantry. Whether the pantry tracks quantities is an open question (§12).
+  - **Plan:** a calendar where Al organizes which recipe he will use for lunch and for dinner each day (new data structure, replacing the old "meal-plan calendar" exclusion). Its details (editing, who can edit, how recipes are picked) are defined in its own feature, later.
+  - **Despensa:** one section, tabs for the pantry and the shopping list. The pantry records what is at home, without quantities (have / do not have); the shopping list is generated from the plan minus the pantry, grouped for the store, with tick-off; bought items update the pantry.
   - **Perfil:** the person (household picker), favorites, ratings, comments and the "curated" flag, per person and written back to Drive.
   - Inspiration (can cook now, favorites, surprise me) and picking recipes feed the plan.
 - **Everything is related:** the recipe library feeds the plan, the plan feeds the shopping list, the pantry reduces it, and purchases refill the pantry.
@@ -55,8 +55,8 @@ Compared with memory and manual lists: browse by photo with quick filters instea
 | 3 | Recipe detail / cook view | Al, partner | MVP | Must | Done (002) | |
 | 4 | Main navigation | Al, partner | 2 | Must | Done (006) | Bottom bar and sidebar; Plan, Despensa, Perfil are placeholders |
 | 5 | Inspiration ("what to cook") | Al | 2 | Should | Pending | Can-cook-now, favorites, surprise me |
-| 6 | Meal-plan calendar (Plan) | Al | 2 | Must | Pending | New data domain in Drive |
-| 7 | Pantry (Despensa) | Al | 2 | Must | Pending | Counted pantry; have/to_buy today in the schema |
+| 6 | Meal-plan calendar (Plan) | Al | 2 | Must | Pending | Recipe for lunch and dinner each day; own storage domain in Drive linking plan, meal time and day |
+| 7 | Pantry (Despensa) | Al | 2 | Must | Pending | Have / do not have, no quantities (as the schema already has: have/to_buy) |
 | 8 | Shopping list from plan minus pantry (Despensa) | Al | 2 | Must | Pending | Grouped by ingredient family, tick-off, bought updates pantry |
 | 9 | Profile: person, favorites, ratings, comments, curated (Perfil) | Al, partner | 2 | Should | Pending | Per-person reviews file; includes the household picker |
 | 10 | In-app recipe editing/import | Al | later | Could | Pending | Stays in Claude/Telegram |
@@ -74,7 +74,7 @@ Compared with memory and manual lists: browse by photo with quick filters instea
 - Timeline: none; "a few hours until it works".
 - Platforms: responsive web PWA, mobile-first, usable on desktop (matches `SDLC.md`).
 - Regulatory: none; personal food data. No logins; one server-side Google credential is acceptable.
-- Hard limits: data contract is `food/_system/schema.md` (recipes schema 3, ingredients, pantry, reviews). Writes follow the optimistic rule (`updated` timestamp) and must coexist with the food-manager skill writing the same folder. Deployable on Vercel or equivalent free hosting. The plan and any pantry quantities need the Drive schema (`food/_system/schema.md`) to be extended with the food-manager skill, which owns it.
+- Hard limits: data contract is `food/_system/schema.md` (recipes schema 3, ingredients, pantry, reviews). Writes follow the optimistic rule (`updated` timestamp) and must coexist with the food-manager skill writing the same folder. Deployable on Vercel or equivalent free hosting. The plan needs a new storage domain in Drive, so `food/_system/schema.md` must be extended with the food-manager skill, which owns it; that happens in the plan feature, not before. The pantry keeps its current schema (no quantities).
 
 ## 10. Scale & Quality Expectations
 - Users: 2 at launch and after 12 months.
@@ -92,14 +92,13 @@ Compared with memory and manual lists: browse by photo with quick filters instea
 - Assumption: Spanish-only content and UI copy.
 
 - Risk (v2): the plan, the pantry and the shopping list depend on each other; defining them one at a time can force rework. Mitigation: agree the shared data model (plan, pantry, list) before building the first of them.
-- Note: the backlog statuses above come from the feature docs; items 5 to 9 had not been built when this version was written.
+- Note: backlog items 5 to 9 are not built yet. Each is defined and built as its own feature, one at a time; the data model is agreed per feature, not up front.
 
 ## 12. Open Questions
 - How should the shopping list treat pantry-less picks and unit-less ingredients (`to-taste`)? Owner: product-manager, at the shopping-list feature definition.
 - What is the offline write-sync and conflict policy? Owner: tech-lead, in the architecture.
 - Which Drive credential type fits best (service account vs token)? Owner: tech-lead.
-- Can the "can cook now" ingredient match tolerate missing quantities (pantry has no quantities)? Owner: product-manager, at the inspiration feature.
-- Does the pantry track quantities ("contabilizar") or stay have/missing? Quantities would change the schema and the can-cook-now and shopping-list rules. Owner: product-manager, at the pantry feature definition.
-- What is the unit of the plan (day with several meals, or one meal per day) and who can edit it? Owner: product-manager, at the plan feature definition.
-- Where do the recipes picked for the plan ("my next cooks") live: the plan itself or a separate list? Owner: product-manager.
-- Which schema changes (plan file, pantry quantities) and what write rules do they need? Owner: tech-lead with the food-manager skill.
+- Decided 2026-10-29: the pantry has no quantities (have / do not have). Consequence: "can cook now" and the shopping list compare ingredients by presence only. Owner of the resulting rules: product-manager, at the inspiration and shopping-list features.
+- Decided 2026-10-29: the plan organizes which recipe is used for lunch and for dinner each day. Its details (who can edit it, how recipes are picked) are open until the plan feature.
+- Decided 2026-10-29: the plan lives in its own storage domain that relates plan, meal time (lunch or dinner) and day, instead of inside the recipes. The schema is extended in the plan feature. Owner: tech-lead with the food-manager skill.
+- What write rules does the plan file need, given that it can be edited from two devices? Owner: tech-lead, at the plan feature.

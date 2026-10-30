@@ -40,6 +40,7 @@
 | `SyncBadge` | Feedback/Overlays | Web | Beta | `components/feedback/SyncBadge` |
 | `EmptyState` | Feedback/Overlays | Web | Beta | `components/feedback/EmptyState` |
 | `TmpComingSoon` | Feedback/Overlays | Web | Beta (temporary) | `components/feedback/TmpComingSoon` |
+| `TmpResultGroup` | Data Display | Web | Beta (temporary) | `components/recipes/TmpResultGroup` |
 | `PersonPicker` | Inputs | Web | Beta | `components/inputs/PersonPicker` |
 
 ## 3. Component Entries
@@ -95,7 +96,15 @@
 - **Usage:** `const ref = useListReorder<HTMLUListElement>(ids.join("|"))` on a `relative` container.
 
 ### SearchInput
-- **Props:** `value`, `onChange`, `placeholder`, `error?: string`. Pill input with search icon; focus ring; error state with message below.
+- **Category:** Inputs. **Import:** `components/inputs/SearchInput`. **Status:** Beta.
+- **Description:** pill search field (`type="search"`, 48px high) with a leading search icon, inside a `role="search"` container. A clear "x" button (44px target, `aria-label` "Borrar búsqueda") shows only while there is text. Enter calls `onSubmit`; Esc with text clears. Clearing returns focus to the input.
+- **Props (as implemented):** `value`, `onChange(value)`, `onClear()`, `onSubmit()`, `placeholder`, `label` (accessible name). The 1-second wait and the 3-character minimum live in `components/recipes/use-search-query` and `lib/domain/search.ts`, not here.
+
+### TmpResultGroup
+- **Category:** Data Display. **Import:** `components/recipes/TmpResultGroup`. **Status:** Beta, temporary.
+- **Description:** group of search results: an `<h2>` reading "<label> · <count>" (small uppercase label, count in `color.text`) and the rows under it.
+- **Props:** `label: string`, `count: number`, `children`.
+- **Guidance:** formalize or replace when the grouped-list pattern is reused (for example in the shopping list).
 
 ### RecipeTile
 - **Category:** Data Display. **Import:** `components/recipes/RecipeTile`. **Status:** Beta.
@@ -168,12 +177,12 @@
 - **Props:** `people: {id, name}[]`, `current`, `onChange`. Round avatar button in the header opening a `Sheet` with the household members; stores choice in the device.
 
 ## 4. Temporary / Not-Yet-Formalized Components
-`TmpComingSoon` (feature `my-food-manager/006`) is registered above and is removed when Plan, Despensa and Perfil have their own content. The components introduced by feature `my-food-manager/002` (recipe detail) are registered above; the prototype names `TmpRecipeDetailLayer`, `TmpDetailBar`, `TmpCollapsibleSection`, `TmpStaticChip` and the info/ingredient/step lists in its UX Flow map to `DetailLayer`, `CollapsibleSection`, `TagChip` and the `RecipeDetail` sections.
+`TmpComingSoon` (feature `my-food-manager/006`) is registered above and is removed when Plan, Despensa and Perfil have their own content. `TmpResultGroup` (feature `my-food-manager/005`) is registered above and stays temporary until the grouped-list pattern is reused. The components introduced by feature `my-food-manager/002` (recipe detail) are registered above; the prototype names `TmpRecipeDetailLayer`, `TmpDetailBar`, `TmpCollapsibleSection`, `TmpStaticChip` and the info/ingredient/step lists in its UX Flow map to `DetailLayer`, `CollapsibleSection`, `TagChip` and the `RecipeDetail` sections.
 
 ## 5. Web / React Native Parity Notes
 Not applicable (web only).
 
 ## 6. Versioning
-- **Last updated:** 2026-10-29 (main navigation of feature `my-food-manager/006`: `AppFrame`, `BottomNav` / `SideNav` rewritten, `TmpComingSoon`, `AppShell` corrected; earlier: responsive layout: DetailLayer modes, RecipeLibrary, RecipeLink props; added FilterChip, FilterOptions, RecipeFilters, useListReorder; recipe detail components; `RecipePhoto` props corrected to the implementation)
+- **Last updated:** 2026-10-29 (recipe search of feature `my-food-manager/005`: `SearchInput` as implemented, `TmpResultGroup`; earlier: main navigation of feature `my-food-manager/006`: `AppFrame`, `BottomNav` / `SideNav` rewritten, `TmpComingSoon`, `AppShell` corrected; earlier: responsive layout: DetailLayer modes, RecipeLibrary, RecipeLink props; added FilterChip, FilterOptions, RecipeFilters, useListReorder; recipe detail components; `RecipePhoto` props corrected to the implementation)
 - **Owner:** Al
 - Initial registry, all entries Beta pending implementation.

@@ -10,7 +10,7 @@
 
 My Food Manager (shown to users as "My Food") is a personal, visual, mobile-first web app (installable PWA) that helps Al and his household partner decide what to cook and shop without forgetting anything. It reads the Google Drive folder `food`, which the food-manager skill maintains, and keeps working without a connection. There are no logins. Platform: web only.
 
-Today the app lets you browse the library with filters and a text search and open each recipe's detail, and it has a main navigation with four sections: Recetas, Plan, Despensa and Perfil. Plan and Perfil are placeholders that say "Próximamente". Despensa holds the pantry and the shopping list in two tabs, where each ingredient has two switches, "Tengo" and "Comprar", saved to Drive (also from the device without a connection, with a shared write key). The meal-plan calendar and the profile are the next features (see `product/product_vision.md` §7).
+Today the app lets you browse the library with filters and a text search and open each recipe's detail, and it has a main navigation with four sections: Recetas, Plan, Despensa and Perfil. Perfil is a placeholder that says "Próximamente". Plan is the household's meal calendar: from today on, each day has Desayuno, Almuerzo and Cena, to which recipes are added and removed, and every recipe added is checked against the pantry, offering to put what is missing on the shopping list. Despensa holds the pantry and the shopping list in two tabs, where each ingredient has two switches, "Tengo" and "Comprar", saved to Drive (also from the device without a connection, with a shared write key). Plan changes are saved to Drive in the same way (offline queue and shared write key). The profile is the next feature (see `product/product_vision.md` §7).
 
 ## 2. How to Read This Documentation
 
@@ -27,10 +27,11 @@ Today the app lets you browse the library with filters and a text search and ope
 | recipes | Filtering and searching the recipe list and reading a recipe | inline below | Active |
 | navigation | Main navigation between sections and their placeholders | inline below | Active |
 | pantry | Pantry and shopping list, with writes to Drive | inline below | Active |
+| plan | Meal-plan calendar with recipe picking and a pantry check, with writes to Drive | inline below | Active |
 
 ## 4. Navigation Structure
 
-The app has four sections, always reachable from a main navigation: Recetas (`/`, with the recipe detail at `/recipes/<id>`), Plan (`/plan`), Despensa (`/ingredients`) and Perfil (`/profile`). Plan and Perfil show only "Próximamente" for now; Despensa shows the pantry and the shopping list in two tabs. The screen adapts to the window width in three layouts: small (under 640 px), medium (640 to 1279 px) and large (1280 px and above).
+The app has four sections, always reachable from a main navigation: Recetas (`/`, with the recipe detail at `/recipes/<id>`), Plan (`/plan`), Despensa (`/ingredients`) and Perfil (`/profile`). Perfil shows only "Próximamente" for now; Plan shows the meal calendar; Despensa shows the pantry and the shopping list in two tabs. The screen adapts to the window width in three layouts: small (under 640 px), medium (640 to 1279 px) and large (1280 px and above).
 
 - **Small:** a bottom bar with the four sections. It is hidden while a recipe detail is open (the detail is a full screen) and comes back when it closes.
 - **Medium and large:** a sidebar on the left with the same four sections, collapsible to icons only or expandable to icons and text. It stays visible when a recipe opens (modal on medium, panel beside the list on large).
@@ -45,7 +46,7 @@ The app has four sections, always reachable from a main navigation: Recetas (`/`
 |---|---|---|---|
 | SCR-library-list | Recipe list | library | Web |
 | SCR-recipe-detail | Recipe detail | recipes | Web |
-| SCR-plan | Plan (placeholder) | navigation | Web |
+| SCR-plan | Plan | plan | Web |
 | SCR-ingredients | Despensa | pantry | Web |
 | SCR-profile | Perfil (placeholder) | navigation | Web |
 
@@ -62,10 +63,13 @@ The app has four sections, always reachable from a main navigation: Recetas (`/`
 | FLW-toggle-sidebar | Collapse or expand the sidebar | navigation | Web |
 | FLW-flip-switch | Flip a switch | pantry | Web |
 | FLW-enter-write-key | Enter the write key | pantry | Web |
+| FLW-add-recipe-to-plan | Add a recipe to the plan | plan | Web |
+| FLW-remove-plan-recipe | Remove a recipe from the plan | plan | Web |
+| FLW-browse-plan | Browse days and weeks | plan | Web |
 
 ## 6. Cross-Cutting Concepts
 
-- **Writes.** Only the pantry is written to Drive, through operations with an offline queue and a shared household write key (see FLW-flip-switch). Everything else stays read-only; reviews writes arrive with their own feature.
+- **Writes.** Only the pantry and the plan are written to Drive, through operations with an offline queue and a shared household write key (see FLW-flip-switch and FLW-add-recipe-to-plan). Everything else stays read-only; reviews writes arrive with their own feature. A batch that touches both files is written pantry first and plan last, each file on its own.
 - **Changes without connection.** A change shows at once, waits on the device and is sent when the connection returns; it is never lost.
 - **Offline-first.** After the first sync, the library is always shown from the device, before any network response. Reads are never blocked by a missing connection.
 - **Freshness.** A sync runs on app open, every 5 minutes while the app is visible and online, within 5 seconds of regaining a connection, and on a manual request. If Drive has no changes, only the "last synced" time updates. A failed sync leaves the stored data untouched.
@@ -81,6 +85,7 @@ None shared across domains yet.
 ## 8. Shared Data Entities
 
 - **Library snapshot.** The complete normalized copy of the `food` folder: recipes (with steps, notes and variations), the ingredient catalog, the pantry, each person's reviews, the vocabularies (categories, tags, units, families) and the list of household people. The people are derived from the review files that exist. The snapshot is replaced as a whole on every sync that finds changes.
+- **Plan.** `plan/plan.yaml` (plan schema 1, created by the food-manager skill, never by the app): `updated` plus `days`, a map from date (`YYYY-MM-DD`) to a list of meals `{ slot, label, note, dishes }`, where `slot` is `breakfast`, `lunch`, `snack` or `dinner` and a dish is `{ recipe, servings }` (a recipe id) or `{ text }` (free description). Several meals may share a slot. The app shows and edits only the dishes that are recipes of breakfast, lunch and dinner, and writes only the add or removal of one recipe dish (and `updated`); labels, notes, servings, text dishes and snack meals stay as they are. Past days are never shown; any writer may remove them.
 - **Pantry.** `pantry/pantry.yaml` (schema 2): `updated` plus `items`, a map from ingredient id to `have` and `to_buy`, for non-staple ingredients only. Staples are never listed and are always available. There are no quantities. The app writes only these two flags (and `updated`); Claude and Telegram write the same file.
 
 ## 9. Cross-Domain Flows
@@ -99,7 +104,10 @@ None.
 - **Section / destination:** one of the four options of the main navigation: Recetas, Plan, Despensa or Perfil.
 - **Bottom bar:** the navigation on small windows.
 - **Sidebar:** the navigation on medium and large windows; collapsed shows only icons, expanded shows icons and text.
-- **Placeholder section:** a section with no content yet, which shows its title and "Próximamente".
+- **Placeholder section:** a section with no content yet, which shows its title and "Próximamente" (today only Perfil).
+- **Plan:** the household's agenda of recipes per day and meal.
+- **Slot (franja):** one meal time of one day: Desayuno, Almuerzo or Cena (the file also knows `snack`, not shown).
+- **Faltante:** a non-staple ingredient of a recipe that is not "Tengo"; optional ingredients count.
 - **Filter:** one of Categoría, Tiempo, Dieta, Cocina, Dificultad or Proteína; each holds one chosen value at a time.
 - **Search / applied text:** the text typed in the search bar is the typed text; the applied text is the trimmed typed text once it has 3 or more characters and 1 second has passed without typing (or Enter was pressed). Only the applied text filters the list.
 - **Tengo / Comprar:** the two independent switches of an ingredient: "Tengo" (it is at home, `have`) and "Comprar" (it must be bought, `to_buy`). Any combination is valid.
@@ -111,6 +119,7 @@ None.
 
 ## 11. Recent Changes
 
+- 2026-10-30 — plan: Plan meal calendar with day list and weekly columns, recipe picker, pantry check on add and writes to Drive (see `changelog/008_meal-plan-calendar_changelog.md`).
 - 2026-10-30 — pantry: Despensa with "Despensa" and "Lista de compra" tabs and Tengo/Comprar switches saved to Drive, with an offline queue (see `changelog/007_pantry-shopping-list-switches_changelog.md`).
 - 2026-10-29 — recipes: text search on the recipe list, with results grouped by name, protein and ingredient (see `changelog/005_recipe-search_changelog.md`).
 - 2026-10-29 — navigation: main navigation with a bottom bar and a collapsible sidebar, and placeholder sections Plan, Despensa and Perfil (see `changelog/006_main-navigation_changelog.md`).
@@ -319,25 +328,14 @@ How the user moves between the sections of the app, and the sections that have n
 
 ### Screens / Pages
 
-#### SCR-plan Plan (placeholder)
-
-- **Platform:** Web.
-- **Purpose:** reserve the Plan section (the future calendar of what will be eaten each day). Address `/plan`.
-- **Entry points:** Plan in the main navigation; direct address.
-- **Functional composition:** CMP-main-navigation.
-- **Data & business rules:** shows the title "Plan" and "Próximamente", centered, with no actions. It uses no data. The browser tab is titled "Plan · My Food".
-- **States (business meaning):** one state, always the same; it also opens offline, even if never visited before.
-- **Related flows:** FLW-switch-section.
-- **Source:** `006_main-navigation_prd.md` / `_ux_flow.md`; implementation in `src/app/plan/page.tsx`.
-
 #### SCR-profile Perfil (placeholder)
 
 - **Platform:** Web.
 - **Purpose:** reserve the Perfil section (the future user, favorites, ratings and comments). Address `/profile`.
 - **Entry points:** Perfil in the main navigation; direct address.
 - **Functional composition:** CMP-main-navigation.
-- **Data & business rules:** same as SCR-plan with the title "Perfil"; the browser tab is titled "Perfil · My Food".
-- **States (business meaning):** as SCR-plan.
+- **Data & business rules:** shows the title "Perfil" and "Próximamente", centered, with no actions. It uses no data. The browser tab is titled "Perfil · My Food".
+- **States (business meaning):** one state, always the same; it also opens offline, even if never visited before.
 - **Related flows:** FLW-switch-section.
 - **Source:** `006_main-navigation_prd.md` / `_ux_flow.md`; implementation in `src/app/profile/page.tsx`.
 
@@ -448,3 +446,94 @@ The pantry and the shopping list over the ingredient catalog, with writes to Dri
 - **Business rules governing the flow:** the key is stored on the device; once accepted, pending changes are sent in order.
 - **Edge cases & error handling:** a wrong key keeps the dialog open with "La clave no es correcta"; "Ahora no" leaves the changes pending.
 - **Source:** `007_pantry-shopping-list-switches_prd.md`, `_ux_flow.md`.
+
+---
+
+## Domain: plan
+
+### Overview
+
+The household's meal calendar. Every day from today has three slots, Desayuno, Almuerzo and Cena, that hold any number of recipes. It writes only the add and removal of recipe dishes in `plan/plan.yaml`; reading works from the stored library, online or offline. Adding a recipe also checks the pantry and can mark what is missing as "Comprar".
+
+### Screens / Pages
+
+#### SCR-plan Plan
+
+- **Platform:** Web. **Platform divergence:** below 640 px the days are a vertical list and the pickers are bottom sheets; from 640 px the days are weekly columns and the pickers are centered modals (also on large windows).
+- **Purpose:** decide and see what will be eaten each day, and learn at once which ingredients are missing. Address `/plan`; the browser tab is titled "Plan · My Food".
+- **Entry points:** Plan in the main navigation; direct address.
+- **Functional composition:** CMP-main-navigation, CMP-app-shell, CMP-plan-calendar, CMP-recipe-picker, CMP-missing-ingredients, CMP-pending-changes, CMP-write-key, CMP-detail-layer (the recipe detail opened over the Plan).
+- **Data & business rules:**
+  - Shows the days from today (the device's date); a day before today is never shown on small windows, and in the current week of the weekly view it is dimmed, shows its recipes and offers no "Añadir" or X.
+  - Each day has the slots Desayuno, Almuerzo and Cena, in that order. A slot holds any number of recipes, the same recipe may repeat, and they appear in the order of the file (all meals of that slot together). Free-text dishes are shown as plain text without photo, X or detail link. Snack meals in the file are kept and not shown. A recipe id that is not in the library is not shown.
+  - Small windows: today and the next 7 days (8 days); each time the end of the list is reached 7 more days are added, with no limit, also offline.
+  - Medium and large windows: one week, Monday to Sunday, in seven columns that share the available width equally (132 px minimum; if they do not fit, the week scrolls sideways). A title shows the date range, with "Esta semana" for the current week, and today's column is highlighted. Buttons at the sides go to the previous and next week; the previous one is disabled in the current week (a past week cannot be reached) and the next one has no limit.
+  - Tapping a recipe opens its detail over the Plan (full screen on small windows, a modal from 640 px) and closing it returns to the same place.
+  - Data: recipes, ingredient catalog, pantry and plan from the stored library.
+- **States (business meaning):**
+  - Loading: placeholder blocks.
+  - No library while offline, and error: as the recipe list, with "Reintentar".
+  - Plan file missing: "El plan todavía no está disponible en Drive", with "Reintentar" and no way to add or remove.
+  - Offline: the stored plan is shown; changes wait on the device (CMP-pending-changes).
+  - Empty slot: only its name and "Añadir".
+- **Related flows:** FLW-add-recipe-to-plan, FLW-remove-plan-recipe, FLW-browse-plan, FLW-enter-write-key.
+- **Source:** `008_meal-plan-calendar_prd.md`, `008_meal-plan-calendar_ux_flow.md`; implementation in `src/components/plan/` and `src/app/plan/page.tsx`.
+
+### Functionally-Significant Components
+
+#### CMP-plan-calendar Day list, weekly columns and slots
+
+- **Design system reference:** `RecipePhoto`, `SyncBadge`, `AppShell` (see `context/ui_kit_registry.md`); `PlanScreen`, `PlanDayList`, `PlanWeek`, `PlanSlot` and `PlanRecipeItem` are registered there.
+- **Functional role:** shows the days and their slots and offers "Añadir", the X and the opening of a recipe.
+- **Behavior rules:** as the data and business rules of SCR-plan. The X has the accessible name "Quitar <receta>"; "Añadir" names its slot and day.
+- **Used on:** SCR-plan.
+- **Source:** `008_meal-plan-calendar_prd.md`, `_ux_flow.md`; implementation in `src/components/plan/` and `src/lib/domain/plan-view.ts`, `plan-calendar.ts`.
+
+#### CMP-recipe-picker Recipe picker
+
+- **Design system reference:** `Sheet`, `SearchInput`, `Button`.
+- **Functional role:** chooses one recipe for a slot.
+- **Behavior rules:**
+  - Titled "Añadir al desayuno / almuerzo / a la cena" with the day. A search box ("Buscar receta"), the library list (photo, title, total time) and "Añadir receta".
+  - Search: 3 characters minimum, applied 1 second after the last keystroke or on Enter; "x" and Esc clear it. Case and accents are ignored and every word must be in the title. With fewer than 3 characters the whole library shows. No match shows "Sin resultados" and keeps the selection; an empty library shows "No hay recetas todavía".
+  - One recipe at a time: tapping another moves the choice, tapping the chosen one clears it. "Añadir receta" is enabled only with a choice.
+  - Esc, the backdrop or the close button close it and add nothing. Resizing across 640 px keeps the text and the choice.
+- **Used on:** SCR-plan.
+- **Source:** `008_meal-plan-calendar_prd.md`, `_ux_flow.md`; implementation in `src/components/plan/RecipePickerSheet.tsx`.
+
+#### CMP-missing-ingredients Missing ingredients
+
+- **Design system reference:** `Sheet` without the close button.
+- **Functional role:** after a recipe is added, lists what the pantry lacks for it.
+- **Behavior rules:**
+  - Opens only when there are faltantes: ingredients of the recipe that are in the catalog, are not staples and are not "Tengo" (optional lines count; each ingredient once). It says "En tu despensa te faltan estos ingredientes:" and lists them.
+  - "Continuar" leaves the shopping list as it is. "Añadir a mi lista de la compra" turns "Comprar" on for each of them (those already on stay on).
+  - Esc or the backdrop do the same as "Continuar". The recipe stays in the plan in every case. The write key, if needed, is asked after this sheet closes.
+- **Used on:** SCR-plan.
+- **Source:** `008_meal-plan-calendar_prd.md`, `_ux_flow.md`; implementation in `src/components/plan/MissingIngredientsSheet.tsx` and `src/lib/domain/plan-view.ts`.
+
+### Flows
+
+#### FLW-add-recipe-to-plan Add a recipe to the plan
+
+- **Goal / trigger:** plan a recipe for a slot of a day.
+- **Screens involved (in sequence):** SCR-plan → ("Añadir" of a slot) → CMP-recipe-picker → ("Añadir receta") → SCR-plan with the recipe at the end of the slot → (if there are faltantes) CMP-missing-ingredients → SCR-plan → (if the device has no key) CMP-write-key.
+- **Business rules governing the flow:** the recipe shows at once and goes to the outbox with the same sending, key and retry rules as FLW-flip-switch. The server applies the change to the latest `plan.yaml`, retrying once on a conflict: the dish goes to the last meal of that slot on that day, or a new meal is created in slot order (breakfast, lunch, snack, dinner); days stay in date order; everything the app does not manage is kept; `updated` is set with offset `-05:00`. In a batch with pantry changes, the pantry is written first and the plan last.
+- **Edge cases & error handling:** an unknown recipe, a bad date, a slot other than breakfast, lunch or dinner, or a day earlier than yesterday in `-05:00` is rejected, the recipe leaves the screen and a 4-second notice says "No se pudo guardar <receta>". A missing or unreadable plan file rejects only the plan changes. A repeated conflict or a Drive outage keeps the change pending. The server remembers for 10 minutes which plan changes it applied, so a retry does not add the recipe twice (best effort, per server instance). The other phone sees the change at its next sync; changes from two phones to the same slot both survive.
+- **Source:** `008_meal-plan-calendar_prd.md` (§5, §8, §10), `008_meal-plan-calendar_ux_flow.md`, ADR 003.
+
+#### FLW-remove-plan-recipe Remove a recipe from the plan
+
+- **Goal / trigger:** take a recipe out of a slot.
+- **Screens involved (in sequence):** SCR-plan → (X of a recipe) → SCR-plan without it.
+- **Business rules governing the flow:** removes one occurrence at once, with no confirmation and no undo, and queues the change. The server removes one dish with that recipe from the slot's meals; a meal left with no dishes, and a day left with no meals, are removed too. The shopping list is not touched.
+- **Edge cases & error handling:** removing something that is no longer there changes nothing. Pending, key and rejection behave as in FLW-add-recipe-to-plan.
+- **Source:** `008_meal-plan-calendar_prd.md` (§5, §10), `008_meal-plan-calendar_ux_flow.md`.
+
+#### FLW-browse-plan Browse days and weeks
+
+- **Goal / trigger:** see further days of the plan.
+- **Screens involved (in sequence):** SCR-plan → (small: reach the end of the list / from 640 px: next or previous week) → SCR-plan showing other days.
+- **Business rules governing the flow:** see SCR-plan. The earliest reachable day is today (small windows) or the Monday of the current week; there is no later limit. The week and the loaded days reset when the section is left or the screen is reloaded. If midnight passes while the app is open, the new day is taken at the next focus.
+- **Edge cases & error handling:** loading more days offline is never blocked. Resizing the window between the two layouts keeps the plan and any open picker.
+- **Source:** `008_meal-plan-calendar_prd.md` (§5, §10), `008_meal-plan-calendar_ux_flow.md`.

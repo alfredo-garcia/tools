@@ -12,8 +12,9 @@ Rules:
   never from other projects or other conversations.
 - When implementing a feature, follow its PRD and UX Flow; flag any contradiction instead of
   resolving it silently.
-- Documentation (functional spec, changelog) is updated only after the feature is merged into
-  the base branch, via the document-manager skill.
+- Documentation (functional spec, changelog) is updated and committed on the feature branch,
+  via the document-manager skill, BEFORE the feature is merged into the base branch. Never merge
+  a feature whose documentation is not committed yet.
 - Feature branches follow `branch_pattern` and feature commits start with `commit_tag` from SDLC.md
   (e.g. `my-food-manager/004-shopping-list`, `[my-food-manager/004] …`). Feature IDs repeat across projects in
   this repo, so always qualify them with the project_id.

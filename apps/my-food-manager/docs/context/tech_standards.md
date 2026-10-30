@@ -108,7 +108,7 @@ prototypes/              # scratch (gitignored)
 - [ ] Works offline for read paths the feature touches; writes go through the outbox.
 - [ ] No secret or personal data committed; no library outside §2.
 - [ ] PRD acceptance criteria met on a phone-sized viewport and on desktop.
-- [ ] After merge: document-manager updates the functional spec and changelog.
+- [ ] Before merge: document-manager updates the functional spec and changelog, committed on the feature branch.
 
 ## 12. Changing These Standards
 Any new technology, library outside §2, or rule change requires an ADR (`architecture/adr/`) approved by the user. Until then, it isn't allowed.

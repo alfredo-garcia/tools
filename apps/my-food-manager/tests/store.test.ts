@@ -213,3 +213,22 @@ describe("timeAgo", () => {
     expect(timeAgo(undefined, now)).toBe("nunca");
   });
 });
+
+describe("library store: setPantry", () => {
+  it("replaces the stored pantry and keeps the rest of the library", async () => {
+    const snap = await snapshot();
+    const { store, storage } = setup({ fetch: vi.fn(async () => json(snap)) as never });
+    await store.hydrate();
+    await store.sync("open");
+    store.setPantry({ updated: "2026-10-30T10:00:00-05:00", have: ["leche"], to_buy: [] });
+    expect(store.getState().library?.pantry).toMatchObject({ have: ["leche"], to_buy: [] });
+    expect(store.getState().library?.recipes).toHaveLength(3);
+    await vi.waitFor(() => expect(storage.set).toHaveBeenCalledTimes(2));
+  });
+
+  it("does nothing before a library is loaded", async () => {
+    const { store } = setup();
+    store.setPantry({ have: [], to_buy: [] });
+    expect(store.getState().library).toBeNull();
+  });
+});

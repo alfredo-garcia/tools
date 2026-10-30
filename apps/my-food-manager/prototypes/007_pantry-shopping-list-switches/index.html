@@ -239,7 +239,7 @@ function sw(kind,i,d,locked){
 }
 function row(i,d){
   if(S.tab==='lista'){const off=!d.buy.has(i.id);return `<li class="row ${off?'struck':''}"><span class="name">${cap(i.n)}</span>${sw('setBuy',i,d)}</li>`;}
-  return `<li class="row"><span class="name">${cap(i.n)}${i.st?'<small>Básico, siempre disponible</small>':''}</span>${sw('setHave',i,d,i.st)}${sw('setBuy',i,d)}</li>`;
+  return `<li class="row"><span class="name">${cap(i.n)}${i.st?'<small>Básico, siempre disponible</small>':''}</span>${sw('setHave',i,d,i.st)}${sw('setBuy',i,d,i.st)}</li>`;
 }
 const cap=s=>s[0].toUpperCase()+s.slice(1);
 

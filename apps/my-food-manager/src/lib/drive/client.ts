@@ -1,7 +1,7 @@
 import { auth, drive_v3, drive } from "@googleapis/drive";
 import type { DriveFileRef } from "@/lib/domain/snapshot";
 import { ApiError } from "@/lib/api/errors";
-import { DriveReadError, type FoodSource } from "./types";
+import { DriveConflictError, DriveReadError, type FoodSource } from "./types";
 
 const FOLDER_MIME = "application/vnd.google-apps.folder";
 const CONCURRENCY = 8;
@@ -51,8 +51,8 @@ export function createDriveSource(credentialsJson: string, rootFolderId: string)
     version: "v3",
     auth: new auth.GoogleAuth({
       credentials,
-      // Read-only: this feature never writes to Drive.
-      scopes: ["https://www.googleapis.com/auth/drive.readonly"],
+      // Writes only update existing files of the shared `food` folder (the account sees nothing else).
+      scopes: ["https://www.googleapis.com/auth/drive"],
     }),
   });
 
@@ -113,6 +113,22 @@ export function createDriveSource(credentialsJson: string, rootFolderId: string)
         textCache.set(file.id, { modifiedTime: file.modifiedTime, text });
         return text;
       } catch (e) {
+        throw toReadError(e);
+      }
+    },
+
+    async writeText(file, text) {
+      try {
+        const current = await client.files.get({ fileId: file.id, fields: "modifiedTime" });
+        if (current.data.modifiedTime !== file.modifiedTime) throw new DriveConflictError();
+        await client.files.update({
+          fileId: file.id,
+          media: { mimeType: "text/plain", body: text },
+          fields: "id",
+        });
+        textCache.delete(file.id);
+      } catch (e) {
+        if (e instanceof DriveConflictError) throw e;
         throw toReadError(e);
       }
     },

@@ -96,7 +96,7 @@ The "Despensa" section (`/ingredients`) shows one screen with two tabs. Every in
 - `<ul>` of rows, each `<IngredientRow>` (new, `components/pantry/IngredientRow`, min height 64 px) with:
   - name (`label` weight) and, for a staple, a second line "Básico, siempre disponible" (`caption`, `color.text.muted`)
   - `<TmpSwitch label="Tengo" checked={tengoOn(i)} disabled={i.staple} tone="success" ariaLabel={"Tengo " + i.name} onChange={() => flip(i.id, "pantry.setHave")} />` (**NEW — temporary**)
-  - `<TmpSwitch label="Comprar" checked={shown.buy.has(i.id)} tone="primary" ariaLabel={"Comprar " + i.name} onChange={() => flip(i.id, "pantry.setBuy")} />` (**NEW — temporary**)
+  - `<TmpSwitch label="Comprar" checked={shown.buy.has(i.id)} disabled={i.staple} tone="primary" ariaLabel={"Comprar " + i.name} onChange={() => flip(i.id, "pantry.setBuy")} />` (**NEW — temporary**)
 
 `<TmpSwitch>` renders a `<button role="switch" aria-checked>` with a 44×26 px track, a knob that moves to the right and shows a check mark when on, and its label under the track in `caption`; the whole control is at least 72×56 px. State is conveyed by knob position, check mark and label weight, not by color alone. If `disabled`, it has `aria-disabled="true"`, reduced opacity, and ignores taps.
 
@@ -112,7 +112,7 @@ The "Despensa" section (`/ingredients`) shows one screen with two tabs. Every in
 - Tap `<TmpSwitch>` "Tengo" (not a staple) → `flip(id, "pantry.setHave")`: the opposite value is enqueued, the row is added to `keepVisible`, the switch changes at once.
 - Tap `<TmpSwitch>` "Comprar" → `flip(id, "pantry.setBuy")`; "Tengo" is never changed by it, and vice versa; `tabLabel` count updates at once.
 - `flip` = (1) remove any unsent operation with the same `ingredient` and `kind`; (2) if the new value differs from the stored pantry, append the operation; (3) announce "<Tengo|Comprar> <ingrediente>: activado|desactivado" in a polite live region; (4) if `!keyStored` and the key dialog was not dismissed since the screen opened, open `<KeyDialog>`; (5) try to send the outbox.
-- Tap a staple's "Tengo" → nothing.
+- Tap a staple's "Tengo" or "Comprar" → nothing.
 
 ### 2.3. Tab "Lista de compra"
 
@@ -229,7 +229,11 @@ The "Despensa" section (`/ingredients`) shows one screen with two tabs. Every in
 
 ## 6. Deviations from PRD (Approved)
 
-None. Details the prototype fixes that the PRD leaves open (not contradictions): the active family filter reads "Familia: <nombre>" with an "x"; a rejected change shows a 4-second error toast; after "Ahora no" the key dialog is not reopened by later switches until the screen is reopened.
+| PRD said (2026-10-30, first approval) | We ship instead | Why / who approved |
+|---|---|---|
+| A staple's "Comprar" switch works as any other | A staple's "Comprar" switch is off and locked, like its "Tengo" switch is on and locked | `food/_system/schema.md` pantry schema 2 never lists staples, so nothing can be saved for them; the PRD was corrected on 2026-10-30 (implementation review) |
+
+Other details the prototype fixes that the PRD leaves open (not contradictions): the active family filter reads "Familia: <nombre>" with an "x"; a rejected change shows a 4-second error toast; after "Ahora no" the key dialog is not reopened by later switches until the screen is reopened.
 
 ## 7. Open Items
 

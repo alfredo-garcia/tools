@@ -12,10 +12,10 @@ Replaces the "Próximamente" placeholder of Despensa (`/ingredients`) with two t
 
 ## 2. Background & Context
 - SCR-ingredients is a placeholder (functional spec, domain `navigation`). The main navigation (feature `my-food-manager/006`) already routes Despensa to `/ingredients`.
-- The snapshot already carries the ingredient catalog (`name`, `synonyms`, `family`, `staple`), the family vocabulary (labels) and the pantry (`have`, `to_buy`), so the read side needs no new data (`src/lib/schema`, `src/lib/domain/snapshot.ts`).
+- The snapshot already carries the ingredient catalog (`name`, `synonyms`, `family`, `staple`), the family vocabulary (labels) and the pantry (derived from the file's `items` into the ids at home and the ids on the list), so the read side needs no new data (`src/lib/schema`, `src/lib/domain/snapshot.ts`).
 - The app is read-only today: the Drive client requests `drive.readonly`, the `food` folder is shared with the service account as Viewer, and there is no `/api/ops` nor outbox. The architecture for writing is already decided: tech_standards §5 and §9, ADR 001 (operations with an outbox, server-side merge) and ADR 002 (service account with Editor access).
 - Search and family filtering reuse the behavior of the recipe list (functional spec: CMP-recipe-search, CMP-recipe-filters).
-- `food/_system/schema.md`: pantry schema 1 is `updated`, `have`, `to_buy` (ingredient ids); staples are always available; no quantities. The food-manager skill, Claude and Telegram also write this file.
+- `food/_system/schema.md`: pantry schema 2 is `updated` and `items`, a map with one `{ have, to_buy }` entry (booleans) per non-staple ingredient of the catalog; staples are never listed and always available; no quantities; a new catalog ingredient gets `{ have: false, to_buy: false }`. The food-manager skill, Claude and Telegram also write this file.
 - Trigger: vision v2 stage 2, backlog #7, with the "to buy" view of #8 (the plan-driven generation stays out).
 
 ## 3. Goals & Success Metrics
@@ -26,7 +26,7 @@ Replaces the "Próximamente" placeholder of Despensa (`/ingredients`) with two t
 - Metric (manual, real library and real Drive): toggle ingredients on two devices, one of them offline; after both sync, Drive and both screens agree, and the pantry file keeps its other contents.
 
 ## 4. Non-Goals / Out of Scope
-- Anything but `have` and `to_buy` of the pantry is not written (no recipes, reviews, catalog, other files). The app never creates or deletes Drive files.
+- Anything but the `have` and `to_buy` values of the pantry entries (and `updated`) is not written (no recipes, reviews, catalog, other files). The app never creates or deletes Drive files.
 - No quantities, units, notes, expiry dates.
 - No creating or editing ingredients; no ingredient detail screen.
 - The switches do not affect each other (no "bought moves to have").
@@ -61,7 +61,7 @@ Replaces the "Próximamente" placeholder of Despensa (`/ingredients`) with two t
 3. Given a row, then it shows the ingredient name and two labeled switches, "Tengo" and "Comprar", each reflecting `have` and `to_buy`.
 4. Given I turn "Tengo" on or off, then the switch changes at once and the row stays in the list until I change filter or search (it does not jump out of the list).
 5. Given I turn "Comprar" on or off, then only that switch changes; "Tengo" is untouched, and vice versa.
-6. Given a staple ingredient, then its "Tengo" switch is on and locked (cannot be turned off) with the hint "Básico, siempre disponible"; its "Comprar" switch works as any other.
+6. Given a staple ingredient, then its "Tengo" switch is on and locked, and its "Comprar" switch is off and locked, with the hint "Básico, siempre disponible" (the schema never lists staples in the pantry, so nothing can be saved for them).
 
 **US-5 Lista de compra tab.** As Al, I want the list I carry to the store.
 1. Given the tab, then it lists the ingredients with "Comprar" on, each with its name and a "Comprar" switch, and the family filter (no state filter).
@@ -93,9 +93,9 @@ Replaces the "Próximamente" placeholder of Despensa (`/ingredients`) with two t
 4. FR-4: Search matches the ingredient `name` and each of its `synonyms`; with several words, all must be found in the same name or the same synonym.
 5. FR-5: The family filter has one value at a time; ingredients without `family` belong to "Otros"; labels come from the family vocabulary (`label`), or the id capitalized when missing.
 6. FR-6: Displayed state of an ingredient = the stored pantry with the pending changes of the outbox applied on top.
-7. FR-7: "Tengo" means the id is in `have`; "Comprar" means the id is in `to_buy`; the two are independent. An id may be in both or in neither.
+7. FR-7: "Tengo" means the ingredient's entry in `items` has `have: true`; "Comprar" means it has `to_buy: true`; the two are independent. An ingredient may have both, one or none, and one with no entry counts as neither.
 8. FR-8: Despensa tab list = catalog ingredients filtered by the state filter ("Tengo": has "Tengo" on; "No tengo": not; "Todos": all), the family filter and, when a search is applied, the search instead of the state filter (US-2.5). A row whose state changed while visible stays until a filter, search or tab changes.
-9. FR-9: Staples (`staple: true`) count as "Tengo" on and are never added to or removed from `have` by the app; their "Tengo" switch is locked on.
+9. FR-9: Staples (`staple: true`) count as "Tengo" on and are never written to the pantry by the app; their "Tengo" switch is locked on and their "Comprar" switch is locked off.
 10. FR-10: Lista de compra tab list = catalog ingredients with "Comprar" on, filtered by the family filter and the search; an ingredient turned off while visible stays struck through until the tab is left or the screen reloads.
 11. FR-11: The tab count = number of catalog ingredients with "Comprar" on, counting pending changes.
 12. FR-12: Every list is ordered alphabetically by ingredient name (Spanish collation).
@@ -115,7 +115,7 @@ Replaces the "Próximamente" placeholder of Despensa (`/ingredients`) with two t
 26. FR-26: All pure logic (list building, filters, search, operation merge, outbox collapse and replay order) is in `src/lib/domain` and `src/lib/offline` with unit tests; Drive and route handlers are thin.
 
 ## 7. Data Model / Schema Changes
-- **Drive data: no schema change.** `pantry/pantry.yaml` keeps schema 1 (`updated`, `have`, `to_buy`). The app now writes `have`, `to_buy` and `updated` of this file (tech_standards §5 already lists the pantry as writable).
+- **Drive data: no schema change.** `pantry/pantry.yaml` is schema 2 (`updated`, `items: { <id>: { have, to_buy } }`). The app writes the `have` and `to_buy` booleans of the entries it changes, creates the entry `{ have: false, to_buy: false }` first when a catalog ingredient has none, and sets `updated`. It changes only those lines: comments, section headers, column alignment and unknown fields stay as the food-manager skill left them. A file that is not schema 2 is refused (`PANTRY_INVALID`), never mixed with the old list format.
 - **Client storage (new):** the outbox in the IndexedDB store of the offline cache (`idb-keyval`): an ordered list of operations `{ id, kind: "pantry.setHave" | "pantry.setBuy", ingredient, value, at }`, where `id` identifies the operation and `at` is the ISO time it was made.
 - **Device preference (new):** the write key, stored in the browser's local storage on the device only (see §13).
 - **Snapshot:** unchanged. The stored pantry is replaced by each sync as before; the screen overlays the outbox on it (FR-6).
@@ -158,9 +158,9 @@ Replaces the "Próximamente" placeholder of Despensa (`/ingredients`) with two t
 - Mobile-first; on medium and large windows the list stays a single column of readable width.
 
 ## 10. Edge Cases & Error Handling
-- An id in `have` or `to_buy` that is not in the catalog: kept in the file untouched, not shown, and not counted.
-- The same id in both `have` and `to_buy`: allowed; the row shows both switches on.
-- Duplicated ids already in the file: the app treats them as one; when it writes, it keeps one occurrence.
+- An entry in `items` whose id is not in the catalog: kept in the file untouched, not shown, and not counted.
+- An ingredient with `have: true` and `to_buy: true`: allowed; the row shows both switches on.
+- A catalog ingredient with no entry in `items`: shown with both switches off; its entry is created at the end of the `items` list the first time one of its switches is turned on.
 - `pantry.yaml` missing or invalid in the snapshot: the screen shows both tabs empty with the standard empty states; writes return `PANTRY_MISSING` and stay pending (never created by the app).
 - The pantry file changed in Drive by the food-manager skill, Claude or Telegram between the app's read and write: handled by FR-18; changes by others are preserved because the merge applies only the app's operations.
 - Two devices flip the same switch while offline: both operations are applied in the order they reach the server; the last one wins (no conflict screen).
@@ -200,7 +200,7 @@ Decisions confirmed by the user on 2026-10-30: staples are listed with "Tengo" l
 
 ## 14. Rollout & Testing Considerations
 - Order of work, same branch: (1) write path: Drive write support and scope, `/api/ops`, operation merge, key check; (2) outbox: persistence, collapse, replay and retries; (3) screen.
-- Unit tests required (tech_standards §8): operation merge against sample `pantry.yaml` files (adding, removing, unchanged, unknown id, duplicates, preserved comments and unknown fields, `updated` format), the outbox (collapse, order, replay after failure, idempotence), list building (state filter, search, family filter, staples, tab count), search normalization.
+- Unit tests required (tech_standards §8): operation merge against sample `pantry.yaml` files in schema 2 (setting and clearing, unchanged, unknown id, staples, missing entry, preserved comments, alignment and unknown fields, refusal of the old format, `updated` format), the outbox (collapse, order, replay after failure, idempotence), list building (state filter, search, family filter, staples, tab count), search normalization.
 - Route tests with a fake `FoodSource`: 401 without key, 400 on bad body, 409 after a second conflict.
 - Manual: toggle online, toggle offline then reconnect, two devices, wrong key, key dialog dismissed, food-manager skill editing the file meanwhile, on a phone-sized viewport and on desktop.
 - No feature flag: the screen replaces the placeholder. Production needs the setup of §12 before the switches can save.
@@ -210,4 +210,4 @@ Decisions confirmed by the user on 2026-10-30: staples are listed with "Tengo" l
 - **Outbox:** the ordered list of changes made on the device and not yet confirmed by the server (ADR 001).
 - **Staple:** an ingredient flagged `staple: true` in the catalog, assumed always available.
 - **Family:** the ingredient class (`family` in the catalog, labels in `families.yaml`), shown as the "Familia" filter.
-- References: functional spec domains `library` (SCR-library-list, snapshot) and `navigation` (SCR-ingredients), CMP-recipe-search, CMP-recipe-filters; tech_standards §5, §6, §9; ADR 001, ADR 002; `food/_system/schema.md` (pantry schema 1).
+- References: functional spec domains `library` (SCR-library-list, snapshot) and `navigation` (SCR-ingredients), CMP-recipe-search, CMP-recipe-filters; tech_standards §5, §6, §9; ADR 001, ADR 002; `food/_system/schema.md` (pantry schema 2).

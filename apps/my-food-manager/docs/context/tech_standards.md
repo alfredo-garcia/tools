@@ -65,7 +65,7 @@ prototypes/              # scratch (gitignored)
 - Comments only where intent is non-obvious. User-facing copy is in Spanish; code, identifiers and docs are English.
 
 ## 5. Data & Persistence Conventions
-- **Contract:** `food/_system/schema.md` in the Drive folder is authoritative (recipes schema 3, ingredients 1, pantry 1, reviews 1). `src/lib/schema` mirrors it with zod; unknown extra fields are preserved, never dropped, on write.
+- **Contract:** `food/_system/schema.md` in the Drive folder is authoritative (recipes schema 3, ingredients 1, pantry 2, reviews 1). `src/lib/schema` mirrors it with zod; unknown extra fields are preserved, never dropped, on write.
 - IDs are recipe/ingredient slugs from the files; the app never mints ids.
 - Timestamps are ISO 8601 with offset `-05:00`, as in the files; the app sets `updated` on every write.
 - **The app writes only:** `pantry/pantry.yaml`, `reviews/<user>.yaml`, and `curated` on a recipe. It never edits other recipe fields, the ingredient catalog or vocabularies (food-manager owns them).

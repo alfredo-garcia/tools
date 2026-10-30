@@ -91,6 +91,21 @@ export const ingredientCatalogEntrySchema = z.looseObject({
 });
 export type IngredientCatalogEntry = z.infer<typeof ingredientCatalogEntrySchema>;
 
+/** `pantry/pantry.yaml`, schema 2: one `{ have, to_buy }` entry per non-staple ingredient. */
+export const pantryFileSchema = z.looseObject({
+  updated: optionalString,
+  items: z.record(
+    z.string(),
+    z
+      .looseObject({
+        have: z.boolean().nullish(),
+        to_buy: z.boolean().nullish(),
+      })
+      .nullish(),
+  ),
+});
+
+/** The pantry as the app uses it: ids at home and ids on the shopping list, derived from the file's `items`. */
 export const pantrySchema = z.looseObject({
   updated: optionalString,
   have: z
@@ -103,6 +118,50 @@ export const pantrySchema = z.looseObject({
     .transform((v) => v ?? []),
 });
 export type Pantry = z.infer<typeof pantrySchema>;
+
+export const PANTRY_OP_KINDS = ["pantry.setHave", "pantry.setBuy"] as const;
+export type PantryOpKind = (typeof PANTRY_OP_KINDS)[number];
+
+/** One change to the pantry, as the app sends it. */
+export interface PantryOp {
+  id: string;
+  kind: PantryOpKind;
+  ingredient: string;
+  value: boolean;
+}
+
+/** Request body of POST /api/ops. Kind and value are checked per operation so one bad op never rejects the batch. */
+export const opsRequestSchema = z.object({
+  ops: z
+    .array(
+      z.object({
+        id: z.string().min(1).max(100),
+        kind: z.string(),
+        ingredient: z.string(),
+        value: z.unknown(),
+      }),
+    )
+    .min(1)
+    .max(100),
+});
+export type OpsRequest = z.infer<typeof opsRequestSchema>;
+
+export const opResultSchema = z.object({
+  id: z.string(),
+  status: z.enum(["applied", "unchanged", "rejected"]),
+  error: z.object({ code: z.string(), message: z.string() }).optional(),
+});
+export type OpResult = z.infer<typeof opResultSchema>;
+
+export const opsResponseSchema = z.object({
+  results: z.array(opResultSchema),
+  pantry: z.object({
+    updated: z.string().optional(),
+    have: z.array(z.string()),
+    to_buy: z.array(z.string()),
+  }),
+});
+export type OpsResponse = z.infer<typeof opsResponseSchema>;
 
 export const reviewsSchema = z.looseObject({
   user: z.string(),

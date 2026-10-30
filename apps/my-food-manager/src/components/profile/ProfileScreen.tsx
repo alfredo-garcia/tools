@@ -116,14 +116,16 @@ export function ProfileScreen() {
     const noResults = results ? results.groups.length === 0 : visible.length === 0;
     content = (
       <>
-        <SearchInput
-          value={typed}
-          onChange={setTyped}
-          onClear={clear}
-          onSubmit={applyNow}
-          placeholder="Buscar en tus favoritas"
-          label="Buscar recetas"
-        />
+        <div className="mt-3">
+          <SearchInput
+            value={typed}
+            onChange={setTyped}
+            onClear={clear}
+            onSubmit={applyNow}
+            placeholder="Buscar en tus favoritas"
+            label="Buscar recetas"
+          />
+        </div>
         <RecipeFilters
           library={favLibrary}
           state={filters}

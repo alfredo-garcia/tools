@@ -39,6 +39,7 @@ describe("runOps", () => {
     expect(writes).toHaveLength(1);
     expect(r.pantry.have).toContain("leche");
     expect(parsePantry(writes[0]).to_buy).toEqual(["pimiento-rojo"]);
+    expect(writes[0]).not.toMatch(/^have:/m);
   });
 
   it("does not write when nothing changes", async () => {

@@ -1,12 +1,16 @@
-# What's at home. Ids from food/ingredients/items.yaml.
-# Anything not in `have` is considered missing; staples are always available.
-updated: 2026-10-26T15:00:00-05:00
-have:
-  - arroz
-  - patata
-  - cebolla
-  - ajo
-  - huevo
-to_buy:
-  - pimiento-rojo
-  - nata
+# What's at home and what to buy. One entry per ingredient of food/ingredients/items.yaml (staples excluded).
+# have: true = lo tengo en casa · to_buy: true = está en la lista de la compra.
+updated: 2026-10-30T08:35:03-05:00
+items:
+  # Verduras y hortalizas
+  patata: { have: true, to_buy: false }
+  cebolla: { have: true, to_buy: false }
+  ajo: { have: true, to_buy: false }
+  tomate: { have: false, to_buy: false }
+  pimiento-rojo: { have: false, to_buy: true }
+  # Huevos y lácteos
+  huevo: { have: true, to_buy: false }
+  leche: { have: false, to_buy: false }
+  nata: { have: false, to_buy: true }
+  # Cereales y harinas
+  arroz: { have: true, to_buy: false }

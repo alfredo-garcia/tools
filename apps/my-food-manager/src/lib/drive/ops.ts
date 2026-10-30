@@ -34,8 +34,8 @@ export async function runOps(ops: RawOp[], deps: OpsDeps): Promise<OpsResponse> 
 
     let applied;
     try {
-      const known = new Set(Object.keys(parseIngredients(await deps.source.readText(catalogFile))));
-      applied = applyPantryOps(await deps.source.readText(pantryFile), ops, known, deps.now());
+      const catalog = parseIngredients(await deps.source.readText(catalogFile));
+      applied = applyPantryOps(await deps.source.readText(pantryFile), ops, catalog, deps.now());
     } catch (e) {
       if (e instanceof PantryParseError) throw new ApiError("PANTRY_INVALID", 500, e.message);
       throw e;

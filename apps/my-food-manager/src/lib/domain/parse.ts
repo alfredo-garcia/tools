@@ -1,7 +1,7 @@
 import { parse as parseYaml } from "yaml";
 import {
   ingredientCatalogEntrySchema,
-  pantrySchema,
+  pantryFileSchema,
   recipeSchema,
   reviewsSchema,
   type IngredientCatalogEntry,
@@ -79,10 +79,17 @@ export function parseIngredients(text: string): Record<string, IngredientCatalog
   return out;
 }
 
+/** Pantry schema 2: `items` maps each ingredient id to `{ have, to_buy }`. */
 export function parsePantry(text: string): Pantry {
-  const r = pantrySchema.safeParse(yaml(text) ?? {});
-  if (!r.success) throw new ParseError("Despensa inválida");
-  return r.data;
+  const r = pantryFileSchema.safeParse(yaml(text) ?? {});
+  if (!r.success) throw new ParseError("Despensa inválida: falta `items` (esquema 2)");
+  const have: string[] = [];
+  const toBuy: string[] = [];
+  for (const [id, entry] of Object.entries(r.data.items)) {
+    if (entry?.have === true) have.push(id);
+    if (entry?.to_buy === true) toBuy.push(id);
+  }
+  return { updated: r.data.updated, have, to_buy: toBuy };
 }
 
 export function parseReviews(text: string): Reviews {

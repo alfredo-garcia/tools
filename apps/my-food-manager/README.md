@@ -67,7 +67,7 @@ Never commit the key file or `.env.local` (both are gitignored by default; keep 
 
 ## Writing to Drive (feature my-food-manager/007)
 
-- The Despensa screen has two switches per ingredient, "Tengo" (`have`) and "Comprar" (`to_buy`) in `pantry/pantry.yaml`.
+- The Despensa screen has two switches per ingredient, "Tengo" (`have`) and "Comprar" (`to_buy`), stored per ingredient under `items` in `pantry/pantry.yaml` (pantry schema 2 of `food/_system/schema.md`). Staples are never listed there, so their switches are locked. Only the changed lines of the file are edited, so the skill's layout and comments stay.
 - Each switch change becomes an operation (`pantry.setHave` / `pantry.setBuy`) stored in an outbox in IndexedDB, shown on screen at once, and sent to `POST /api/ops` with the header `x-app-key`.
 - The server reads the latest pantry file, applies the operations, checks the file's modified time and writes it once (one retry on a conflict). Comments and unknown fields in the file are kept and `updated` is set with the `-05:00` offset.
 - Without connection, or without a valid key, changes stay in the outbox and are sent later, in order. Retries wait 2, 5, 15 and then 60 seconds.

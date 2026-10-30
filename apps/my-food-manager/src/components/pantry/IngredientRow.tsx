@@ -45,6 +45,7 @@ export function IngredientRow({
         label="Comprar"
         tone="primary"
         checked={toBuy}
+        disabled={item.staple}
         ariaLabel={`Comprar ${item.name}`}
         onChange={() => onFlip(item.id, "pantry.setBuy")}
       />

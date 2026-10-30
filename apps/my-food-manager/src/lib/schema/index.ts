@@ -91,6 +91,21 @@ export const ingredientCatalogEntrySchema = z.looseObject({
 });
 export type IngredientCatalogEntry = z.infer<typeof ingredientCatalogEntrySchema>;
 
+/** `pantry/pantry.yaml`, schema 2: one `{ have, to_buy }` entry per non-staple ingredient. */
+export const pantryFileSchema = z.looseObject({
+  updated: optionalString,
+  items: z.record(
+    z.string(),
+    z
+      .looseObject({
+        have: z.boolean().nullish(),
+        to_buy: z.boolean().nullish(),
+      })
+      .nullish(),
+  ),
+});
+
+/** The pantry as the app uses it: ids at home and ids on the shopping list, derived from the file's `items`. */
 export const pantrySchema = z.looseObject({
   updated: optionalString,
   have: z

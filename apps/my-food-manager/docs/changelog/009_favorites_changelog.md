@@ -1,7 +1,7 @@
 # Changelog: Favorites
 
 > Project: `my-food-manager`
-> Merged: not yet; documented on the feature branch `my-food-manager/009-favorites` before the merge, as `CLAUDE.md` and `tech_standards.md` §11 require
+> Merged: commit `ea2833f5` into `main` (merge of `my-food-manager/009-favorites`), confirmed by user on 2026-10-30; documented on the feature branch before the merge, as `CLAUDE.md` and `tech_standards.md` §11 require
 > Source PRD: `009_favorites_prd.md`
 > Source UX Flow: `009_favorites_ux_flow.md`
 > Master doc file(s) touched: `docs/functional-spec.md` (Overview, Domain Map, Navigation Structure, Screen & Flow Index, Cross-Cutting Concepts, Shared Data Entities, Glossary, Recent Changes; new domain `profile`; SCR-library-list and SCR-recipe-detail; CMP-pending-changes and CMP-write-key; domain `navigation`: SCR-profile placeholder removed)

@@ -41,6 +41,9 @@
 | `EmptyState` | Feedback/Overlays | Web | Beta | `components/feedback/EmptyState` |
 | `TmpComingSoon` | Feedback/Overlays | Web | Beta (temporary) | `components/feedback/TmpComingSoon` |
 | `TmpResultGroup` | Data Display | Web | Beta (temporary) | `components/recipes/TmpResultGroup` |
+| `TmpSwitch` | Inputs | Web | Beta (temporary) | `components/inputs/TmpSwitch` |
+| `TmpSegmentedControl` | Inputs | Web | Beta (temporary) | `components/inputs/TmpSegmentedControl` |
+| `TmpPendingChanges` | Feedback/Overlays | Web | Beta (temporary) | `components/feedback/TmpPendingChanges` |
 | `PersonPicker` | Inputs | Web | Beta | `components/inputs/PersonPicker` |
 
 ## 3. Component Entries
@@ -173,16 +176,36 @@
 - **Description:** centered placeholder for a section without content: a 72px circle with the section icon, the title (`heading-1`) and "Próximamente" in `color.text.muted`. No actions.
 - **Props:** `icon: LucideIcon`, `title: string`.
 
+### TmpSwitch
+- **Category:** Inputs. **Import:** `components/inputs/TmpSwitch`. **Status:** Beta, temporary (feature `my-food-manager/007`).
+- **Description:** labeled on/off switch. The state shows in the knob position, a check mark and the label weight, not only in color.
+- **Props:** `label`, `checked`, `tone: "success" | "primary"`, `disabled?`, `ariaLabel`, `onChange()`.
+- **Guidance:** formalize as `Switch` when a second feature reuses it.
+
+### TmpSegmentedControl
+- **Category:** Inputs. **Import:** `components/inputs/TmpSegmentedControl`. **Status:** Beta, temporary (feature `my-food-manager/007`).
+- **Description:** exclusive choice among a few options, rendered as a tab list or as a radio group.
+- **Props:** `kind: "tabs" | "radio"`, `ariaLabel`, `items: {value, label}[]`, `value`, `onChange(value)`.
+- **Guidance:** formalize as `SegmentedControl` when reused.
+
+### TmpPendingChanges
+- **Category:** Feedback/Overlays. **Import:** `components/feedback/TmpPendingChanges`. **Status:** Beta, temporary (feature `my-food-manager/007`).
+- **Description:** "N cambios pendientes" bar; offers "Introducir clave" when the device has no write key.
+- **Props:** `count`, `keyNeeded`, `onEnterKey()`.
+- **Guidance:** formalize alongside `SyncBadge` when other features write to Drive.
+
 ### PersonPicker
 - **Props:** `people: {id, name}[]`, `current`, `onChange`. Round avatar button in the header opening a `Sheet` with the household members; stores choice in the device.
 
 ## 4. Temporary / Not-Yet-Formalized Components
 `TmpComingSoon` (feature `my-food-manager/006`) is registered above and is removed when Plan, Despensa and Perfil have their own content. `TmpResultGroup` (feature `my-food-manager/005`) is registered above and stays temporary until the grouped-list pattern is reused. The components introduced by feature `my-food-manager/002` (recipe detail) are registered above; the prototype names `TmpRecipeDetailLayer`, `TmpDetailBar`, `TmpCollapsibleSection`, `TmpStaticChip` and the info/ingredient/step lists in its UX Flow map to `DetailLayer`, `CollapsibleSection`, `TagChip` and the `RecipeDetail` sections.
 
+Feature `my-food-manager/007` (pantry) added `TmpSwitch`, `TmpSegmentedControl` and `TmpPendingChanges`, registered above. Its write-key dialog, `KeyDialog` (`components/pantry/KeyDialog`), is an own overlay because `Sheet` is registered but not implemented yet; it should become a `Sheet` when `Sheet` is built.
+
 ## 5. Web / React Native Parity Notes
 Not applicable (web only).
 
 ## 6. Versioning
-- **Last updated:** 2026-10-29 (recipe search of feature `my-food-manager/005`: `SearchInput` as implemented, `TmpResultGroup`; earlier: main navigation of feature `my-food-manager/006`: `AppFrame`, `BottomNav` / `SideNav` rewritten, `TmpComingSoon`, `AppShell` corrected; earlier: responsive layout: DetailLayer modes, RecipeLibrary, RecipeLink props; added FilterChip, FilterOptions, RecipeFilters, useListReorder; recipe detail components; `RecipePhoto` props corrected to the implementation)
+- **Last updated:** 2026-10-30 (pantry switches of feature `my-food-manager/007`: `TmpSwitch`, `TmpSegmentedControl`, `TmpPendingChanges`; earlier: 2026-10-29 (recipe search of feature `my-food-manager/005`: `SearchInput` as implemented, `TmpResultGroup`; earlier: main navigation of feature `my-food-manager/006`: `AppFrame`, `BottomNav` / `SideNav` rewritten, `TmpComingSoon`, `AppShell` corrected; earlier: responsive layout: DetailLayer modes, RecipeLibrary, RecipeLink props; added FilterChip, FilterOptions, RecipeFilters, useListReorder; recipe detail components; `RecipePhoto` props corrected to the implementation))
 - **Owner:** Al
 - Initial registry, all entries Beta pending implementation.

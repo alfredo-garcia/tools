@@ -92,7 +92,7 @@ prototypes/              # scratch (gitignored)
 ## 9. Security & Privacy Baseline
 - Secrets live only in Vercel environment variables (`GOOGLE_SERVICE_ACCOUNT_JSON`, `GOOGLE_DRIVE_FOLDER_ID`, `APP_WRITE_KEY`) and a gitignored `.env.local`; never committed, never sent to the client.
 - The service account has access to the single `food` folder only.
-- Write operations require header `x-app-key` matching `APP_WRITE_KEY`; each device stores the key once (entered at first launch). Reads are open. *Rationale: no logins, but a public URL with an open write endpoint to your Drive is cheap to prevent.*
+- Write operations require header `x-app-key` matching `APP_WRITE_KEY`; each device stores the key once, asked at the first change it makes (not at launch); until then, changes wait in the outbox. A rejected key is asked for again and changes stay pending. Reads are open. *Rationale: no logins, but a public URL with an open write endpoint to your Drive is cheap to prevent.*
 - Data is low sensitivity (personal food data). Dependencies are kept current (`npm audit` reviewed before deploys).
 - The "who am I" household choice is a client-side preference, not a security boundary.
 

@@ -33,8 +33,8 @@
 
 ## Phase 0
 - product_vision: approved (2026-10-29)           # v2, stage 2
-- tech_foundations: review needed (2026-10-29)   # vision v2 adds plan/pantry data and writes
-- tech_foundations_waiver: waived (2026-10-29): PRD of my-food-manager/007 only, chosen by the user; the write path is already covered by tech_standards §5/§9 and ADR 001/002, and only the Drive scope changes. tech_foundations stays "review needed"; the PRD is provisional until tech-lead re-checks.
+- tech_foundations: approved (2026-10-30)   # re-checked for plan/pantry data and writes (vision v2); §5 pantry schema 2, §9 write key at first change
+- tech_foundations_waiver: waived (2026-10-29): PRD of my-food-manager/007 only, chosen by the user; the write path is already covered by tech_standards §5/§9 and ADR 001/002, and only the Drive scope changes. Resolved 2026-10-30: tech_foundations re-checked and approved.
 - ui_foundations: approved (2026-10-29)           # ui_standards §9 updated for feature 006
 
 ## Notes

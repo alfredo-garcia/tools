@@ -35,8 +35,7 @@ Despensa now has two tabs, "Despensa" and "Lista de compra", with search, a fami
 
 ## Open Questions / Follow-Ups
 
-1. tech-lead must re-check `tech_foundations` (still "review needed"; the PRD was provisional under a waiver) and reflect in `tech_standards.md` §9 that the write key is asked at the first change.
-2. `Switch`, `SegmentedControl` and the pending-changes indicator are temporary (`Tmp`) components; the registry should list them when formalized. The kit has no `Sheet`, so `KeyDialog` is an own overlay.
-3. Not verified in production: saving to real Drive, offline use on an installed PWA, and two devices at once.
-4. `APP_WRITE_KEY` must be set in Vercel (Production and Preview) and the Drive folder shared as Editor with the service account.
-5. Sub-addresses for the two tabs under `/ingredients` are undecided.
+1. Resolved 2026-10-30: `tech_foundations` re-checked and approved; `tech_standards.md` §9 now says the write key is asked at the first change, and §5 records pantry schema 2.
+2. Resolved 2026-10-30: `TmpSwitch`, `TmpSegmentedControl` and `TmpPendingChanges` are registered in `ui_kit_registry.md` as temporary components. `KeyDialog` is an own overlay because `Sheet` is not implemented yet; it should become a `Sheet` then.
+3. Saving to Drive was verified by the user. Not verified: offline use on an installed PWA and two devices at once.
+4. Sub-addresses for the two tabs under `/ingredients` are undecided.

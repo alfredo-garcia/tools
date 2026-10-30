@@ -1,7 +1,7 @@
 # Changelog: Share Recipe
 
 > Project: `my-food-manager`
-> Merged: documented on the feature branch `my-food-manager/010-share-recipe` before the merge, as `CLAUDE.md` and `tech_standards.md` §11 require; merge commit recorded below
+> Merged: documented on the feature branch `my-food-manager/010-share-recipe` before the merge, as `CLAUDE.md` and `tech_standards.md` §11 require; merge commit `3360cbf0`, confirmed by user on 2026-10-30
 > Source PRD: `010_share-recipe_prd.md`
 > Source UX Flow: `010_share-recipe_ux_flow.md`
 > Master doc file(s) touched: `docs/functional-spec.md` (Overview, Screen & Flow Index, Glossary, Recent Changes; domain `recipes`: SCR-recipe-detail, new CMP-share-button and FLW-share-recipe)

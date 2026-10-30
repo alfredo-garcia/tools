@@ -33,7 +33,7 @@ Compared with memory and manual lists: browse by photo with quick filters instea
 ### Stage 2: connected day-to-day (current)
 - **Hypothesis:** if Al can plan what to eat each day on a calendar, get a shopping list that follows that plan, and keep track of what is in the pantry, he will run his daily food routine from the app.
 - **Direction (each item becomes its own feature, defined with product-manager):**
-  - **Plan:** a calendar where Al organizes which recipe he will use for lunch and for dinner each day (new data structure, replacing the old "meal-plan calendar" exclusion). Its details (editing, who can edit, how recipes are picked) are defined in its own feature, later.
+  - **Plan:** a calendar where Al organizes which recipes he will use for breakfast, lunch and dinner each day (new data structure, replacing the old "meal-plan calendar" exclusion). Its details (editing, who can edit, how recipes are picked) are defined in its own feature, later.
   - **Despensa:** one section, tabs for the pantry and the shopping list. The pantry records what is at home, without quantities (have / do not have); the shopping list is generated from the plan minus the pantry, grouped for the store, with tick-off; bought items update the pantry.
   - **Perfil:** the person (household picker), favorites, ratings, comments and the "curated" flag, per person and written back to Drive.
   - Inspiration (can cook now, favorites, surprise me) and picking recipes feed the plan.
@@ -55,7 +55,7 @@ Compared with memory and manual lists: browse by photo with quick filters instea
 | 3 | Recipe detail / cook view | Al, partner | MVP | Must | Done (002) | |
 | 4 | Main navigation | Al, partner | 2 | Must | Done (006) | Bottom bar and sidebar; Plan, Despensa, Perfil are placeholders |
 | 5 | Inspiration ("what to cook") | Al | 2 | Should | Pending | Can-cook-now, favorites, surprise me |
-| 6 | Meal-plan calendar (Plan) | Al | 2 | Must | Pending | Recipe for lunch and dinner each day; own storage domain in Drive linking plan, meal time and day |
+| 6 | Meal-plan calendar (Plan) | Al | 2 | Must | Pending | Recipes for breakfast, lunch and dinner each day (several per meal); own storage domain in Drive linking plan, meal time and day |
 | 7 | Pantry (Despensa) | Al | 2 | Must | Pending | Have / do not have, no quantities (as the schema already has: have/to_buy) |
 | 8 | Shopping list from plan minus pantry (Despensa) | Al | 2 | Must | Pending | Grouped by ingredient family, tick-off, bought updates pantry |
 | 9 | Profile: person, favorites, ratings, comments, curated (Perfil) | Al, partner | 2 | Should | Pending | Per-person reviews file; includes the household picker |
@@ -99,6 +99,6 @@ Compared with memory and manual lists: browse by photo with quick filters instea
 - What is the offline write-sync and conflict policy? Owner: tech-lead, in the architecture.
 - Which Drive credential type fits best (service account vs token)? Owner: tech-lead.
 - Decided 2026-10-29: the pantry has no quantities (have / do not have). Consequence: "can cook now" and the shopping list compare ingredients by presence only. Owner of the resulting rules: product-manager, at the inspiration and shopping-list features.
-- Decided 2026-10-29: the plan organizes which recipe is used for lunch and for dinner each day. Its details (who can edit it, how recipes are picked) are open until the plan feature.
-- Decided 2026-10-29: the plan lives in its own storage domain that relates plan, meal time (lunch or dinner) and day, instead of inside the recipes. The schema is extended in the plan feature. Owner: tech-lead with the food-manager skill.
+- Decided 2026-10-29, revised 2026-10-30: the plan organizes which recipes are used for breakfast, lunch and dinner each day (three meal times, several recipes per meal). Its details (who can edit it, how recipes are picked) are open until the plan feature.
+- Decided 2026-10-29: the plan lives in its own storage domain that relates plan, meal time (breakfast, lunch or dinner) and day, instead of inside the recipes. The schema is extended in the plan feature. Owner: tech-lead with the food-manager skill.
 - What write rules does the plan file need, given that it can be edited from two devices? Owner: tech-lead, at the plan feature.

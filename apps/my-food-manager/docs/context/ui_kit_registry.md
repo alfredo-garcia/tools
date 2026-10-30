@@ -36,7 +36,7 @@
 | `ChecklistItem` | Data Display | Web | Beta | `components/lists/ChecklistItem` |
 | `AisleHeader` | Data Display | Web | Beta | `components/lists/AisleHeader` |
 | `Sheet` | Feedback/Overlays | Web | Beta | `components/overlays/Sheet` |
-| `Toast` | Feedback/Overlays | Web | Beta | `components/overlays/Toast` |
+| `Toast` | Feedback/Overlays | Web | Beta | `components/feedback/Toast` |
 | `SyncBadge` | Feedback/Overlays | Web | Beta | `components/feedback/SyncBadge` |
 | `EmptyState` | Feedback/Overlays | Web | Beta | `components/feedback/EmptyState` |
 | `TmpComingSoon` | Feedback/Overlays | Web | Beta (temporary) | `components/feedback/TmpComingSoon` |
@@ -164,12 +164,12 @@
 - **AisleHeader props:** `label: string` (ingredient family label). Caption style, uppercase.
 
 ### Sheet
-- **Props:** `open`, `onClose`, `title`, `children`. Bottom sheet on mobile (top radius `radius.lg`), centered modal on desktop. Traps focus, closes on Escape/backdrop.
+- **Props:** `open`, `onClose`, `title`, `subtitle?`, `size?: "auto" | "tall"`, `children`. Bottom sheet below 640px (top radius `radius.lg`), centered modal (max width 520px) from 640px, including large windows. `subtitle` is a `caption` line under the title; `size="tall"` fills 88% of the window height on small and min(640px, 100%) on larger ones (recipe picker). Traps focus, locks page scroll, closes on Escape/backdrop, returns focus to the opener. Introduced in feature `my-food-manager/008` (spec only until built).
 
 ### Toast / SyncBadge / EmptyState
-- **Toast:** `message`, `tone?: "success" | "error"`; auto-dismiss, announced politely.
-- **SyncBadge props:** `status: "offline" | "pending" | "synced"`, `pendingCount?: number`. Offline/pending use `color.warning.500`, synced uses lime.
-- **EmptyState props:** `emoji`, `title`, `hint?`, `action?: {label, onClick}`.
+- **Toast:** `message`; announced politely (`role="status"`). The screen that shows it dismisses it after 4 s.
+- **SyncBadge props:** `status: "idle" | "syncing" | "offline" | "error"`, `syncedAt?: string` (shows "Sincronizado · hace X"). Offline and error use `color.warning.500`, idle uses lime.
+- **EmptyState props:** `emoji`, `title`, `hint?`, `action?: ReactNode` (usually a `Button`).
 
 ### TmpComingSoon
 - **Category:** Feedback/Overlays. **Import:** `components/feedback/TmpComingSoon`. **Status:** Beta, temporary until each section has its own content.

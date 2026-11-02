@@ -197,24 +197,25 @@ def login_and_open_programar(page):
     page.fill("#vUSUCOD", os.environ["SMART_USER"])
     page.fill("#vPASS", os.environ["SMART_PASS"])
     page.click("#BUTTON1")
-    page.wait_for_url("**/wv0480.aspx**", timeout=30000)
+    # Tras el clic el portal muestra un popup informativo (msje.aspx, #gxp0_ifrm) y no navega
+    # hasta cerrarlo con su botón Regresar.
+    try:
+        page.wait_for_selector("#gxp0_ifrm", state="visible", timeout=15000)
+        info = page.query_selector("#gxp0_ifrm").content_frame()
+        info.wait_for_selector("input[name=BUTTON1]", timeout=10000)
+        info.click("input[name=BUTTON1]")
+        page.wait_for_selector("#gxp0_ifrm", state="detached", timeout=10000)
+        log("Popup informativo cerrado")
+    except Exception:
+        pass  # sin popup: se sigue
+    page.wait_for_url(re.compile(r"wv0480\.aspx"), wait_until="commit", timeout=30000)
     log("Login OK")
-    # Popup informativo opcional: lo cerramos si aparece
-    page.wait_for_timeout(1500)
-    close = page.locator("[id^=gxp][id$=_cls], .PopupHeaderButton, img[src*='close']").locator("visible=true")
-    if close.count():
-        try:
-            close.first.click(timeout=3000)
-        except Exception:
-            pass
-    menu = page.get_by_text("Programación", exact=True).locator("visible=true")
-    if not menu.count():
-        menu = page.get_by_text("Programación", exact=False).locator("visible=true")
-    menu.first.click()
-    page.wait_for_url("**/wv0527.aspx**", timeout=30000)
+    # El menú son imágenes sin texto: "Programación" es Resources/PROGRAMACION.png
+    page.click("img[src*='PROGRAMACION']", timeout=30000)
+    page.wait_for_url(re.compile(r"wv0527\.aspx"), wait_until="commit", timeout=30000)
     # Seleccionar el (único) plan de estudios y pulsar Iniciar
     page.wait_for_selector("#W0030Grid1ContainerTbl tr", timeout=20000)
-    page.locator("#W0030Grid1ContainerTbl tr").nth(1).locator("td").last.click()
+    page.locator("#W0030Grid1ContainerTbl tr").nth(1).locator("td").locator("visible=true").last.click()
     page.click("#W0030BUTTON1")
     return get_prog(page)
 

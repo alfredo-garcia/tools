@@ -23,7 +23,7 @@ Si la siguiente clase pendiente es un **QUIZ**, la agenda y no reserva más ese 
 
 ## Detalles del portal
 
-- Login: `#vUSUCOD`, `#vPASS`, `#BUTTON1` → `wv0480.aspx` → menú "Programación" → `wv0527.aspx`
+- Login: `#vUSUCOD`, `#vPASS`, `#BUTTON1` → popup informativo `#gxp0_ifrm` (msje.aspx, cerrar con su BUTTON1) → `wv0480.aspx` → menú (imagen `PROGRAMACION.png`) "Programación" → `wv0527.aspx`
   (fila del plan en `#W0030Grid1ContainerTbl`, botón `#W0030BUTTON1` Iniciar).
 - Popup `#gxp0_ifrm` (wv0613): filtro `#vTPEAPROBO` (2 = Pendientes, 3 = Programadas), grilla `#Grid1ContainerTbl`
   (col 5 descripción, 10 estado, 11 fecha `dd/mm/yy HH:MM`), botones BUTTON1 Asignar / BUTTON2 Cancelar / BUTTON3 Regresar.
@@ -45,10 +45,14 @@ Si la siguiente clase pendiente es un **QUIZ**, la agenda y no reserva más ese 
 
 ## Local
 
+Requiere Python 3.12 (con 3.13 `greenlet==3.0.3` no compila). Copia `.env.example` a `.env` (ignorado por git) y rellénalo:
+
 ```bash
-pip install -r requirements.txt && python -m playwright install chromium
-SMART_USER=... SMART_PASS=... DRY_RUN=1 python booker.py
+uv venv -p 3.12 .venv && uv pip install -r requirements.txt -p .venv/bin/python && .venv/bin/python -m playwright install chromium
+set -a && . ./.env && set +a && DRY_RUN=1 SHOTS_DIR=shots .venv/bin/python booker.py
 ```
+
+`TELEGRAM_CHAT_ID` es el id de **tu** usuario (no el del bot); si no, Telegram responde 403.
 
 ## Pendiente: v2 (NO implementada)
 

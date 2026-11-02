@@ -28,10 +28,10 @@ flowchart LR
 ## 4. Main Building Blocks
 | Block | Responsibility |
 |---|---|
-| `lib/drive` | List and read the folder, write pantry/plan/reviews/curated with a modified-time check |
+| `lib/drive` | List and read the folder, write pantry/plan/reviews/curated and recipe `status` (frontmatter only, ADR 004) with a modified-time check |
 | `api/snapshot` | Build one normalized JSON of recipes, ingredients, pantry, reviews, vocabularies |
 | `api/photo` | Proxy recipe photos from Drive with long cache headers |
-| `api/ops` | Apply batches of intent operations (pantry, plan, reviews, curated), grouped per target file |
+| `api/ops` | Apply batches of intent operations (pantry, plan, reviews, curated, rating status), grouped per target file |
 | `lib/domain` | Filters, search, "can cook now", shopping-list computation (pure, tested) |
 | `lib/offline` | Snapshot cache, op outbox, replay on reconnect |
 | UI (browse, detail, picks, list, pantry, reviews) | The MVP capabilities of Vision §5 |
@@ -49,7 +49,7 @@ Vercel Hobby, project root `apps/my-food-manager`, production on merge to `main`
 
 ## 8. Cross-Cutting Concerns
 - **Security:** no logins; Drive credential only on the server; writes gated by one shared key; service account limited to the one folder.
-- **Conflicts:** operations are applied against the latest file with a modified-time check and one retry (ADR 001); last write wins per field for pantry/reviews; the plan merges per entry (adds append, removes of an absent entry are no-ops); multi-file batches are not atomic (ADR 003).
+- **Conflicts:** operations are applied against the latest file with a modified-time check and one retry (ADR 001); last write wins per field for pantry/reviews; the plan merges per entry (adds append, removes of an absent entry are no-ops); multi-file batches are not atomic (ADR 003); a rating and the `status: tried` it triggers are two writes, and re-sending the rating retries the status (ADR 004).
 - **Observability:** Vercel function logs only.
 - **Backups:** Drive file version history; the app never deletes files.
 
@@ -70,6 +70,7 @@ Vercel Hobby, project root `apps/my-food-manager`, production on merge to `main`
 | Offline model and write conflicts | IndexedDB snapshot plus intent-operation outbox, server-side merge | [001](adr/001_offline-first-with-operation-outbox.md) |
 | How the server reaches Drive | Service account with the folder shared to it, in env vars | [002](adr/002_drive-access-via-service-account.md) |
 | Meal plan storage and writes | Shared `plan/plan.yaml` created by food-manager, per-entry intent operations | [003](adr/003_meal-plan-storage.md) |
+| Ratings and recipe status writes | `review.setRating` op; server sets `status: tried` in the recipe frontmatter when it is rated | [004](adr/004_recipe-ratings-and-status-writes.md) |
 | Framework | Next.js on Vercel | none (low reversal cost) |
 
 ## 11. Risks & Open Questions

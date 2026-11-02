@@ -273,3 +273,77 @@ describe("runOps with favorite operations", () => {
     expect(source.writeText).not.toHaveBeenCalled();
   });
 });
+
+describe("runOps with rating operations", () => {
+  const rateOp = (id: string, recipe: string, value: number | null) => ({
+    id,
+    kind: "review.setRating",
+    recipe,
+    value,
+  });
+  const RECIPE = "recipes/items/09-desserts/bizcocho.md";
+
+  function setup(status: string | undefined, over: { failRecipe?: boolean } = {}) {
+    const extra: Record<string, string> = {};
+    const base = fixtureDrive().contents.get(RECIPE)!;
+    if (status)
+      extra[RECIPE] = base.replace("title: Bizcocho", `title: Bizcocho\nstatus: ${status}`);
+    const drive = fixtureDrive(extra);
+    const writes: { path: string; text: string }[] = [];
+    const source: FoodSource = {
+      list: async () => drive.files,
+      readText: drive.read,
+      readBytes: async () => new Uint8Array(),
+      writeText: vi.fn(async (f, text) => {
+        if (over.failRecipe && f.path === RECIPE) throw new DriveConflictError();
+        writes.push({ path: f.path, text });
+      }),
+    };
+    const deps = {
+      source,
+      list: async () => drive.files,
+      now: () => new Date("2026-11-02T15:00:00Z"),
+    };
+    return { deps, writes };
+  }
+
+  it("writes the rating and moves a to-try recipe to tried, reviews first", async () => {
+    const { deps, writes } = setup("to-try");
+    const r = await runOps([rateOp("1", "bizcocho", 4)], deps);
+    expect(writes.map((w) => w.path)).toEqual(["reviews/al.yaml", RECIPE]);
+    expect(writes[1].text).toContain("status: tried");
+    expect(r.reviews?.ratings).toEqual({ bizcocho: 4 });
+    expect(r.warnings).toBeUndefined();
+  });
+
+  it("does not touch a recipe that is already tried or has no status", async () => {
+    for (const status of ["tried", undefined]) {
+      const { deps, writes } = setup(status);
+      await runOps([rateOp("1", "bizcocho", 4)], deps);
+      expect(writes.map((w) => w.path)).toEqual(["reviews/al.yaml"]);
+    }
+  });
+
+  it("does not change the status when the rating is removed", async () => {
+    const { deps, writes } = setup("to-try");
+    await runOps([rateOp("1", "bizcocho", 4)], deps);
+    writes.length = 0;
+    const r = await runOps([rateOp("2", "bizcocho", null)], deps);
+    expect(writes.map((w) => w.path)).not.toContain(RECIPE);
+    expect(r.results[0].status).toBe("unchanged");
+  });
+
+  it("reports a warning, not a failure, when the status cannot be written", async () => {
+    const { deps, writes } = setup("discarded", { failRecipe: true });
+    const r = await runOps([rateOp("1", "bizcocho", 5)], deps);
+    expect(r.results[0].status).toBe("applied");
+    expect(r.warnings).toEqual(["status:bizcocho"]);
+    expect(writes.map((w) => w.path)).toEqual(["reviews/al.yaml"]);
+  });
+
+  it("retries the status when the same rating is sent again", async () => {
+    const { deps, writes } = setup("to-try");
+    await runOps([rateOp("1", "bizcocho", 4)], deps);
+    expect(writes.map((w) => w.path)).toEqual(["reviews/al.yaml", RECIPE]);
+  });
+});

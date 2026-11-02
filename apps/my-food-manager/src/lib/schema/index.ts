@@ -159,16 +159,26 @@ export interface PantryOp {
   value: boolean;
 }
 
-export const REVIEW_OP_KINDS = ["review.setFavorite"] as const;
+export const REVIEW_OP_KINDS = ["review.setFavorite", "review.setRating"] as const;
 export type ReviewOpKind = (typeof REVIEW_OP_KINDS)[number];
 
-/** One change to the household member's favorites, as the app sends it. */
-export interface ReviewOp {
+/** A favorite toggle for Al, as the app sends it. */
+export interface FavoriteOp {
   id: string;
-  kind: ReviewOpKind;
+  kind: "review.setFavorite";
   recipe: string;
   value: boolean;
 }
+
+/** A rating change for Al: 1 to 5 stars, or null to remove the rating (ADR 004). */
+export interface RatingOp {
+  id: string;
+  kind: "review.setRating";
+  recipe: string;
+  value: number | null;
+}
+
+export type ReviewOp = FavoriteOp | RatingOp;
 
 export const PLAN_OP_KINDS = ["plan.addRecipe", "plan.removeRecipe"] as const;
 export type PlanOpKind = (typeof PLAN_OP_KINDS)[number];
@@ -222,8 +232,16 @@ export const opsResponseSchema = z.object({
   plan: planSchema.optional(),
   /** Present when the batch had review operations. */
   reviews: z
-    .object({ user: z.string(), updated: z.string().optional(), favorites: z.array(z.string()) })
+    .object({
+      user: z.string(),
+      updated: z.string().optional(),
+      favorites: z.array(z.string()),
+      /** Al's valid ratings (recipe id → stars). */
+      ratings: z.record(z.string(), z.number()).optional(),
+    })
     .optional(),
+  /** Secondary writes that did not complete, e.g. `status:<recipe id>` (ADR 004). */
+  warnings: z.array(z.string()).optional(),
 });
 export type OpsResponse = z.infer<typeof opsResponseSchema>;
 

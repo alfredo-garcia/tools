@@ -34,7 +34,7 @@ export const LIBRARY_PATHS = {
   units: "_system/units.yaml",
 } as const;
 
-const RECIPE_PATH = /^recipes\/items\/[^/]+\/[^/]+\.md$/;
+export const RECIPE_PATH = /^recipes\/items\/[^/]+\/[^/]+\.md$/;
 const REVIEWS_PATH = /^reviews\/([^/]+)\.ya?ml$/;
 const PHOTO_PATH = /^recipes\/_attachments\/([^/]+)\.jpe?g$/i;
 

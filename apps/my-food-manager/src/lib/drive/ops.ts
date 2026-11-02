@@ -1,9 +1,10 @@
 import { ApiError } from "@/lib/api/errors";
 import { PantryParseError, applyPantryOps, type RawOp } from "@/lib/domain/pantry-ops";
 import { PlanParseError, applyPlanOps } from "@/lib/domain/plan-ops";
+import { markRecipeTried } from "@/lib/domain/recipe-status";
 import { REVIEWS_USER, ReviewParseError, applyReviewOps } from "@/lib/domain/review-ops";
 import { parseIngredients } from "@/lib/domain/parse";
-import { LIBRARY_PATHS, recipeIdsOf, type DriveFileRef } from "@/lib/domain/snapshot";
+import { LIBRARY_PATHS, RECIPE_PATH, recipeIdsOf, type DriveFileRef } from "@/lib/domain/snapshot";
 import type { OpResult, OpsResponse } from "@/lib/schema";
 import { freshListing, getSource, invalidateListing } from "./library";
 import { DriveConflictError, DriveReadError, type FoodSource } from "./types";
@@ -40,6 +41,8 @@ const REVIEWS_PATH = `reviews/${REVIEWS_USER}.yaml`;
 interface Group<T> {
   results: OpResult[];
   value: T | undefined;
+  /** Reviews only: recipes that were rated, whose status the server then moves to Probada. */
+  rated?: string[];
 }
 
 /** Reads the latest pantry, applies the operations, and writes it once; one retry on a conflict. */
@@ -118,7 +121,7 @@ async function runPlanGroup(
   throw conflict("El plan");
 }
 
-/** Same as the plan, for Al's `reviews/al.yaml` (favorites only). */
+/** Same as the plan, for Al's `reviews/al.yaml` (favorites and ratings). */
 async function runReviewsGroup(
   ops: RawOp[],
   deps: OpsDeps,
@@ -145,7 +148,7 @@ async function runReviewsGroup(
       if (e instanceof ReviewParseError) return rejectAll("REVIEWS_INVALID", e.message);
       throw e;
     }
-    const group = { results: applied.results, value: applied.reviews };
+    const group = { results: applied.results, value: applied.reviews, rated: applied.rated };
     if (!applied.changed) return group;
 
     try {
@@ -160,8 +163,34 @@ async function runReviewsGroup(
 }
 
 /**
+ * A rated recipe that is Por probar or Descartada becomes Probada (ADR 004). Each recipe file is written on its own
+ * with one retry; a failure is reported as a warning and never fails the batch, because the rating itself is saved
+ * and rating the recipe again retries the status.
+ */
+async function runRecipeStatusGroup(ids: string[], deps: OpsDeps): Promise<string[]> {
+  const warnings: string[] = [];
+  for (const id of ids) {
+    let done = false;
+    for (let attempt = 0; attempt < 2 && !done; attempt++) {
+      try {
+        const files = await deps.list();
+        const file = files.find((f) => RECIPE_PATH.test(f.path) && f.path.endsWith(`/${id}.md`));
+        if (!file) break;
+        const edited = markRecipeTried(await deps.source.readText(file), deps.now());
+        if (edited.changed) await deps.source.writeText(file, edited.text);
+        done = true;
+      } catch (e) {
+        if (!(e instanceof DriveConflictError) && !(e instanceof DriveReadError)) throw e;
+      }
+    }
+    if (!done) warnings.push(`status:${id}`);
+  }
+  return warnings;
+}
+
+/**
  * Applies a batch. Operations are grouped by file and each file is read, written and retried on its own;
- * the pantry and the favorites go first and the plan last, so a retry after a partial failure only repeats
+ * the pantry and the reviews go first, then the status of rated recipes, and the plan last, so a retry after a partial failure only repeats
  * idempotent changes (ADR 003). Results come back in the order of the request.
  */
 export async function runOps(ops: RawOp[], deps: OpsDeps): Promise<OpsResponse> {
@@ -180,6 +209,10 @@ export async function runOps(ops: RawOp[], deps: OpsDeps): Promise<OpsResponse> 
     const group = await runReviewsGroup(reviewOps, deps);
     group.results.forEach((r) => byId.set(r.id, r));
     response.reviews = group.value;
+    if (group.rated && group.rated.length > 0) {
+      const warnings = await runRecipeStatusGroup(group.rated, deps);
+      if (warnings.length > 0) response.warnings = warnings;
+    }
   }
   if (planOps.length > 0) {
     const group = await runPlanGroup(planOps, deps);

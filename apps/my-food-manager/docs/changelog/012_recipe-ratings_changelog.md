@@ -1,7 +1,7 @@
 # Changelog: Recipe Ratings
 
 > Project: `my-food-manager`
-> Merged: documented on the feature branch `my-food-manager/012-recipe-ratings` before the merge, as `CLAUDE.md` and `tech_standards.md` §11 require; not merged yet
+> Merged: documented on the feature branch `my-food-manager/012-recipe-ratings` before the merge, as `CLAUDE.md` and `tech_standards.md` §11 require; merge commit `91a10223`, confirmed by user on 2026-11-02
 > Source PRD: `012_recipe-ratings_prd.md`
 > Source UX Flow: `012_recipe-ratings_ux_flow.md`
 > Master doc file(s) touched: `docs/functional-spec.md` (Overview, Domain Map, Screen & Flow Index, Writes, Data entities, Glossary, Recent Changes; domain `library`: SCR-library-list; `recipes`: SCR-recipe-detail, CMP-recipe-filters, new CMP-rating-stars, FLW-filter-recipes, new FLW-rate-recipe; `profile`: Overview, SCR-profile, FLW-toggle-favorite; `plan`: SCR-plan)

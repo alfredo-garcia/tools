@@ -5,12 +5,14 @@ import { useLayout } from "@/components/layout/use-layout";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { Button } from "@/components/inputs/Button";
 import { FavoriteButton } from "@/components/recipes/FavoriteButton";
+import { RatingStars } from "@/components/recipes/RatingStars";
 import { RecipePhoto } from "@/components/recipes/RecipePhoto";
 import { ShareButton } from "@/components/recipes/ShareButton";
 import { Toast } from "@/components/feedback/Toast";
 import { findRecipe } from "@/lib/domain/recipe-detail";
 import { useFavorites } from "@/lib/offline/use-favorites";
 import { useLibrary } from "@/lib/offline/use-library";
+import { useRatings } from "@/lib/offline/use-ratings";
 import type { Library, Recipe } from "@/lib/schema";
 import { InfoSection } from "./InfoSection";
 import { IngredientsSection } from "./IngredientsSection";
@@ -23,6 +25,20 @@ import { useRecipeShare } from "./use-recipe-share";
 function RecipeContent({ recipe, library }: { recipe: Recipe; library: Library }) {
   const { favorites, toggle } = useFavorites();
   const pressed = favorites.has(recipe.id);
+  const { ratings, rate } = useRatings();
+  const stars = ratings.get(recipe.id);
+  const rating = (
+    <div className="flex flex-wrap items-center gap-2">
+      <RatingStars
+        value={stars ?? 0}
+        onChange={(n) => rate(recipe.id, n)}
+        recipeTitle={recipe.title}
+      />
+      <span aria-live="polite" className="text-sm font-semibold text-text-muted">
+        {stars === undefined ? "Sin rating" : `${stars} de 5`}
+      </span>
+    </div>
+  );
   const { share, busy, notice } = useRecipeShare(recipe);
   return (
     <div className="detail-grid mx-auto w-full max-w-3xl pb-10">
@@ -34,14 +50,17 @@ function RecipeContent({ recipe, library }: { recipe: Recipe; library: Library }
           className="detail-photo aspect-video w-full"
         />
         {/* Medium and large windows: the labeled button under the photo (the title lives in the layer bar). */}
-        <div className="flex flex-wrap gap-2 px-4 pt-3 group-data-[detail-mode=fullscreen]:hidden group-data-[detail-mode=panel]:px-0">
-          <FavoriteButton
-            pressed={pressed}
-            onToggle={() => toggle(recipe.id)}
-            recipeTitle={recipe.title}
-            label={pressed ? "Quitar de favoritos" : "Añadir a favoritos"}
-          />
-          <ShareButton onShare={share} busy={busy} recipeTitle={recipe.title} label="Compartir" />
+        <div className="px-4 pt-3 group-data-[detail-mode=fullscreen]:hidden group-data-[detail-mode=panel]:px-0">
+          <div className="-ml-2.5 mb-2">{rating}</div>
+          <div className="flex flex-wrap gap-2">
+            <FavoriteButton
+              pressed={pressed}
+              onToggle={() => toggle(recipe.id)}
+              recipeTitle={recipe.title}
+              label={pressed ? "Quitar de favoritos" : "Añadir a favoritos"}
+            />
+            <ShareButton onShare={share} busy={busy} recipeTitle={recipe.title} label="Compartir" />
+          </div>
         </div>
       </div>
       <div className="detail-sections px-4 pt-4">
@@ -59,6 +78,9 @@ function RecipeContent({ recipe, library }: { recipe: Recipe; library: Library }
             recipeTitle={recipe.title}
           />
           <ShareButton onShare={share} busy={busy} recipeTitle={recipe.title} />
+        </div>
+        <div className="-ml-2.5 group-data-[detail-mode=modal]:hidden group-data-[detail-mode=panel]:hidden">
+          {rating}
         </div>
         <InfoSection recipe={recipe} library={library} />
         <IngredientsSection recipe={recipe} library={library} />

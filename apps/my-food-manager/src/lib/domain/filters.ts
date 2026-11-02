@@ -1,7 +1,8 @@
 import type { Library, Recipe, RecipeStatus } from "@/lib/schema";
+import type { RatedRecipe } from "./ratings";
 
 export type FilterKey =
-  "category" | "time" | "diet" | "cuisine" | "difficulty" | "protein" | "status";
+  "category" | "time" | "diet" | "cuisine" | "difficulty" | "protein" | "status" | "rating";
 
 export const FILTERS: { key: FilterKey; label: string }[] = [
   { key: "category", label: "Categoría" },
@@ -11,6 +12,7 @@ export const FILTERS: { key: FilterKey; label: string }[] = [
   { key: "difficulty", label: "Dificultad" },
   { key: "protein", label: "Proteína" },
   { key: "status", label: "Estado" },
+  { key: "rating", label: "Rating" },
 ];
 
 export type FilterState = Partial<Record<FilterKey, string>>;
@@ -30,6 +32,16 @@ export const DEFAULT_FILTER_STATE: FilterState = { status: "tried" };
 /** Recipes that may be picked for the plan: everything but the discarded ones. */
 export const withoutDiscarded = (recipes: Recipe[]): Recipe[] =>
   recipes.filter((r) => recipeStatus(r) !== "discarded");
+
+/** Rating options: "N+" matches Al's rating of N stars or more, "5" exactly five, "none" the unrated ones. */
+export const RATING_OPTIONS = [
+  { value: "1", label: "1+ ★" },
+  { value: "2", label: "2+ ★" },
+  { value: "3", label: "3+ ★" },
+  { value: "4", label: "4+ ★" },
+  { value: "5", label: "5 ★" },
+  { value: "none", label: "Sin rating" },
+];
 
 export interface FilterOption {
   value: string;
@@ -68,6 +80,12 @@ function recipeValues(recipe: Recipe, key: FilterKey): string[] {
       return recipe.difficulty ? [recipe.difficulty] : [];
     case "status":
       return [recipeStatus(recipe)];
+    case "rating": {
+      const stars = (recipe as RatedRecipe).userRating;
+      return stars === undefined
+        ? ["none"]
+        : RATING_OPTIONS.filter((o) => o.value !== "none" && +o.value <= stars).map((o) => o.value);
+    }
     case "time": {
       const min = totalMinutes(recipe.time);
       return min === undefined ? [] : TIME_BUCKETS.filter((b) => b.test(min)).map((b) => b.value);
@@ -125,6 +143,9 @@ export function filterOptions(
   if (key === "status") {
     ids = STATUS_OPTIONS.map((s) => s.value);
     label = (id) => STATUS_OPTIONS.find((s) => s.value === id)!.label;
+  } else if (key === "rating") {
+    ids = RATING_OPTIONS.map((o) => o.value);
+    label = (id) => RATING_OPTIONS.find((o) => o.value === id)!.label;
   } else if (key === "time") {
     ids = TIME_BUCKETS.map((b) => b.value).filter((v) => present.has(v));
     label = (id) => TIME_BUCKETS.find((b) => b.value === id)!.label;

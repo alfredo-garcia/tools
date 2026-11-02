@@ -1,4 +1,5 @@
 import { FavoriteButton } from "@/components/recipes/FavoriteButton";
+import { RatingMark } from "@/components/recipes/RatingMark";
 import { RecipeLink } from "@/components/recipes/RecipeLink";
 import { RecipePhoto } from "@/components/recipes/RecipePhoto";
 import type { Recipe } from "@/lib/schema";
@@ -8,6 +9,7 @@ export function RecipeRow({
   recipe,
   categoryLabel,
   favorite,
+  rating,
   onToggleFavorite,
   current = false,
   dimmed = false,
@@ -18,6 +20,8 @@ export function RecipeRow({
   recipe: Recipe;
   categoryLabel: string;
   favorite: boolean;
+  /** Al's rating, shown after the category; nothing when the recipe has none. */
+  rating?: number;
   onToggleFavorite: () => void;
   /** The recipe open in the side panel. */
   current?: boolean;
@@ -38,7 +42,17 @@ export function RecipeRow({
       />
       <div className="min-w-0">
         <div className="truncate font-semibold">{recipe.title}</div>
-        <div className="text-xs text-text-muted">{categoryLabel}</div>
+        <div className="text-xs text-text-muted">
+          {categoryLabel}
+          {rating !== undefined && (
+            <>
+              <span aria-hidden className="mx-1.5 opacity-60">
+                ·
+              </span>
+              <RatingMark stars={rating} />
+            </>
+          )}
+        </div>
       </div>
     </>
   );

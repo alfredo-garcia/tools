@@ -22,9 +22,11 @@ import {
   filterRecipes,
   type FilterState,
 } from "@/lib/domain/filters";
+import { sortByRating } from "@/lib/domain/ratings";
 import { searchRecipes } from "@/lib/domain/search";
 import { OPEN_KEY_DIALOG, useFavorites } from "@/lib/offline/use-favorites";
 import { useLibrary } from "@/lib/offline/use-library";
+import { useRatings } from "@/lib/offline/use-ratings";
 import { useOutbox } from "@/lib/offline/use-outbox";
 
 const EMPTY: ReadonlySet<string> = new Set();
@@ -33,7 +35,8 @@ const TABS = [{ value: "favoritas", label: "Recetas favoritas" }];
 /** Perfil: a tab bar with one tab, "Recetas favoritas", listing only Al's favorites like Recetas does. */
 export function ProfileScreen() {
   const router = useRouter();
-  const { hydrated, library, status, storageOk, refresh } = useLibrary();
+  const { hydrated, status, storageOk, refresh } = useLibrary();
+  const { library, ratings } = useRatings();
   const outbox = useOutbox();
   const { favorites, toggle } = useFavorites();
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTER_STATE);
@@ -57,7 +60,7 @@ export function ProfileScreen() {
     [library, favorites, keptIds],
   );
   const visible = useMemo(
-    () => (favLibrary ? filterRecipes(favLibrary.recipes, filters) : []),
+    () => (favLibrary ? sortByRating(filterRecipes(favLibrary.recipes, filters)) : []),
     [favLibrary, filters],
   );
   const results = useMemo(
@@ -112,6 +115,7 @@ export function ProfileScreen() {
         recipe={r}
         categoryLabel={categoryLabel(library.vocab.categories, r.category)}
         favorite={favorites.has(r.id)}
+        rating={ratings.get(r.id)}
         dimmed={!favorites.has(r.id)}
         onToggleFavorite={() => onToggle(r.id)}
         onOpen={setOpenId}

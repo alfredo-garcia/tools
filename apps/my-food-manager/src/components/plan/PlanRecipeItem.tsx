@@ -1,8 +1,10 @@
 "use client";
 
 import { X } from "lucide-react";
+import { RatingMark } from "@/components/recipes/RatingMark";
 import { RecipePhoto } from "@/components/recipes/RecipePhoto";
 import { categoryEmoji } from "@/lib/domain/categories";
+import { useRatings } from "@/lib/offline/use-ratings";
 import type { PlanDish, Recipe } from "@/lib/schema";
 
 /** One dish of a slot: a recipe (opens its detail, removable) or a plain text dish (read only). */
@@ -21,6 +23,7 @@ export function PlanRecipeItem({
   onOpen: (recipeId: string) => void;
   onRemove: (recipeId: string) => void;
 }) {
+  const { ratings } = useRatings();
   if (!recipe)
     return (
       <li className="border-b border-border py-2 text-sm text-text-muted last:border-b-0">
@@ -58,6 +61,11 @@ export function PlanRecipeItem({
           }`}
         >
           {recipe.title}
+          {ratings.get(recipe.id) !== undefined && (
+            <span className="ml-1.5 text-xs">
+              <RatingMark stars={ratings.get(recipe.id)!} />
+            </span>
+          )}
         </span>
       </button>
       {!past && (

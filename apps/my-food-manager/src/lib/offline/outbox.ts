@@ -1,4 +1,10 @@
-import { isPantryOp, isReviewOp, type PendingOp } from "@/lib/domain/pantry-view";
+import {
+  isFavoriteOp,
+  isPantryOp,
+  isRatingOp,
+  isReviewOp,
+  type PendingOp,
+} from "@/lib/domain/pantry-view";
 import {
   opsResponseSchema,
   type OpsResponse,
@@ -18,14 +24,18 @@ export interface Notice {
   recipe?: string;
   /** The rejected change was a favorite toggle; the screens that show hearts report it. */
   favorite?: boolean;
+  /** The rejected change was a rating; reported where the favorite ones are. */
+  rating?: boolean;
 }
 
 const subjectOf = (o: PendingOp): Omit<Notice, "id"> =>
   isPantryOp(o)
     ? { ingredient: o.ingredient }
-    : isReviewOp(o)
+    : isFavoriteOp(o)
       ? { recipe: o.recipe, favorite: true }
-      : { recipe: o.recipe };
+      : isRatingOp(o)
+        ? { recipe: o.recipe, rating: true }
+        : { recipe: o.recipe };
 
 const wireOf = (o: PendingOp) =>
   isPantryOp(o)
@@ -221,13 +231,30 @@ export function createOutbox(deps: OutboxDeps) {
      * stored (and not racing a sent one) needs no operation at all.
      */
     async enqueueFavorite(recipe: string, value: boolean, storedValue: boolean) {
-      const same = (o: PendingOp) => isReviewOp(o) && o.recipe === recipe;
+      const same = (o: PendingOp) => isFavoriteOp(o) && o.recipe === recipe;
       const kept = state.pending.filter((o) => !(same(o) && !inflight.has(o.id)));
       const racing = kept.some(same);
       const next =
         !racing && value === storedValue
           ? kept
           : [...kept, { id: deps.newId(), kind: "review.setFavorite" as const, recipe, value }];
+      set({ pending: next });
+      await persist();
+      void flush();
+    },
+
+    /**
+     * Records a rating change (`null` removes it). Unsent changes to the same recipe collapse into the new one; one
+     * equal to what is stored (and not racing a sent one) needs no operation at all.
+     */
+    async enqueueRating(recipe: string, value: number | null, storedValue: number | null) {
+      const same = (o: PendingOp) => isRatingOp(o) && o.recipe === recipe;
+      const kept = state.pending.filter((o) => !(same(o) && !inflight.has(o.id)));
+      const racing = kept.some(same);
+      const next =
+        !racing && value === storedValue
+          ? kept
+          : [...kept, { id: deps.newId(), kind: "review.setRating" as const, recipe, value }];
       set({ pending: next });
       await persist();
       void flush();
@@ -251,6 +278,11 @@ export function createOutbox(deps: OutboxDeps) {
     /** Reports a favorite that could not even be queued (Al's reviews file is missing). */
     notifyFavoriteFailed(recipe: string) {
       set({ notices: [...state.notices, { id: ++noticeSeq, recipe, favorite: true }] });
+    },
+
+    /** Same for a rating. */
+    notifyRatingFailed(recipe: string) {
+      set({ notices: [...state.notices, { id: ++noticeSeq, recipe, rating: true }] });
     },
 
     dismissNotice(id: number) {

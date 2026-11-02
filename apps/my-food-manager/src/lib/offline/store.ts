@@ -4,6 +4,7 @@ import {
   type Library,
   type OpsResponse,
   type Plan,
+  type Reviews,
   type SnapshotResponse,
   type Warning,
 } from "@/lib/schema";
@@ -192,7 +193,7 @@ export function createLibraryStore(deps: Deps) {
     });
   }
 
-  /** Replaces Al's stored favorites with the ones the server just saved. */
+  /** Replaces Al's stored favorites and ratings with the ones the server just saved. */
   function setReviews(saved: NonNullable<OpsResponse["reviews"]>) {
     if (!state.library || !etag) return;
     const current = state.library.reviews[saved.user];
@@ -202,6 +203,7 @@ export function createLibraryStore(deps: Deps) {
       [saved.user]: {
         ...current,
         favorites: saved.favorites,
+        ...(saved.ratings ? { ratings: mergeRatings(current, saved.ratings) } : {}),
         updated: saved.updated ?? current.updated,
       },
     };
@@ -233,6 +235,19 @@ export function createLibraryStore(deps: Deps) {
     setReviews,
     markOffline,
   };
+}
+
+/** The saved ratings, keeping each entry's comment and date when its stars did not change. */
+function mergeRatings(current: object, saved: Record<string, number>): Reviews["ratings"] {
+  const before = (current as Partial<Reviews>).ratings ?? {};
+  return Object.fromEntries(
+    Object.entries(saved).map(([id, stars]) => [
+      id,
+      before[id]?.stars === stars
+        ? before[id]
+        : { ...before[id], stars, comment: before[id]?.comment, date: before[id]?.date },
+    ]),
+  );
 }
 
 export type LibraryStore = ReturnType<typeof createLibraryStore>;

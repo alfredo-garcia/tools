@@ -11,7 +11,7 @@ import { useOutbox } from "@/lib/offline/use-outbox";
 const NOTICE_MS = 4000;
 
 /**
- * Write key dialog and rejection notice for favorite toggles. Mounted once in the app frame because hearts live in
+ * Write key dialog and rejection notice for favorite toggles and ratings. Mounted once in the app frame because hearts live in
  * the list, the detail (also over the Plan) and Perfil. The key is asked at the first toggle without one; a key the
  * server refuses is asked again until the dialog is closed.
  */
@@ -38,7 +38,7 @@ export function FavoriteFeedback() {
     };
   }, [hasKey, dismissed]);
 
-  const notice = outbox.notices.find((n) => n.favorite);
+  const notice = outbox.notices.find((n) => n.favorite || n.rating);
   useEffect(() => {
     if (!notice) return;
     const timer = setTimeout(() => getOutbox().dismissNotice(notice.id), NOTICE_MS);

@@ -67,7 +67,7 @@ describe("recipe status in the schema", () => {
 });
 
 describe("Estado filter", () => {
-  it("is the seventh filter and starts on Probadas", () => {
+  it("is the seventh filter, before Rating, and starts on Probadas", () => {
     expect(FILTERS.map((f) => f.key)).toEqual([
       "category",
       "time",
@@ -76,6 +76,7 @@ describe("Estado filter", () => {
       "difficulty",
       "protein",
       "status",
+      "rating",
     ]);
     expect(FILTERS[6].label).toBe("Estado");
     expect(DEFAULT_FILTER_STATE).toEqual({ status: "tried" });

@@ -233,3 +233,43 @@ describe("library store: setPantry", () => {
     expect(store.getState().library).toBeNull();
   });
 });
+
+describe("library store: setReviews", () => {
+  it("stores the saved favorites and ratings, keeping the comment of an entry whose stars did not change", async () => {
+    const snap = await snapshot();
+    const { store } = setup({ fetch: vi.fn(async () => json(snap)) as never });
+    await store.hydrate();
+    await store.sync("open");
+    store.setReviews({
+      user: "al",
+      updated: "2026-11-02T10:00:00-05:00",
+      favorites: ["bizcocho"],
+      ratings: { bizcocho: 4 },
+    });
+    store.setReviews({
+      user: "al",
+      favorites: ["bizcocho"],
+      ratings: { bizcocho: 4, "pasta-bolonesa": 2 },
+    });
+    const al = store.getState().library?.reviews.al as unknown as {
+      favorites: string[];
+      ratings: Record<string, { stars: number }>;
+    };
+    expect(al.favorites).toEqual(["bizcocho"]);
+    expect(Object.fromEntries(Object.entries(al.ratings).map(([k, v]) => [k, v.stars]))).toEqual({
+      bizcocho: 4,
+      "pasta-bolonesa": 2,
+    });
+  });
+
+  it("removes a rating that the server no longer has", async () => {
+    const snap = await snapshot();
+    const { store } = setup({ fetch: vi.fn(async () => json(snap)) as never });
+    await store.hydrate();
+    await store.sync("open");
+    store.setReviews({ user: "al", favorites: [], ratings: { bizcocho: 3 } });
+    store.setReviews({ user: "al", favorites: [], ratings: {} });
+    const al = store.getState().library?.reviews.al as unknown as { ratings: object };
+    expect(al.ratings).toEqual({});
+  });
+});

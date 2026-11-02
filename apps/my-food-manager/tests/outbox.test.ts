@@ -325,5 +325,56 @@ describe("outbox", () => {
       t.outbox.notifyFavoriteFailed("bizcocho");
       expect(t.outbox.getState().notices[0]).toMatchObject({ recipe: "bizcocho", favorite: true });
     });
+
+    it("collapses unsent ratings of a recipe into the last one and sends nothing when back to the stored value", async () => {
+      const t = setup();
+      t.setOnline(false);
+      await t.outbox.hydrate();
+      await t.outbox.enqueueRating("bizcocho", 4, null);
+      await t.outbox.enqueueRating("pasta", 2, null);
+      await t.outbox.enqueueRating("bizcocho", 5, null);
+      expect(t.outbox.getState().pending).toEqual([
+        { id: "op2", kind: "review.setRating", recipe: "pasta", value: 2 },
+        { id: "op3", kind: "review.setRating", recipe: "bizcocho", value: 5 },
+      ]);
+      await t.outbox.enqueueRating("bizcocho", 3, 3);
+      expect(t.outbox.getState().pending).toEqual([expect.objectContaining({ recipe: "pasta" })]);
+    });
+
+    it("keeps a favorite and a rating of the same recipe as separate operations", async () => {
+      const t = setup();
+      t.setOnline(false);
+      await t.outbox.hydrate();
+      await t.outbox.enqueueFavorite("bizcocho", true, false);
+      await t.outbox.enqueueRating("bizcocho", 4, null);
+      expect(t.outbox.getState().pending.map((o) => o.kind)).toEqual([
+        "review.setFavorite",
+        "review.setRating",
+      ]);
+    });
+
+    it("sends a removal as a null rating and reports a rejected rating as a rating notice", async () => {
+      const t = setup();
+      t.fetchMock.mockResolvedValue(
+        json({
+          results: [{ id: "op1", status: "rejected", error: { code: "INVALID_OP", message: "x" } }],
+        }),
+      );
+      await t.outbox.hydrate();
+      await t.outbox.enqueueRating("bizcocho", null, 4);
+      await tick();
+      expect(JSON.parse(t.fetchMock.mock.calls[0][1].body).ops).toEqual([
+        { id: "op1", kind: "review.setRating", recipe: "bizcocho", value: null },
+      ]);
+      expect(t.outbox.getState().notices).toEqual([
+        expect.objectContaining({ recipe: "bizcocho", rating: true }),
+      ]);
+    });
+
+    it("notifies a rating that could not be queued", async () => {
+      const t = setup();
+      t.outbox.notifyRatingFailed("bizcocho");
+      expect(t.outbox.getState().notices[0]).toMatchObject({ recipe: "bizcocho", rating: true });
+    });
   });
 });

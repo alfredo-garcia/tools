@@ -1,4 +1,4 @@
-import { isReviewOp, type PendingOp } from "./pantry-view";
+import { isFavoriteOp, type PendingOp } from "./pantry-view";
 import type { Library, Recipe } from "@/lib/schema";
 import { REVIEWS_USER } from "./review-ops";
 
@@ -13,7 +13,7 @@ export function favoritesWithPending(
   const ids = new Set(library?.recipes.map((r) => r.id));
   const favorites = new Set(library?.reviews[REVIEWS_USER]?.favorites ?? []);
   for (const op of pending) {
-    if (!isReviewOp(op)) continue;
+    if (!isFavoriteOp(op)) continue;
     if (op.value) favorites.add(op.recipe);
     else favorites.delete(op.recipe);
   }

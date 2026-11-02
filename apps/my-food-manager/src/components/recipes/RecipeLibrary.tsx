@@ -20,9 +20,11 @@ import {
   filterRecipes,
   type FilterState,
 } from "@/lib/domain/filters";
+import { sortByRating } from "@/lib/domain/ratings";
 import { searchRecipes } from "@/lib/domain/search";
 import { OPEN_KEY_DIALOG, useFavorites } from "@/lib/offline/use-favorites";
 import { useLibrary } from "@/lib/offline/use-library";
+import { useRatings } from "@/lib/offline/use-ratings";
 import { useOutbox } from "@/lib/offline/use-outbox";
 import { RecipeDetail } from "@/components/recipes/detail/RecipeDetail";
 import { recipeIdFromPath } from "@/components/recipes/detail/use-detail-navigation";
@@ -39,14 +41,15 @@ export function RecipeLibrary() {
   const large = layout === "large";
   const columnRef = useRef<HTMLDivElement>(null);
   const previousLayout = useRef(layout);
-  const { hydrated, library, status, warnings, storageOk, refresh } = useLibrary();
+  const { hydrated, status, warnings, storageOk, refresh } = useLibrary();
+  const { library, ratings } = useRatings();
   const { favorites, toggle: toggleFavorite } = useFavorites();
   const outbox = useOutbox();
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTER_STATE);
   const { typed, applied, setTyped, applyNow, clear } = useSearchQuery();
   const searching = applied !== "";
   const visible = useMemo(
-    () => (library ? filterRecipes(library.recipes, filters) : []),
+    () => (library ? sortByRating(filterRecipes(library.recipes, filters)) : []),
     [library, filters],
   );
   const results = useMemo(
@@ -120,6 +123,7 @@ export function RecipeLibrary() {
         recipe={r}
         categoryLabel={categoryLabel(library.vocab.categories, r.category)}
         favorite={favorites.has(r.id)}
+        rating={ratings.get(r.id)}
         onToggleFavorite={() => toggleFavorite(r.id)}
         current={r.id === detailId}
         replace={large && detailId !== undefined}

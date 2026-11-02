@@ -14,6 +14,7 @@ import { PlanDayList } from "./PlanDayList";
 import type { PlanActions } from "./PlanSlot";
 import { PlanWeek } from "./PlanWeek";
 import { RecipePickerSheet } from "./RecipePickerSheet";
+import { withoutDiscarded } from "@/lib/domain/filters";
 import { pantryWithPending } from "@/lib/domain/pantry-view";
 import { INITIAL_DAYS, MORE_DAYS, localDate } from "@/lib/domain/plan-calendar";
 import { PLAN_MEAL_LABELS, missingIngredients, planWithPending } from "@/lib/domain/plan-view";
@@ -60,6 +61,7 @@ export function PlanScreen() {
   const [rejectionClosed, setRejectionClosed] = useState(false);
 
   const recipes = library?.recipes ?? NO_RECIPES;
+  const pickable = useMemo(() => withoutDiscarded(recipes), [recipes]);
   const recipeMap = useMemo(() => new Map(recipes.map((r) => [r.id, r])), [recipes]);
   const view = useMemo(
     () => planWithPending(library?.plan, outbox.pending, new Set(recipeMap.keys())),
@@ -224,7 +226,7 @@ export function PlanScreen() {
         <RecipePickerSheet
           date={picker.date}
           meal={picker.meal}
-          recipes={recipes}
+          recipes={pickable}
           onClose={() => {
             setPicker(null);
             wantKey();

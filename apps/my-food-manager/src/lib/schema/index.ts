@@ -2,7 +2,7 @@ import { z } from "zod";
 
 // Mirrors food/_system/schema.md. Unknown fields are preserved (looseObject).
 
-export const SNAPSHOT_SCHEMA_VERSION = 2;
+export const SNAPSHOT_SCHEMA_VERSION = 3;
 
 const optionalString = z
   .string()
@@ -18,6 +18,9 @@ export const ingredientLineSchema = z.looseObject({
   optional: z.boolean().optional(),
   recipe: optionalString,
 });
+
+export const RECIPE_STATUSES = ["to-try", "tried", "discarded"] as const;
+export type RecipeStatus = (typeof RECIPE_STATUSES)[number];
 
 export const recipeSchema = z.looseObject({
   id: z.string().min(1),
@@ -60,6 +63,11 @@ export const recipeSchema = z.looseObject({
     .boolean()
     .nullish()
     .transform((v) => v ?? false),
+  /** Recipes schema 4. Missing, empty or unknown values read as undefined, which means "tried". */
+  status: z
+    .string()
+    .nullish()
+    .transform((v) => RECIPE_STATUSES.find((s) => s === v)),
   missing: z
     .array(z.string())
     .nullish()

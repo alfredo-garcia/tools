@@ -68,8 +68,8 @@ prototypes/              # scratch (gitignored)
 - **Contract:** `food/_system/schema.md` in the Drive folder is authoritative (recipes schema 4, ingredients 1, pantry 2, reviews 1, plan 1). `src/lib/schema` mirrors it with zod; unknown extra fields are preserved, never dropped, on write.
 - IDs are recipe/ingredient slugs from the files; the app never mints ids.
 - Timestamps are ISO 8601 with offset `-05:00`, as in the files; the app sets `updated` on every write.
-- **The app writes only:** `pantry/pantry.yaml`, `plan/plan.yaml` (add/remove recipe dishes per day and meal only, ADR 003), `reviews/<user>.yaml`, and `curated` on a recipe. It never edits other recipe fields, the ingredient catalog or vocabularies (food-manager owns them).
-- Writes are intent operations (e.g. `pantry.setHave`, `plan.addRecipe`, `review.setRating`), applied server-side as read-modify-write against the latest file, with a Drive `modifiedTime` check and one retry (ADR 001). A batch touching several files is grouped per file, each written and retried independently and not atomically across files (ADR 003).
+- **The app writes only:** `pantry/pantry.yaml`, `plan/plan.yaml` (add/remove recipe dishes per day and meal only, ADR 003), `reviews/<user>.yaml` (favorites and ratings), `curated` on a recipe, and `status` of a recipe only as `tried` when the recipe is rated (ADR 004). It never edits other recipe fields, the ingredient catalog or vocabularies (food-manager owns them).
+- Writes are intent operations (e.g. `pantry.setHave`, `plan.addRecipe`, `review.setFavorite`, `review.setRating`), applied server-side as read-modify-write against the latest file, with a Drive `modifiedTime` check and one retry (ADR 001). A batch touching several files is grouped per file, each written and retried independently and not atomically across files (ADR 003).
 - No deletes of Drive files from the app, and no creation of them: `plan/plan.yaml` is created by the food-manager skill (ADR 002, ADR 003).
 - Offline cache: one IndexedDB store with the last snapshot and an ordered outbox of pending operations.
 

@@ -2,7 +2,7 @@
 
 > Project: `my-food-manager`
 > Status: Approved (2026-10-28); v2 updated 2026-10-29 at the user's request (MVP completed, new stage)
-> Last material change: 2026-10-29
+> Last material change: 2026-11-02 (backlog #11 added)
 > User-facing name: "My Food" (project and workspace name stay My Food Manager)
 
 ## 1. Problem
@@ -60,6 +60,7 @@ Compared with memory and manual lists: browse by photo with quick filters instea
 | 8 | Shopping list from plan minus pantry (Despensa) | Al | 2 | Must | Pending | Grouped by ingredient family, tick-off, bought updates pantry |
 | 9 | Profile: person, favorites, ratings, comments, curated (Perfil) | Al, partner | 2 | Should | Pending | Per-person reviews file; includes the household picker |
 | 10 | In-app recipe editing/import | Al | later | Could | Pending | Stays in Claude/Telegram |
+| 11 | Recipe status filter (Por probar / Probada / Descartada) | Al, partner | 2 | Should | Defining (011) | Status set by food-manager (schema recipes 4); the app only reads it; Recetas filter defaults to Probadas |
 
 ## 8. Product Principles
 1. Visual first: photo and icon before text; every screen answerable in a glance.

@@ -1,7 +1,7 @@
 # Changelog: Recipe Status Filter
 
 > Project: `my-food-manager`
-> Merged: documented on the feature branch `my-food-manager/011-recipe-status-filter` before the merge, as `CLAUDE.md` and `tech_standards.md` §11 require; merge commit pending, to be recorded here after the merge
+> Merged: documented on the feature branch `my-food-manager/011-recipe-status-filter` before the merge, as `CLAUDE.md` and `tech_standards.md` §11 require; merge commit `38e755b3`, confirmed by user on 2026-11-02
 > Source PRD: `011_recipe-status-filter_prd.md`
 > Source UX Flow: `011_recipe-status-filter_ux_flow.md`
 > Master doc file(s) touched: `docs/functional-spec.md` (Overview, Domain Map, Data, FLW-first-sync, Glossary, Recent Changes; domain `recipes`: SCR-library-list, CMP-recipe-filters, CMP-recipe-search, FLW-filter-recipes; `profile`: SCR-profile; `plan`: CMP-recipe-picker)

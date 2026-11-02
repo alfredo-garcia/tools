@@ -98,8 +98,8 @@
 
 ### RecipeFilters
 - **Category:** Data Display (assembly). **Import:** `components/recipes/RecipeFilters`. **Status:** Beta.
-- **Description:** the six recipe filters (Categoría, Tiempo, Dieta, Cocina, Dificultad, Proteína) in a horizontal scrolling row, the options panel of the open one below it, and the "N de M recetas" count with "Limpiar".
-- **Props:** `library: Pick<Library, "recipes" | "vocab">`, `state: FilterState`, `onChange(state)`, `shown: number`. Logic lives in `lib/domain/filters.ts`.
+- **Description:** the seven recipe filters (Categoría, Tiempo, Dieta, Cocina, Dificultad, Proteína, Estado) in a horizontal scrolling row, the options panel of the open one below it, and the "N de M recetas" count with "Limpiar".
+- **Props:** `library: Pick<Library, "recipes" | "vocab">`, `state: FilterState`, `onChange(state)`, `shown: number`. Logic lives in `lib/domain/filters.ts`; screens start from `DEFAULT_FILTER_STATE` (Estado = Probadas), and Estado's three options are fixed (`STATUS_OPTIONS`).
 
 ### useListReorder
 - **Category:** hook. **Import:** `components/recipes/use-list-reorder`. **Status:** Beta.
@@ -225,7 +225,7 @@ Feature `my-food-manager/007` (pantry) added `TmpSwitch`, `TmpSegmentedControl` 
 Not applicable (web only).
 
 ## 6. Versioning
-- **Last updated:** 2026-10-30 (pantry switches of feature `my-food-manager/007`: `TmpSwitch`, `TmpSegmentedControl`, `TmpPendingChanges`; earlier: 2026-10-29 (recipe search of feature `my-food-manager/005`: `SearchInput` as implemented, `TmpResultGroup`; earlier: main navigation of feature `my-food-manager/006`: `AppFrame`, `BottomNav` / `SideNav` rewritten, `TmpComingSoon`, `AppShell` corrected; earlier: responsive layout: DetailLayer modes, RecipeLibrary, RecipeLink props; added FilterChip, FilterOptions, RecipeFilters, useListReorder; recipe detail components; `RecipePhoto` props corrected to the implementation))
+- **Last updated:** 2026-11-02 (Estado filter of feature `my-food-manager/011`, no new components); earlier: 2026-10-30 (pantry switches of feature `my-food-manager/007`: `TmpSwitch`, `TmpSegmentedControl`, `TmpPendingChanges`; earlier: 2026-10-29 (recipe search of feature `my-food-manager/005`: `SearchInput` as implemented, `TmpResultGroup`; earlier: main navigation of feature `my-food-manager/006`: `AppFrame`, `BottomNav` / `SideNav` rewritten, `TmpComingSoon`, `AppShell` corrected; earlier: responsive layout: DetailLayer modes, RecipeLibrary, RecipeLink props; added FilterChip, FilterOptions, RecipeFilters, useListReorder; recipe detail components; `RecipePhoto` props corrected to the implementation))
 - **Owner:** Al
 - Initial registry, all entries Beta pending implementation.
 

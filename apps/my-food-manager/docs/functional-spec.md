@@ -10,7 +10,7 @@
 
 My Food Manager (shown to users as "My Food") is a personal, visual, mobile-first web app (installable PWA) that helps Al and his household partner decide what to cook and shop without forgetting anything. It reads the Google Drive folder `food`, which the food-manager skill maintains, and keeps working without a connection. There are no logins. Platform: web only.
 
-Today the app lets you browse the library with filters and a text search and open each recipe's detail, and it has a main navigation with four sections: Recetas, Plan, Despensa and Perfil. Perfil shows Al's favorite recipes. Recipes can be marked as favorites from the list and from the detail, with a heart, and shared from the detail; favorites are saved to Drive in the same way as the pantry and the plan. Plan is the household's meal calendar: from today on, each day has Desayuno, Almuerzo and Cena, to which recipes are added and removed, and every recipe added is checked against the pantry, offering to put what is missing on the shopping list. Despensa holds the pantry and the shopping list in two tabs, where each ingredient has two switches, "Tengo" and "Comprar", saved to Drive (also from the device without a connection, with a shared write key). Plan changes are saved to Drive in the same way (offline queue and shared write key). Ratings, comments and the person picker of the profile are still pending (see `product/product_vision.md` §7).
+Today the app lets you browse the library with filters and a text search and open each recipe's detail, and it has a main navigation with four sections: Recetas, Plan, Despensa and Perfil. Perfil shows Al's favorite recipes. Recipes can be marked as favorites from the list and from the detail, with a heart, and shared from the detail; favorites are saved to Drive in the same way as the pantry and the plan. Plan is the household's meal calendar: from today on, each day has Desayuno, Almuerzo and Cena, to which recipes are added and removed, and every recipe added is checked against the pantry, offering to put what is missing on the shopping list. Despensa holds the pantry and the shopping list in two tabs, where each ingredient has two switches, "Tengo" and "Comprar", saved to Drive (also from the device without a connection, with a shared write key). Plan changes are saved to Drive in the same way (offline queue and shared write key). Each recipe has a status (Probada, Por probar or Descartada), set outside the app by the food-manager skill; Recetas and the favorites in Perfil start showing only the Probadas and can switch to the others or show all. Ratings, comments and the person picker of the profile are still pending (see `product/product_vision.md` §7).
 
 ## 2. How to Read This Documentation
 
@@ -24,7 +24,7 @@ Today the app lets you browse the library with filters and a text search and ope
 | Domain | One-line description | File | Status |
 |---|---|---|---|
 | library | Library sync, offline storage and the recipe list | inline below | Active |
-| recipes | Filtering and searching the recipe list and reading a recipe | inline below | Active |
+| recipes | Filtering (including by recipe status) and searching the recipe list and reading a recipe | inline below | Active |
 | navigation | Main navigation between sections and their placeholders | inline below | Active |
 | pantry | Pantry and shopping list, with writes to Drive | inline below | Active |
 | plan | Meal-plan calendar with recipe picking and a pantry check, with writes to Drive | inline below | Active |
@@ -88,6 +88,7 @@ None shared across domains yet.
 ## 8. Shared Data Entities
 
 - **Library snapshot.** The complete normalized copy of the `food` folder: recipes (with steps, notes and variations), the ingredient catalog, the pantry, each person's reviews, the vocabularies (categories, tags, units, families) and the list of household people. The people are derived from the review files that exist. The snapshot is replaced as a whole on every sync that finds changes.
+- **Recipe status.** `status` of a recipe (recipes schema 4): `to-try` (Por probar), `tried` (Probada) or `discarded` (Descartada), one value for the whole household. A missing, empty or unknown value is Probada. The food-manager skill sets it (new recipes arrive as Por probar; a rating makes the recipe Probada; "borrar" makes it Descartada and keeps the file); the app only reads it and never writes it.
 - **Plan.** `plan/plan.yaml` (plan schema 1, created by the food-manager skill, never by the app): `updated` plus `days`, a map from date (`YYYY-MM-DD`) to a list of meals `{ slot, label, note, dishes }`, where `slot` is `breakfast`, `lunch`, `snack` or `dinner` and a dish is `{ recipe, servings }` (a recipe id) or `{ text }` (free description). Several meals may share a slot. The app shows and edits only the dishes that are recipes of breakfast, lunch and dinner, and writes only the add or removal of one recipe dish (and `updated`); labels, notes, servings, text dishes and snack meals stay as they are. Past days are never shown; any writer may remove them.
 - **Reviews (Al).** `reviews/al.yaml` (reviews schema 1, created by the food-manager skill, never by the app): `user`, `updated`, `favorites` (recipe ids) and `ratings`. The app writes only `favorites` (a recipe is added at the end or removed) and `updated`; ratings, comments and unknown fields stay as they are, and a recipe that does not exist is rejected. Until the person picker exists, the person is always Al; the file of the household partner is neither read for favorites nor written.
 - **Pantry.** `pantry/pantry.yaml` (schema 2): `updated` plus `items`, a map from ingredient id to `have` and `to_buy`, for non-staple ingredients only. Staples are never listed and are always available. There are no quantities. The app writes only these two flags (and `updated`); Claude and Telegram write the same file.
@@ -112,6 +113,7 @@ None.
 - **Favorite (favorita):** a recipe whose id is in `favorites` of Al's reviews file, counting the changes still pending on the device.
 - **Share menu (menú de compartir):** the device's own sheet of apps to send content to, opened by the Compartir button.
 - **Heart (corazón):** the control that marks or unmarks a favorite; filled when the recipe is a favorite.
+- **Status (estado):** whether the household has cooked a recipe and kept it: Por probar (a new idea), Probada (cooked and kept; also any recipe without a status) or Descartada (not wanted, hidden by default but never deleted).
 - **Plan:** the household's agenda of recipes per day and meal.
 - **Slot (franja):** one meal time of one day: Desayuno, Almuerzo or Cena (the file also knows `snack`, not shown).
 - **Faltante:** a non-staple ingredient of a recipe that is not "Tengo"; optional ingredients count.
@@ -126,6 +128,7 @@ None.
 
 ## 11. Recent Changes
 
+- 2026-11-02 — recipes, profile, plan: recipe status filter (Estado) in Recetas and in the favorites of Perfil, starting on Probadas, and discarded recipes left out of the Plan's picker (see `changelog/011_recipe-status-filter_changelog.md`).
 - 2026-10-30 — recipes: Compartir button in the recipe detail, opening the device share menu with the photo, title and link (see `changelog/010_share-recipe_changelog.md`).
 - 2026-10-30 — profile: favorite recipes, with a heart in the list and the detail and a "Recetas favoritas" tab in Perfil, saved to Drive (see `changelog/009_favorites_changelog.md`).
 - 2026-10-30 — plan: Plan meal calendar with day list and weekly columns, recipe picker, pantry check on add and writes to Drive (see `changelog/008_meal-plan-calendar_changelog.md`).
@@ -154,7 +157,7 @@ How data travels from Drive to the device, and how its state is shown. It is the
 - **Purpose:** browse the library and open a recipe. Rows open SCR-recipe-detail.
 - **Entry points:** opening the app (`/`); Recetas in the main navigation; FLW-first-sync.
 - **Functional composition:** CMP-app-shell, CMP-sync-badge, CMP-recipe-photo, CMP-recipe-search, CMP-recipe-filters, CMP-favorite-button, CMP-pending-changes.
-- **Data & business rules:** lists recipes alphabetically by title (Spanish collation). Each row shows the photo or fallback tile, the title and the category name, and opens the recipe's detail (rows are at least 56 px high). At the right of every row is a heart (CMP-favorite-button) that marks or unmarks the recipe as a favorite without opening it; the row stays where it is and the list does not reorder. "N cambios pendientes" (CMP-pending-changes) shows above the list while changes wait. Under the title is the search bar (see CMP-recipe-search) and below it the six filters (see CMP-recipe-filters). The count line "N de M recetas" and "Limpiar" show when a filter is active, and the count also shows while a search is applied. With an applied search, the list becomes up to three groups of rows (Recetas, Proteína, Ingredientes), each headed by its name and its number of recipes, e.g. "Proteína · 3"; empty groups are not shown, and N counts the different recipes shown. "N con avisos" shows when there are warnings. There is no sort. If the browser cannot store data, a notice says that offline only shows what is already loaded.
+- **Data & business rules:** lists recipes alphabetically by title (Spanish collation). Each row shows the photo or fallback tile, the title and the category name, and opens the recipe's detail (rows are at least 56 px high). At the right of every row is a heart (CMP-favorite-button) that marks or unmarks the recipe as a favorite without opening it; the row stays where it is and the list does not reorder. "N cambios pendientes" (CMP-pending-changes) shows above the list while changes wait. Under the title is the search bar (see CMP-recipe-search) and below it the seven filters (see CMP-recipe-filters). The list opens with Estado on Probadas, so only the Probadas show and the count reads "N de M recetas" from the start, with M counting every recipe of every status; leaving Recetas and coming back restores that initial state. The count line "N de M recetas" and "Limpiar" show when a filter is active, and the count also shows while a search is applied. With an applied search, the list becomes up to three groups of rows (Recetas, Proteína, Ingredientes), each headed by its name and its number of recipes, e.g. "Proteína · 3"; empty groups are not shown, and N counts the different recipes shown. "N con avisos" shows when there are warnings. There is no sort. If the browser cannot store data, a notice says that offline only shows what is already loaded.
 - **States (business meaning):**
   - Loading: no stored library and the first sync is running; "Cargando tus recetas…".
   - Offline with no data: "Necesitas conexión la primera vez", with a "Reintentar" button.
@@ -164,7 +167,7 @@ How data travels from Drive to the device, and how its state is shown. It is the
   - Grouped results: a search is applied and at least one recipe matches; the groups described above.
   - No results: the active filters, or the applied search with the filters, match nothing; "Ninguna receta coincide" with a hint and the buttons that apply: "Borrar búsqueda" when a search is applied and "Quitar filtros" when a filter is active.
 - **Related flows:** FLW-first-sync, FLW-library-refresh, FLW-filter-recipes, FLW-search-recipes, FLW-open-recipe, FLW-toggle-favorite.
-- **Source:** `001_drive-sync-offline-library_prd.md` (no UX Flow exists for that feature), `003_recipe-filters_prd.md` / `_ux_flow.md`, `002_recipe-detail_prd.md` / `_ux_flow.md`, `004_responsive-recipe-layout_prd.md` / `_ux_flow.md`, `005_recipe-search_prd.md` / `_ux_flow.md`, `009_favorites_prd.md` / `_ux_flow.md`; implementation in `src/components/recipes/RecipeLibrary.tsx` and `src/components/recipes/RecipeRow.tsx`.
+- **Source:** `001_drive-sync-offline-library_prd.md` (no UX Flow exists for that feature), `003_recipe-filters_prd.md` / `_ux_flow.md`, `002_recipe-detail_prd.md` / `_ux_flow.md`, `004_responsive-recipe-layout_prd.md` / `_ux_flow.md`, `005_recipe-search_prd.md` / `_ux_flow.md`, `009_favorites_prd.md` / `_ux_flow.md`, `011_recipe-status-filter_prd.md` / `_ux_flow.md`; implementation in `src/components/recipes/RecipeLibrary.tsx` and `src/components/recipes/RecipeRow.tsx`.
 
 ### Functionally-Significant Components
 
@@ -198,7 +201,7 @@ How data travels from Drive to the device, and how its state is shown. It is the
 
 - **Goal / trigger:** first open on a new device, with no setup and no key.
 - **Screens involved (in sequence):** SCR-library-list (loading) → (sync succeeds) → SCR-library-list (list). With no connection: SCR-library-list ("Necesitas conexión la primera vez") → "Reintentar".
-- **Business rules governing the flow:** the library is stored on the device when the sync completes. A stored library with a different format version than the app expects is discarded and fetched again; while offline, the old copy is kept and used.
+- **Business rules governing the flow:** the library is stored on the device when the sync completes. A stored library with a different format version than the app expects is discarded and fetched again; while offline, the old copy is kept and used. The library stored before recipe status existed is fetched again this way, so recipes show their status.
 - **Edge cases & error handling:** a folder not shared with the app, a revoked credential or missing configuration make the sync fail with an error and never produce partial data. If the device cannot store data (for example private mode), the app works in memory only and says so.
 - **Source:** `001_drive-sync-offline-library_prd.md` (US-1, §10).
 
@@ -257,7 +260,7 @@ Filtering and searching the recipe list and reading a recipe. Everything works f
   - The "x" at the right of the bar shows only when there is text. It, and Esc inside the bar, erase the text, drop the results at once and return focus to the bar. "Limpiar" and "Quitar filtros" never touch the text, and the search never touches the filters.
   - Three places are searched, in this order: the recipe name ("Recetas"), the protein labels ("Proteína"), and the names of the ingredient lines ("Ingredientes", optional ones included; quantities, units and notes are not searched). The ingredient name comes from the catalog, or from the id with hyphens as spaces if the catalog has none.
   - Case and accents are ignored ("cafe" finds "café") and parts of words match ("pol" finds "Pollo"); "ñ" is a different letter from "n". With several words, all must be found in the same place: in the name, in one protein label, or in the name of one single ingredient.
-  - Active filters are applied first and the three groups are computed on what remains. A recipe is listed in every group where it matches. Rows keep the alphabetical order and the same look as the plain list; on large windows the open recipe's row is highlighted in every group.
+  - Active filters, Estado included, are applied first and the three groups are computed on what remains, so with Estado on Probadas a Descartada recipe is in no group. A recipe is listed in every group where it matches. Rows keep the alphabetical order and the same look as the plain list; on large windows the open recipe's row is highlighted in every group.
   - The filters' option counts ignore the search.
   - A sync that updates the library re-applies the search and the filters in place. The text is not saved: reloading, or leaving Recetas and coming back, empties it.
   - Category, cuisine, diet, difficulty, time, steps, notes, comments and sources are not searched; there is no relevance order, highlighting or typo tolerance.
@@ -269,15 +272,16 @@ Filtering and searching the recipe list and reading a recipe. Everything works f
 - **Design system reference:** `RecipeFilters`, `components/recipes/RecipeFilters` (see `context/ui_kit_registry.md`).
 - **Functional role:** the filter row above the list, its option panel, the count and "Limpiar".
 - **Behavior rules:**
-  - Six filters, in this order: Categoría, Tiempo, Dieta, Cocina, Dificultad, Proteína. A filter shows only its name until a value is chosen; then it shows the value with an "x" that removes it and brings the name back. Opening one filter closes any other; Esc or a tap outside closes the options.
+  - Seven filters, in this order: Categoría, Tiempo, Dieta, Cocina, Dificultad, Proteína, Estado. A filter shows only its name until a value is chosen; then it shows the value with an "x" that removes it and brings the name back. Opening one filter closes any other; Esc or a tap outside closes the options.
   - One value per filter. Filters combine, so a recipe must match all active ones. With several tags in a family (cuisine, diet, protein), a recipe matches if any of them equals the chosen value.
   - Options are the values present in the library, in vocabulary order (values missing from the vocabulary come last, alphabetically), each with the number of recipes it would give with the other active filters. An option with 0 is disabled; the chosen one never is. A filter with no values in the library is disabled.
+  - Estado starts on "Probadas" each time the list or the favorites tab opens. Its options are always "Probadas", "Por probar" and "Descartadas", in that order, even when the library has none of one of them (it is then disabled with 0). Its "x" removes the filter, which applies no status condition and shows every status. A recipe without a valid status counts as Probada. The counts of the other filters take Estado into account.
   - Tiempo uses total time with four options: "Hasta 15 min", "Hasta 30 min", "Hasta 1 h", "Más de 1 h". Dificultad shows "Fácil", "Media", "Difícil". A recipe with no time or no difficulty never matches those filters when active.
   - Option and chip labels come from the vocabularies with the first letter capitalized; a value missing from the vocabulary shows its id, also capitalized.
-  - The count reads "N recetas" with no filter and "N de M recetas" with filters. "Limpiar" clears all filters and appears when two or more are active.
+  - The count reads "N recetas" with no filter and "N de M recetas" with filters. "Limpiar" clears all filters, Estado included, and appears when two or more are active (Estado counts).
   - The list reorders with animation, which is off when the device asks for reduced motion.
 - **Used on:** SCR-library-list.
-- **Source:** `003_recipe-filters_prd.md`, `003_recipe-filters_ux_flow.md`; implementation in `src/components/recipes/RecipeFilters.tsx`.
+- **Source:** `003_recipe-filters_prd.md`, `003_recipe-filters_ux_flow.md`, `011_recipe-status-filter_prd.md` / `_ux_flow.md`; implementation in `src/components/recipes/RecipeFilters.tsx`.
 
 #### CMP-detail-layer Detail layer
 
@@ -333,7 +337,7 @@ Filtering and searching the recipe list and reading a recipe. Everything works f
 
 - **Goal / trigger:** narrow the list in two taps.
 - **Screens involved (in sequence):** SCR-library-list.
-- **Business rules governing the flow:** tapping a filter opens its options; choosing one applies it and the filter shows the chosen value with an "x" to remove it. "Limpiar" removes all filters when two or more are active. Time options: hasta 15 min, hasta 30 min, hasta 1 h, más de 1 h, measured on total time. Recipes with no time or difficulty never match those options. Filters are not kept across reloads.
+- **Business rules governing the flow:** tapping a filter opens its options; choosing one applies it and the filter shows the chosen value with an "x" to remove it. "Limpiar" removes all filters, Estado included, when two or more are active. Estado starts on Probadas and has two more options, Por probar and Descartadas; its "x" shows every status. Time options: hasta 15 min, hasta 30 min, hasta 1 h, más de 1 h, measured on total time. Recipes with no time or difficulty never match those options. Filters are not kept across reloads.
 - **Edge cases & error handling:** filters that match nothing show "Ninguna receta coincide" with "Quitar filtros". A sync re-applies the active filters in place.
 - **Source:** `003_recipe-filters_prd.md` (US-1 to US-6).
 
@@ -515,6 +519,7 @@ The household's meal calendar. Every day from today has three slots, Desayuno, A
   - Titled "Añadir al desayuno / almuerzo / a la cena" with the day. A search box ("Buscar receta"), the library list (photo, title, total time) and "Añadir receta".
   - Search: 3 characters minimum, applied 1 second after the last keystroke or on Enter; "x" and Esc clear it. Case and accents are ignored and every word must be in the title. With fewer than 3 characters the whole library shows. No match shows "Sin resultados" and keeps the selection; an empty library shows "No hay recetas todavía".
   - One recipe at a time: tapping another moves the choice, tapping the chosen one clears it. "Añadir receta" is enabled only with a choice.
+  - Recipes that are Descartadas are neither listed nor found by the search; Probadas and Por probar are. There is no status control. A recipe already in the plan stays there whatever its status.
   - Esc, the backdrop or the close button close it and add nothing. Resizing across 640 px keeps the text and the choice.
 - **Used on:** SCR-plan.
 - **Source:** `008_meal-plan-calendar_prd.md`, `_ux_flow.md`; implementation in `src/components/plan/RecipePickerSheet.tsx`.
@@ -573,11 +578,11 @@ Perfil: Al's favorite recipes and the heart that marks them. Favorites are saved
 - **Entry points:** Perfil in the main navigation; direct address; "Ver recetas" is the way out, to SCR-library-list.
 - **Functional composition:** CMP-app-shell, CMP-recipe-search, CMP-recipe-filters, CMP-favorite-button, CMP-pending-changes, CMP-write-key, SCR-recipe-detail.
 - **Data & business rules:**
-  - A tab bar with a single tab, "Recetas favoritas", selected. Under it, the search bar and the six filters of Recetas, working only among the favorites (filter options and counts are computed over them).
+  - A tab bar with a single tab, "Recetas favoritas", selected. Under it, the search bar and the seven filters of Recetas, working only among the favorites (filter options and counts are computed over them). Estado starts on Probadas here too, independent of Recetas; a favorite that is Descartada or Por probar stays in the file and shows when Estado is changed or removed.
   - The list shows the favorite recipes in the same row format as SCR-library-list (photo or fallback tile, title, category), alphabetical, each with its heart filled. "N cambios pendientes" shows while changes wait.
   - Tapping a heart unmarks the recipe; its row stays, dimmed with an empty heart, until the search or the filters change or Perfil is left, and can be marked again. Nothing else reorders.
   - Tapping a row opens SCR-recipe-detail over Perfil without changing the address (full screen on small windows, modal on medium and large). Closing returns to Perfil as it was.
-  - Search text and filters are emptied when Perfil is left or reloaded.
+  - Search text and filters are emptied when Perfil is left or reloaded; Estado returns to Probadas.
 - **States (business meaning):**
   - Loading: "Cargando tus recetas…".
   - No library and offline, or error: the same messages as the list, with "Reintentar".
@@ -585,7 +590,7 @@ Perfil: Al's favorite recipes and the heart that marks them. Favorites are saved
   - Favorites: the list described above.
   - No results: "Ninguna receta coincide" with "Borrar búsqueda" and "Quitar filtros" as they apply.
 - **Related flows:** FLW-toggle-favorite, FLW-switch-section.
-- **Source:** `009_favorites_prd.md` / `_ux_flow.md`; implementation in `src/components/profile/ProfileScreen.tsx`.
+- **Source:** `009_favorites_prd.md` / `_ux_flow.md`, `011_recipe-status-filter_prd.md` / `_ux_flow.md`; implementation in `src/components/profile/ProfileScreen.tsx`.
 
 ### Functionally-Significant Components
 

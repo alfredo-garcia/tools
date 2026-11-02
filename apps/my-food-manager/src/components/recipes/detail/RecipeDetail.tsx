@@ -28,7 +28,7 @@ function RecipeContent({ recipe, library }: { recipe: Recipe; library: Library }
   const { ratings, rate } = useRatings();
   const stars = ratings.get(recipe.id);
   const rating = (
-    <div className="flex flex-wrap items-center gap-2">
+    <div className="flex items-center gap-2 whitespace-nowrap">
       <RatingStars
         value={stars ?? 0}
         onChange={(n) => rate(recipe.id, n)}
@@ -49,9 +49,10 @@ function RecipeContent({ recipe, library }: { recipe: Recipe; library: Library }
           category={recipe.category}
           className="detail-photo aspect-video w-full"
         />
-        {/* Medium and large windows: the labeled button under the photo (the title lives in the layer bar). */}
-        <div className="px-4 pt-3 group-data-[detail-mode=fullscreen]:hidden group-data-[detail-mode=panel]:px-0">
-          <div className="-ml-2.5 mb-2">{rating}</div>
+        {/* Medium and large windows: rating, favorite and share in one row under the photo when they fit; otherwise the
+            rating takes its own row and the two buttons share the next (the title lives in the layer bar). */}
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 px-4 pt-3 group-data-[detail-mode=fullscreen]:hidden group-data-[detail-mode=panel]:px-0">
+          <div className="-ml-2.5">{rating}</div>
           <div className="flex flex-wrap gap-2">
             <FavoriteButton
               pressed={pressed}

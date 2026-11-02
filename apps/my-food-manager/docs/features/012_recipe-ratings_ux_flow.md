@@ -37,7 +37,7 @@ Al rates a recipe from its detail with five stars; the rating shows, read only, 
 
 - `<RecipeContent>` (reused: `components/recipes/detail/RecipeDetail`) builds one `rating` block and renders it twice, one per layout:
   - small windows: under the title row (title, `FavoriteButton`, `ShareButton`), inside `.detail-sections`, hidden with `group-data-[detail-mode=modal]:hidden group-data-[detail-mode=panel]:hidden`
-  - medium and large windows: in the photo column, above the row of `FavoriteButton` and `ShareButton` (labeled), hidden with `group-data-[detail-mode=fullscreen]:hidden`
+  - medium and large windows: in the photo column, one `flex flex-wrap` row holding `rating`, then `FavoriteButton` and `ShareButton` (labeled) as one group, hidden with `group-data-[detail-mode=fullscreen]:hidden`; when the three fit, they share one row, otherwise `rating` keeps its own row and the favorite and share buttons take the next one together
   - `rating` = `<RatingStars value={stars ?? 0} onChange={(n) => rate(recipe.id, n)} recipeTitle={recipe.title} />` and a text `aria-live="polite"`: `"Sin rating"` when `stars === undefined`, otherwise `"<stars> de 5"`
 
 **Conditional rendering states**

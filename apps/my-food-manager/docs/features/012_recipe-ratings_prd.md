@@ -107,7 +107,7 @@ Al can give a recipe 1 to 5 stars from its detail, change it or remove it. The r
 - Domain: `rating` becomes an eighth `FilterKey` (label "Rating") with the options of AC-4.1, and a pure sort by rating is added to `src/lib/domain`.
 
 ## 9. UI/UX Requirements
-- **Detail:** the rating control sits with the recipe's title area, near the heart and share controls, on small windows and in the modal and panel. Targets are at least 44 px; stars have accessible names ("1 estrella" to "5 estrellas") and the control announces the current value.
+- **Detail:** the rating control sits with the recipe's title area, near the heart and share controls, on small windows and in the modal and panel. On medium and large windows the rating, the favorite button and the share button share one row when they fit; when they do not, the rating takes one row and the favorite and share buttons take the next. Targets are at least 44 px; stars have accessible names ("1 estrella" to "5 estrellas") and the control announces the current value.
 - **Rows (Recetas, favorites, Plan):** a compact display, one filled star with the number (for example "★ 4"), placed so it does not displace the heart or the title. Rows with no rating show nothing.
 - **Filter chip:** the eighth chip, after Estado, with the same look, panel, "x" and disabled states as the others; labels "1+", "2+", "3+", "4+", "5" (with a star icon) and "Sin rating".
 - **States:** empty, loading and error as today. No results uses "Ninguna receta coincide" with "Quitar filtros". Pending changes show in CMP-pending-changes; the write key dialog is as for favorites.

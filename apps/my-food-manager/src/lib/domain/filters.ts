@@ -1,6 +1,7 @@
-import type { Library, Recipe } from "@/lib/schema";
+import type { Library, Recipe, RecipeStatus } from "@/lib/schema";
 
-export type FilterKey = "category" | "time" | "diet" | "cuisine" | "difficulty" | "protein";
+export type FilterKey =
+  "category" | "time" | "diet" | "cuisine" | "difficulty" | "protein" | "status";
 
 export const FILTERS: { key: FilterKey; label: string }[] = [
   { key: "category", label: "Categoría" },
@@ -9,9 +10,26 @@ export const FILTERS: { key: FilterKey; label: string }[] = [
   { key: "cuisine", label: "Cocina" },
   { key: "difficulty", label: "Dificultad" },
   { key: "protein", label: "Proteína" },
+  { key: "status", label: "Estado" },
 ];
 
 export type FilterState = Partial<Record<FilterKey, string>>;
+
+/** A recipe without a (valid) status counts as tried. */
+export const recipeStatus = (recipe: Recipe): RecipeStatus => recipe.status ?? "tried";
+
+export const STATUS_OPTIONS: { value: RecipeStatus; label: string }[] = [
+  { value: "tried", label: "Probadas" },
+  { value: "to-try", label: "Por probar" },
+  { value: "discarded", label: "Descartadas" },
+];
+
+/** Filter state a recipe list or the favorites tab starts with. */
+export const DEFAULT_FILTER_STATE: FilterState = { status: "tried" };
+
+/** Recipes that may be picked for the plan: everything but the discarded ones. */
+export const withoutDiscarded = (recipes: Recipe[]): Recipe[] =>
+  recipes.filter((r) => recipeStatus(r) !== "discarded");
 
 export interface FilterOption {
   value: string;
@@ -48,6 +66,8 @@ function recipeValues(recipe: Recipe, key: FilterKey): string[] {
       return [recipe.category || "unclassified"];
     case "difficulty":
       return recipe.difficulty ? [recipe.difficulty] : [];
+    case "status":
+      return [recipeStatus(recipe)];
     case "time": {
       const min = totalMinutes(recipe.time);
       return min === undefined ? [] : TIME_BUCKETS.filter((b) => b.test(min)).map((b) => b.value);
@@ -102,7 +122,10 @@ export function filterOptions(
 
   let ids: string[];
   let label: (id: string) => string;
-  if (key === "time") {
+  if (key === "status") {
+    ids = STATUS_OPTIONS.map((s) => s.value);
+    label = (id) => STATUS_OPTIONS.find((s) => s.value === id)!.label;
+  } else if (key === "time") {
     ids = TIME_BUCKETS.map((b) => b.value).filter((v) => present.has(v));
     label = (id) => TIME_BUCKETS.find((b) => b.value === id)!.label;
   } else if (key === "difficulty") {

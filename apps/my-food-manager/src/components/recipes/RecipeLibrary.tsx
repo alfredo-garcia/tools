@@ -14,7 +14,12 @@ import { TmpResultGroup } from "@/components/recipes/TmpResultGroup";
 import { useListReorder } from "@/components/recipes/use-list-reorder";
 import { useSearchQuery } from "@/components/recipes/use-search-query";
 import { categoryLabel } from "@/lib/domain/categories";
-import { activeFilterCount, filterRecipes, type FilterState } from "@/lib/domain/filters";
+import {
+  DEFAULT_FILTER_STATE,
+  activeFilterCount,
+  filterRecipes,
+  type FilterState,
+} from "@/lib/domain/filters";
 import { searchRecipes } from "@/lib/domain/search";
 import { OPEN_KEY_DIALOG, useFavorites } from "@/lib/offline/use-favorites";
 import { useLibrary } from "@/lib/offline/use-library";
@@ -37,7 +42,7 @@ export function RecipeLibrary() {
   const { hydrated, library, status, warnings, storageOk, refresh } = useLibrary();
   const { favorites, toggle: toggleFavorite } = useFavorites();
   const outbox = useOutbox();
-  const [filters, setFilters] = useState<FilterState>({});
+  const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTER_STATE);
   const { typed, applied, setTyped, applyNow, clear } = useSearchQuery();
   const searching = applied !== "";
   const visible = useMemo(

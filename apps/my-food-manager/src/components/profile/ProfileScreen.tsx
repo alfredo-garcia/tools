@@ -16,7 +16,12 @@ import { useListReorder } from "@/components/recipes/use-list-reorder";
 import { useSearchQuery } from "@/components/recipes/use-search-query";
 import { categoryLabel } from "@/lib/domain/categories";
 import { favoriteRecipes } from "@/lib/domain/favorites";
-import { activeFilterCount, filterRecipes, type FilterState } from "@/lib/domain/filters";
+import {
+  DEFAULT_FILTER_STATE,
+  activeFilterCount,
+  filterRecipes,
+  type FilterState,
+} from "@/lib/domain/filters";
 import { searchRecipes } from "@/lib/domain/search";
 import { OPEN_KEY_DIALOG, useFavorites } from "@/lib/offline/use-favorites";
 import { useLibrary } from "@/lib/offline/use-library";
@@ -31,7 +36,7 @@ export function ProfileScreen() {
   const { hydrated, library, status, storageOk, refresh } = useLibrary();
   const outbox = useOutbox();
   const { favorites, toggle } = useFavorites();
-  const [filters, setFilters] = useState<FilterState>({});
+  const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTER_STATE);
   const { typed, applied, setTyped, applyNow, clear } = useSearchQuery();
   const [openId, setOpenId] = useState<string | null>(null);
   // Recipes unfavorited while shown stay (dimmed) until search or filters change.

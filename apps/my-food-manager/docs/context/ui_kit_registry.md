@@ -32,6 +32,7 @@
 | `CollapsibleSection` | Data Display | Web | Beta | `components/recipes/detail/CollapsibleSection` |
 | `DetailLayer` | Feedback/Overlays | Web | Beta | `components/overlays/DetailLayer` |
 | `RatingStars` | Inputs | Web | Beta | `components/recipes/RatingStars` |
+| `RatingMark` | Data Display | Web | Beta | `components/recipes/RatingMark` |
 | `RecipeRow` | Data Display | Web | Beta | `components/recipes/RecipeRow` |
 | `ShareButton` | Inputs | Web | Beta | `components/recipes/ShareButton` |
 | `FavoriteButton` | Inputs | Web | Beta | `components/recipes/FavoriteButton` |
@@ -98,8 +99,8 @@
 
 ### RecipeFilters
 - **Category:** Data Display (assembly). **Import:** `components/recipes/RecipeFilters`. **Status:** Beta.
-- **Description:** the seven recipe filters (Categoría, Tiempo, Dieta, Cocina, Dificultad, Proteína, Estado) in a horizontal scrolling row, the options panel of the open one below it, and the "N de M recetas" count with "Limpiar".
-- **Props:** `library: Pick<Library, "recipes" | "vocab">`, `state: FilterState`, `onChange(state)`, `shown: number`. Logic lives in `lib/domain/filters.ts`; screens start from `DEFAULT_FILTER_STATE` (Estado = Probadas), and Estado's three options are fixed (`STATUS_OPTIONS`).
+- **Description:** the eight recipe filters (Categoría, Tiempo, Dieta, Cocina, Dificultad, Proteína, Estado, Rating) in a horizontal scrolling row, the options panel of the open one below it, and the "N de M recetas" count with "Limpiar".
+- **Props:** `library: Pick<Library, "recipes" | "vocab">`, `state: FilterState`, `onChange(state)`, `shown: number`. Logic lives in `lib/domain/filters.ts`; screens start from `DEFAULT_FILTER_STATE` (Estado = Probadas), and Estado's three options are fixed (`STATUS_OPTIONS`), as are Rating's six (`RATING_OPTIONS`: "1+ ★" to "4+ ★", "5 ★", "Sin rating"; no initial value).
 
 ### useListReorder
 - **Category:** hook. **Import:** `components/recipes/use-list-reorder`. **Status:** Beta.
@@ -174,8 +175,9 @@
 - **Props:** `RecipePickerSheet`: `date`, `meal`, `recipes: Recipe[]`, `onClose`, `onConfirm(recipeId)`; search (3 letters, 1 s) over titles, single selection, "Añadir receta" enabled with a selection. `MissingIngredientsSheet`: `recipeTitle`, `ingredients: string[]` (names), `onContinue`, `onAddToList`; closing by Esc or backdrop equals `onContinue`.
 - **Notes:** both are `Sheet` with their own content; the picker is `size="tall"`, the missing sheet uses `hideClose`.
 
-### RatingStars / FavoriteButton
-- **RatingStars props:** `value: 0-5`, `onChange(n)`, `size?`; each star is a button with `aria-pressed` and label "N estrellas".
+### RatingStars / RatingMark / FavoriteButton
+- **RatingStars props:** `value: 0-5` (0 = no rating), `onChange(n)`, `recipeTitle` (for the group's accessible name); five buttons of 44 px with `aria-pressed` and label "N estrella(s)"; `lucide-react` `Star`, filled with `text-warning-500` when pressed. Implemented in feature `my-food-manager/012`: in the recipe detail only, next to `FavoriteButton` and `ShareButton`.
+- **RatingMark props:** `stars` (1-5); a filled star and the number, `aria-label` "Rating N de 5"; display only, after the category on `RecipeRow` and after the title on `PlanRecipeItem`. Import: `components/recipes/RatingMark`.
 - **FavoriteButton props:** `pressed`, `onToggle`, `recipeTitle` (for the accessible name), `label?` (shows the text next to the heart and gives the button the width of its content); heart fills with the lime accent when pressed; 44px hit area; `aria-pressed`. Implemented in feature `my-food-manager/009`: icon-only in rows and the small-window title row, labeled under the photo on medium and large.
 
 ### ChecklistItem / AisleHeader
@@ -225,12 +227,12 @@ Feature `my-food-manager/007` (pantry) added `TmpSwitch`, `TmpSegmentedControl` 
 Not applicable (web only).
 
 ## 6. Versioning
-- **Last updated:** 2026-11-02 (Estado filter of feature `my-food-manager/011`, no new components); earlier: 2026-10-30 (pantry switches of feature `my-food-manager/007`: `TmpSwitch`, `TmpSegmentedControl`, `TmpPendingChanges`; earlier: 2026-10-29 (recipe search of feature `my-food-manager/005`: `SearchInput` as implemented, `TmpResultGroup`; earlier: main navigation of feature `my-food-manager/006`: `AppFrame`, `BottomNav` / `SideNav` rewritten, `TmpComingSoon`, `AppShell` corrected; earlier: responsive layout: DetailLayer modes, RecipeLibrary, RecipeLink props; added FilterChip, FilterOptions, RecipeFilters, useListReorder; recipe detail components; `RecipePhoto` props corrected to the implementation))
+- **Last updated:** 2026-11-02 (ratings of feature `my-food-manager/012`: `RatingStars` implemented, `RatingMark` added, `RecipeRow.rating`, Rating filter in `RecipeFilters`); earlier: 2026-11-02 (Estado filter of feature `my-food-manager/011`, no new components); earlier: 2026-10-30 (pantry switches of feature `my-food-manager/007`: `TmpSwitch`, `TmpSegmentedControl`, `TmpPendingChanges`; earlier: 2026-10-29 (recipe search of feature `my-food-manager/005`: `SearchInput` as implemented, `TmpResultGroup`; earlier: main navigation of feature `my-food-manager/006`: `AppFrame`, `BottomNav` / `SideNav` rewritten, `TmpComingSoon`, `AppShell` corrected; earlier: responsive layout: DetailLayer modes, RecipeLibrary, RecipeLink props; added FilterChip, FilterOptions, RecipeFilters, useListReorder; recipe detail components; `RecipePhoto` props corrected to the implementation))
 - **Owner:** Al
 - Initial registry, all entries Beta pending implementation.
 
 ### RecipeRow
-- **Props:** `recipe`, `categoryLabel`, `favorite`, `onToggleFavorite`, `current?`, `dimmed?`, `replace?`, `onOpen?`, `flipKey`.
+- **Props:** `recipe`, `categoryLabel`, `favorite`, `rating?` (Al's stars, shown as `RatingMark` after the category), `onToggleFavorite`, `current?`, `dimmed?`, `replace?`, `onOpen?`, `flipKey`.
 - **Guidance:** photo, title and category open the detail (a `RecipeLink`, or a button when `onOpen` is given, as in Perfil); the heart is a sibling at the right, never inside the link. `dimmed` is an unfavorited row kept on screen in Perfil. Implemented in feature `my-food-manager/009`.
 
 ### ShareButton

@@ -58,7 +58,7 @@ Compared with memory and manual lists: browse by photo with quick filters instea
 | 6 | Meal-plan calendar (Plan) | Al | 2 | Must | Pending | Recipes for breakfast, lunch and dinner each day (several per meal); own storage domain in Drive linking plan, meal time and day |
 | 7 | Pantry (Despensa) | Al | 2 | Must | Pending | Have / do not have, no quantities (as the schema already has: have/to_buy) |
 | 8 | Shopping list from plan minus pantry (Despensa) | Al | 2 | Must | Pending | Grouped by ingredient family, tick-off, bought updates pantry |
-| 9 | Profile: person, favorites, ratings, comments, curated (Perfil) | Al, partner | 2 | Should | Pending | Per-person reviews file; includes the household picker |
+| 9 | Profile: person, favorites, ratings, comments, curated (Perfil) | Al, partner | 2 | Should | In progress (favorites 009, ratings 012) | Per-person reviews file; includes the household picker; person picker, comments and curated pending |
 | 10 | In-app recipe editing/import | Al | later | Could | Pending | Stays in Claude/Telegram |
 | 11 | Recipe status filter (Por probar / Probada / Descartada) | Al, partner | 2 | Should | Done (011) | Status set by food-manager (schema recipes 4); the app only reads it; Recetas filter defaults to Probadas |
 

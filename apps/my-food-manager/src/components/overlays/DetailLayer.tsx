@@ -75,7 +75,8 @@ export function DetailLayer({
   useEffect(() => {
     if (!modalLike) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && modeRef.current === "modal") return onCloseRef.current();
+      if (e.key === "Escape" && modeRef.current === "modal")
+        return e.defaultPrevented ? undefined : onCloseRef.current();
       if (e.key !== "Tab") return;
       const items = [...(layerRef.current?.querySelectorAll<HTMLElement>(FOCUSABLE) ?? [])].filter(
         (el) => el.offsetParent !== null,

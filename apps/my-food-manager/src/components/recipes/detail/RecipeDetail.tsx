@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { DetailLayer } from "@/components/overlays/DetailLayer";
 import { useLayout } from "@/components/layout/use-layout";
 import { EmptyState } from "@/components/feedback/EmptyState";
@@ -15,14 +17,36 @@ import { useLibrary } from "@/lib/offline/use-library";
 import { useRatings } from "@/lib/offline/use-ratings";
 import type { Library, Recipe } from "@/lib/schema";
 import { InfoSection } from "./InfoSection";
+import { DetailShortcuts } from "./DetailShortcuts";
 import { IngredientsSection } from "./IngredientsSection";
 import { NotesSection } from "./NotesSection";
+import { ShoppingListSheet } from "./ShoppingListSheet";
 import { StepsSection } from "./StepsSection";
 import { useCloseDetail } from "./use-detail-navigation";
 import { useRecipeShare } from "./use-recipe-share";
 
 /** Keyed by recipe id by the caller, so section state resets when another recipe opens. */
-function RecipeContent({ recipe, library }: { recipe: Recipe; library: Library }) {
+function RecipeContent({
+  recipe,
+  library,
+  onAddToPlan,
+}: {
+  recipe: Recipe;
+  library: Library;
+  onAddToPlan?: (recipeId: string) => void;
+}) {
+  const router = useRouter();
+  const [shopping, setShopping] = useState(false);
+  const shortcuts = (
+    <DetailShortcuts
+      onShopping={() => setShopping(true)}
+      onPlan={() =>
+        onAddToPlan
+          ? onAddToPlan(recipe.id)
+          : router.push(`/plan?add=${encodeURIComponent(recipe.id)}`)
+      }
+    />
+  );
   const { favorites, toggle } = useFavorites();
   const pressed = favorites.has(recipe.id);
   const { ratings, rate } = useRatings();
@@ -63,6 +87,9 @@ function RecipeContent({ recipe, library }: { recipe: Recipe; library: Library }
             <ShareButton onShare={share} busy={busy} recipeTitle={recipe.title} label="Compartir" />
           </div>
         </div>
+        <div className="flex flex-wrap gap-2 px-4 pt-2 group-data-[detail-mode=fullscreen]:hidden group-data-[detail-mode=panel]:px-0">
+          {shortcuts}
+        </div>
       </div>
       <div className="detail-sections px-4 pt-4">
         {/* Small windows: the heart takes the right end of the title row. */}
@@ -73,15 +100,21 @@ function RecipeContent({ recipe, library }: { recipe: Recipe; library: Library }
           >
             {recipe.title}
           </h1>
-          <FavoriteButton
-            pressed={pressed}
-            onToggle={() => toggle(recipe.id)}
-            recipeTitle={recipe.title}
-          />
           <ShareButton onShare={share} busy={busy} recipeTitle={recipe.title} />
         </div>
         <div className="-ml-2.5 group-data-[detail-mode=modal]:hidden group-data-[detail-mode=panel]:hidden">
           {rating}
+        </div>
+        {/* Small windows: favorite and the two shortcuts stacked, all the width of the content. */}
+        <div className="mt-1 flex flex-col gap-2 group-data-[detail-mode=modal]:hidden group-data-[detail-mode=panel]:hidden">
+          <FavoriteButton
+            pressed={pressed}
+            onToggle={() => toggle(recipe.id)}
+            recipeTitle={recipe.title}
+            label={pressed ? "Quitar de favoritos" : "Añadir a favoritos"}
+            fullWidth
+          />
+          {shortcuts}
         </div>
         <InfoSection recipe={recipe} library={library} />
         <IngredientsSection recipe={recipe} library={library} />
@@ -89,6 +122,9 @@ function RecipeContent({ recipe, library }: { recipe: Recipe; library: Library }
         <NotesSection recipe={recipe} />
       </div>
       {notice && <Toast message={notice} />}
+      {shopping && (
+        <ShoppingListSheet recipe={recipe} library={library} onClose={() => setShopping(false)} />
+      )}
     </div>
   );
 }
@@ -98,12 +134,15 @@ export function RecipeDetail({
   id,
   onClose,
   overlay = false,
+  onAddToPlan,
 }: {
   id: string;
   /** Closes the detail when it is not driven by the address (e.g. over the Plan). */
   onClose?: () => void;
   /** Never use the side panel: large windows show a modal (screens with no list beside it). */
   overlay?: boolean;
+  /** Screens that already are the Plan take over "Añadir al plan"; elsewhere it goes to `/plan`. */
+  onAddToPlan?: (recipeId: string) => void;
 }) {
   const { hydrated, library, status, refresh } = useLibrary();
   const closeDetail = useCloseDetail();
@@ -148,7 +187,12 @@ export function RecipeDetail({
   return (
     <DetailLayer mode={mode} title={recipe?.title} resetKey={id} onClose={close}>
       {recipe && library ? (
-        <RecipeContent key={recipe.id} recipe={recipe} library={library} />
+        <RecipeContent
+          key={recipe.id}
+          recipe={recipe}
+          library={library}
+          onAddToPlan={onAddToPlan}
+        />
       ) : (
         body
       )}

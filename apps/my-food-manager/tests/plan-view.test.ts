@@ -9,7 +9,7 @@ import {
   mondayOf,
   weekDates,
 } from "@/lib/domain/plan-calendar";
-import { missingIngredients, planWithPending, titleMatches } from "@/lib/domain/plan-view";
+import { pickerRecipes, planWithPending, titleMatches } from "@/lib/domain/plan-view";
 import type { Plan, PlanOp } from "@/lib/schema";
 
 describe("plan calendar", () => {
@@ -106,30 +106,23 @@ describe("planWithPending", () => {
   });
 });
 
-describe("missingIngredients", () => {
-  const catalog = {
-    sal: { name: "sal", staple: true },
-    leche: { name: "leche" },
-    huevo: { name: "huevo" },
-    nata: { name: "nata" },
-  } as never;
-  const recipe = {
-    ingredients: [
-      { ing: "sal" },
-      { ing: "leche" },
-      { ing: "huevo" },
-      { ing: "leche", optional: true },
-      { ing: "desconocido" },
-      { ing: "nata", optional: true },
-    ],
-  } as never;
+describe("pickerRecipes", () => {
+  const r = (id: string) => ({ id }) as never;
+  const all = [r("a"), r("b"), r("c"), r("d")];
+  const pickable = [r("a"), r("b"), r("c")];
+  const ids = (list: { id: string }[]) => list.map((x) => x.id);
 
-  it("lists non-staple ingredients not at home, once each, optional ones included", () => {
-    expect(missingIngredients(recipe, catalog, new Set(["huevo"]))).toEqual(["leche", "nata"]);
+  it("puts the suggested recipe first without repeating it", () => {
+    expect(ids(pickerRecipes(pickable, all, "b"))).toEqual(["b", "a", "c"]);
   });
 
-  it("is empty when everything is at home or a staple", () => {
-    expect(missingIngredients(recipe, catalog, new Set(["leche", "huevo", "nata"]))).toEqual([]);
+  it("offers a suggested recipe that is not pickable (Descartada)", () => {
+    expect(ids(pickerRecipes(pickable, all, "d"))).toEqual(["d", "a", "b", "c"]);
+  });
+
+  it("ignores an unknown or missing suggestion", () => {
+    expect(ids(pickerRecipes(pickable, all, "zzz"))).toEqual(["a", "b", "c"]);
+    expect(ids(pickerRecipes(pickable, all, undefined))).toEqual(["a", "b", "c"]);
   });
 });
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { Toast } from "@/components/feedback/Toast";
 import { KeyDialog } from "@/components/pantry/KeyDialog";
 import { getOutbox } from "@/lib/offline/outbox-client";
@@ -17,6 +18,7 @@ const NOTICE_MS = 4000;
  */
 export function FavoriteFeedback() {
   const outbox = useOutbox();
+  const pathname = usePathname();
   const { library } = useLibrary();
   const [keyOpen, setKeyOpen] = useState(false);
   const [touched, setTouched] = useState(false);
@@ -38,7 +40,11 @@ export function FavoriteFeedback() {
     };
   }, [hasKey, dismissed]);
 
-  const notice = outbox.notices.find((n) => n.favorite || n.rating);
+  // Ingredient changes made from a detail: the pantry and the Plan show their own rejections.
+  const screenReports = pathname.startsWith("/plan") || pathname.startsWith("/ingredients");
+  const notice = outbox.notices.find(
+    (n) => n.favorite || n.rating || (n.ingredient && !screenReports),
+  );
   useEffect(() => {
     if (!notice) return;
     const timer = setTimeout(() => getOutbox().dismissNotice(notice.id), NOTICE_MS);
@@ -46,7 +52,9 @@ export function FavoriteFeedback() {
   }, [notice]);
 
   const dialogOpen = keyOpen || (touched && outbox.keyRejected && !rejectionClosed);
-  const title = library?.recipes.find((r) => r.id === notice?.recipe)?.title ?? "la receta";
+  const title = notice?.ingredient
+    ? (library?.ingredients[notice.ingredient]?.name ?? notice.ingredient)
+    : (library?.recipes.find((r) => r.id === notice?.recipe)?.title ?? "la receta");
   return (
     <>
       {dialogOpen && (

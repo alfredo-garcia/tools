@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef } from "react";
-import { X } from "lucide-react";
+import { ArrowLeft, X } from "lucide-react";
 
 const FOCUSABLE = "a[href], button:not([disabled]), input, [tabindex]:not([tabindex='-1'])";
 
@@ -18,6 +18,7 @@ export function Sheet({
   subtitle,
   size = "auto",
   hideClose = false,
+  back = false,
   children,
 }: {
   open: boolean;
@@ -26,6 +27,8 @@ export function Sheet({
   subtitle?: string;
   size?: "auto" | "tall";
   hideClose?: boolean;
+  /** The close control is a back arrow named "Atrás" (sheets opened over a detail). */
+  back?: boolean;
   children: React.ReactNode;
 }) {
   if (!open) return null;
@@ -36,6 +39,7 @@ export function Sheet({
       subtitle={subtitle}
       size={size}
       hideClose={hideClose}
+      back={back}
     >
       {children}
     </SheetLayer>
@@ -48,6 +52,7 @@ function SheetLayer({
   subtitle,
   size,
   hideClose,
+  back,
   children,
 }: {
   onClose: () => void;
@@ -55,6 +60,7 @@ function SheetLayer({
   subtitle?: string;
   size: "auto" | "tall";
   hideClose: boolean;
+  back: boolean;
   children: React.ReactNode;
 }) {
   const titleId = useId();
@@ -82,7 +88,11 @@ function SheetLayer({
   const onKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Escape") {
       // A search box that clears its text on Esc has already handled it.
-      if (!e.defaultPrevented) onCloseRef.current();
+      if (!e.defaultPrevented) {
+        onCloseRef.current();
+        // A detail layer under this sheet must not also close on the same key press.
+        e.preventDefault();
+      }
       return;
     }
     if (e.key !== "Tab" || !panel.current) return;
@@ -125,10 +135,14 @@ function SheetLayer({
             <button
               type="button"
               onClick={onClose}
-              aria-label="Cerrar"
+              aria-label={back ? "Atrás" : "Cerrar"}
               className="grid size-11 shrink-0 place-items-center rounded-full bg-surface-2 text-text-muted hover:text-text"
             >
-              <X className="size-5" aria-hidden />
+              {back ? (
+                <ArrowLeft className="size-5" aria-hidden />
+              ) : (
+                <X className="size-5" aria-hidden />
+              )}
             </button>
           )}
         </div>

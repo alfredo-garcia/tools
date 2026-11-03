@@ -9,12 +9,15 @@ export function FavoriteButton({
   onToggle,
   recipeTitle,
   label,
+  fullWidth = false,
 }: {
   pressed: boolean;
   onToggle: () => void;
   recipeTitle: string;
   /** Shows the text next to the heart; the button then takes the width of its content. */
   label?: string;
+  /** With `label`: spans the width of its container (small windows, same width as the shortcuts). */
+  fullWidth?: boolean;
 }) {
   const action = pressed ? "Quitar de favoritos" : "Añadir a favoritos";
   return (
@@ -29,6 +32,8 @@ export function FavoriteButton({
       className={
         label
           ? `inline-flex min-h-12 items-center gap-2 rounded-full border px-5 text-sm font-semibold transition ${
+              fullWidth ? "w-full justify-center" : ""
+            } ${
               pressed
                 ? "border-accent-lime bg-accent-lime/15 text-accent-lime"
                 : "border-border bg-surface-1 text-text"

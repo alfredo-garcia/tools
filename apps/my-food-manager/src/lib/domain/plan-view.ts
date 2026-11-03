@@ -1,4 +1,4 @@
-import type { Library, Plan, PlanDish, PlanMeal, Recipe } from "@/lib/schema";
+import type { Plan, PlanDish, PlanMeal, Recipe } from "@/lib/schema";
 import { isPantryOp, isReviewOp, type PendingOp } from "./pantry-view";
 import { normalize } from "./search";
 
@@ -45,19 +45,17 @@ export function planWithPending(
   return view;
 }
 
-/** Catalog ids of the recipe's ingredients that are neither a staple nor at home, each once, in recipe order (PRD FR-13). */
-export function missingIngredients(
-  recipe: Pick<Recipe, "ingredients">,
-  catalog: Library["ingredients"],
-  have: ReadonlySet<string>,
-): string[] {
-  const out: string[] = [];
-  for (const line of recipe.ingredients) {
-    const entry = catalog[line.ing];
-    if (!entry || entry.staple || have.has(line.ing) || out.includes(line.ing)) continue;
-    out.push(line.ing);
-  }
-  return out;
+/**
+ * The recipes the picker lists: the suggested recipe (the one Al came from) first, even when it is Descartada, then the
+ * pickable ones in their usual order without repeating it. An unknown suggestion is ignored.
+ */
+export function pickerRecipes(
+  pickable: readonly Recipe[],
+  all: readonly Recipe[],
+  suggestedId: string | undefined,
+): Recipe[] {
+  const suggested = suggestedId ? all.find((r) => r.id === suggestedId) : undefined;
+  return suggested ? [suggested, ...pickable.filter((r) => r.id !== suggested.id)] : [...pickable];
 }
 
 /** The recipe picker's search: the title holds every word of the applied text, ignoring case and accents. */

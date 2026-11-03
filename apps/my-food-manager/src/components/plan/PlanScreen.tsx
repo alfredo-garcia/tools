@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { TmpPendingChanges } from "@/components/feedback/TmpPendingChanges";
 import { Toast } from "@/components/feedback/Toast";
@@ -15,11 +16,13 @@ import type { PlanActions } from "./PlanSlot";
 import { PlanWeek } from "./PlanWeek";
 import { RecipePickerSheet } from "./RecipePickerSheet";
 import { withoutDiscarded } from "@/lib/domain/filters";
+import { classifyIngredients } from "@/lib/domain/ingredient-groups";
 import { pantryWithPending } from "@/lib/domain/pantry-view";
 import { INITIAL_DAYS, MORE_DAYS, localDate } from "@/lib/domain/plan-calendar";
-import { PLAN_MEAL_LABELS, missingIngredients, planWithPending } from "@/lib/domain/plan-view";
+import { PLAN_MEAL_LABELS, pickerRecipes, planWithPending } from "@/lib/domain/plan-view";
 import { getOutbox } from "@/lib/offline/outbox-client";
 import { useLibrary } from "@/lib/offline/use-library";
+import { addToShoppingList } from "@/lib/offline/shopping-list";
 import { useOutbox } from "@/lib/offline/use-outbox";
 import type { PlanMeal } from "@/lib/schema";
 
@@ -52,8 +55,17 @@ export function PlanScreen() {
 
   const [days, setDays] = useState(INITIAL_DAYS);
   const [weekOffset, setWeekOffset] = useState(0);
-  const [picker, setPicker] = useState<{ date: string; meal: PlanMeal } | null>(null);
-  const [missing, setMissing] = useState<{ recipe: string; ingredients: string[] } | null>(null);
+  const [picker, setPicker] = useState<{
+    date: string;
+    meal: PlanMeal;
+    suggestedId?: string;
+  } | null>(null);
+  const [missing, setMissing] = useState<string | null>(null);
+  /** The recipe Al came from ("Añadir al plan" of a detail): offered first the first time the picker opens. */
+  const addParam = useSearchParams().get("add") ?? undefined;
+  const [fromDetail, setFromDetail] = useState<string>();
+  const [used, setUsed] = useState<string>();
+  const suggested = fromDetail ?? (addParam !== used ? addParam : undefined);
   const [detailId, setDetailId] = useState<string | null>(null);
   const [announcement, setAnnouncement] = useState("");
   const [keyOpen, setKeyOpen] = useState(false);
@@ -71,6 +83,16 @@ export function PlanScreen() {
     () => (library ? pantryWithPending(library.pantry, outbox.pending) : undefined),
     [library, outbox.pending],
   );
+
+  const pickerList = useMemo(
+    () => pickerRecipes(pickable, recipes, picker?.suggestedId),
+    [pickable, recipes, picker?.suggestedId],
+  );
+  const groupsOf = (recipeId: string) => {
+    const recipe = recipeMap.get(recipeId);
+    if (!recipe || !library || !pantry) return undefined;
+    return classifyIngredients(recipe, library.ingredients, pantry.have, pantry.buy);
+  };
 
   const notice = outbox.notices.find((n) => !n.favorite);
   useEffect(() => {
@@ -95,32 +117,36 @@ export function PlanScreen() {
     if (!picker || !library || !pantry) return;
     const recipe = recipeMap.get(recipeId);
     if (!recipe) return;
-    const absent = missingIngredients(recipe, library.ingredients, pantry.have);
+    const absent = groupsOf(recipeId)?.faltan ?? [];
     void getOutbox().enqueuePlan("plan.addRecipe", picker.date, picker.meal, recipeId);
     const meal = PLAN_MEAL_LABELS.find((m) => m.meal === picker.meal)!;
     setAnnouncement(`${recipe.title} añadida ${meal.to}`);
     setPicker(null);
-    if (absent.length > 0) setMissing({ recipe: recipeId, ingredients: absent });
+    if (absent.length > 0) setMissing(recipeId);
     wantKey();
   };
 
   const closeMissing = (addToList: boolean) => {
-    if (addToList && missing && pantry)
-      for (const id of missing.ingredients)
-        void getOutbox().enqueue(
-          "pantry.setBuy",
-          id,
-          true,
-          library?.pantry.to_buy.includes(id) ?? false,
-        );
-    if (addToList) setAnnouncement("Ingredientes añadidos a tu lista de la compra");
+    if (addToList && missing && library) {
+      addToShoppingList(groupsOf(missing)?.faltan ?? [], library.pantry.to_buy);
+      setAnnouncement("Ingredientes añadidos a tu lista de la compra");
+    }
     setMissing(null);
     wantKey();
   };
 
   const actions: PlanActions = {
     recipes: recipeMap,
-    onAdd: (date, meal) => setPicker({ date, meal }),
+    onAdd: (date, meal) => {
+      const suggestedId = suggested && recipeMap.has(suggested) ? suggested : undefined;
+      setPicker({ date, meal, suggestedId });
+      if (suggested) {
+        // Only the first opening offers it; the address stops carrying it too.
+        setFromDetail(undefined);
+        setUsed(addParam);
+        if (window.location.search) window.history.replaceState(null, "", window.location.pathname);
+      }
+    },
     onRemove: (date, meal, recipeId) => {
       void getOutbox().enqueuePlan("plan.removeRecipe", date, meal, recipeId);
       setAnnouncement(`${recipeMap.get(recipeId)?.title ?? "Receta"} quitada`);
@@ -226,7 +252,8 @@ export function PlanScreen() {
         <RecipePickerSheet
           date={picker.date}
           meal={picker.meal}
-          recipes={pickable}
+          recipes={pickerList}
+          suggestedId={picker.suggestedId}
           onClose={() => {
             setPicker(null);
             wantKey();
@@ -234,15 +261,26 @@ export function PlanScreen() {
           onConfirm={confirmAdd}
         />
       )}
-      {missing && (
+      {missing && groupsOf(missing) && (
         <MissingIngredientsSheet
-          recipeTitle={recipeMap.get(missing.recipe)?.title ?? "Receta"}
-          ingredients={missing.ingredients.map((id) => library?.ingredients[id]?.name ?? id)}
+          recipeTitle={recipeMap.get(missing)?.title ?? "Receta"}
+          groups={groupsOf(missing)!}
+          names={(id) => library?.ingredients[id]?.name ?? id}
           onContinue={() => closeMissing(false)}
           onAddToList={() => closeMissing(true)}
         />
       )}
-      {detailId && <RecipeDetail id={detailId} overlay onClose={() => setDetailId(null)} />}
+      {detailId && (
+        <RecipeDetail
+          id={detailId}
+          overlay
+          onClose={() => setDetailId(null)}
+          onAddToPlan={(id) => {
+            setDetailId(null);
+            setFromDetail(id);
+          }}
+        />
+      )}
       {keyDialogOpen && (
         <KeyDialog
           rejected={outbox.keyRejected}

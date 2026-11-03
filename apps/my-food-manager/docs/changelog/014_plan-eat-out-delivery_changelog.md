@@ -1,7 +1,7 @@
 # Changelog: Plan: Eat Out and Delivery
 
 > Project: `my-food-manager`
-> Merged: documented on the feature branch `my-food-manager/014-plan-eat-out-delivery` before the merge, as `CLAUDE.md` and `tech_standards.md` §11 require
+> Merged: documented on the feature branch `my-food-manager/014-plan-eat-out-delivery` before the merge, as `CLAUDE.md` and `tech_standards.md` §11 require; merge commit `caa27006`, merged and pushed at the user's request on 2026-11-03
 > Source PRD: `014_plan-eat-out-delivery_prd.md`
 > Source UX Flow: `014_plan-eat-out-delivery_ux_flow.md`
 > Master doc file(s) touched: `docs/functional-spec.md` (Product Overview, Domain Map, Screen & Flow Index, Writes, Plan entity, Glossary, Recent Changes; domain `plan`: Overview, SCR-plan, CMP-plan-calendar, CMP-recipe-picker, FLW-add-recipe-to-plan, new FLW-mark-plan-out); `docs/context/ui_kit_registry.md`

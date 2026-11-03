@@ -54,6 +54,8 @@
 | `PlanDayList` / `PlanDay` | Data Display | Web | Beta | `components/plan/PlanDayList`, `components/plan/PlanDay` |
 | `PlanWeek` / `PlanColumn` / `WeekNav` | Data Display | Web | Beta | `components/plan/PlanWeek`, `components/plan/PlanColumn`, `components/plan/WeekNav` |
 | `PlanSlot` / `PlanRecipeItem` | Data Display | Web | Beta | `components/plan/PlanSlot`, `components/plan/PlanRecipeItem` |
+| `PlanOutItem` | Data Display | Web | Beta | `components/plan/PlanOutItem` |
+| `PlanOutOptions` | Inputs | Web | Beta | `components/plan/PlanOutOptions` |
 | `RecipePickerSheet` | Feedback/Overlays | Web | Beta | `components/plan/RecipePickerSheet` |
 | `MissingIngredientsSheet` | Feedback/Overlays | Web | Beta | `components/plan/MissingIngredientsSheet` |
 | `IngredientGroups` | Data Display | Web | Beta | `components/pantry/IngredientGroups` |
@@ -169,13 +171,13 @@
 
 ### PlanScreen (and its parts)
 - **Category:** Data Display (assembly). **Import:** `components/plan/*`. **Status:** Beta (feature `my-food-manager/008`).
-- **Description:** the Plan section. `PlanScreen` holds the state (days loaded, week, picker, missing ingredients, key dialog) and composes: `PlanDayList` of `PlanDay` (small windows, 8 days then +7 at the end), `PlanWeek` of `PlanColumn` plus `WeekNav` (from 640px, Monday–Sunday, 132px minimum column, previous week disabled at the current one), each day with three `PlanSlot` (Desayuno, Almuerzo, Cena) listing `PlanRecipeItem` (photo or emoji, title, X to remove; text dishes read only). Days before today are dimmed and read only.
-- **Props:** `PlanSlot`: `date`, `meal`, `label`, `dishes`, `past`, `columns`, `actions: PlanActions` (`recipes`, `onAdd`, `onRemove`, `onOpen`). `PlanWeek`: `today`, `offset`, `view`, `actions`, `onOffset`. `PlanDayList`: `today`, `count`, `view`, `actions`, `onMore`. `WeekNav`: `canGoBack`, `onPrevious`, `onNext`.
+- **Description:** the Plan section. `PlanScreen` holds the state (days loaded, week, picker, missing ingredients, key dialog) and composes: `PlanDayList` of `PlanDay` (small windows, 8 days then +7 at the end), `PlanWeek` of `PlanColumn` plus `WeekNav` (from 640px, Monday–Sunday, 132px minimum column, previous week disabled at the current one), each day with three `PlanSlot` (Desayuno, Almuerzo, Cena) listing first `PlanOutItem` (the marks Comer fuera / Pedir a domicilio: lucide `Utensils` / `Bike` on a `surface-2` row, label and X; feature `my-food-manager/014`) and then `PlanRecipeItem` (photo or emoji, title, X to remove; text dishes read only); a slot with `eat-out` shows no "Añadir". Days before today are dimmed and read only.
+- **Props:** `PlanSlot`: `date`, `meal`, `label`, `dishes`, `past`, `columns`, `actions: PlanActions` (`recipes`, `onAdd`, `onRemove`, `onRemoveOut`, `onOpen`). `PlanWeek`: `today`, `offset`, `view`, `actions`, `onOffset`. `PlanDayList`: `today`, `count`, `view`, `actions`, `onMore`. `WeekNav`: `canGoBack`, `onPrevious`, `onNext`.
 - **Guidance:** domain logic is in `lib/domain/plan-view` and `plan-calendar`; the screen never writes by itself, it enqueues operations in the outbox.
 
 ### RecipePickerSheet / MissingIngredientsSheet
 - **Category:** Feedback/Overlays. **Import:** `components/plan/RecipePickerSheet`, `components/plan/MissingIngredientsSheet`. **Status:** Beta.
-- **Props:** `RecipePickerSheet`: `date`, `meal`, `recipes: Recipe[]` (already in the order to show), `suggestedId?` (the recipe of origin: chosen at the start and tagged "Tu receta"), `onClose`, `onConfirm(recipeId)`; search (3 letters, 1 s) over titles, single selection, "Añadir receta" enabled with a selection. `MissingIngredientsSheet`: `recipeTitle`, `groups: IngredientGroups`, `names(id)`, `onContinue`, `onAddToList`; closing by Esc or backdrop equals `onContinue`.
+- **Props:** `RecipePickerSheet`: `date`, `meal`, `dishes` (what the slot already holds, pending changes included), `recipes: Recipe[]` (already in the order to show), `suggestedId?` (the recipe of origin: chosen at the start and tagged "Tu receta"), `onClose`, `onConfirm(recipeId)`, `onOut(out)`; above the search, `PlanOutOptions` (two `Button variant="secondary"`, "Salir fuera" and "Pedir", disabled per the slot); search (3 letters, 1 s) over titles, single selection, "Añadir receta" enabled with a selection. `MissingIngredientsSheet`: `recipeTitle`, `groups: IngredientGroups`, `names(id)`, `onContinue`, `onAddToList`; closing by Esc or backdrop equals `onContinue`.
 - **Notes:** both are `Sheet` with their own content; the picker is `size="tall"`, the missing sheet uses `hideClose`.
 
 ### RatingStars / RatingMark / FavoriteButton

@@ -10,7 +10,7 @@
 
 My Food Manager (shown to users as "My Food") is a personal, visual, mobile-first web app (installable PWA) that helps Al and his household partner decide what to cook and shop without forgetting anything. It reads the Google Drive folder `food`, which the food-manager skill maintains, and keeps working without a connection. There are no logins. Platform: web only.
 
-Today the app lets you browse the library with filters and a text search and open each recipe's detail, and it has a main navigation with four sections: Recetas, Plan, Despensa and Perfil. Perfil shows Al's favorite recipes. Recipes can be marked as favorites from the list and from the detail, with a heart, and shared from the detail; favorites are saved to Drive in the same way as the pantry and the plan. Plan is the household's meal calendar: from today on, each day has Desayuno, Almuerzo and Cena, to which recipes are added and removed, and every recipe added is checked against the pantry, offering to put what is missing on the shopping list. Despensa holds the pantry and the shopping list in two tabs, where each ingredient has two switches, "Tengo" and "Comprar", saved to Drive (also from the device without a connection, with a shared write key). Plan changes are saved to Drive in the same way (offline queue and shared write key). Each recipe has a status (Probada, Por probar or Descartada), set outside the app by the food-manager skill; Recetas and the favorites in Perfil start showing only the Probadas and can switch to the others or show all. Al can rate each recipe from 1 to 5 stars from its detail; the rating shows on the rows of Recetas, the favorites of Perfil and the Plan, can be filtered, and sorts Recetas and the favorites from the best rated down; ratings are saved to Drive like favorites. From the recipe detail Al can put what a recipe lacks on the shopping list (a window that sorts its ingredients into Faltan, En mi lista de la compra and Ya tengo) or take the recipe to the Plan, where the picker offers it first the first time it opens. Comments, the "curated" flag and the person picker of the profile are still pending (see `product/product_vision.md` §7).
+Today the app lets you browse the library with filters and a text search and open each recipe's detail, and it has a main navigation with four sections: Recetas, Plan, Despensa and Perfil. Perfil shows Al's favorite recipes. Recipes can be marked as favorites from the list and from the detail, with a heart, and shared from the detail; favorites are saved to Drive in the same way as the pantry and the plan. Plan is the household's meal calendar: from today on, each day has Desayuno, Almuerzo and Cena, to which recipes are added and removed, and every recipe added is checked against the pantry, offering to put what is missing on the shopping list. A slot can also be marked from the picker as eaten out ("Comer fuera") or ordered in ("Pedir a domicilio"); the mark shows with its own icon so it is clear that meal is not cooked. Despensa holds the pantry and the shopping list in two tabs, where each ingredient has two switches, "Tengo" and "Comprar", saved to Drive (also from the device without a connection, with a shared write key). Plan changes are saved to Drive in the same way (offline queue and shared write key). Each recipe has a status (Probada, Por probar or Descartada), set outside the app by the food-manager skill; Recetas and the favorites in Perfil start showing only the Probadas and can switch to the others or show all. Al can rate each recipe from 1 to 5 stars from its detail; the rating shows on the rows of Recetas, the favorites of Perfil and the Plan, can be filtered, and sorts Recetas and the favorites from the best rated down; ratings are saved to Drive like favorites. From the recipe detail Al can put what a recipe lacks on the shopping list (a window that sorts its ingredients into Faltan, En mi lista de la compra and Ya tengo) or take the recipe to the Plan, where the picker offers it first the first time it opens. Comments, the "curated" flag and the person picker of the profile are still pending (see `product/product_vision.md` §7).
 
 ## 2. How to Read This Documentation
 
@@ -27,7 +27,7 @@ Today the app lets you browse the library with filters and a text search and ope
 | recipes | Filtering (including by recipe status and rating) and searching the recipe list, reading a recipe, rating it and, from its detail, adding its missing ingredients to the shopping list or taking it to the Plan | inline below | Active |
 | navigation | Main navigation between sections and their placeholders | inline below | Active |
 | pantry | Pantry and shopping list, with writes to Drive | inline below | Active |
-| plan | Meal-plan calendar with recipe picking (offering first the recipe Al came from) and a pantry check, with writes to Drive | inline below | Active |
+| plan | Meal-plan calendar with recipe picking (offering first the recipe Al came from), eat-out and delivery marks and a pantry check, with writes to Drive | inline below | Active |
 | profile | Perfil: Al's favorite recipes and the heart to mark them, with writes to Drive; Al's ratings are shown and edited from the recipe detail | inline below | Active |
 
 ## 4. Navigation Structure
@@ -67,6 +67,7 @@ The app has four sections, always reachable from a main navigation: Recetas (`/`
 | FLW-add-recipe-to-plan | Add a recipe to the plan | plan, recipes | Web |
 | FLW-remove-plan-recipe | Remove a recipe from the plan | plan | Web |
 | FLW-browse-plan | Browse days and weeks | plan | Web |
+| FLW-mark-plan-out | Mark or unmark a slot as eaten out or ordered in | plan | Web |
 | FLW-toggle-favorite | Mark or unmark a favorite | profile, library, recipes | Web |
 | FLW-rate-recipe | Rate a recipe | recipes, library, profile, plan | Web |
 | FLW-share-recipe | Share a recipe | recipes | Web |
@@ -74,7 +75,7 @@ The app has four sections, always reachable from a main navigation: Recetas (`/`
 
 ## 6. Cross-Cutting Concepts
 
-- **Writes.** Only the pantry (also from the recipe detail, FLW-add-recipe-to-shopping-list), the plan, Al's favorites and ratings, and the status of a rated recipe are written to Drive, through operations with an offline queue and a shared household write key (see FLW-flip-switch, FLW-add-recipe-to-shopping-list, FLW-add-recipe-to-plan, FLW-toggle-favorite and FLW-rate-recipe). Everything else stays read-only; comments arrive with their own feature. A batch that touches several files is written pantry first, then reviews (favorites and ratings), then the status of the rated recipes, then the plan last, each file on its own.
+- **Writes.** Only the pantry (also from the recipe detail, FLW-add-recipe-to-shopping-list), the plan (recipes and eat-out/delivery marks), Al's favorites and ratings, and the status of a rated recipe are written to Drive, through operations with an offline queue and a shared household write key (see FLW-flip-switch, FLW-add-recipe-to-shopping-list, FLW-add-recipe-to-plan, FLW-mark-plan-out, FLW-toggle-favorite and FLW-rate-recipe). Everything else stays read-only; comments arrive with their own feature. A batch that touches several files is written pantry first, then reviews (favorites and ratings), then the status of the rated recipes, then the plan last, each file on its own.
 - **Changes without connection.** A change shows at once, waits on the device and is sent when the connection returns; it is never lost.
 - **Offline-first.** After the first sync, the library is always shown from the device, before any network response. Reads are never blocked by a missing connection.
 - **Freshness.** A sync runs on app open, every 5 minutes while the app is visible and online, within 5 seconds of regaining a connection, and on a manual request. If Drive has no changes, only the "last synced" time updates. A failed sync leaves the stored data untouched.
@@ -97,7 +98,7 @@ The app has four sections, always reachable from a main navigation: Recetas (`/`
 
 - **Library snapshot.** The complete normalized copy of the `food` folder: recipes (with steps, notes and variations), the ingredient catalog, the pantry, each person's reviews, the vocabularies (categories, tags, units, families) and the list of household people. The people are derived from the review files that exist. The snapshot is replaced as a whole on every sync that finds changes.
 - **Recipe status.** `status` of a recipe (recipes schema 4): `to-try` (Por probar), `tried` (Probada) or `discarded` (Descartada), one value for the whole household. A missing, empty or unknown value is Probada. The food-manager skill sets it (new recipes arrive as Por probar; "borrar" makes it Descartada and keeps the file). The app reads it and writes it in one case only: rating a recipe that is Por probar or Descartada makes it Probada, by changing just the `status` and `updated` lines of the recipe's frontmatter (see FLW-rate-recipe). Removing a rating does not undo it.
-- **Plan.** `plan/plan.yaml` (plan schema 1, created by the food-manager skill, never by the app): `updated` plus `days`, a map from date (`YYYY-MM-DD`) to a list of meals `{ slot, label, note, dishes }`, where `slot` is `breakfast`, `lunch`, `snack` or `dinner` and a dish is `{ recipe, servings }` (a recipe id) or `{ text }` (free description). Several meals may share a slot. The app shows and edits only the dishes that are recipes of breakfast, lunch and dinner, and writes only the add or removal of one recipe dish (and `updated`); labels, notes, servings, text dishes and snack meals stay as they are. Past days are never shown; any writer may remove them.
+- **Plan.** `plan/plan.yaml` (plan schema 1, created by the food-manager skill, never by the app): `updated` plus `days`, a map from date (`YYYY-MM-DD`) to a list of meals `{ slot, label, note, dishes }`, where `slot` is `breakfast`, `lunch`, `snack` or `dinner` and a dish is `{ recipe, servings }` (a recipe id), `{ text }` (free description) or `{ out }`, a mark that the meal is not cooked at home: `eat-out` (Comer fuera) or `delivery` (Pedir a domicilio). A meal with `eat-out` has no other dishes; a meal with `delivery` may also hold recipe or text dishes, but only one `delivery`. Several meals may share a slot. The app shows the recipe, text and mark dishes of breakfast, lunch and dinner, and writes only the add or removal of one recipe dish or one mark (and `updated`), applying the mark rules to the whole slot (ADR 005); marks add no ingredients and never touch the pantry. An unknown `out` value is not shown and is kept; labels, notes, servings, text dishes and snack meals stay as they are. Past days are never shown; any writer may remove them.
 - **Reviews (Al).** `reviews/al.yaml` (reviews schema 1, created by the food-manager skill, never by the app): `user`, `updated`, `favorites` (recipe ids) and `ratings`. The app writes only `favorites` (a recipe is added at the end or removed), `ratings` (see Rating) and `updated`; comments and unknown fields stay as they are, and a recipe that does not exist is rejected. Until the person picker exists, the person is always Al; the file of the household partner is neither read for favorites nor written.
 - **Rating (Al).** `ratings` of `reviews/al.yaml`: a map from recipe id to `{ stars, comment, date }`, where `stars` is an integer from 1 to 5. A missing entry, or a `stars` outside 1 to 5 or not an integer, reads as no rating (the entry stays in the file). The app writes `stars` and `date` (the day of the change, offset -05:00) and keeps the entry's `comment` and unknown fields; removing a rating deletes the whole entry, comment included. The rating is never read from or written to the recipe file.
 - **Pantry.** `pantry/pantry.yaml` (schema 2): `updated` plus `items`, a map from ingredient id to `have` and `to_buy`, for non-staple ingredients only. Staples are never listed and are always available. There are no quantities. The app writes only these two flags (and `updated`); Claude and Telegram write the same file.
@@ -128,6 +129,7 @@ None.
 - **Rating mark (marca de rating):** the filled star and number ("★ 4") that a list row shows for a rated recipe; display only.
 - **Plan:** the household's agenda of recipes per day and meal.
 - **Slot (franja):** one meal time of one day: Desayuno, Almuerzo or Cena (the file also knows `snack`, not shown).
+- **Mark (marca) / Comer fuera / Pedir a domicilio:** a slot's `out` dish, meaning that meal is not cooked at home. Comer fuera (`eat-out`) takes the whole slot; Pedir a domicilio (`delivery`) may share the slot with recipes, at most once. The picker offers them as "Salir fuera" and "Pedir".
 - **Faltan / En mi lista de la compra / Ya tengo:** the three groups of a recipe's ingredients (catalog ingredients only, each once, in recipe order, optional ones included). Ya tengo: a staple, or "Tengo" on even if "Comprar" is also on. En mi lista de la compra: not Ya tengo and "Comprar" on. Faltan: the rest. Ingredients outside the catalog are not listed.
 - **Receta de origen / "Tu receta":** the recipe whose detail Al left with "Añadir al plan"; the Plan's picker lists it first, chosen, with the tag "Tu receta".
 - **Filter:** one of Categoría, Tiempo, Dieta, Cocina, Dificultad, Proteína, Estado or Rating; each holds one chosen value at a time.
@@ -141,6 +143,7 @@ None.
 
 ## 11. Recent Changes
 
+- 2026-11-03 — plan: slots can be marked as Comer fuera or Pedir a domicilio from the picker, shown first in the slot with their own icon and saved to Drive (see `changelog/014_plan-eat-out-delivery_changelog.md`).
 - 2026-11-03 — recipes, plan: shortcuts in the recipe detail to add a recipe's missing ingredients to the shopping list and to take it to the Plan, where the picker offers it first; the Plan's missing-ingredients sheet uses the same three groups (see `changelog/013_recipe-detail-shortcuts_changelog.md`).
 - 2026-11-02 — recipes, library, profile, plan: recipe ratings (1 to 5 stars) set from the recipe detail, shown on the lists, filterable and used as the default order, saved to Drive; a rated recipe becomes Probada (see `changelog/012_recipe-ratings_changelog.md`).
 - 2026-11-02 — recipes, profile, plan: recipe status filter (Estado) in Recetas and in the favorites of Perfil, starting on Probadas, and discarded recipes left out of the Plan's picker (see `changelog/011_recipe-status-filter_changelog.md`).
@@ -526,7 +529,7 @@ The pantry and the shopping list over the ingredient catalog, with writes to Dri
 
 ### Overview
 
-The household's meal calendar. Every day from today has three slots, Desayuno, Almuerzo and Cena, that hold any number of recipes. It writes only the add and removal of recipe dishes in `plan/plan.yaml`; reading works from the stored library, online or offline. Adding a recipe also sorts its ingredients into Faltan, En mi lista de la compra and Ya tengo and can mark Faltan as "Comprar".
+The household's meal calendar. Every day from today has three slots, Desayuno, Almuerzo and Cena, that hold any number of recipes, or a mark that the meal is eaten out or ordered in. It writes only the add and removal of recipe dishes and marks in `plan/plan.yaml`; reading works from the stored library, online or offline. Adding a recipe also sorts its ingredients into Faltan, En mi lista de la compra and Ya tengo and can mark Faltan as "Comprar".
 
 ### Screens / Pages
 
@@ -539,6 +542,7 @@ The household's meal calendar. Every day from today has three slots, Desayuno, A
 - **Data & business rules:**
   - Shows the days from today (the device's date); a day before today is never shown on small windows, and in the current week of the weekly view it is dimmed, shows its recipes and offers no "Añadir" or X.
   - Each day has the slots Desayuno, Almuerzo and Cena, in that order. A slot holds any number of recipes, the same recipe may repeat, and they appear in the order of the file (all meals of that slot together). Free-text dishes are shown as plain text without photo, X or detail link. Snack meals in the file are kept and not shown. A recipe id that is not in the library is not shown.
+  - A slot shows its marks first (Comer fuera, Pedir a domicilio: icon, label and an X, no photo and no detail link), then its recipes and text dishes. A slot with Comer fuera offers no "Añadir". Days before today show their marks dimmed and without X.
   - Small windows: today and the next 7 days (8 days); each time the end of the list is reached 7 more days are added, with no limit, also offline.
   - Medium and large windows: one week, Monday to Sunday, in seven columns that share the available width equally (132 px minimum; if they do not fit, the week scrolls sideways). A title shows the date range, with "Esta semana" for the current week, and today's column is highlighted. Buttons at the sides go to the previous and next week; the previous one is disabled in the current week (a past week cannot be reached) and the next one has no limit.
   - A planned recipe that Al has rated shows its rating mark after the title (display only); unrated recipes show nothing. The picker shows no rating.
@@ -551,29 +555,30 @@ The household's meal calendar. Every day from today has three slots, Desayuno, A
   - Plan file missing: "El plan todavía no está disponible en Drive", with "Reintentar" and no way to add or remove.
   - Offline: the stored plan is shown; changes wait on the device (CMP-pending-changes).
   - Empty slot: only its name and "Añadir".
-- **Related flows:** FLW-add-recipe-to-plan, FLW-remove-plan-recipe, FLW-browse-plan, FLW-enter-write-key.
+- **Related flows:** FLW-add-recipe-to-plan, FLW-remove-plan-recipe, FLW-mark-plan-out, FLW-browse-plan, FLW-enter-write-key.
 - **Source:** `008_meal-plan-calendar_prd.md`, `008_meal-plan-calendar_ux_flow.md`; implementation in `src/components/plan/` and `src/app/plan/page.tsx`.
 
 ### Functionally-Significant Components
 
 #### CMP-plan-calendar Day list, weekly columns and slots
 
-- **Design system reference:** `RecipePhoto`, `SyncBadge`, `AppShell` (see `context/ui_kit_registry.md`); `PlanScreen`, `PlanDayList`, `PlanWeek`, `PlanSlot` and `PlanRecipeItem` are registered there.
+- **Design system reference:** `RecipePhoto`, `SyncBadge`, `AppShell` (see `context/ui_kit_registry.md`); `PlanScreen`, `PlanDayList`, `PlanWeek`, `PlanSlot`, `PlanRecipeItem` and `PlanOutItem` are registered there.
 - **Functional role:** shows the days and their slots and offers "Añadir", the X and the opening of a recipe.
-- **Behavior rules:** as the data and business rules of SCR-plan. The X has the accessible name "Quitar <receta>"; "Añadir" names its slot and day.
+- **Behavior rules:** as the data and business rules of SCR-plan. The X has the accessible name "Quitar <receta>" ("Quitar Comer fuera" / "Quitar Pedir a domicilio" for a mark); "Añadir" names its slot and day and is not shown when the slot has Comer fuera.
 - **Used on:** SCR-plan.
 - **Source:** `008_meal-plan-calendar_prd.md`, `_ux_flow.md`; implementation in `src/components/plan/` and `src/lib/domain/plan-view.ts`, `plan-calendar.ts`.
 
 #### CMP-recipe-picker Recipe picker
 
-- **Design system reference:** `Sheet`, `SearchInput`, `Button`.
-- **Functional role:** chooses one recipe for a slot.
+- **Design system reference:** `Sheet`, `SearchInput`, `Button`, `PlanOutOptions`.
+- **Functional role:** chooses one recipe for a slot, or marks the slot as eaten out or ordered in.
 - **Behavior rules:**
   - Titled "Añadir al desayuno / almuerzo / a la cena" with the day. A search box ("Buscar receta"), the library list (photo, title, total time) and "Añadir receta".
   - Search: 3 characters minimum, applied 1 second after the last keystroke or on Enter; "x" and Esc clear it. Case and accents are ignored and every word must be in the title. With fewer than 3 characters the whole library shows. No match shows "Sin resultados" and keeps the selection; an empty library shows "No hay recetas todavía".
   - One recipe at a time: tapping another moves the choice, tapping the chosen one clears it. "Añadir receta" is enabled only with a choice.
   - With a recipe of origin (see SCR-plan) it is first in the list, already chosen and tagged "Tu receta", so "Añadir receta" is enabled; search, the rest of the list and changing the choice work as always. A search that does not match it hides it like any other recipe, and it is first again when the search clears.
   - Recipes that are Descartadas are neither listed nor found by the search, except the recipe of origin; Probadas and Por probar are, and Por probar recipes are planned like any other. There is no status control. A recipe already in the plan stays there whatever its status.
+  - Above the search box, a row with "Salir fuera" and "Pedir". Tapping one marks the slot (FLW-mark-plan-out) and closes the picker, whatever recipe is chosen. "Salir fuera" is disabled when the slot holds any dish; "Pedir" is disabled when the slot already has Pedir a domicilio. Both count the changes still pending on the device.
   - Esc, the backdrop or the close button close it and add nothing. Resizing across 640 px keeps the text and the choice.
 - **Used on:** SCR-plan.
 - **Source:** `008_meal-plan-calendar_prd.md`, `_ux_flow.md`; implementation in `src/components/plan/RecipePickerSheet.tsx`.
@@ -596,7 +601,7 @@ The household's meal calendar. Every day from today has three slots, Desayuno, A
 - **Goal / trigger:** plan a recipe for a slot of a day, from the Plan or from the recipe's detail.
 - **Screens involved (in sequence):** (from a detail: SCR-recipe-detail → ("Añadir al plan") →) SCR-plan → ("Añadir" of a slot; with a recipe of origin the picker offers it first, chosen) → CMP-recipe-picker → ("Añadir receta") → SCR-plan with the recipe at the end of the slot → (if Faltan is not empty) CMP-missing-ingredients → SCR-plan → (if the device has no key) CMP-write-key.
 - **Business rules governing the flow:** the recipe shows at once and goes to the outbox with the same sending, key and retry rules as FLW-flip-switch. The server applies the change to the latest `plan.yaml`, retrying once on a conflict: the dish goes to the last meal of that slot on that day, or a new meal is created in slot order (breakfast, lunch, snack, dinner); days stay in date order; everything the app does not manage is kept; `updated` is set with offset `-05:00`. In a batch with pantry changes, the pantry is written first and the plan last.
-- **Edge cases & error handling:** an unknown recipe, a bad date, a slot other than breakfast, lunch or dinner, or a day earlier than yesterday in `-05:00` is rejected, the recipe leaves the screen and a 4-second notice says "No se pudo guardar <receta>". A missing or unreadable plan file rejects only the plan changes. A repeated conflict or a Drive outage keeps the change pending. The server remembers for 10 minutes which plan changes it applied, so a retry does not add the recipe twice (best effort, per server instance). The other phone sees the change at its next sync; changes from two phones to the same slot both survive.
+- **Edge cases & error handling:** an unknown recipe, a bad date, a slot other than breakfast, lunch or dinner, a slot that has Comer fuera, or a day earlier than yesterday in `-05:00` is rejected, the recipe leaves the screen and a 4-second notice says "No se pudo guardar <receta>". A missing or unreadable plan file rejects only the plan changes. A repeated conflict or a Drive outage keeps the change pending. The server remembers for 10 minutes which plan changes it applied, so a retry does not add the recipe twice (best effort, per server instance). The other phone sees the change at its next sync; changes from two phones to the same slot both survive.
 - **Source:** `008_meal-plan-calendar_prd.md` (§5, §8, §10), `008_meal-plan-calendar_ux_flow.md`, ADR 003.
 
 #### FLW-remove-plan-recipe Remove a recipe from the plan
@@ -606,6 +611,14 @@ The household's meal calendar. Every day from today has three slots, Desayuno, A
 - **Business rules governing the flow:** removes one occurrence at once, with no confirmation and no undo, and queues the change. The server removes one dish with that recipe from the slot's meals; a meal left with no dishes, and a day left with no meals, are removed too. The shopping list is not touched.
 - **Edge cases & error handling:** removing something that is no longer there changes nothing. Pending, key and rejection behave as in FLW-add-recipe-to-plan.
 - **Source:** `008_meal-plan-calendar_prd.md` (§5, §10), `008_meal-plan-calendar_ux_flow.md`.
+
+#### FLW-mark-plan-out Mark or unmark a slot as eaten out or ordered in
+
+- **Goal / trigger:** say that a meal will not be cooked at home, or undo it.
+- **Screens involved (in sequence):** SCR-plan → ("Añadir" of a slot) → CMP-recipe-picker → ("Salir fuera" or "Pedir") → SCR-plan with the mark first in the slot → (if the device has no key) CMP-write-key; SCR-plan → (X of a mark) → SCR-plan without it.
+- **Business rules governing the flow:** the mark shows at once and goes to the outbox with the same sending, key and retry rules as FLW-flip-switch; removal has no confirmation and no undo. The server applies it to the latest `plan.yaml`, retrying once on a conflict: Comer fuera gets a meal of its own in slot order, only in a slot with no dishes; Pedir a domicilio is added to the last meal of the slot (or a new one), never next to Comer fuera and only once; a mark already there changes nothing. Removing a mark removes the meal or day it leaves empty. The pantry and the shopping list are never touched and the missing-ingredients sheet never opens.
+- **Edge cases & error handling:** a rule broken on the server (for example, a recipe added on the other phone just before Comer fuera) rejects the change, the mark leaves (or comes back, for a removal) and a 4-second notice says "No se pudo guardar Comer fuera" / "No se pudo guardar Pedir a domicilio". Marks written by food-manager show the same way, including files where a slot's meals mix Comer fuera and recipes (all are shown, with no "Añadir").
+- **Source:** `014_plan-eat-out-delivery_prd.md` (§5, §6, §10), `014_plan-eat-out-delivery_ux_flow.md`, ADR 005.
 
 #### FLW-browse-plan Browse days and weeks
 

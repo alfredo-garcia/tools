@@ -1,7 +1,7 @@
 # Changelog: Recipe Detail Shortcuts
 
 > Project: `my-food-manager`
-> Merged: documented on the feature branch `my-food-manager/013-recipe-detail-shortcuts` before the merge, as `CLAUDE.md` and `tech_standards.md` §11 require; merge commit pending
+> Merged: documented on the feature branch `my-food-manager/013-recipe-detail-shortcuts` before the merge, as `CLAUDE.md` and `tech_standards.md` §11 require; merge commit `cf5e439f`, confirmed by user on 2026-11-03
 > Source PRD: `013_recipe-detail-shortcuts_prd.md`
 > Source UX Flow: `013_recipe-detail-shortcuts_ux_flow.md`
 > Master doc file(s) touched: `docs/functional-spec.md` (Overview, Domain Map, Screen & Flow Index, Writes, Shared Functional Components, Glossary, Recent Changes; domain `recipes`: Overview, SCR-recipe-detail, CMP-favorite-button, new CMP-shopping-list-sheet, new FLW-add-recipe-to-shopping-list; `plan`: SCR-plan, CMP-recipe-picker, CMP-missing-ingredients, FLW-add-recipe-to-plan; new shared CMP-ingredient-groups)

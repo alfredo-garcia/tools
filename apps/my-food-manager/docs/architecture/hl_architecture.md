@@ -37,7 +37,7 @@ flowchart LR
 | UI (browse, detail, picks, list, pantry, reviews) | The MVP capabilities of Vision §5 |
 
 ## 5. Core Data Model (high level)
-Mirrors the Drive schema: **Recipe** (ingredient lines → **Ingredient** catalog with family and staple flag), **Pantry** (`have`, `to_buy`), **Plan** (day → meals by slot → dishes with a recipe id, one shared household agenda), **Review** per user (favorites, ratings). Client-only state: current person, picked recipes ("my next cooks"), shopping-list tick state, and the outbox of pending operations. Picked recipes are local at first (shared across devices is a later decision, see §11).
+Mirrors the Drive schema: **Recipe** (ingredient lines → **Ingredient** catalog with family and staple flag), **Pantry** (`have`, `to_buy`), **Plan** (day → meals by slot → dishes with a recipe id or an `out` mark (eat-out, delivery), one shared household agenda), **Review** per user (favorites, ratings). Client-only state: current person, picked recipes ("my next cooks"), shopping-list tick state, and the outbox of pending operations. Picked recipes are local at first (shared across devices is a later decision, see §11).
 
 ## 6. Integrations
 | Service | Used for | If unavailable |
@@ -49,7 +49,7 @@ Vercel Hobby, project root `apps/my-food-manager`, production on merge to `main`
 
 ## 8. Cross-Cutting Concerns
 - **Security:** no logins; Drive credential only on the server; writes gated by one shared key; service account limited to the one folder.
-- **Conflicts:** operations are applied against the latest file with a modified-time check and one retry (ADR 001); last write wins per field for pantry/reviews; the plan merges per entry (adds append, removes of an absent entry are no-ops); multi-file batches are not atomic (ADR 003); a rating and the `status: tried` it triggers are two writes, and re-sending the rating retries the status (ADR 004).
+- **Conflicts:** operations are applied against the latest file with a modified-time check and one retry (ADR 001); last write wins per field for pantry/reviews; the plan merges per entry (adds append, removes of an absent entry are no-ops); multi-file batches are not atomic (ADR 003); a rating and the `status: tried` it triggers are two writes, and re-sending the rating retries the status (ADR 004); a recipe and `eat-out` added to the same slot from two devices resolve in apply order, and the later one is rejected (ADR 005).
 - **Observability:** Vercel function logs only.
 - **Backups:** Drive file version history; the app never deletes files.
 
@@ -71,6 +71,7 @@ Vercel Hobby, project root `apps/my-food-manager`, production on merge to `main`
 | How the server reaches Drive | Service account with the folder shared to it, in env vars | [002](adr/002_drive-access-via-service-account.md) |
 | Meal plan storage and writes | Shared `plan/plan.yaml` created by food-manager, per-entry intent operations | [003](adr/003_meal-plan-storage.md) |
 | Ratings and recipe status writes | `review.setRating` op; server sets `status: tried` in the recipe frontmatter when it is rated | [004](adr/004_recipe-ratings-and-status-writes.md) |
+| Eat-out and delivery in the plan | `plan.addOut` / `plan.removeOut` ops; `eat-out` alone and one `delivery` per slot | [005](adr/005_plan-out-dishes.md) |
 | Framework | Next.js on Vercel | none (low reversal cost) |
 
 ## 11. Risks & Open Questions

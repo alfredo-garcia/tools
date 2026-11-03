@@ -29,6 +29,8 @@
 | `TagChip` | Data Display | Web | Beta | `components/recipes/TagChip` |
 | `RecipeLink` | Navigation | Web | Beta | `components/recipes/RecipeLink` |
 | `RecipeDetail` (+ `InfoSection`, `IngredientsSection`, `StepsSection`, `NotesSection`) | Data Display | Web | Beta | `components/recipes/detail/*` |
+| `DetailShortcuts` | Inputs | Web | Beta | `components/recipes/detail/DetailShortcuts` |
+| `ShoppingListSheet` | Feedback/Overlays | Web | Beta | `components/recipes/detail/ShoppingListSheet` |
 | `CollapsibleSection` | Data Display | Web | Beta | `components/recipes/detail/CollapsibleSection` |
 | `DetailLayer` | Feedback/Overlays | Web | Beta | `components/overlays/DetailLayer` |
 | `RatingStars` | Inputs | Web | Beta | `components/recipes/RatingStars` |
@@ -54,6 +56,7 @@
 | `PlanSlot` / `PlanRecipeItem` | Data Display | Web | Beta | `components/plan/PlanSlot`, `components/plan/PlanRecipeItem` |
 | `RecipePickerSheet` | Feedback/Overlays | Web | Beta | `components/plan/RecipePickerSheet` |
 | `MissingIngredientsSheet` | Feedback/Overlays | Web | Beta | `components/plan/MissingIngredientsSheet` |
+| `IngredientGroups` | Data Display | Web | Beta | `components/pantry/IngredientGroups` |
 
 ## 3. Component Entries
 
@@ -161,7 +164,7 @@
 ### RecipeDetail
 - **Category:** Data Display. **Import:** `components/recipes/detail/RecipeDetail` (sections in the same folder: `InfoSection`, `IngredientsSection`, `StepsSection`, `NotesSection`). **Status:** Beta.
 - **Description:** the recipe detail screen content inside a `DetailLayer`: photo (16:9; in the `panel` mode it sits beside Info general, two fifths and three fifths), title (`heading-1`, shown in fullscreen only), then the sections Info general, Ingredientes, Pasos and Notas, each a `CollapsibleSection`. Handles loading, no-library and not-found states with `EmptyState`.
-- **Props:** `RecipeDetail`: `id: string` (recipe id from the address), `onClose?: () => void` (when the detail is not driven by the address, e.g. over the Plan) and `overlay?: boolean` (never the side panel: large windows show a modal). Sections: `recipe: Recipe`, plus `library: Library` for `InfoSection` and `IngredientsSection`.
+- **Props:** `RecipeDetail`: `id: string` (recipe id from the address), `onClose?: () => void` (when the detail is not driven by the address, e.g. over the Plan) `overlay?: boolean` (never the side panel: large windows show a modal) and `onAddToPlan?: (recipeId) => void` (screens that already are the Plan take over "Añadir al plan"; elsewhere it goes to `/plan?add=<id>`). It also renders `DetailShortcuts` and, on request, `ShoppingListSheet`. Sections: `recipe: Recipe`, plus `library: Library` for `InfoSection` and `IngredientsSection`.
 - **Rules:** missing values show "-"; the time row in `InfoSection` is a disclosure with the prep/cook/rest breakdown; ingredient lines show quantity, name, note, an "opcional" tag, and a `RecipeLink` when the line points to a recipe in the library; `NotesSection` renders nothing when there are no notes, variations or source.
 
 ### PlanScreen (and its parts)
@@ -172,20 +175,25 @@
 
 ### RecipePickerSheet / MissingIngredientsSheet
 - **Category:** Feedback/Overlays. **Import:** `components/plan/RecipePickerSheet`, `components/plan/MissingIngredientsSheet`. **Status:** Beta.
-- **Props:** `RecipePickerSheet`: `date`, `meal`, `recipes: Recipe[]`, `onClose`, `onConfirm(recipeId)`; search (3 letters, 1 s) over titles, single selection, "Añadir receta" enabled with a selection. `MissingIngredientsSheet`: `recipeTitle`, `ingredients: string[]` (names), `onContinue`, `onAddToList`; closing by Esc or backdrop equals `onContinue`.
+- **Props:** `RecipePickerSheet`: `date`, `meal`, `recipes: Recipe[]` (already in the order to show), `suggestedId?` (the recipe of origin: chosen at the start and tagged "Tu receta"), `onClose`, `onConfirm(recipeId)`; search (3 letters, 1 s) over titles, single selection, "Añadir receta" enabled with a selection. `MissingIngredientsSheet`: `recipeTitle`, `groups: IngredientGroups`, `names(id)`, `onContinue`, `onAddToList`; closing by Esc or backdrop equals `onContinue`.
 - **Notes:** both are `Sheet` with their own content; the picker is `size="tall"`, the missing sheet uses `hideClose`.
 
 ### RatingStars / RatingMark / FavoriteButton
 - **RatingStars props:** `value: 0-5` (0 = no rating), `onChange(n)`, `recipeTitle` (for the group's accessible name); five buttons of 44 px with `aria-pressed` and label "N estrella(s)"; `lucide-react` `Star`, filled with `text-warning-500` when pressed. Implemented in feature `my-food-manager/012`: in the recipe detail only, next to `FavoriteButton` and `ShareButton`.
 - **RatingMark props:** `stars` (1-5); a filled star and the number, `aria-label` "Rating N de 5"; display only, after the category on `RecipeRow` and after the title on `PlanRecipeItem`. Import: `components/recipes/RatingMark`.
-- **FavoriteButton props:** `pressed`, `onToggle`, `recipeTitle` (for the accessible name), `label?` (shows the text next to the heart and gives the button the width of its content); heart fills with the lime accent when pressed; 44px hit area; `aria-pressed`. Implemented in feature `my-food-manager/009`: icon-only in rows and the small-window title row, labeled under the photo on medium and large.
+- **FavoriteButton props:** `pressed`, `onToggle`, `recipeTitle` (for the accessible name), `label?` (shows the text next to the heart and gives the button the width of its content), `fullWidth?` (with `label`: spans its container, small-window detail); heart fills with the lime accent when pressed; 44px hit area; `aria-pressed`. Implemented in feature `my-food-manager/009`: icon-only in rows and the small-window title row, labeled under the photo on medium and large.
+
+### DetailShortcuts / ShoppingListSheet / IngredientGroups
+- **Category:** Inputs / Feedback/Overlays / Data Display. **Import:** `components/recipes/detail/DetailShortcuts`, `components/recipes/detail/ShoppingListSheet`, `components/pantry/IngredientGroups`. **Status:** Beta (feature `my-food-manager/013`).
+- **Props:** `DetailShortcuts`: `onShopping`, `onPlan`; two secondary `Button`s with `ShoppingCart` and `CalendarPlus` icons, "Añadir a lista de compra" and "Añadir al plan", full width on small windows. `ShoppingListSheet`: `recipe`, `library`, `onClose`; a `Sheet` with `back` rendered in a portal in the body, with `IngredientGroups` and the actions "Cancelar" and "Añadir a la lista" (disabled with nothing in Faltan). `IngredientGroups`: `groups: { faltan, lista, tengo }` (catalog ids), `names(id)`; headings "Faltan (n)", "En mi lista de la compra (n)", "Ya tengo (n)" with a color dot (warning, primary, success) and the text, empty groups hidden, "Ya tengo" a collapsible heading when it has more than 5.
+- **Notes:** the classification is `classifyIngredients` in `lib/domain/ingredient-groups`; the prototype names were `TmpDetailShortcuts` and `TmpIngredientGroups`.
 
 ### ChecklistItem / AisleHeader
 - **ChecklistItem props:** `label: string`, `source?: string` (recipe name), `done: boolean`, `onToggle`. Row min height 56px; done = filled success checkbox + strike-through.
 - **AisleHeader props:** `label: string` (ingredient family label). Caption style, uppercase.
 
 ### Sheet
-- **Props:** `open`, `onClose`, `title`, `subtitle?`, `size?: "auto" | "tall"`, `hideClose?: boolean`, `children`. Bottom sheet below 640px (top radius `radius.lg`), centered modal (max width 520px) from 640px, including large windows. `subtitle` is a `caption` line under the title; `size="tall"` fills 88% of the window height on small and min(640px, 100%) on larger ones (recipe picker). Traps focus, locks page scroll, closes on Escape/backdrop, returns focus to the opener. `hideClose` removes the close button when the content has its own way out. Implemented in feature `my-food-manager/008`.
+- **Props:** `open`, `onClose`, `title`, `subtitle?`, `size?: "auto" | "tall"`, `hideClose?: boolean`, `back?: boolean` (the close control is a back arrow named "Atrás", for sheets opened over a detail), `children`. Esc is marked as handled, so a detail layer under the sheet does not also close. Bottom sheet below 640px (top radius `radius.lg`), centered modal (max width 520px) from 640px, including large windows. `subtitle` is a `caption` line under the title; `size="tall"` fills 88% of the window height on small and min(640px, 100%) on larger ones (recipe picker). Traps focus, locks page scroll, closes on Escape/backdrop, returns focus to the opener. `hideClose` removes the close button when the content has its own way out. Implemented in feature `my-food-manager/008`.
 
 ### Toast / SyncBadge / EmptyState
 - **Toast:** `message`; announced politely (`role="status"`). The screen that shows it dismisses it after 4 s.
@@ -227,7 +235,7 @@ Feature `my-food-manager/007` (pantry) added `TmpSwitch`, `TmpSegmentedControl` 
 Not applicable (web only).
 
 ## 6. Versioning
-- **Last updated:** 2026-11-02 (ratings of feature `my-food-manager/012`: `RatingStars` implemented, `RatingMark` added, `RecipeRow.rating`, Rating filter in `RecipeFilters`); earlier: 2026-11-02 (Estado filter of feature `my-food-manager/011`, no new components); earlier: 2026-10-30 (pantry switches of feature `my-food-manager/007`: `TmpSwitch`, `TmpSegmentedControl`, `TmpPendingChanges`; earlier: 2026-10-29 (recipe search of feature `my-food-manager/005`: `SearchInput` as implemented, `TmpResultGroup`; earlier: main navigation of feature `my-food-manager/006`: `AppFrame`, `BottomNav` / `SideNav` rewritten, `TmpComingSoon`, `AppShell` corrected; earlier: responsive layout: DetailLayer modes, RecipeLibrary, RecipeLink props; added FilterChip, FilterOptions, RecipeFilters, useListReorder; recipe detail components; `RecipePhoto` props corrected to the implementation))
+- **Last updated:** 2026-11-03 (recipe detail shortcuts of feature `my-food-manager/013`: `DetailShortcuts`, `ShoppingListSheet`, `IngredientGroups` added; `RecipeDetail.onAddToPlan`, `RecipePickerSheet.suggestedId`, `MissingIngredientsSheet` with groups, `Sheet.back`, `FavoriteButton.fullWidth`); earlier: 2026-11-02 (ratings of feature `my-food-manager/012`: `RatingStars` implemented, `RatingMark` added, `RecipeRow.rating`, Rating filter in `RecipeFilters`); earlier: 2026-11-02 (Estado filter of feature `my-food-manager/011`, no new components); earlier: 2026-10-30 (pantry switches of feature `my-food-manager/007`: `TmpSwitch`, `TmpSegmentedControl`, `TmpPendingChanges`; earlier: 2026-10-29 (recipe search of feature `my-food-manager/005`: `SearchInput` as implemented, `TmpResultGroup`; earlier: main navigation of feature `my-food-manager/006`: `AppFrame`, `BottomNav` / `SideNav` rewritten, `TmpComingSoon`, `AppShell` corrected; earlier: responsive layout: DetailLayer modes, RecipeLibrary, RecipeLink props; added FilterChip, FilterOptions, RecipeFilters, useListReorder; recipe detail components; `RecipePhoto` props corrected to the implementation))
 - **Owner:** Al
 - Initial registry, all entries Beta pending implementation.
 

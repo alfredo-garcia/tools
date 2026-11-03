@@ -19,17 +19,21 @@ export function RecipePickerSheet({
   date,
   meal,
   recipes,
+  suggestedId,
   onClose,
   onConfirm,
 }: {
   date: string;
   meal: PlanMeal;
+  /** In the order to list them; the suggested recipe, when there is one, comes first. */
   recipes: Recipe[];
+  /** The recipe Al came from: chosen at the start and marked "Tu receta". */
+  suggestedId?: string;
   onClose: () => void;
   onConfirm: (recipeId: string) => void;
 }) {
   const search = useSearchQuery();
-  const [selected, setSelected] = useState<string | null>(null);
+  const [selected, setSelected] = useState<string | null>(suggestedId ?? null);
   const label = PLAN_MEAL_LABELS.find((m) => m.meal === meal)!;
   const list = useMemo(
     () => (search.applied ? recipes.filter((r) => titleMatches(r.title, search.applied)) : recipes),
@@ -85,6 +89,11 @@ export function RecipePickerSheet({
                 />
                 <span className="min-w-0 flex-1 leading-snug font-semibold">
                   {r.title}
+                  {r.id === suggestedId && (
+                    <span className="ml-2 rounded-full bg-primary-500 px-2 py-0.5 align-middle text-[11px] font-bold text-primary-contrast">
+                      Tu receta
+                    </span>
+                  )}
                   {minutes !== undefined && (
                     <small className="block text-xs font-normal text-text-muted">
                       {formatMinutes(minutes)}

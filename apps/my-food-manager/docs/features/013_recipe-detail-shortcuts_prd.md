@@ -17,7 +17,7 @@ The recipe detail gets two contextual buttons. "Añadir a lista de compra" opens
 - Why now: Al decides to cook a recipe while looking at it, and today has to leave it, re-find it elsewhere or detour through the Plan to get its shopping list.
 
 ## 3. Goals & Success Metrics
-- G1: From a recipe detail, Al puts what is missing on the shopping list in at most three taps (button, "Añadir ingredientes faltantes", nothing else).
+- G1: From a recipe detail, Al puts what is missing on the shopping list in at most three taps (button, "Añadir a la lista", nothing else).
 - G2: From a recipe detail, Al plans the recipe with at most four taps after the button (section opens on the Plan, "Añadir" of a slot, "Añadir receta"), without searching.
 - G3: The modal and the Plan's sheet agree on what is missing.
 - Metric (manual, phone-sized and desktop viewport, with a library that has recipes in the three statuses and a pantry with ingredients in every state): use both buttons on a Probada, a Por probar and a Descartada recipe; verify the groups against the pantry, the shopping list in Despensa and the plan after each action.
@@ -41,8 +41,8 @@ The recipe detail gets two contextual buttons. "Añadir a lista de compra" opens
 - AC-1.5: Given an ingredient whose `have` is on (whatever `to_buy` is), or a staple, then it is in "Ya tengo".
 - AC-1.6: Given pending changes in the outbox, when the modal opens, then the groups take them into account (an ingredient just switched on in Despensa while offline is placed by its pending value).
 - AC-1.7: Given a group with no ingredients, then that group is not shown.
-- AC-1.8: Given at least one ingredient in "Faltan", when Al taps "Añadir ingredientes faltantes", then "Comprar" is turned on for each of them, the modal closes, the detail is shown again, and the change is saved like any other pantry change.
-- AC-1.9: Given no ingredient in "Faltan", then "Añadir ingredientes faltantes" is disabled and the modal says that nothing is missing.
+- AC-1.8: Given at least one ingredient in "Faltan", when Al taps "Añadir a la lista", then "Comprar" is turned on for each of them, the modal closes, the detail is shown again, and the change is saved like any other pantry change.
+- AC-1.9: Given no ingredient in "Faltan", then "Añadir a la lista" is disabled and the modal says that nothing is missing.
 - AC-1.10: Given the modal, when Al taps "Cancelar", taps "Atrás", presses Esc or taps the backdrop, then it closes, the detail is shown again and nothing changes.
 
 ### US-2: Plan from the detail
@@ -68,7 +68,7 @@ The recipe detail gets two contextual buttons. "Añadir a lista de compra" opens
 2. FR-2: Ingredient classification (shared by the modal and the Plan sheet), over the recipe's ingredient lines, each catalog ingredient once, in recipe order, optional lines included: Ya tengo = staple, or `have` on; En mi lista de la compra = not Ya tengo and `to_buy` on; Faltan = the rest. `have` and `to_buy` are the stored values with the outbox's pending changes applied.
 3. FR-3: Ingredients that are not in the catalog are not listed in any group.
 4. FR-4: The modal lists the groups in the order Faltan, En mi lista de la compra, Ya tengo, hides empty groups, and shows each group's count in its heading.
-5. FR-5: "Añadir ingredientes faltantes" enqueues `pantry.setBuy` (on) for each ingredient of Faltan and closes the modal; it is disabled when Faltan is empty.
+5. FR-5: "Añadir a la lista" enqueues `pantry.setBuy` (on) for each ingredient of Faltan and closes the modal; it is disabled when Faltan is empty.
 6. FR-6: Closing the modal by "Cancelar", "Atrás", Esc or the backdrop changes nothing.
 7. FR-7: "Añadir al plan" shows the Plan section and closes the detail, carrying the recipe id.
 8. FR-8: While the carried recipe is pending, the first opening of the recipe picker from any slot lists that recipe first, highlighted and chosen, then the rest in the usual order without repeating it; any opening afterwards, and leaving the Plan, ends it.
@@ -89,7 +89,7 @@ Not applicable: no new fields, files or operations. `pantry.setBuy` (pantry sche
 ## 9. UI/UX Requirements
 Platform: web (small under 640 px, medium 640 to 1279, large 1280 and up). Patterns: `Sheet` (bottom sheet on small windows, centered dialog from medium), `Button`, as CMP-recipe-picker and CMP-missing-ingredients.
 - **Detail buttons:** two buttons in a row under the rating/favorite/share row, secondary style with icons from lucide-react, full width on small windows.
-- **Modal (CMP shopping-list modal):** title = recipe title, subtitle "Lista de compra"; three groups with headings "Faltan (n)", "En mi lista de la compra (n)", "Ya tengo (n)"; ingredient names capitalized as in CMP-missing-ingredients; buttons "Cancelar" (secondary) and "Añadir ingredientes faltantes" (primary). "Atrás" is the sheet's close/back control. "Ya tengo" is collapsed by default when it has more than 5 ingredients.
+- **Modal (CMP shopping-list modal):** title = recipe title, subtitle "Lista de compra"; three groups with headings "Faltan (n)", "En mi lista de la compra (n)", "Ya tengo (n)"; ingredient names capitalized as in CMP-missing-ingredients; buttons "Cancelar" (secondary) and "Añadir a la lista" (primary). "Atrás" is the sheet's close/back control. "Ya tengo" is collapsed by default when it has more than 5 ingredients.
 - **Plan sheet:** same groups and ingredient list; buttons unchanged.
 - **Picker with suggestion:** the origin recipe row is first, with the chosen style the picker already has plus a label "Tu receta" on the row. The rest of the list is as today.
 - **Plan after arriving:** no banner or extra control (the suggestion is visible in the picker only).
@@ -103,10 +103,10 @@ Platform: web (small under 640 px, medium 640 to 1279, large 1280 and up). Patte
 - Ingredient with `have` and `to_buy` both on: Ya tengo.
 - Staple in the recipe: Ya tengo, never Faltan, never written.
 - Pending changes (outbox) flip an ingredient between groups while the modal is open: the groups update and the button reflects the new Faltan.
-- "Añadir ingredientes faltantes" offline or without a key: ingredients appear on the list at once and wait in the outbox; the key dialog opens after the modal closes; "Ahora no" leaves them pending (FLW-enter-write-key).
+- "Añadir a la lista" offline or without a key: ingredients appear on the list at once and wait in the outbox; the key dialog opens after the modal closes; "Ahora no" leaves them pending (FLW-enter-write-key).
 - Server rejects a write: same notice and rollback as FLW-flip-switch.
 - Ingredient turned on for list that was already on (race with another device): idempotent, stays on.
-- Taps twice on "Añadir ingredientes faltantes": only one set of writes (the modal closes on the first tap).
+- Taps twice on "Añadir a la lista": only one set of writes (the modal closes on the first tap).
 - Plan file missing or unreadable: "Añadir al plan" still navigates; the Plan shows its message; the suggestion is dropped.
 - Origin recipe removed from the library between sync and arrival: FR-10.
 - Origin recipe Descartada: see FR-9; planning it is allowed once; adding it again later goes through the usual picker, which does not offer it.

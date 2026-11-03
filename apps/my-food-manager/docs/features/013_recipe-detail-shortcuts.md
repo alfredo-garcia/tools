@@ -23,7 +23,7 @@
     three groups. "Faltan": not in the pantry as "Tengo" and not on the shopping list. "En mi lista de la
     compra": not "Tengo" and already on the list. "Ya tengo": "Tengo" in the pantry; "Tengo" wins when an
     ingredient is also on the list, and staples (always available) count as "Ya tengo".
-  - "Añadir ingredientes faltantes" puts the "Faltan" group on the shopping list and closes; the other two
+  - "Añadir a la lista" puts the "Faltan" group on the shopping list and closes; the other two
     groups are informational. "Cancelar" or "Atrás" closes without changes. Either way Al is back on the
     detail.
   - "Añadir al plan" takes Al to the Plan carrying the recipe. The first time he opens the picker from any

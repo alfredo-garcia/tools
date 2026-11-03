@@ -6,31 +6,40 @@ import { EmptyState } from "@/components/feedback/EmptyState";
 import { Button } from "@/components/inputs/Button";
 import { SearchInput } from "@/components/inputs/SearchInput";
 import { Sheet } from "@/components/overlays/Sheet";
+import { PlanOutOptions } from "./PlanOutOptions";
 import { RecipePhoto } from "@/components/recipes/RecipePhoto";
 import { useSearchQuery } from "@/components/recipes/use-search-query";
 import { formatDay } from "@/lib/domain/plan-calendar";
-import { PLAN_MEAL_LABELS, titleMatches } from "@/lib/domain/plan-view";
+import { PLAN_MEAL_LABELS, outOptions, titleMatches } from "@/lib/domain/plan-view";
 import { totalMinutes } from "@/lib/domain/filters";
 import { formatMinutes } from "@/lib/domain/recipe-detail";
-import type { PlanMeal, Recipe } from "@/lib/schema";
+import type { PlanDish, PlanMeal, PlanOut, Recipe } from "@/lib/schema";
 
-/** Picks one recipe for a slot: search box, single-select list and the "Añadir receta" button. */
+/**
+ * Picks one recipe for a slot (search box, single-select list and "Añadir receta"), or marks the slot as eaten out
+ * or ordered in with one tap.
+ */
 export function RecipePickerSheet({
   date,
   meal,
+  dishes,
   recipes,
   suggestedId,
   onClose,
   onConfirm,
+  onOut,
 }: {
   date: string;
   meal: PlanMeal;
+  /** What the slot already holds (stored plus pending): decides which marks are offered. */
+  dishes: readonly PlanDish[];
   /** In the order to list them; the suggested recipe, when there is one, comes first. */
   recipes: Recipe[];
   /** The recipe Al came from: chosen at the start and marked "Tu receta". */
   suggestedId?: string;
   onClose: () => void;
   onConfirm: (recipeId: string) => void;
+  onOut: (out: PlanOut) => void;
 }) {
   const search = useSearchQuery();
   const [selected, setSelected] = useState<string | null>(suggestedId ?? null);
@@ -123,6 +132,12 @@ export function RecipePickerSheet({
       title={`Añadir ${label.to}`}
       subtitle={formatDay(date)}
     >
+      <PlanOutOptions
+        enabled={outOptions(dishes)}
+        slotLabel={label.label.toLowerCase()}
+        day={formatDay(date)}
+        onChoose={onOut}
+      />
       <SearchInput
         value={search.typed}
         onChange={search.setTyped}

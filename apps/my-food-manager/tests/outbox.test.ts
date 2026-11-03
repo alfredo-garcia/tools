@@ -269,6 +269,22 @@ describe("outbox", () => {
     expect(t.outbox.getState().pending).toEqual([]);
   });
 
+  it("sends a plan mark with its value and reports a rejected one by it", async () => {
+    const t = setup();
+    await t.outbox.hydrate();
+    t.fetchMock.mockResolvedValue(
+      json({
+        results: [{ id: "op1", status: "rejected", error: { code: "INVALID_OP", message: "x" } }],
+      }),
+    );
+    await t.outbox.enqueuePlanOut("plan.addOut", "2026-11-02", "dinner", "eat-out");
+    await tick();
+    expect(JSON.parse(t.fetchMock.mock.calls[0][1].body).ops).toEqual([
+      { id: "op1", kind: "plan.addOut", date: "2026-11-02", meal: "dinner", out: "eat-out" },
+    ]);
+    expect(t.outbox.getState().notices).toEqual([{ id: 1, out: "eat-out" }]);
+  });
+
   describe("favorites", () => {
     it("collapses unsent toggles of one recipe and drops one that returns to the stored value", async () => {
       const t = setup();

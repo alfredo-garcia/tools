@@ -38,6 +38,20 @@ const remove = (id: string, date: string, meal: string, recipe: string) => ({
   meal,
   recipe,
 });
+const addOut = (id: string, date: string, meal: string, out: string) => ({
+  id,
+  kind: "plan.addOut",
+  date,
+  meal,
+  out,
+});
+const removeOut = (id: string, date: string, meal: string, out: string) => ({
+  id,
+  kind: "plan.removeOut",
+  date,
+  meal,
+  out,
+});
 const days = (text: string) => (parse(text) as { days: Record<string, unknown[]> }).days;
 
 describe("applyPlanOps", () => {
@@ -169,6 +183,121 @@ describe("applyPlanOps", () => {
   it("refuses a file it cannot read", () => {
     expect(() => applyPlanOps("days: [1\n", [], RECIPES, NOW)).toThrow(PlanParseError);
     expect(() => applyPlanOps("days: 3\n", [], RECIPES, NOW)).toThrow(PlanParseError);
+  });
+});
+
+describe("applyPlanOps with out dishes (ADR 005)", () => {
+  const OUT_FILE = `updated: 2026-10-29T10:00:00-05:00
+days:
+  2026-10-31:
+    - slot: lunch
+      label: En casa
+      dishes:
+        - { recipe: pasta-bolonesa }
+    - slot: lunch
+      label: Con amigos
+      dishes:
+        - { out: eat-out }
+    - slot: dinner
+      note: Viernes
+      dishes:
+        - { out: delivery }
+        - { text: Ensalada }
+    - slot: dinner
+      dishes:
+        - { out: takeaway }
+`;
+  const D = "2026-10-31";
+
+  it("puts eat-out in a meal of its own, in slot order", () => {
+    const r = applyPlanOps(FILE, [addOut("a", "2026-10-30", "breakfast", "eat-out")], RECIPES, NOW);
+    expect(r.results).toEqual([{ id: "a", status: "applied" }]);
+    expect(days(r.text)["2026-10-30"][0]).toEqual({
+      slot: "breakfast",
+      dishes: [{ out: "eat-out" }],
+    });
+  });
+
+  it("refuses eat-out in a slot with any dish, text dishes included", () => {
+    const r = applyPlanOps(FILE, [addOut("a", "2026-10-30", "lunch", "eat-out")], RECIPES, NOW);
+    expect(r.changed).toBe(false);
+    expect(r.results[0]).toMatchObject({ status: "rejected", error: { code: "INVALID_OP" } });
+  });
+
+  it("appends delivery to the last meal of the slot, next to its recipes", () => {
+    const r = applyPlanOps(FILE, [addOut("a", "2026-10-30", "dinner", "delivery")], RECIPES, NOW);
+    expect(days(r.text)["2026-10-30"][2]).toEqual({
+      slot: "dinner",
+      dishes: [{ recipe: "pollo-al-ajillo" }, { out: "delivery" }],
+    });
+  });
+
+  it("is unchanged when the mark is already in the slot, in any of its meals", () => {
+    const r = applyPlanOps(
+      OUT_FILE,
+      [addOut("a", D, "lunch", "eat-out"), addOut("b", D, "dinner", "delivery")],
+      RECIPES,
+      NOW,
+    );
+    expect(r.results.map((x) => x.status)).toEqual(["unchanged", "unchanged"]);
+    expect(r.text).toBe(OUT_FILE);
+  });
+
+  it("refuses delivery and recipes in a slot that has eat-out", () => {
+    const r = applyPlanOps(
+      OUT_FILE,
+      [addOut("a", D, "lunch", "delivery"), add("b", D, "lunch", "bizcocho")],
+      RECIPES,
+      NOW,
+    );
+    expect(r.results.map((x) => x.status)).toEqual(["rejected", "rejected"]);
+    expect(r.changed).toBe(false);
+  });
+
+  it("still adds recipes to a slot with delivery", () => {
+    const r = applyPlanOps(OUT_FILE, [add("a", D, "dinner", "bizcocho")], RECIPES, NOW);
+    expect(r.results[0].status).toBe("applied");
+    expect(days(r.text)[D][3]).toEqual({
+      slot: "dinner",
+      dishes: [{ out: "takeaway" }, { recipe: "bizcocho" }],
+    });
+  });
+
+  it("removes a mark, cleaning its meal, and keeps labels, notes and unknown values", () => {
+    const r = applyPlanOps(
+      OUT_FILE,
+      [
+        removeOut("a", D, "lunch", "eat-out"),
+        removeOut("b", D, "dinner", "delivery"),
+        removeOut("c", D, "breakfast", "delivery"),
+      ],
+      RECIPES,
+      NOW,
+    );
+    expect(r.results.map((x) => x.status)).toEqual(["applied", "applied", "unchanged"]);
+    expect(days(r.text)[D]).toEqual([
+      { slot: "lunch", label: "En casa", dishes: [{ recipe: "pasta-bolonesa" }] },
+      { slot: "dinner", note: "Viernes", dishes: [{ text: "Ensalada" }] },
+      { slot: "dinner", dishes: [{ out: "takeaway" }] },
+    ]);
+  });
+
+  it("rejects an unknown out value", () => {
+    const r = applyPlanOps(FILE, [addOut("a", "2026-10-30", "dinner", "takeaway")], RECIPES, NOW);
+    expect(r.results[0].status).toBe("rejected");
+  });
+
+  it("carries known marks in the plan it returns, and leaves unknown ones out", () => {
+    const r = applyPlanOps(OUT_FILE, [], RECIPES, NOW);
+    expect(r.plan.days[D].map((m) => m.dishes)).toEqual([
+      [{ recipe: "pasta-bolonesa" }],
+      [{ out: "eat-out" }],
+      [{ out: "delivery" }, { text: "Ensalada" }],
+      [],
+    ]);
+    expect(parsePlan(OUT_FILE).days[D].map((m) => m.dishes)).toEqual(
+      r.plan.days[D].map((m) => m.dishes),
+    );
   });
 });
 

@@ -131,7 +131,17 @@ export type Pantry = z.infer<typeof pantrySchema>;
 export const PLAN_MEALS = ["breakfast", "lunch", "dinner"] as const;
 export type PlanMeal = (typeof PLAN_MEALS)[number];
 
-const planDishSchema = z.object({ recipe: z.string().optional(), text: z.string().optional() });
+/** Values of an `out` dish: the meal is not cooked at home (ADR 005). */
+export const PLAN_OUTS = ["eat-out", "delivery"] as const;
+export type PlanOut = (typeof PLAN_OUTS)[number];
+export const isPlanOut = (v: unknown): v is PlanOut =>
+  (PLAN_OUTS as readonly unknown[]).includes(v);
+
+const planDishSchema = z.object({
+  recipe: z.string().optional(),
+  text: z.string().optional(),
+  out: z.enum(PLAN_OUTS).optional(),
+});
 /** The plan as the snapshot carries it: days from yesterday on, each a list of meals with their dishes. */
 export const planSchema = z.object({
   updated: z.string().optional(),
@@ -180,17 +190,34 @@ export interface RatingOp {
 
 export type ReviewOp = FavoriteOp | RatingOp;
 
-export const PLAN_OP_KINDS = ["plan.addRecipe", "plan.removeRecipe"] as const;
+export const PLAN_OP_KINDS = [
+  "plan.addRecipe",
+  "plan.removeRecipe",
+  "plan.addOut",
+  "plan.removeOut",
+] as const;
 export type PlanOpKind = (typeof PLAN_OP_KINDS)[number];
 
-/** One change to the plan, as the app sends it. `date` is `YYYY-MM-DD`. */
-export interface PlanOp {
+/** A recipe added to or removed from a slot. `date` is `YYYY-MM-DD`. */
+export interface PlanRecipeOp {
   id: string;
-  kind: PlanOpKind;
+  kind: "plan.addRecipe" | "plan.removeRecipe";
   date: string;
   meal: PlanMeal;
   recipe: string;
 }
+
+/** A slot marked as eaten out or ordered in, or the mark removed (ADR 005). */
+export interface PlanOutOp {
+  id: string;
+  kind: "plan.addOut" | "plan.removeOut";
+  date: string;
+  meal: PlanMeal;
+  out: PlanOut;
+}
+
+/** One change to the plan, as the app sends it. */
+export type PlanOp = PlanRecipeOp | PlanOutOp;
 
 /** Request body of POST /api/ops. Kind and fields are checked per operation so one bad op never rejects the batch. */
 export const opsRequestSchema = z.object({
@@ -204,6 +231,7 @@ export const opsRequestSchema = z.object({
         date: z.string().optional(),
         meal: z.string().optional(),
         recipe: z.string().optional(),
+        out: z.string().optional(),
       }),
     )
     .min(1)

@@ -2,6 +2,7 @@ import { parse as parseYaml } from "yaml";
 import { z } from "zod";
 import {
   ingredientCatalogEntrySchema,
+  isPlanOut,
   pantryFileSchema,
   recipeSchema,
   reviewsSchema,
@@ -129,6 +130,7 @@ export function parsePlan(text: string): Plan {
       for (const d of m.dishes as Record<string, unknown>[]) {
         if (d && typeof d.recipe === "string") dishes.push({ recipe: d.recipe });
         else if (d && typeof d.text === "string") dishes.push({ text: d.text });
+        else if (d && isPlanOut(d.out)) dishes.push({ out: d.out });
       }
       list.push({ slot: m.slot, dishes });
     }

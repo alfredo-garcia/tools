@@ -9,8 +9,14 @@ import {
   mondayOf,
   weekDates,
 } from "@/lib/domain/plan-calendar";
-import { pickerRecipes, planWithPending, titleMatches } from "@/lib/domain/plan-view";
-import type { Plan, PlanOp } from "@/lib/schema";
+import {
+  outFirst,
+  outOptions,
+  pickerRecipes,
+  planWithPending,
+  titleMatches,
+} from "@/lib/domain/plan-view";
+import type { Plan, PlanOutOp, PlanRecipeOp } from "@/lib/schema";
 
 describe("plan calendar", () => {
   it("finds Monday of any weekday, Sunday included", () => {
@@ -64,12 +70,28 @@ const PLAN: Plan = {
   },
 };
 const IDS = new Set(["a", "b", "c"]);
-const op = (kind: PlanOp["kind"], date: string, meal: PlanOp["meal"], recipe: string): PlanOp => ({
+const op = (
+  kind: PlanRecipeOp["kind"],
+  date: string,
+  meal: PlanRecipeOp["meal"],
+  recipe: string,
+): PlanRecipeOp => ({
   id: `${kind}${recipe}`,
   kind,
   date,
   meal,
   recipe,
+});
+const outOp = (
+  kind: PlanOutOp["kind"],
+  meal: PlanOutOp["meal"],
+  out: PlanOutOp["out"],
+): PlanOutOp => ({
+  id: `${kind}${meal}${out}`,
+  kind,
+  date: "2026-10-30",
+  meal,
+  out,
 });
 
 describe("planWithPending", () => {
@@ -95,6 +117,22 @@ describe("planWithPending", () => {
     );
     expect(v["2026-10-30"].lunch).toEqual([{ text: "Fruta" }, { recipe: "b" }, { recipe: "c" }]);
     expect(v["2026-11-02"].breakfast).toEqual([{ recipe: "a" }]);
+  });
+
+  it("applies pending marks and their removal", () => {
+    const plan: Plan = {
+      days: { "2026-10-30": [{ slot: "dinner", dishes: [{ out: "eat-out" }] }] },
+    };
+    const v = planWithPending(
+      plan,
+      [
+        outOp("plan.addOut", "lunch", "delivery"),
+        outOp("plan.removeOut", "dinner", "eat-out"),
+        outOp("plan.removeOut", "breakfast", "delivery"),
+      ],
+      IDS,
+    );
+    expect(v["2026-10-30"]).toEqual({ breakfast: [], lunch: [{ out: "delivery" }], dinner: [] });
   });
 
   it("works with no plan at all", () => {
@@ -133,5 +171,26 @@ describe("titleMatches", () => {
     expect(titleMatches("Espaguetis a la boloñesa", "espaguetis boloñesa")).toBe(true);
     expect(titleMatches("Crema de zanahoria", "zanahória")).toBe(true);
     expect(titleMatches("Tortilla de patatas", "pollo")).toBe(false);
+  });
+});
+
+describe("marks in a slot", () => {
+  it("shows marks first, keeping the order of the rest", () => {
+    expect(outFirst([{ recipe: "a" }, { text: "Fruta" }, { out: "delivery" }])).toEqual([
+      { out: "delivery" },
+      { recipe: "a" },
+      { text: "Fruta" },
+    ]);
+  });
+
+  it("offers eat-out only in an empty slot and delivery once, never next to eat-out", () => {
+    expect(outOptions([])).toEqual({ "eat-out": true, delivery: true });
+    expect(outOptions([{ recipe: "a" }])).toEqual({ "eat-out": false, delivery: true });
+    expect(outOptions([{ text: "Sobras" }])).toEqual({ "eat-out": false, delivery: true });
+    expect(outOptions([{ out: "delivery" }, { recipe: "a" }])).toEqual({
+      "eat-out": false,
+      delivery: false,
+    });
+    expect(outOptions([{ out: "eat-out" }])).toEqual({ "eat-out": false, delivery: false });
   });
 });

@@ -10,18 +10,21 @@ import {
   type OpsResponse,
   type PantryOpKind,
   type PlanMeal,
-  type PlanOpKind,
+  type PlanOut,
+  type PlanOutOp,
+  type PlanRecipeOp,
 } from "@/lib/schema";
 
 /** Waits before each retry after a failed send; the last one repeats (PRD FR-15). */
 export const RETRY_DELAYS_MS = [2_000, 5_000, 15_000, 60_000];
 const MAX_BATCH = 100;
 
-/** A change the server rejected: the ingredient of a pantry switch or the recipe of a plan or favorite change. */
+/** A change the server rejected: the ingredient of a pantry switch, the recipe of a plan or favorite change, or a plan mark. */
 export interface Notice {
   id: number;
   ingredient?: string;
   recipe?: string;
+  out?: PlanOut;
   /** The rejected change was a favorite toggle; the screens that show hearts report it. */
   favorite?: boolean;
   /** The rejected change was a rating; reported where the favorite ones are. */
@@ -35,14 +38,18 @@ const subjectOf = (o: PendingOp): Omit<Notice, "id"> =>
       ? { recipe: o.recipe, favorite: true }
       : isRatingOp(o)
         ? { recipe: o.recipe, rating: true }
-        : { recipe: o.recipe };
+        : "out" in o
+          ? { out: o.out }
+          : { recipe: o.recipe };
 
 const wireOf = (o: PendingOp) =>
   isPantryOp(o)
     ? { id: o.id, kind: o.kind, ingredient: o.ingredient, value: o.value }
     : isReviewOp(o)
       ? { id: o.id, kind: o.kind, recipe: o.recipe, value: o.value }
-      : { id: o.id, kind: o.kind, date: o.date, meal: o.meal, recipe: o.recipe };
+      : "out" in o
+        ? { id: o.id, kind: o.kind, date: o.date, meal: o.meal, out: o.out }
+        : { id: o.id, kind: o.kind, date: o.date, meal: o.meal, recipe: o.recipe };
 
 export interface OutboxState {
   hydrated: boolean;
@@ -261,8 +268,15 @@ export function createOutbox(deps: OutboxDeps) {
     },
 
     /** Records a plan change. Changes are ordered and never collapse: a repeated recipe is a second dish. */
-    async enqueuePlan(kind: PlanOpKind, date: string, meal: PlanMeal, recipe: string) {
+    async enqueuePlan(kind: PlanRecipeOp["kind"], date: string, meal: PlanMeal, recipe: string) {
       set({ pending: [...state.pending, { id: deps.newId(), kind, date, meal, recipe }] });
+      await persist();
+      void flush();
+    },
+
+    /** Records a plan mark (eat-out or delivery) or its removal, in order like recipe changes (ADR 005). */
+    async enqueuePlanOut(kind: PlanOutOp["kind"], date: string, meal: PlanMeal, out: PlanOut) {
+      set({ pending: [...state.pending, { id: deps.newId(), kind, date, meal, out }] });
       await persist();
       void flush();
     },

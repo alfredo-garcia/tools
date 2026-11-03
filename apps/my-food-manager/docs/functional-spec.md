@@ -10,7 +10,7 @@
 
 My Food Manager (shown to users as "My Food") is a personal, visual, mobile-first web app (installable PWA) that helps Al and his household partner decide what to cook and shop without forgetting anything. It reads the Google Drive folder `food`, which the food-manager skill maintains, and keeps working without a connection. There are no logins. Platform: web only.
 
-Today the app lets you browse the library with filters and a text search and open each recipe's detail, and it has a main navigation with four sections: Recetas, Plan, Despensa and Perfil. Perfil shows Al's favorite recipes. Recipes can be marked as favorites from the list and from the detail, with a heart, and shared from the detail; favorites are saved to Drive in the same way as the pantry and the plan. Plan is the household's meal calendar: from today on, each day has Desayuno, Almuerzo and Cena, to which recipes are added and removed, and every recipe added is checked against the pantry, offering to put what is missing on the shopping list. Despensa holds the pantry and the shopping list in two tabs, where each ingredient has two switches, "Tengo" and "Comprar", saved to Drive (also from the device without a connection, with a shared write key). Plan changes are saved to Drive in the same way (offline queue and shared write key). Each recipe has a status (Probada, Por probar or Descartada), set outside the app by the food-manager skill; Recetas and the favorites in Perfil start showing only the Probadas and can switch to the others or show all. Al can rate each recipe from 1 to 5 stars from its detail; the rating shows on the rows of Recetas, the favorites of Perfil and the Plan, can be filtered, and sorts Recetas and the favorites from the best rated down; ratings are saved to Drive like favorites. Comments, the "curated" flag and the person picker of the profile are still pending (see `product/product_vision.md` §7).
+Today the app lets you browse the library with filters and a text search and open each recipe's detail, and it has a main navigation with four sections: Recetas, Plan, Despensa and Perfil. Perfil shows Al's favorite recipes. Recipes can be marked as favorites from the list and from the detail, with a heart, and shared from the detail; favorites are saved to Drive in the same way as the pantry and the plan. Plan is the household's meal calendar: from today on, each day has Desayuno, Almuerzo and Cena, to which recipes are added and removed, and every recipe added is checked against the pantry, offering to put what is missing on the shopping list. Despensa holds the pantry and the shopping list in two tabs, where each ingredient has two switches, "Tengo" and "Comprar", saved to Drive (also from the device without a connection, with a shared write key). Plan changes are saved to Drive in the same way (offline queue and shared write key). Each recipe has a status (Probada, Por probar or Descartada), set outside the app by the food-manager skill; Recetas and the favorites in Perfil start showing only the Probadas and can switch to the others or show all. Al can rate each recipe from 1 to 5 stars from its detail; the rating shows on the rows of Recetas, the favorites of Perfil and the Plan, can be filtered, and sorts Recetas and the favorites from the best rated down; ratings are saved to Drive like favorites. From the recipe detail Al can put what a recipe lacks on the shopping list (a window that sorts its ingredients into Faltan, En mi lista de la compra and Ya tengo) or take the recipe to the Plan, where the picker offers it first the first time it opens. Comments, the "curated" flag and the person picker of the profile are still pending (see `product/product_vision.md` §7).
 
 ## 2. How to Read This Documentation
 
@@ -24,10 +24,10 @@ Today the app lets you browse the library with filters and a text search and ope
 | Domain | One-line description | File | Status |
 |---|---|---|---|
 | library | Library sync, offline storage and the recipe list | inline below | Active |
-| recipes | Filtering (including by recipe status and rating) and searching the recipe list, reading a recipe and rating it | inline below | Active |
+| recipes | Filtering (including by recipe status and rating) and searching the recipe list, reading a recipe, rating it and, from its detail, adding its missing ingredients to the shopping list or taking it to the Plan | inline below | Active |
 | navigation | Main navigation between sections and their placeholders | inline below | Active |
 | pantry | Pantry and shopping list, with writes to Drive | inline below | Active |
-| plan | Meal-plan calendar with recipe picking and a pantry check, with writes to Drive | inline below | Active |
+| plan | Meal-plan calendar with recipe picking (offering first the recipe Al came from) and a pantry check, with writes to Drive | inline below | Active |
 | profile | Perfil: Al's favorite recipes and the heart to mark them, with writes to Drive; Al's ratings are shown and edited from the recipe detail | inline below | Active |
 
 ## 4. Navigation Structure
@@ -64,16 +64,17 @@ The app has four sections, always reachable from a main navigation: Recetas (`/`
 | FLW-toggle-sidebar | Collapse or expand the sidebar | navigation | Web |
 | FLW-flip-switch | Flip a switch | pantry | Web |
 | FLW-enter-write-key | Enter the write key | pantry | Web |
-| FLW-add-recipe-to-plan | Add a recipe to the plan | plan | Web |
+| FLW-add-recipe-to-plan | Add a recipe to the plan | plan, recipes | Web |
 | FLW-remove-plan-recipe | Remove a recipe from the plan | plan | Web |
 | FLW-browse-plan | Browse days and weeks | plan | Web |
 | FLW-toggle-favorite | Mark or unmark a favorite | profile, library, recipes | Web |
 | FLW-rate-recipe | Rate a recipe | recipes, library, profile, plan | Web |
 | FLW-share-recipe | Share a recipe | recipes | Web |
+| FLW-add-recipe-to-shopping-list | Add a recipe's ingredients to the shopping list | recipes, pantry | Web |
 
 ## 6. Cross-Cutting Concepts
 
-- **Writes.** Only the pantry, the plan, Al's favorites and ratings, and the status of a rated recipe are written to Drive, through operations with an offline queue and a shared household write key (see FLW-flip-switch, FLW-add-recipe-to-plan, FLW-toggle-favorite and FLW-rate-recipe). Everything else stays read-only; comments arrive with their own feature. A batch that touches several files is written pantry first, then reviews (favorites and ratings), then the status of the rated recipes, then the plan last, each file on its own.
+- **Writes.** Only the pantry (also from the recipe detail, FLW-add-recipe-to-shopping-list), the plan, Al's favorites and ratings, and the status of a rated recipe are written to Drive, through operations with an offline queue and a shared household write key (see FLW-flip-switch, FLW-add-recipe-to-shopping-list, FLW-add-recipe-to-plan, FLW-toggle-favorite and FLW-rate-recipe). Everything else stays read-only; comments arrive with their own feature. A batch that touches several files is written pantry first, then reviews (favorites and ratings), then the status of the rated recipes, then the plan last, each file on its own.
 - **Changes without connection.** A change shows at once, waits on the device and is sent when the connection returns; it is never lost.
 - **Offline-first.** After the first sync, the library is always shown from the device, before any network response. Reads are never blocked by a missing connection.
 - **Freshness.** A sync runs on app open, every 5 minutes while the app is visible and online, within 5 seconds of regaining a connection, and on a manual request. If Drive has no changes, only the "last synced" time updates. A failed sync leaves the stored data untouched.
@@ -84,7 +85,13 @@ The app has four sections, always reachable from a main navigation: Recetas (`/`
 
 ## 7. Shared Functional Components
 
-None shared across domains yet.
+#### CMP-ingredient-groups Ingredient groups
+
+- **Design system reference:** `IngredientGroups`, `components/pantry/IngredientGroups` (see `context/ui_kit_registry.md`).
+- **Functional role:** shows the ingredients of a recipe in the groups Faltan, En mi lista de la compra and Ya tengo.
+- **Behavior rules:** see "Faltan / En mi lista de la compra / Ya tengo" in the glossary for what each group holds. Each group shows its count in its heading, empty groups are not shown, and "Ya tengo" starts collapsed when it has more than 5 ingredients. With nothing in Faltan it says "No te falta nada: todo está en tu despensa o en tu lista."; a recipe with no catalog ingredients says "Esta receta no tiene ingredientes del catálogo."
+- **Used on:** CMP-shopping-list-sheet (recipes) and CMP-missing-ingredients (plan).
+- **Source:** `013_recipe-detail-shortcuts_prd.md`, `_ux_flow.md`; implementation in `src/components/pantry/IngredientGroups.tsx` and `src/lib/domain/ingredient-groups.ts`.
 
 ## 8. Shared Data Entities
 
@@ -121,7 +128,8 @@ None.
 - **Rating mark (marca de rating):** the filled star and number ("★ 4") that a list row shows for a rated recipe; display only.
 - **Plan:** the household's agenda of recipes per day and meal.
 - **Slot (franja):** one meal time of one day: Desayuno, Almuerzo or Cena (the file also knows `snack`, not shown).
-- **Faltante:** a non-staple ingredient of a recipe that is not "Tengo"; optional ingredients count.
+- **Faltan / En mi lista de la compra / Ya tengo:** the three groups of a recipe's ingredients (catalog ingredients only, each once, in recipe order, optional ones included). Ya tengo: a staple, or "Tengo" on even if "Comprar" is also on. En mi lista de la compra: not Ya tengo and "Comprar" on. Faltan: the rest. Ingredients outside the catalog are not listed.
+- **Receta de origen / "Tu receta":** the recipe whose detail Al left with "Añadir al plan"; the Plan's picker lists it first, chosen, with the tag "Tu receta".
 - **Filter:** one of Categoría, Tiempo, Dieta, Cocina, Dificultad, Proteína, Estado or Rating; each holds one chosen value at a time.
 - **Search / applied text:** the text typed in the search bar is the typed text; the applied text is the trimmed typed text once it has 3 or more characters and 1 second has passed without typing (or Enter was pressed). Only the applied text filters the list.
 - **Tengo / Comprar:** the two independent switches of an ingredient: "Tengo" (it is at home, `have`) and "Comprar" (it must be bought, `to_buy`). Any combination is valid.
@@ -133,6 +141,7 @@ None.
 
 ## 11. Recent Changes
 
+- 2026-11-03 — recipes, plan: shortcuts in the recipe detail to add a recipe's missing ingredients to the shopping list and to take it to the Plan, where the picker offers it first; the Plan's missing-ingredients sheet uses the same three groups (see `changelog/013_recipe-detail-shortcuts_changelog.md`).
 - 2026-11-02 — recipes, library, profile, plan: recipe ratings (1 to 5 stars) set from the recipe detail, shown on the lists, filterable and used as the default order, saved to Drive; a rated recipe becomes Probada (see `changelog/012_recipe-ratings_changelog.md`).
 - 2026-11-02 — recipes, profile, plan: recipe status filter (Estado) in Recetas and in the favorites of Perfil, starting on Probadas, and discarded recipes left out of the Plan's picker (see `changelog/011_recipe-status-filter_changelog.md`).
 - 2026-10-30 — recipes: Compartir button in the recipe detail, opening the device share menu with the photo, title and link (see `changelog/010_share-recipe_changelog.md`).
@@ -225,7 +234,7 @@ How data travels from Drive to the device, and how its state is shown. It is the
 
 ### Overview
 
-Filtering and searching the recipe list and reading a recipe. Everything works from the stored library, online or offline, and writes nothing to Drive.
+Filtering and searching the recipe list and reading a recipe. Everything works from the stored library, online or offline. The only writes are Al's ratings (FLW-rate-recipe) and the "Comprar" marks put on the shopping list from the detail (FLW-add-recipe-to-shopping-list).
 
 ### Screens / Pages
 
@@ -235,11 +244,12 @@ Filtering and searching the recipe list and reading a recipe. Everything works f
 - **Platform divergence:** by window width. Small (under 640 px): a full screen with an "Atrás" button. Medium (640 to 1279 px): a modal (max width 720 px) over the list, with a "Cerrar" button, Esc and a click on the backdrop to close. Large (1280 px and above): a panel on the right of the list column that uses all the width left, with a "Cerrar" button; it is not a modal, so the list stays usable and Esc does nothing. On small windows the bottom bar is hidden while it is open; on medium and large the sidebar stays visible. Resizing across a breakpoint keeps the open recipe, its scroll position, its open sections and the open time breakdown.
 - **Purpose:** read everything needed to decide on and cook a recipe.
 - **Entry points:** a row of SCR-library-list; an ingredient that links to another recipe; opening `/recipes/<id>` directly.
-- **Functional composition:** CMP-detail-layer, CMP-recipe-photo, CMP-collapsible-section, CMP-recipe-link, CMP-favorite-button, CMP-share-button.
+- **Functional composition:** CMP-detail-layer, CMP-recipe-photo, CMP-collapsible-section, CMP-recipe-link, CMP-favorite-button, CMP-share-button, CMP-shopping-list-sheet.
 - **Data & business rules:**
   - The top has the photo (16:9; the category tile when there is none) and the title. On medium and large windows the title is always in the bar at the top of the modal or panel; on small windows it is under the photo. On large windows the photo takes two fifths of the width and Info general sits beside it, in the other three fifths.
-  - Favorite: on small windows the heart (CMP-favorite-button) takes the right end of the title row and the title wraps in the space left. On medium and large windows a button with the heart and the text "Añadir a favoritos" or "Quitar de favoritos" sits under the photo, with the width of its content; on large windows it is in the photo's column, beside Info general. Tapping it changes the recipe's state at once, also in the list row behind.
+  - Favorite: on small windows a button with the heart and the text "Añadir a favoritos" or "Quitar de favoritos" (CMP-favorite-button) sits under the rating, above the two shortcuts, with the full width of the content; the title row keeps only the share icon. On medium and large windows a button with the heart and the text "Añadir a favoritos" or "Quitar de favoritos" sits under the photo, with the width of its content; on large windows it is in the photo's column, beside Info general. Tapping it changes the recipe's state at once, also in the list row behind.
   - Rating (CMP-rating-stars): five stars, grey when the recipe has no rating and filled up to the rating when it has one, with the text "Sin rating" or "N de 5" beside them. On small windows they sit in their own row under the title row. On medium and large windows they sit under the photo in one row with the favorite and share buttons when the three fit; when they do not, the stars keep their own row and the two buttons take the next one. See FLW-rate-recipe. The detail still has no comment or "curated" control.
+  - Shortcuts: two buttons, "Añadir a lista de compra" and "Añadir al plan", shown for every recipe in every status. On small windows they are stacked under the favorite button, all three with the same width; on medium and large windows they take one wrapping row under the rating, favorite and share row. "Añadir a lista de compra" opens CMP-shopping-list-sheet. "Añadir al plan" shows the Plan at `/plan?add=<recipe id>` and closes the detail; with the detail open over the Plan it closes the detail and offers the recipe there with no navigation (see FLW-add-recipe-to-plan).
   - Share (CMP-share-button): beside the favorite control, an icon on the title row on small windows and a button "Compartir" next to "Añadir a favoritos" under the photo on medium and large windows (on a second line when the photo column is narrow). It is present wherever the detail opens (from Recetas, from the favorites in Perfil and over the Plan) and never in the lists. See FLW-share-recipe.
   - Four sections, in this order, each open on entry and collapsible on its own (the state is not remembered): Info general, Ingredientes, Pasos, Notas.
   - Info general: Categoría, Tiempo, Dificultad, Raciones, Técnica, Cocina, Dieta, Proteína and Ocasión. Tiempo shows the total (preparation + cooking + resting) as "N min" or "H h M min"; tapping it shows Preparación, Cocción and Reposo. Anything the recipe lacks shows "-" and its row stays. Servings units are fixed: personas, unidades, porciones.
@@ -252,8 +262,8 @@ Filtering and searching the recipe list and reading a recipe. Everything works f
   - No library and offline, or error: the same messages as the list, with "Reintentar".
   - Not found: "Receta no encontrada" with "Volver a recetas".
   - Recipe: the content described above.
-- **Related flows:** FLW-open-recipe, FLW-toggle-favorite, FLW-share-recipe, FLW-rate-recipe.
-- **Source:** `002_recipe-detail_prd.md`, `002_recipe-detail_ux_flow.md`, `004_responsive-recipe-layout_prd.md`, `004_responsive-recipe-layout_ux_flow.md`, `009_favorites_prd.md` / `_ux_flow.md`, `010_share-recipe_prd.md` / `_ux_flow.md`, `012_recipe-ratings_prd.md` / `_ux_flow.md`; implementation in `src/components/recipes/detail/`.
+- **Related flows:** FLW-open-recipe, FLW-toggle-favorite, FLW-share-recipe, FLW-rate-recipe, FLW-add-recipe-to-shopping-list, FLW-add-recipe-to-plan.
+- **Source:** `002_recipe-detail_prd.md`, `002_recipe-detail_ux_flow.md`, `004_responsive-recipe-layout_prd.md`, `004_responsive-recipe-layout_ux_flow.md`, `009_favorites_prd.md` / `_ux_flow.md`, `010_share-recipe_prd.md` / `_ux_flow.md`, `012_recipe-ratings_prd.md` / `_ux_flow.md`, `013_recipe-detail-shortcuts_prd.md` / `_ux_flow.md`; implementation in `src/components/recipes/detail/`.
 
 ### Functionally-Significant Components
 
@@ -333,6 +343,14 @@ Filtering and searching the recipe list and reading a recipe. Everything works f
 
 ### Flows
 
+#### CMP-shopping-list-sheet Shopping-list window
+
+- **Design system reference:** `Sheet` (with the "Atrás" back control), `Button`, CMP-ingredient-groups; `ShoppingListSheet` in `context/ui_kit_registry.md`.
+- **Functional role:** shows where each ingredient of a recipe stands and puts the Faltan ones on the shopping list.
+- **Behavior rules:** titled with the recipe, subtitle "Lista de compra". It shows CMP-ingredient-groups and the buttons "Cancelar" and "Añadir a la lista". With nothing in Faltan, or with no catalog ingredients, "Añadir a la lista" is disabled. The groups follow the pending changes while it is open. "Añadir a la lista" turns "Comprar" on for the Faltan ingredients only and closes it; "Cancelar", "Atrás", Esc or the backdrop close it with no change. Closing it always returns to the detail.
+- **Used on:** SCR-recipe-detail (wherever it opens: Recetas, Perfil or the Plan).
+- **Source:** `013_recipe-detail-shortcuts_prd.md`, `_ux_flow.md` (§2.2); implementation in `src/components/recipes/detail/ShoppingListSheet.tsx`.
+
 #### FLW-open-recipe Open and close a recipe
 
 - **Goal / trigger:** read a recipe and return to where you were.
@@ -373,6 +391,14 @@ Filtering and searching the recipe list and reading a recipe. Everything works f
 - **Business rules governing the flow:** the new rating shows at once and is saved to `ratings` of `reviews/al.yaml`. Offline, or while Drive is unavailable, the change waits on the device and is sent in order with the other pending changes ("N cambios pendientes"). Several taps on one recipe while pending end with the last value, and returning to the saved value sends nothing. With no key on the device, the change stays pending and the write key dialog (CMP-write-key) opens at the first change; "Ahora no" leaves it pending. Rating a recipe that is Por probar or Descartada also makes it Probada: it reads as Probada at once on the device and the server then edits only `status` and `updated` of the recipe file; a recipe that is already Probada, or has no status, is not touched, and removing a rating never changes the status. The server writes only `ratings[recipe]` and `updated` of the reviews file, keeps the entry's comment when setting and deletes the whole entry when removing.
 - **Edge cases & error handling:** if the server rejects a change, the rating returns to the saved value and "No se pudo guardar <receta>" shows for 4 seconds. If `reviews/al.yaml` does not exist, rating is refused with the same notice and the app never creates the file. If the rating is saved but the recipe's status cannot be written, the rating stays and rating that recipe again retries the status. A rating of a recipe that no longer exists is not shown and is not removed from the file. A rated recipe that leaves Estado's current value (for example a Por probar recipe seen in Estado "Por probar") leaves that list when it becomes Probada.
 - **Source:** `012_recipe-ratings_prd.md` (US-1, US-2, US-6, §10), `012_recipe-ratings_ux_flow.md`; ADR 004.
+
+#### FLW-add-recipe-to-shopping-list Add a recipe's ingredients to the shopping list
+
+- **Goal / trigger:** buy what a recipe lacks without leaving its detail.
+- **Screens involved (in sequence):** SCR-recipe-detail → ("Añadir a lista de compra") → CMP-shopping-list-sheet → ("Añadir a la lista") → SCR-recipe-detail → (if the device has no key) CMP-write-key.
+- **Business rules governing the flow:** the Faltan ingredients read as "En mi lista de la compra" at once and are saved to `to_buy` of the pantry with the same outbox, write key and retry rules as FLW-flip-switch. The key is asked after the window closes; "Ahora no" leaves the changes pending.
+- **Edge cases & error handling:** a rejected change returns the ingredient to its saved state and shows "No se pudo guardar <ingrediente>" for 4 seconds, also when the detail is open over Recetas or Perfil. With Faltan empty nothing is written; an ingredient already on the list is not touched.
+- **Source:** `013_recipe-detail-shortcuts_prd.md` (§5 US-1, §10), `_ux_flow.md` (§2.2).
 
 ---
 
@@ -500,7 +526,7 @@ The pantry and the shopping list over the ingredient catalog, with writes to Dri
 
 ### Overview
 
-The household's meal calendar. Every day from today has three slots, Desayuno, Almuerzo and Cena, that hold any number of recipes. It writes only the add and removal of recipe dishes in `plan/plan.yaml`; reading works from the stored library, online or offline. Adding a recipe also checks the pantry and can mark what is missing as "Comprar".
+The household's meal calendar. Every day from today has three slots, Desayuno, Almuerzo and Cena, that hold any number of recipes. It writes only the add and removal of recipe dishes in `plan/plan.yaml`; reading works from the stored library, online or offline. Adding a recipe also sorts its ingredients into Faltan, En mi lista de la compra and Ya tengo and can mark Faltan as "Comprar".
 
 ### Screens / Pages
 
@@ -508,7 +534,7 @@ The household's meal calendar. Every day from today has three slots, Desayuno, A
 
 - **Platform:** Web. **Platform divergence:** below 640 px the days are a vertical list and the pickers are bottom sheets; from 640 px the days are weekly columns and the pickers are centered modals (also on large windows).
 - **Purpose:** decide and see what will be eaten each day, and learn at once which ingredients are missing. Address `/plan`; the browser tab is titled "Plan · My Food".
-- **Entry points:** Plan in the main navigation; direct address.
+- **Entry points:** Plan in the main navigation; direct address; `/plan?add=<recipe id>`, from "Añadir al plan" of a recipe detail.
 - **Functional composition:** CMP-main-navigation, CMP-app-shell, CMP-plan-calendar, CMP-recipe-picker, CMP-missing-ingredients, CMP-pending-changes, CMP-write-key, CMP-detail-layer (the recipe detail opened over the Plan).
 - **Data & business rules:**
   - Shows the days from today (the device's date); a day before today is never shown on small windows, and in the current week of the weekly view it is dimmed, shows its recipes and offers no "Añadir" or X.
@@ -516,6 +542,7 @@ The household's meal calendar. Every day from today has three slots, Desayuno, A
   - Small windows: today and the next 7 days (8 days); each time the end of the list is reached 7 more days are added, with no limit, also offline.
   - Medium and large windows: one week, Monday to Sunday, in seven columns that share the available width equally (132 px minimum; if they do not fit, the week scrolls sideways). A title shows the date range, with "Esta semana" for the current week, and today's column is highlighted. Buttons at the sides go to the previous and next week; the previous one is disabled in the current week (a past week cannot be reached) and the next one has no limit.
   - A planned recipe that Al has rated shows its rating mark after the title (display only); unrated recipes show nothing. The picker shows no rating.
+  - Arriving with a recipe (`add` in the address, or "Añadir al plan" of a detail open over the Plan), the first time the picker opens, from any slot, it offers that recipe first (CMP-recipe-picker). The offer ends once the picker has opened, whether it adds or closes, and when Al leaves the Plan; an unknown id is ignored.
   - Tapping a recipe opens its detail over the Plan (full screen on small windows, a modal from 640 px) and closing it returns to the same place.
   - Data: recipes, ingredient catalog, pantry and plan from the stored library.
 - **States (business meaning):**
@@ -545,18 +572,19 @@ The household's meal calendar. Every day from today has three slots, Desayuno, A
   - Titled "Añadir al desayuno / almuerzo / a la cena" with the day. A search box ("Buscar receta"), the library list (photo, title, total time) and "Añadir receta".
   - Search: 3 characters minimum, applied 1 second after the last keystroke or on Enter; "x" and Esc clear it. Case and accents are ignored and every word must be in the title. With fewer than 3 characters the whole library shows. No match shows "Sin resultados" and keeps the selection; an empty library shows "No hay recetas todavía".
   - One recipe at a time: tapping another moves the choice, tapping the chosen one clears it. "Añadir receta" is enabled only with a choice.
-  - Recipes that are Descartadas are neither listed nor found by the search; Probadas and Por probar are. There is no status control. A recipe already in the plan stays there whatever its status.
+  - With a recipe of origin (see SCR-plan) it is first in the list, already chosen and tagged "Tu receta", so "Añadir receta" is enabled; search, the rest of the list and changing the choice work as always. A search that does not match it hides it like any other recipe, and it is first again when the search clears.
+  - Recipes that are Descartadas are neither listed nor found by the search, except the recipe of origin; Probadas and Por probar are, and Por probar recipes are planned like any other. There is no status control. A recipe already in the plan stays there whatever its status.
   - Esc, the backdrop or the close button close it and add nothing. Resizing across 640 px keeps the text and the choice.
 - **Used on:** SCR-plan.
 - **Source:** `008_meal-plan-calendar_prd.md`, `_ux_flow.md`; implementation in `src/components/plan/RecipePickerSheet.tsx`.
 
 #### CMP-missing-ingredients Missing ingredients
 
-- **Design system reference:** `Sheet` without the close button.
-- **Functional role:** after a recipe is added, lists what the pantry lacks for it.
+- **Design system reference:** `Sheet` without the close button, CMP-ingredient-groups.
+- **Functional role:** after a recipe is added, shows where each of its ingredients stands and offers to put the Faltan ones on the shopping list.
 - **Behavior rules:**
-  - Opens only when there are faltantes: ingredients of the recipe that are in the catalog, are not staples and are not "Tengo" (optional lines count; each ingredient once). It says "En tu despensa te faltan estos ingredientes:" and lists them.
-  - "Continuar" leaves the shopping list as it is. "Añadir a mi lista de la compra" turns "Comprar" on for each of them (those already on stay on).
+  - Opens only when Faltan is not empty (see the glossary for the three groups). It says "En tu despensa te faltan estos ingredientes:" and shows CMP-ingredient-groups.
+  - "Continuar" leaves the shopping list as it is. "Añadir a mi lista de la compra" turns "Comprar" on for the Faltan ingredients only.
   - Esc or the backdrop do the same as "Continuar". The recipe stays in the plan in every case. The write key, if needed, is asked after this sheet closes.
 - **Used on:** SCR-plan.
 - **Source:** `008_meal-plan-calendar_prd.md`, `_ux_flow.md`; implementation in `src/components/plan/MissingIngredientsSheet.tsx` and `src/lib/domain/plan-view.ts`.
@@ -565,8 +593,8 @@ The household's meal calendar. Every day from today has three slots, Desayuno, A
 
 #### FLW-add-recipe-to-plan Add a recipe to the plan
 
-- **Goal / trigger:** plan a recipe for a slot of a day.
-- **Screens involved (in sequence):** SCR-plan → ("Añadir" of a slot) → CMP-recipe-picker → ("Añadir receta") → SCR-plan with the recipe at the end of the slot → (if there are faltantes) CMP-missing-ingredients → SCR-plan → (if the device has no key) CMP-write-key.
+- **Goal / trigger:** plan a recipe for a slot of a day, from the Plan or from the recipe's detail.
+- **Screens involved (in sequence):** (from a detail: SCR-recipe-detail → ("Añadir al plan") →) SCR-plan → ("Añadir" of a slot; with a recipe of origin the picker offers it first, chosen) → CMP-recipe-picker → ("Añadir receta") → SCR-plan with the recipe at the end of the slot → (if Faltan is not empty) CMP-missing-ingredients → SCR-plan → (if the device has no key) CMP-write-key.
 - **Business rules governing the flow:** the recipe shows at once and goes to the outbox with the same sending, key and retry rules as FLW-flip-switch. The server applies the change to the latest `plan.yaml`, retrying once on a conflict: the dish goes to the last meal of that slot on that day, or a new meal is created in slot order (breakfast, lunch, snack, dinner); days stay in date order; everything the app does not manage is kept; `updated` is set with offset `-05:00`. In a batch with pantry changes, the pantry is written first and the plan last.
 - **Edge cases & error handling:** an unknown recipe, a bad date, a slot other than breakfast, lunch or dinner, or a day earlier than yesterday in `-05:00` is rejected, the recipe leaves the screen and a 4-second notice says "No se pudo guardar <receta>". A missing or unreadable plan file rejects only the plan changes. A repeated conflict or a Drive outage keeps the change pending. The server remembers for 10 minutes which plan changes it applied, so a retry does not add the recipe twice (best effort, per server instance). The other phone sees the change at its next sync; changes from two phones to the same slot both survive.
 - **Source:** `008_meal-plan-calendar_prd.md` (§5, §8, §10), `008_meal-plan-calendar_ux_flow.md`, ADR 003.
@@ -624,7 +652,7 @@ Perfil: Al's favorite recipes and the heart that marks them. Favorites are saved
 
 - **Design system reference:** `FavoriteButton`, `components/recipes/FavoriteButton` (see `context/ui_kit_registry.md`).
 - **Functional role:** the heart that marks or unmarks a recipe as a favorite.
-- **Behavior rules:** filled when the recipe is a favorite, empty when not, with the state also stated to assistive technology. Icon-only in rows and in the title row of the detail on small windows; with the text "Añadir a favoritos" or "Quitar de favoritos" under the photo on medium and large windows. Its touch area is at least 44 px. It never opens the recipe it belongs to, and all hearts of the same recipe agree at once.
+- **Behavior rules:** filled when the recipe is a favorite, empty when not, with the state also stated to assistive technology. Icon-only in rows; in the detail with the text "Añadir a favoritos" or "Quitar de favoritos": spanning the full width of the content on small windows, with the width of its content under the photo on medium and large windows. Its touch area is at least 44 px. It never opens the recipe it belongs to, and all hearts of the same recipe agree at once.
 - **Used on:** SCR-library-list, SCR-recipe-detail, SCR-profile.
 - **Source:** `009_favorites_prd.md` (US-1, US-2), `009_favorites_ux_flow.md` (§2.4); implementation in `src/components/recipes/FavoriteButton.tsx`.
 

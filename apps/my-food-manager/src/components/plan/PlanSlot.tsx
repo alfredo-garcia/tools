@@ -1,20 +1,25 @@
 "use client";
 
 import { Plus } from "lucide-react";
+import { PlanOutItem } from "./PlanOutItem";
 import { PlanRecipeItem } from "./PlanRecipeItem";
 import { formatDay } from "@/lib/domain/plan-calendar";
-import type { DayDishes } from "@/lib/domain/plan-view";
-import type { PlanMeal, Recipe } from "@/lib/schema";
+import { hasEatOut, outFirst, type DayDishes } from "@/lib/domain/plan-view";
+import type { PlanMeal, PlanOut, Recipe } from "@/lib/schema";
 
-/** What every slot needs from the screen: the recipes by id and the three things a user can do. */
+/** What every slot needs from the screen: the recipes by id and the things a user can do. */
 export interface PlanActions {
   recipes: ReadonlyMap<string, Recipe>;
   onAdd: (date: string, meal: PlanMeal) => void;
   onRemove: (date: string, meal: PlanMeal, recipeId: string) => void;
+  onRemoveOut: (date: string, meal: PlanMeal, out: PlanOut) => void;
   onOpen: (recipeId: string) => void;
 }
 
-/** One meal time of one day: its dishes and the "Añadir" action (not on days already past). */
+/**
+ * One meal time of one day: its marks first, then its dishes, and the "Añadir" action (not on days already past,
+ * nor when the slot is "Comer fuera").
+ */
 export function PlanSlot({
   date,
   meal,
@@ -43,20 +48,30 @@ export function PlanSlot({
       </h3>
       {dishes.length > 0 && (
         <ul>
-          {dishes.map((dish, i) => (
-            <PlanRecipeItem
-              key={`${dish.recipe ?? dish.text}-${i}`}
-              dish={dish}
-              recipe={dish.recipe ? actions.recipes.get(dish.recipe) : undefined}
-              past={past}
-              columns={columns}
-              onOpen={actions.onOpen}
-              onRemove={(id) => actions.onRemove(date, meal, id)}
-            />
-          ))}
+          {outFirst(dishes).map((dish, i) =>
+            dish.out ? (
+              <PlanOutItem
+                key={`${dish.out}-${i}`}
+                out={dish.out}
+                past={past}
+                columns={columns}
+                onRemove={() => actions.onRemoveOut(date, meal, dish.out!)}
+              />
+            ) : (
+              <PlanRecipeItem
+                key={`${dish.recipe ?? dish.text}-${i}`}
+                dish={dish}
+                recipe={dish.recipe ? actions.recipes.get(dish.recipe) : undefined}
+                past={past}
+                columns={columns}
+                onOpen={actions.onOpen}
+                onRemove={(id) => actions.onRemove(date, meal, id)}
+              />
+            ),
+          )}
         </ul>
       )}
-      {!past && (
+      {!past && !hasEatOut(dishes) && (
         <button
           type="button"
           onClick={() => actions.onAdd(date, meal)}

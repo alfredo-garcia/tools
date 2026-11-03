@@ -10,10 +10,11 @@ export interface RawOp {
   kind: string;
   ingredient?: string;
   value?: unknown;
-  /** Plan operations (ADR 003). */
+  /** Plan operations (ADR 003, ADR 005). */
   date?: string;
   meal?: string;
   recipe?: string;
+  out?: string;
 }
 
 /** What the catalog says about each ingredient id; staples never appear in the pantry. */

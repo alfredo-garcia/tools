@@ -19,12 +19,18 @@ import { withoutDiscarded } from "@/lib/domain/filters";
 import { classifyIngredients } from "@/lib/domain/ingredient-groups";
 import { pantryWithPending } from "@/lib/domain/pantry-view";
 import { INITIAL_DAYS, MORE_DAYS, localDate } from "@/lib/domain/plan-calendar";
-import { PLAN_MEAL_LABELS, pickerRecipes, planWithPending } from "@/lib/domain/plan-view";
+import {
+  EMPTY_DAY,
+  OUT_LABELS,
+  PLAN_MEAL_LABELS,
+  pickerRecipes,
+  planWithPending,
+} from "@/lib/domain/plan-view";
 import { getOutbox } from "@/lib/offline/outbox-client";
 import { useLibrary } from "@/lib/offline/use-library";
 import { addToShoppingList } from "@/lib/offline/shopping-list";
 import { useOutbox } from "@/lib/offline/use-outbox";
-import type { PlanMeal } from "@/lib/schema";
+import type { PlanMeal, PlanOut } from "@/lib/schema";
 
 const NOTICE_MS = 4000;
 const NO_RECIPES: never[] = [];
@@ -126,6 +132,14 @@ export function PlanScreen() {
     wantKey();
   };
 
+  const chooseOut = (out: PlanOut) => {
+    if (!picker) return;
+    void getOutbox().enqueuePlanOut("plan.addOut", picker.date, picker.meal, out);
+    setAnnouncement(`${OUT_LABELS[out].label} añadido`);
+    setPicker(null);
+    wantKey();
+  };
+
   const closeMissing = (addToList: boolean) => {
     if (addToList && missing && library) {
       addToShoppingList(groupsOf(missing)?.faltan ?? [], library.pantry.to_buy);
@@ -150,6 +164,11 @@ export function PlanScreen() {
     onRemove: (date, meal, recipeId) => {
       void getOutbox().enqueuePlan("plan.removeRecipe", date, meal, recipeId);
       setAnnouncement(`${recipeMap.get(recipeId)?.title ?? "Receta"} quitada`);
+      wantKey();
+    },
+    onRemoveOut: (date, meal, out) => {
+      void getOutbox().enqueuePlanOut("plan.removeOut", date, meal, out);
+      setAnnouncement(`${OUT_LABELS[out].label} quitado`);
       wantKey();
     },
     onOpen: setDetailId,
@@ -236,11 +255,13 @@ export function PlanScreen() {
     );
   }
 
-  const toastMessage = notice?.recipe
-    ? `No se pudo guardar ${recipeMap.get(notice.recipe)?.title ?? "la receta"}`
-    : notice?.ingredient
-      ? `No se pudo guardar ${library?.ingredients[notice.ingredient]?.name ?? notice.ingredient}`
-      : undefined;
+  const toastMessage = notice?.out
+    ? `No se pudo guardar ${OUT_LABELS[notice.out].label}`
+    : notice?.recipe
+      ? `No se pudo guardar ${recipeMap.get(notice.recipe)?.title ?? "la receta"}`
+      : notice?.ingredient
+        ? `No se pudo guardar ${library?.ingredients[notice.ingredient]?.name ?? notice.ingredient}`
+        : undefined;
 
   return (
     <AppShell title="Plan" wide={!small}>
@@ -252,6 +273,7 @@ export function PlanScreen() {
         <RecipePickerSheet
           date={picker.date}
           meal={picker.meal}
+          dishes={(view[picker.date] ?? EMPTY_DAY)[picker.meal]}
           recipes={pickerList}
           suggestedId={picker.suggestedId}
           onClose={() => {
@@ -259,6 +281,7 @@ export function PlanScreen() {
             wantKey();
           }}
           onConfirm={confirmAdd}
+          onOut={chooseOut}
         />
       )}
       {missing && groupsOf(missing) && (

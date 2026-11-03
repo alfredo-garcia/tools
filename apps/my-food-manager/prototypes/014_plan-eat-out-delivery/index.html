@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>My Food — Prototipo 014 Comer fuera y pedir</title>
+<style>
+/* Tokens: ui_standards §2-§6 (same names as src/app/globals.css) */
+:root{
+  --color-bg:#15130F; --color-surface-1:#1F1C17; --color-surface-2:#2A2620; --color-border:#38332B;
+  --color-text:#F6EFE4; --color-text-muted:#A99F90;
+  --color-primary-500:#FF7A45; --color-primary-contrast:#15130F; --color-primary-soft:rgba(255,122,69,.16);
+  --color-success-500:#7BD88F; --color-warning-500:#F2C14E; --color-danger-500:#FF6B6B;
+  --radius-sm:10px; --radius-md:18px; --radius-lg:28px; --radius-full:999px;
+  --elevation-3:0 18px 40px rgba(0,0,0,.55); --focus:0 0 0 3px rgba(255,122,69,.55);
+  --font:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+:root[data-theme="light"]{
+  --color-bg:#FBF7F1; --color-surface-1:#FFFFFF; --color-surface-2:#F3EDE3; --color-border:#E4DACB;
+  --color-text:#1E1A14; --color-text-muted:#6B6254;
+  --color-primary-500:#C2410C; --color-primary-contrast:#FFFFFF; --color-primary-soft:rgba(194,65,12,.1);
+  --color-success-500:#2E7D32; --color-warning-500:#B7791F; --color-danger-500:#B42318;
+  --elevation-3:0 18px 40px rgba(60,40,10,.2); --focus:0 0 0 3px rgba(194,65,12,.4);
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--color-bg);color:var(--color-text);font:400 16px/1.5 var(--font);display:flex;flex-direction:column}
+button,input{font:inherit;color:inherit}
+button{background:none;border:0;padding:0;cursor:pointer}
+button:disabled{cursor:not-allowed}
+:focus-visible{outline:none;box-shadow:var(--focus)}
+svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+svg.i.sm{width:14px;height:14px}
+
+/* Prototype-only toolbar */
+.proto{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;padding:8px 16px;background:var(--color-surface-2);border-bottom:1px solid var(--color-border);font-size:12px;color:var(--color-text-muted)}
+.proto b{color:var(--color-text)}
+.proto .seg{display:inline-flex;border:1px solid var(--color-border);border-radius:var(--radius-full);overflow:hidden}
+.proto .seg button{padding:4px 12px;font-size:12px;font-weight:600}
+.proto .seg button[aria-pressed="true"]{background:var(--color-primary-500);color:var(--color-primary-contrast)}
+.proto .act{padding:4px 12px;font-size:12px;font-weight:600;border:1px solid var(--color-border);border-radius:var(--radius-full)}
+.stage{flex:1;min-height:0;display:flex;justify-content:center;overflow:auto}
+.frame{position:relative;width:100%;overflow:hidden;background:var(--color-bg)}
+.frame.phone{width:390px;flex:none;margin:12px 0;border:8px solid #000;border-radius:36px;max-height:820px}
+.scroll{position:absolute;inset:0;overflow:auto}
+
+/* Plan */
+.shell{padding:16px;max-width:1240px;margin:0 auto}
+.head{display:flex;align-items:center;justify-content:space-between;margin:8px 0 12px}
+.head h1{font:800 24px/1.15 var(--font);margin:0}
+.badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;color:var(--color-text-muted)}
+.badge i{width:8px;height:8px;border-radius:50%;background:var(--color-success-500)}
+.badge.pending i{background:var(--color-warning-500)}
+.week{display:grid;grid-template-columns:repeat(7,minmax(132px,1fr));gap:8px}
+.weektitle{font:700 16px/1.3 var(--font);margin:0 0 8px}
+.day{margin-bottom:16px}
+.day h2{font:700 16px/1.3 var(--font);margin:0}
+.day.today h2{color:var(--color-primary-500)}
+.col{border-radius:var(--radius-md);padding:6px}
+.col.today{background:var(--color-primary-soft)}
+.col h2{font:700 13px/1.3 var(--font);margin:4px 4px 0}
+.slot{margin-top:8px;border:1px solid var(--color-border);background:var(--color-surface-1);border-radius:var(--radius-md);padding:12px}
+.cols .slot{padding:8px}
+.slot h3{margin:0 0 4px;font:800 12px/1.3 var(--font);letter-spacing:.06em;text-transform:uppercase;color:var(--color-text-muted)}
+.slot ul{list-style:none;margin:0;padding:0}
+.item{display:flex;align-items:center;gap:4px;min-height:56px;border-bottom:1px solid var(--color-border)}
+.item:last-child{border-bottom:0}
+.cols .item{min-height:48px}
+.item .open{flex:1;min-width:0;display:flex;align-items:center;gap:12px;text-align:left;font-weight:600;line-height:1.3}
+.cols .item .open{gap:6px;font-size:13px;align-items:flex-start;padding-top:8px}
+.photo{width:44px;height:44px;border-radius:var(--radius-sm);flex:none;background:linear-gradient(135deg,#6b4a2e,#a8743f)}
+.x{width:44px;height:44px;display:grid;place-items:center;border-radius:50%;color:var(--color-text-muted);flex:none}
+.x:hover{background:var(--color-surface-2);color:var(--color-danger-500)}
+.cols .x{margin-right:-8px}
+/* TmpPlanOutItem: the mark row */
+.item.out{background:var(--color-surface-2);border-radius:var(--radius-sm);border-bottom:0;margin:2px 0 4px;padding-left:6px}
+.cols .item.out{padding-left:4px}
+.outicon{width:44px;height:44px;flex:none;display:grid;place-items:center;border-radius:var(--radius-sm);border:1px solid var(--color-border);background:var(--color-surface-1);color:var(--color-text)}
+.cols .outicon{width:auto;height:auto;border:0;background:none;padding-top:2px}
+.cols .outicon svg{width:16px;height:16px}
+.item.out .lbl{flex:1;min-width:0;font-weight:600;line-height:1.3;display:flex;align-items:center;gap:12px}
+.cols .item.out .lbl{font-size:13px;gap:6px;align-items:flex-start;padding-top:8px}
+.add{margin-top:6px;width:100%;min-height:44px;display:flex;align-items:center;justify-content:center;gap:6px;border:1px dashed var(--color-border);border-radius:var(--radius-full);color:var(--color-primary-500);font-size:14px;font-weight:600}
+.add:hover{border-color:var(--color-primary-500);background:var(--color-primary-soft)}
+
+/* Sheet (bottom sheet below 640 px, centered modal above) */
+.backdrop{position:absolute;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;justify-content:center;z-index:10}
+.desk .backdrop{align-items:center}
+.sheet{width:100%;max-height:88%;display:flex;flex-direction:column;background:var(--color-surface-1);border-radius:var(--radius-lg) var(--radius-lg) 0 0;padding:16px;box-shadow:var(--elevation-3)}
+.desk .sheet{width:520px;border-radius:var(--radius-lg);max-height:80%}
+.sheet header{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:12px}
+.sheet h2{margin:0;font:800 20px/1.2 var(--font)}
+.sheet small{color:var(--color-text-muted);font-size:14px}
+/* TmpPlanOutOptions: the row of two options */
+.outrow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.outbtn{min-height:48px;display:flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--color-border);border-radius:var(--radius-full);font-weight:600;font-size:15px;background:var(--color-surface-1)}
+.outbtn:hover:not(:disabled){border-color:var(--color-primary-500);background:var(--color-primary-soft)}
+.outbtn:disabled{opacity:.4}
+.search{display:flex;align-items:center;gap:8px;min-height:44px;padding:0 14px;border:1px solid var(--color-border);border-radius:var(--radius-full);background:var(--color-surface-2);color:var(--color-text-muted)}
+.list{list-style:none;margin:8px 0 0;padding:0;overflow:auto;flex:1;min-height:0}
+.list li button{width:100%;display:flex;align-items:center;gap:12px;min-height:60px;text-align:left;border-bottom:1px solid var(--color-border)}
+.list .t{flex:1;font-weight:600}
+.list .t small{display:block;font-weight:400;font-size:13px}
+.radio{width:24px;height:24px;border-radius:50%;border:2px solid var(--color-border);flex:none;display:grid;place-items:center}
+.radio.on{border-color:var(--color-primary-500);background:var(--color-primary-500);color:var(--color-primary-contrast)}
+.primary{margin-top:12px;min-height:48px;width:100%;border-radius:var(--radius-full);background:var(--color-primary-500);color:var(--color-primary-contrast);font-weight:700}
+.primary:disabled{opacity:.4}
+.toast{position:absolute;left:50%;bottom:24px;transform:translateX(-50%);background:var(--color-text);color:var(--color-bg);padding:10px 16px;border-radius:var(--radius-full);font-size:14px;z-index:20;white-space:nowrap}
+.notes{max-width:1240px;margin:0 auto;padding:0 16px 24px;font-size:13px;color:var(--color-text-muted)}
+</style>
+</head>
+<body>
+<div class="proto">
+  <b>Prototipo my-food-manager/014</b>
+  <span class="seg" role="group" aria-label="Ventana">
+    <button id="v-phone" aria-pressed="true">Móvil</button><button id="v-desk" aria-pressed="false">Escritorio</button>
+  </span>
+  <span class="seg" role="group" aria-label="Tema">
+    <button id="t-dark" aria-pressed="true">Oscuro</button><button id="t-light" aria-pressed="false">Claro</button>
+  </span>
+  <button class="act" id="reset">Reiniciar datos</button>
+  <button class="act" id="reject">Simular rechazo del servidor</button>
+  <span>Prueba: "Añadir" → "Salir fuera" o "Pedir"; la X quita la marca.</span>
+</div>
+<div class="stage"><div class="frame phone" id="frame"><div class="scroll" id="app"></div><div id="overlay"></div></div></div>
+
+<script>
+const I = {
+  plus:'<path d="M5 12h14"/><path d="M12 5v14"/>',
+  x:'<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+  search:'<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
+  check:'<path d="M20 6 9 17l-5-5"/>',
+  utensils:'<path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/>',
+  bike:'<circle cx="18.5" cy="17.5" r="3.5"/><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="15" cy="5" r="1"/><path d="M12 17.5V14l-3-3 4-3 2 3h2"/>',
+};
+const svg = (n, c='i') => `<svg class="${c}" viewBox="0 0 24 24" aria-hidden="true">${I[n]}</svg>`;
+const OUT = { 'eat-out': { label:'Comer fuera', option:'Salir fuera', icon:'utensils' }, delivery: { label:'Pedir a domicilio', option:'Pedir', icon:'bike' } };
+const MEALS = [['breakfast','Desayuno','al desayuno'],['lunch','Almuerzo','al almuerzo'],['dinner','Cena','a la cena']];
+const RECIPES = [
+  { id:'lentejas', title:'Lentejas estofadas', time:'45 min' },
+  { id:'arroz', title:'Arroz con pollo colombiano', time:'1 h' },
+  { id:'tortilla', title:'Tortilla de patatas', time:'35 min' },
+  { id:'ensalada', title:'Ensalada de manzana verde y nueces', time:'15 min' },
+];
+const DAYS = ['Lunes 2','Martes 3','Miércoles 4','Jueves 5','Viernes 6','Sábado 7','Domingo 8'];
+const TODAY = 1; // Martes 3
+const seed = () => ({
+  1: { breakfast:[], lunch:[{recipe:'lentejas'}], dinner:[{out:'eat-out'}] },
+  2: { breakfast:[], lunch:[{out:'delivery'},{recipe:'ensalada'}], dinner:[] },
+  3: { breakfast:[], lunch:[], dinner:[{recipe:'tortilla'}] },
+  0: { breakfast:[], lunch:[{recipe:'arroz'}], dinner:[{out:'delivery'}] },
+});
+let plan = seed(), desk = false, picker = null, toast = null, rejectNext = false;
+
+const dishes = (d, m) => ((plan[d] ??= { breakfast:[], lunch:[], dinner:[] })[m]);
+const hasEatOut = (l) => l.some(x => x.out === 'eat-out');
+const hasDelivery = (l) => l.some(x => x.out === 'delivery');
+const ordered = (l) => [...l.filter(x => x.out), ...l.filter(x => !x.out)]; // marks first
+
+function showToast(t){ toast = t; render(); setTimeout(() => { toast = null; render(); }, 4000); }
+
+function itemHtml(x, d, m, i, past){
+  const cols = desk;
+  if (x.out){
+    const o = OUT[x.out];
+    return `<li class="item out"><span class="lbl"><span class="outicon">${svg(o.icon)}</span>${o.label}</span>${
+      past ? '' : `<button class="x" data-rm="${d}|${m}|${i}" aria-label="Quitar ${o.label}">${svg('x')}</button>`}</li>`;
+  }
+  const r = RECIPES.find(r => r.id === x.recipe);
+  return `<li class="item"><button class="open">${cols ? '<span aria-hidden="true">🍲</span>' : '<span class="photo"></span>'}<span>${r.title}</span></button>${
+    past ? '' : `<button class="x" data-rm="${d}|${m}|${i}" aria-label="Quitar ${r.title}">${svg('x')}</button>`}</li>`;
+}
+
+function slotHtml(d, [m, label]){
+  const past = d < TODAY, list = dishes(d, m);
+  const canAdd = !past && !hasEatOut(list);
+  return `<section class="slot" aria-label="${label}, ${DAYS[d]}"><h3>${label}</h3>${
+    list.length ? `<ul>${ordered(list).map((x) => itemHtml(x, d, m, list.indexOf(x), past)).join('')}</ul>` : ''}${
+    canAdd ? `<button class="add" data-add="${d}|${m}" aria-label="Añadir receta a ${label.toLowerCase()}, ${DAYS[d]}">${svg('plus','i sm')}Añadir</button>` : ''}</section>`;
+}
+
+function pickerHtml(){
+  const { d, m, chosen } = picker;
+  const meal = MEALS.find(x => x[0] === m), list = dishes(d, m);
+  const eatOff = list.length > 0, delOff = hasDelivery(list);
+  const opt = (k, off) => `<button class="outbtn" data-out="${k}" ${off ? 'disabled' : ''} aria-label="${OUT[k].option}, ${meal[1].toLowerCase()}, ${DAYS[d]}">${svg(OUT[k].icon)}${OUT[k].option}</button>`;
+  return `<div class="backdrop" data-close="1"><div class="sheet" role="dialog" aria-modal="true" aria-label="Añadir ${meal[2]}">
+    <header><div><h2>Añadir ${meal[2]}</h2><small>${DAYS[d]}</small></div><button class="x" data-close="1" aria-label="Cerrar">${svg('x')}</button></header>
+    <div class="outrow">${opt('eat-out', eatOff)}${opt('delivery', delOff)}</div>
+    <div class="search">${svg('search')}<span>Buscar receta</span></div>
+    <ul class="list" role="listbox" aria-label="Recetas">${RECIPES.map(r => `<li><button data-pick="${r.id}" role="option" aria-selected="${chosen === r.id}"><span class="photo"></span><span class="t">${r.title}<small>${r.time}</small></span><span class="radio ${chosen === r.id ? 'on' : ''}">${chosen === r.id ? svg('check','i sm') : ''}</span></button></li>`).join('')}</ul>
+    <button class="primary" data-confirm="1" ${chosen ? '' : 'disabled'}>Añadir receta</button>
+  </div></div>`;
+}
+
+function render(){
+  const frame = document.getElementById('frame');
+  frame.className = 'frame ' + (desk ? 'desk' : 'phone');
+  let body;
+  if (desk){
+    body = `<p class="weektitle">Esta semana · 2 – 8 nov</p><div class="week cols">${DAYS.map((name, d) =>
+      `<div class="col ${d === TODAY ? 'today' : ''}" style="${d < TODAY ? 'opacity:.55' : ''}"><h2>${name}</h2>${MEALS.map(m => slotHtml(d, m)).join('')}</div>`).join('')}</div>`;
+  } else {
+    body = DAYS.slice(TODAY).map((name, k) => { const d = k + TODAY;
+      return `<div class="day ${d === TODAY ? 'today' : ''}"><h2>${d === TODAY ? 'Hoy · ' : ''}${name}</h2>${MEALS.map(m => slotHtml(d, m)).join('')}</div>`; }).join('');
+  }
+  document.getElementById('app').innerHTML =
+    `<div class="shell"><div class="head"><h1>Plan</h1><span class="badge"><i></i>Sincronizado</span></div>${body}</div>
+     <div class="notes">Prototipo: la X de una marca y "Salir fuera"/"Pedir" se guardan como cualquier cambio del plan (cola, clave, reintento).</div>`;
+  document.getElementById('overlay').innerHTML = `${picker ? pickerHtml() : ''}${toast ? `<div class="toast" role="status">${toast}</div>` : ''}`;
+}
+
+document.addEventListener('click', (e) => {
+  const t = e.target.closest('button,[data-close]'); if (!t) return;
+  if (t.id === 'v-phone' || t.id === 'v-desk'){ desk = t.id === 'v-desk'; document.getElementById('v-phone').ariaPressed = !desk; document.getElementById('v-desk').ariaPressed = desk; return render(); }
+  if (t.id === 't-dark' || t.id === 't-light'){ const l = t.id === 't-light'; document.documentElement.dataset.theme = l ? 'light' : 'dark'; document.getElementById('t-dark').ariaPressed = !l; document.getElementById('t-light').ariaPressed = l; return; }
+  if (t.id === 'reset'){ plan = seed(); picker = null; return render(); }
+  if (t.id === 'reject'){ rejectNext = true; t.textContent = 'El próximo cambio se rechazará'; return; }
+  if (t.dataset.close && (e.target === t)){ picker = null; return render(); }
+  if (t.dataset.add){ const [d, m] = t.dataset.add.split('|'); picker = { d:+d, m, chosen:null }; return render(); }
+  if (t.dataset.out){
+    const { d, m } = picker, k = t.dataset.out; picker = null;
+    const list = dishes(d, m);
+    if (k === 'eat-out') list.push({ out:k }); else list.unshift({ out:k });
+    render();
+    if (rejectNext){ rejectNext = false; document.getElementById('reject').textContent = 'Simular rechazo del servidor';
+      setTimeout(() => { const i = list.findIndex(x => x.out === k); if (i >= 0) list.splice(i, 1); showToast(`No se pudo guardar ${OUT[k].label}`); }, 700); }
+    return;
+  }
+  if (t.dataset.pick){ picker.chosen = picker.chosen === t.dataset.pick ? null : t.dataset.pick; return render(); }
+  if (t.dataset.confirm){ dishes(picker.d, picker.m).push({ recipe:picker.chosen }); picker = null; return render(); }
+  if (t.dataset.rm){ const [d, m, i] = t.dataset.rm.split('|'); dishes(+d, m).splice(+i, 1); return render(); }
+});
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && picker){ picker = null; render(); } });
+render();
+</script>
+</body>
+</html>

@@ -1,7 +1,7 @@
 # Changelog: Shopping List Section
 
 > Project: `my-food-manager`
-> Merged: documented on the feature branch `my-food-manager/015-shopping-list-section` before the merge, as `CLAUDE.md` and `tech_standards.md` §11 require
+> Merged: documented on the feature branch `my-food-manager/015-shopping-list-section` before the merge, as `CLAUDE.md` and `tech_standards.md` §11 require; merge commit `2e8521ef`, merged and pushed at the user's request on 2026-11-03
 > Source PRD: `015_shopping-list-section_prd.md`
 > Source UX Flow: `015_shopping-list-section_ux_flow.md`
 > Master doc file(s) touched: `docs/functional-spec.md` (Product Overview, Domain Map, Navigation Structure, Screen & Flow Index, Glossary, Recent Changes; domain `navigation`: CMP-main-navigation, FLW-switch-section; domain `pantry`: Overview, SCR-ingredients, new SCR-shopping-list, CMP-pantry-list, FLW-flip-switch, new FLW-share-shopping-list; domains `recipes` and `library`: SCR-recipe-detail, CMP-collapsible-section, CMP-share-button, SCR-library-list); `docs/context/ui_kit_registry.md`

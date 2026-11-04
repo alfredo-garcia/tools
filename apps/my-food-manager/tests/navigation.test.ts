@@ -1,10 +1,17 @@
 import { describe, expect, it } from "vitest";
-import { currentDestination, showBottomNav, sidebarExpanded } from "@/lib/domain/navigation";
+import {
+  DESTINATIONS,
+  badgeText,
+  currentDestination,
+  showBottomNav,
+  sidebarExpanded,
+} from "@/lib/domain/navigation";
 
 describe("currentDestination", () => {
   it("maps each address to its destination", () => {
     expect(currentDestination("/")).toBe("recipes");
     expect(currentDestination("/plan")).toBe("plan");
+    expect(currentDestination("/shopping-list")).toBe("shopping");
     expect(currentDestination("/ingredients")).toBe("ingredients");
     expect(currentDestination("/profile")).toBe("profile");
   });
@@ -42,5 +49,25 @@ describe("showBottomNav", () => {
   it("never shows on medium or large windows", () => {
     expect(showBottomNav("medium", "/")).toBe(false);
     expect(showBottomNav("large", "/plan")).toBe(false);
+  });
+});
+
+describe("destinations", () => {
+  it("lists the five sections in order", () => {
+    expect(DESTINATIONS.map((d) => d.label)).toEqual([
+      "Recetas",
+      "Plan",
+      "Compra",
+      "Despensa",
+      "Perfil",
+    ]);
+  });
+});
+
+describe("badgeText", () => {
+  it("shows the count and caps it at 99+", () => {
+    expect(badgeText(5)).toBe("5");
+    expect(badgeText(99)).toBe("99");
+    expect(badgeText(100)).toBe("99+");
   });
 });

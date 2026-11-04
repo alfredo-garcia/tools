@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { usePathname } from "next/navigation";
 import { FavoriteFeedback } from "@/components/feedback/FavoriteFeedback";
 import { BottomNav, SideNav } from "@/components/navigation/Nav";
@@ -11,6 +12,9 @@ import {
   showBottomNav,
   sidebarExpanded,
 } from "@/lib/domain/navigation";
+import { buyCount, catalogItems, pantryWithPending } from "@/lib/domain/pantry-view";
+import { useLibrary } from "@/lib/offline/use-library";
+import { useOutbox } from "@/lib/offline/use-outbox";
 
 /** Main navigation around every screen: bottom bar on small windows, collapsible sidebar from 640 px. */
 export function AppFrame({ children }: { children: React.ReactNode }) {
@@ -20,6 +24,16 @@ export function AppFrame({ children }: { children: React.ReactNode }) {
   const currentId = currentDestination(pathname);
   const expanded = sidebarExpanded(stored, layout);
   const bottom = showBottomNav(layout, pathname);
+  const { library } = useLibrary();
+  const { pending } = useOutbox();
+  const toBuy = useMemo(
+    () =>
+      library
+        ? buyCount(catalogItems(library.ingredients), pantryWithPending(library.pantry, pending))
+        : 0,
+    [library, pending],
+  );
+  const badges = { shopping: toBuy };
 
   return (
     <div className="flex">
@@ -27,6 +41,7 @@ export function AppFrame({ children }: { children: React.ReactNode }) {
         <SideNav
           items={DESTINATIONS}
           currentId={currentId}
+          badges={badges}
           expanded={expanded}
           onToggle={() => setStored(!expanded)}
         />
@@ -36,7 +51,7 @@ export function AppFrame({ children }: { children: React.ReactNode }) {
       >
         {children}
       </div>
-      {bottom && <BottomNav items={DESTINATIONS} currentId={currentId} />}
+      {bottom && <BottomNav items={DESTINATIONS} currentId={currentId} badges={badges} />}
       <FavoriteFeedback />
     </div>
   );

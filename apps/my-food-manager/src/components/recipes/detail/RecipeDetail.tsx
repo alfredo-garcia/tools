@@ -37,6 +37,9 @@ function RecipeContent({
 }) {
   const router = useRouter();
   const [shopping, setShopping] = useState(false);
+  // Small windows open on the ingredients: the layout when the recipe opens decides, a later resize does not.
+  const layout = useLayout();
+  const [detailsOpen] = useState(layout !== "small");
   const shortcuts = (
     <DetailShortcuts
       onShopping={() => setShopping(true)}
@@ -84,7 +87,7 @@ function RecipeContent({
               recipeTitle={recipe.title}
               label={pressed ? "Quitar de favoritos" : "Añadir a favoritos"}
             />
-            <ShareButton onShare={share} busy={busy} recipeTitle={recipe.title} label="Compartir" />
+            <ShareButton onShare={share} busy={busy} subject={recipe.title} label="Compartir" />
           </div>
         </div>
         <div className="flex flex-wrap gap-2 px-4 pt-2 group-data-[detail-mode=fullscreen]:hidden group-data-[detail-mode=panel]:px-0">
@@ -100,7 +103,7 @@ function RecipeContent({
           >
             {recipe.title}
           </h1>
-          <ShareButton onShare={share} busy={busy} recipeTitle={recipe.title} />
+          <ShareButton onShare={share} busy={busy} subject={recipe.title} />
         </div>
         <div className="-ml-2.5 group-data-[detail-mode=modal]:hidden group-data-[detail-mode=panel]:hidden">
           {rating}
@@ -116,10 +119,10 @@ function RecipeContent({
           />
           {shortcuts}
         </div>
-        <InfoSection recipe={recipe} library={library} />
+        <InfoSection recipe={recipe} library={library} defaultOpen={detailsOpen} />
         <IngredientsSection recipe={recipe} library={library} />
         <StepsSection recipe={recipe} />
-        <NotesSection recipe={recipe} />
+        <NotesSection recipe={recipe} defaultOpen={detailsOpen} />
       </div>
       {notice && <Toast message={notice} />}
       {shopping && (

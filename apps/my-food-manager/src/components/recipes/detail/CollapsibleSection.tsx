@@ -3,15 +3,17 @@
 import { useId, useState } from "react";
 import { ChevronDown } from "lucide-react";
 
-/** Titled card whose body folds; all sections start open and keep their own state. */
+/** Titled card whose body folds; each section starts as `defaultOpen` says (open by default) and keeps its own state. */
 export function CollapsibleSection({
   title,
+  defaultOpen = true,
   children,
 }: {
   title: string;
+  defaultOpen?: boolean;
   children: React.ReactNode;
 }) {
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(defaultOpen);
   const id = useId();
   return (
     <section className="mt-4 rounded-md border border-border bg-surface-1 shadow-elevation-1">

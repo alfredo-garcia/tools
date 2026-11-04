@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/inputs/Button";
 import { FilterChip } from "@/components/inputs/FilterChip";
 import { FilterOptions } from "@/components/inputs/FilterOptions";
@@ -10,9 +11,11 @@ import { EmptyState } from "@/components/feedback/EmptyState";
 import { TmpPendingChanges } from "@/components/feedback/TmpPendingChanges";
 import { Toast } from "@/components/feedback/Toast";
 import { AppShell } from "@/components/layout/AppShell";
+import { ShareButton } from "@/components/recipes/ShareButton";
 import { useSearchQuery } from "@/components/recipes/use-search-query";
 import { IngredientRow } from "./IngredientRow";
 import { KeyDialog } from "./KeyDialog";
+import { useListShare } from "./use-list-share";
 import {
   baseList,
   buyCount,
@@ -22,6 +25,7 @@ import {
   inFamily,
   isAtHome,
   pantryWithPending,
+  shoppingListText,
   sortByName,
   type PantryTab,
   type StateFilter,
@@ -35,18 +39,18 @@ const NOTICE_MS = 4000;
 const EMPTY: ReadonlySet<string> = new Set();
 
 const STATES: { value: StateFilter; label: string }[] = [
+  { value: "todos", label: "Todos" },
   { value: "tengo", label: "Tengo" },
   { value: "notengo", label: "No tengo" },
-  { value: "todos", label: "Todos" },
 ];
 
-/** Despensa section: pantry and shopping list as two tabs over the same ingredient catalog. */
-export function IngredientsScreen() {
+/** Despensa (the pantry, `tab="despensa"`) or Compra (the shopping list, `tab="lista"`), over the same catalog. */
+export function IngredientsScreen({ tab }: { tab: PantryTab }) {
+  const router = useRouter();
   const { hydrated, library, status, storageOk, refresh } = useLibrary();
   const outbox = useOutbox();
   const search = useSearchQuery();
-  const [tab, setTab] = useState<PantryTab>("despensa");
-  const [state, setState] = useState<StateFilter>("tengo");
+  const [state, setState] = useState<StateFilter>("todos");
   const [family, setFamily] = useState<string>();
   const [familyOpen, setFamilyOpen] = useState(false);
   const [keyOpen, setKeyOpen] = useState(false);
@@ -58,12 +62,9 @@ export function IngredientsScreen() {
     context,
     ids: EMPTY,
   });
-  const [struckIn, setStruckIn] = useState<{ tab: PantryTab; ids: ReadonlySet<string> }>({
-    tab,
-    ids: EMPTY,
-  });
+  // Rows turned off in Compra stay struck through until leaving it.
+  const [struck, setStruck] = useState<ReadonlySet<string>>(EMPTY);
   const keepVisible = kept.context === context ? kept.ids : EMPTY;
-  const struck = struckIn.tab === tab ? struckIn.ids : EMPTY;
 
   const items = useMemo(() => (library ? catalogItems(library.ingredients) : []), [library]);
   const view = useMemo(
@@ -83,6 +84,7 @@ export function IngredientsScreen() {
   const options = familyOptions(base, vocab);
   const rows = sortByName(inFamily(base, family));
   const toBuyCount = buyCount(items, view);
+  const listShare = useListShare(shoppingListText(items, view.buy, vocab));
 
   // A key the server refused reopens the dialog with its error until the user closes it.
   const keyDialogOpen = keyOpen || (outbox.keyRejected && !rejectionClosed);
@@ -104,7 +106,7 @@ export function IngredientsScreen() {
       const next = new Set(struck);
       if (now) next.add(id);
       else next.delete(id);
-      setStruckIn({ tab, ids: next });
+      setStruck(next);
     }
     if (!outbox.hasKey && !keyDismissed) setKeyOpen(true);
   };
@@ -117,10 +119,6 @@ export function IngredientsScreen() {
 
   const noText = () => {
     search.clear();
-  };
-  const changeTab = (next: PantryTab) => {
-    setTab(next);
-    setFamilyOpen(false);
   };
 
   let content: React.ReactNode;
@@ -147,28 +145,25 @@ export function IngredientsScreen() {
     const filtered = search.applied !== "" || family !== undefined;
     content = (
       <>
-        <TmpSegmentedControl
-          kind="tabs"
-          ariaLabel="Despensa o lista de compra"
-          value={tab}
-          onChange={changeTab}
-          items={[
-            { value: "despensa", label: "Despensa" },
-            {
-              value: "lista",
-              label: toBuyCount > 0 ? `Lista de compra · ${toBuyCount}` : "Lista de compra",
-            },
-          ]}
-        />
-        <div className="mt-3">
-          <SearchInput
-            value={search.typed}
-            onChange={search.setTyped}
-            onClear={noText}
-            onSubmit={search.applyNow}
-            placeholder="Buscar ingrediente"
-            label="Buscar ingrediente"
-          />
+        <div className="flex items-center gap-2">
+          <div className="min-w-0 flex-1">
+            <SearchInput
+              value={search.typed}
+              onChange={search.setTyped}
+              onClear={noText}
+              onSubmit={search.applyNow}
+              placeholder="Buscar ingrediente"
+              label="Buscar ingrediente"
+            />
+          </div>
+          {tab === "lista" && toBuyCount > 0 && (
+            <ShareButton
+              onShare={() => void listShare.share()}
+              busy={listShare.busy}
+              subject="Lista de compra"
+              label="Compartir"
+            />
+          )}
         </div>
         <div className="flex">
           <FilterChip
@@ -235,7 +230,7 @@ export function IngredientsScreen() {
             emoji="🛒"
             title="Tu lista está vacía"
             hint="Activa Comprar en un ingrediente de Despensa."
-            action={<Button onClick={() => changeTab("despensa")}>Ir a Despensa</Button>}
+            action={<Button onClick={() => router.push("/ingredients")}>Ir a Despensa</Button>}
           />
         ) : (
           <EmptyState
@@ -271,7 +266,7 @@ export function IngredientsScreen() {
   }
 
   return (
-    <AppShell title="Despensa">
+    <AppShell title={tab === "lista" ? "Lista de compra" : "Despensa"}>
       {content}
       <div aria-live="polite" className="sr-only">
         {outbox.pending.length > 0 ? `${outbox.pending.length} cambios pendientes` : ""}
@@ -288,8 +283,12 @@ export function IngredientsScreen() {
           onClose={closeKey}
         />
       )}
-      {notice?.ingredient && (
-        <Toast message={`No se pudo guardar ${nameOf(items, notice.ingredient)}`} />
+      {listShare.notice ? (
+        <Toast message={listShare.notice} />
+      ) : (
+        notice?.ingredient && (
+          <Toast message={`No se pudo guardar ${nameOf(items, notice.ingredient)}`} />
+        )
       )}
     </AppShell>
   );

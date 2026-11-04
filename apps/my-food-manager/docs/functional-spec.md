@@ -10,7 +10,7 @@
 
 My Food Manager (shown to users as "My Food") is a personal, visual, mobile-first web app (installable PWA) that helps Al and his household partner decide what to cook and shop without forgetting anything. It reads the Google Drive folder `food`, which the food-manager skill maintains, and keeps working without a connection. There are no logins. Platform: web only.
 
-Today the app lets you browse the library with filters and a text search and open each recipe's detail, and it has a main navigation with four sections: Recetas, Plan, Despensa and Perfil. Perfil shows Al's favorite recipes. Recipes can be marked as favorites from the list and from the detail, with a heart, and shared from the detail; favorites are saved to Drive in the same way as the pantry and the plan. Plan is the household's meal calendar: from today on, each day has Desayuno, Almuerzo and Cena, to which recipes are added and removed, and every recipe added is checked against the pantry, offering to put what is missing on the shopping list. A slot can also be marked from the picker as eaten out ("Comer fuera") or ordered in ("Pedir a domicilio"); the mark shows with its own icon so it is clear that meal is not cooked. Despensa holds the pantry and the shopping list in two tabs, where each ingredient has two switches, "Tengo" and "Comprar", saved to Drive (also from the device without a connection, with a shared write key). Plan changes are saved to Drive in the same way (offline queue and shared write key). Each recipe has a status (Probada, Por probar or Descartada), set outside the app by the food-manager skill; Recetas and the favorites in Perfil start showing only the Probadas and can switch to the others or show all. Al can rate each recipe from 1 to 5 stars from its detail; the rating shows on the rows of Recetas, the favorites of Perfil and the Plan, can be filtered, and sorts Recetas and the favorites from the best rated down; ratings are saved to Drive like favorites. From the recipe detail Al can put what a recipe lacks on the shopping list (a window that sorts its ingredients into Faltan, En mi lista de la compra and Ya tengo) or take the recipe to the Plan, where the picker offers it first the first time it opens. Comments, the "curated" flag and the person picker of the profile are still pending (see `product/product_vision.md` §7).
+Today the app lets you browse the library with filters and a text search and open each recipe's detail, and it has a main navigation with five sections: Recetas, Plan, Compra, Despensa and Perfil. Perfil shows Al's favorite recipes. Recipes can be marked as favorites from the list and from the detail, with a heart, and shared from the detail; favorites are saved to Drive in the same way as the pantry and the plan. Plan is the household's meal calendar: from today on, each day has Desayuno, Almuerzo and Cena, to which recipes are added and removed, and every recipe added is checked against the pantry, offering to put what is missing on the shopping list. A slot can also be marked from the picker as eaten out ("Comer fuera") or ordered in ("Pedir a domicilio"); the mark shows with its own icon so it is clear that meal is not cooked. Despensa holds the pantry and Compra the shopping list, which can be shared as text grouped by family; each ingredient has two switches, "Tengo" and "Comprar", saved to Drive (also from the device without a connection, with a shared write key). Plan changes are saved to Drive in the same way (offline queue and shared write key). Each recipe has a status (Probada, Por probar or Descartada), set outside the app by the food-manager skill; Recetas and the favorites in Perfil start showing only the Probadas and can switch to the others or show all. Al can rate each recipe from 1 to 5 stars from its detail; the rating shows on the rows of Recetas, the favorites of Perfil and the Plan, can be filtered, and sorts Recetas and the favorites from the best rated down; ratings are saved to Drive like favorites. From the recipe detail Al can put what a recipe lacks on the shopping list (a window that sorts its ingredients into Faltan, En mi lista de la compra and Ya tengo) or take the recipe to the Plan, where the picker offers it first the first time it opens. On small windows the recipe detail opens with Info general and Notas collapsed. Comments, the "curated" flag and the person picker of the profile are still pending (see `product/product_vision.md` §7).
 
 ## 2. How to Read This Documentation
 
@@ -26,16 +26,16 @@ Today the app lets you browse the library with filters and a text search and ope
 | library | Library sync, offline storage and the recipe list | inline below | Active |
 | recipes | Filtering (including by recipe status and rating) and searching the recipe list, reading a recipe, rating it and, from its detail, adding its missing ingredients to the shopping list or taking it to the Plan | inline below | Active |
 | navigation | Main navigation between sections and their placeholders | inline below | Active |
-| pantry | Pantry and shopping list, with writes to Drive | inline below | Active |
+| pantry | Pantry (Despensa) and shopping list (Compra, shareable as text), with writes to Drive | inline below | Active |
 | plan | Meal-plan calendar with recipe picking (offering first the recipe Al came from), eat-out and delivery marks and a pantry check, with writes to Drive | inline below | Active |
 | profile | Perfil: Al's favorite recipes and the heart to mark them, with writes to Drive; Al's ratings are shown and edited from the recipe detail | inline below | Active |
 
 ## 4. Navigation Structure
 
-The app has four sections, always reachable from a main navigation: Recetas (`/`, with the recipe detail at `/recipes/<id>`), Plan (`/plan`), Despensa (`/ingredients`) and Perfil (`/profile`). Perfil shows Al's favorite recipes; Plan shows the meal calendar; Despensa shows the pantry and the shopping list in two tabs. The screen adapts to the window width in three layouts: small (under 640 px), medium (640 to 1279 px) and large (1280 px and above).
+The app has five sections, always reachable from a main navigation: Recetas (`/`, with the recipe detail at `/recipes/<id>`), Plan (`/plan`), Compra (`/shopping-list`), Despensa (`/ingredients`) and Perfil (`/profile`). Perfil shows Al's favorite recipes; Plan shows the meal calendar; Despensa shows the pantry; Compra shows the shopping list. The screen adapts to the window width in three layouts: small (under 640 px), medium (640 to 1279 px) and large (1280 px and above).
 
-- **Small:** a bottom bar with the four sections. It is hidden while a recipe detail is open (the detail is a full screen) and comes back when it closes.
-- **Medium and large:** a sidebar on the left with the same four sections, collapsible to icons only or expandable to icons and text. It stays visible when a recipe opens (modal on medium, panel beside the list on large).
+- **Small:** a bottom bar with the five sections. It is hidden while a recipe detail is open (the detail is a full screen) and comes back when it closes.
+- **Medium and large:** a sidebar on the left with the same five sections, collapsible to icons only or expandable to icons and text. It stays visible when a recipe opens (modal on medium, panel beside the list on large).
 - **Recipes:** in small and medium the detail opens over the list; in large the list is a column and the detail opens beside it.
 - An address that matches no section shows the standard "page not found" page.
 
@@ -48,6 +48,7 @@ The app has four sections, always reachable from a main navigation: Recetas (`/`
 | SCR-library-list | Recipe list | library | Web |
 | SCR-recipe-detail | Recipe detail | recipes | Web |
 | SCR-plan | Plan | plan | Web |
+| SCR-shopping-list | Compra | pantry | Web |
 | SCR-ingredients | Despensa | pantry | Web |
 | SCR-profile | Perfil | profile | Web |
 
@@ -64,6 +65,7 @@ The app has four sections, always reachable from a main navigation: Recetas (`/`
 | FLW-toggle-sidebar | Collapse or expand the sidebar | navigation | Web |
 | FLW-flip-switch | Flip a switch | pantry | Web |
 | FLW-enter-write-key | Enter the write key | pantry | Web |
+| FLW-share-shopping-list | Share the shopping list | pantry | Web |
 | FLW-add-recipe-to-plan | Add a recipe to the plan | plan, recipes | Web |
 | FLW-remove-plan-recipe | Remove a recipe from the plan | plan | Web |
 | FLW-browse-plan | Browse days and weeks | plan | Web |
@@ -116,17 +118,18 @@ None.
 - **Compact bar:** the fixed top bar of the detail on small windows, which shows the recipe title once the title scrolls out of view. On medium and large windows the bar always shows the title.
 - **Info general:** the first section of the detail, with the recipe's key facts and tags.
 - **Total time:** preparation + cooking + resting minutes of a recipe, counting missing parts as 0; used by the Tiempo filter.
-- **Section / destination:** one of the four options of the main navigation: Recetas, Plan, Despensa or Perfil.
+- **Section / destination:** one of the five options of the main navigation: Recetas, Plan, Compra, Despensa or Perfil.
+- **Compra / Lista de compra / Lista de la compra:** Compra is the navigation section of the shopping list; "Lista de compra" is its screen title; "Lista de la compra" is the first line of the shared text.
 - **Bottom bar:** the navigation on small windows.
 - **Sidebar:** the navigation on medium and large windows; collapsed shows only icons, expanded shows icons and text.
 - **Placeholder section:** a section with no content yet, which shows its title and "Próximamente" (today none).
 - **Favorite (favorita):** a recipe whose id is in `favorites` of Al's reviews file, counting the changes still pending on the device.
-- **Share menu (menú de compartir):** the device's own sheet of apps to send content to, opened by the Compartir button.
+- **Share menu (menú de compartir):** the device's own sheet of apps to send content to, opened by the Compartir button of a recipe or of Compra.
 - **Heart (corazón):** the control that marks or unmarks a favorite; filled when the recipe is a favorite.
 - **Status (estado):** whether the household has cooked a recipe and kept it: Por probar (a new idea), Probada (cooked and kept; also any recipe without a status) or Descartada (not wanted, hidden by default but never deleted).
 - **Rating:** Al's 1 to 5 stars for a recipe.
 - **Sin rating:** a recipe with no rating; also the Rating filter option that shows only those.
-- **Rating mark (marca de rating):** the filled star and number ("★ 4") that a list row shows for a rated recipe; display only.
+- **Rating mark (marca de rating):** the filled star and number ("★ 4") that a list row shows for a rated recipe, on the category's line and centered with it; display only.
 - **Plan:** the household's agenda of recipes per day and meal.
 - **Slot (franja):** one meal time of one day: Desayuno, Almuerzo or Cena (the file also knows `snack`, not shown).
 - **Mark (marca) / Comer fuera / Pedir a domicilio:** a slot's `out` dish, meaning that meal is not cooked at home. Comer fuera (`eat-out`) takes the whole slot; Pedir a domicilio (`delivery`) may share the slot with recipes, at most once. The picker offers them as "Salir fuera" and "Pedir".
@@ -138,11 +141,12 @@ None.
 - **Staple (básico):** an ingredient that is always available (water, salt…); it shows "Tengo" on and locked, "Comprar" off and locked.
 - **Outbox (cola de cambios):** the ordered list of changes made on the device that Drive has not confirmed yet.
 - **Write key (clave de escritura):** the household's shared key that authorizes writes; asked once per device.
-- **Family (familia):** the classification of an ingredient (verdura, lácteo…), used by the Despensa filter.
+- **Family (familia):** the classification of an ingredient (verdura, lácteo…), used by the family filter of Despensa and Compra and to group the shared list.
 - **Result group:** one of Recetas (the name matched), Proteína (a protein label matched) or Ingredientes (an ingredient name matched). A recipe appears in every group where it matches.
 
 ## 11. Recent Changes
 
+- 2026-11-03 — navigation, pantry, recipes: the shopping list becomes the Compra section, with a badge and sharing as text grouped by family; Despensa without tabs, its filter opening on Todos; Info general and Notas collapsed on small windows; rating mark centered on the category line (see `changelog/015_shopping-list-section_changelog.md`).
 - 2026-11-03 — plan: slots can be marked as Comer fuera or Pedir a domicilio from the picker, shown first in the slot with their own icon and saved to Drive (see `changelog/014_plan-eat-out-delivery_changelog.md`).
 - 2026-11-03 — recipes, plan: shortcuts in the recipe detail to add a recipe's missing ingredients to the shopping list and to take it to the Plan, where the picker offers it first; the Plan's missing-ingredients sheet uses the same three groups (see `changelog/013_recipe-detail-shortcuts_changelog.md`).
 - 2026-11-02 — recipes, library, profile, plan: recipe ratings (1 to 5 stars) set from the recipe detail, shown on the lists, filterable and used as the default order, saved to Drive; a rated recipe becomes Probada (see `changelog/012_recipe-ratings_changelog.md`).
@@ -175,7 +179,7 @@ How data travels from Drive to the device, and how its state is shown. It is the
 - **Purpose:** browse the library and open a recipe. Rows open SCR-recipe-detail.
 - **Entry points:** opening the app (`/`); Recetas in the main navigation; FLW-first-sync.
 - **Functional composition:** CMP-app-shell, CMP-sync-badge, CMP-recipe-photo, CMP-recipe-search, CMP-recipe-filters, CMP-favorite-button, CMP-pending-changes.
-- **Data & business rules:** lists recipes from the best rated down: by stars from 5 to 1, then the unrated ones, and recipes with the same rating alphabetically by title (Spanish collation). Each row shows the photo or fallback tile, the title and the category name followed by Al's rating mark when the recipe has one (display only; the stars to rate are in the detail, CMP-rating-stars), and opens the recipe's detail (rows are at least 56 px high). At the right of every row is a heart (CMP-favorite-button) that marks or unmarks the recipe as a favorite without opening it; the row stays where it is and the list does not reorder for it. A change of rating, in contrast, reorders the list at once with animation. "N cambios pendientes" (CMP-pending-changes) shows above the list while changes wait. Under the title is the search bar (see CMP-recipe-search) and below it the eight filters (see CMP-recipe-filters). The list opens with Estado on Probadas, so only the Probadas show and the count reads "N de M recetas" from the start, with M counting every recipe of every status; leaving Recetas and coming back restores that initial state. The count line "N de M recetas" and "Limpiar" show when a filter is active, and the count also shows while a search is applied. With an applied search, the list becomes up to three groups of rows (Recetas, Proteína, Ingredientes), each headed by its name and its number of recipes, e.g. "Proteína · 3"; empty groups are not shown, and N counts the different recipes shown. "N con avisos" shows when there are warnings. With an applied search the groups keep their own order and the rating order does not apply. If the browser cannot store data, a notice says that offline only shows what is already loaded.
+- **Data & business rules:** lists recipes from the best rated down: by stars from 5 to 1, then the unrated ones, and recipes with the same rating alphabetically by title (Spanish collation). Each row shows the photo or fallback tile, the title and the category name followed, on the same line and centered with it, by Al's rating mark when the recipe has one (display only; the stars to rate are in the detail, CMP-rating-stars), and opens the recipe's detail (rows are at least 56 px high). At the right of every row is a heart (CMP-favorite-button) that marks or unmarks the recipe as a favorite without opening it; the row stays where it is and the list does not reorder for it. A change of rating, in contrast, reorders the list at once with animation. "N cambios pendientes" (CMP-pending-changes) shows above the list while changes wait. Under the title is the search bar (see CMP-recipe-search) and below it the eight filters (see CMP-recipe-filters). The list opens with Estado on Probadas, so only the Probadas show and the count reads "N de M recetas" from the start, with M counting every recipe of every status; leaving Recetas and coming back restores that initial state. The count line "N de M recetas" and "Limpiar" show when a filter is active, and the count also shows while a search is applied. With an applied search, the list becomes up to three groups of rows (Recetas, Proteína, Ingredientes), each headed by its name and its number of recipes, e.g. "Proteína · 3"; empty groups are not shown, and N counts the different recipes shown. "N con avisos" shows when there are warnings. With an applied search the groups keep their own order and the rating order does not apply. If the browser cannot store data, a notice says that offline only shows what is already loaded.
 - **States (business meaning):**
   - Loading: no stored library and the first sync is running; "Cargando tus recetas…".
   - Offline with no data: "Necesitas conexión la primera vez", with a "Reintentar" button.
@@ -254,7 +258,7 @@ Filtering and searching the recipe list and reading a recipe. Everything works f
   - Rating (CMP-rating-stars): five stars, grey when the recipe has no rating and filled up to the rating when it has one, with the text "Sin rating" or "N de 5" beside them. On small windows they sit in their own row under the title row. On medium and large windows they sit under the photo in one row with the favorite and share buttons when the three fit; when they do not, the stars keep their own row and the two buttons take the next one. See FLW-rate-recipe. The detail still has no comment or "curated" control.
   - Shortcuts: two buttons, "Añadir a lista de compra" and "Añadir al plan", shown for every recipe in every status. On small windows they are stacked under the favorite button, all three with the same width; on medium and large windows they take one wrapping row under the rating, favorite and share row. "Añadir a lista de compra" opens CMP-shopping-list-sheet. "Añadir al plan" shows the Plan at `/plan?add=<recipe id>` and closes the detail; with the detail open over the Plan it closes the detail and offers the recipe there with no navigation (see FLW-add-recipe-to-plan).
   - Share (CMP-share-button): beside the favorite control, an icon on the title row on small windows and a button "Compartir" next to "Añadir a favoritos" under the photo on medium and large windows (on a second line when the photo column is narrow). It is present wherever the detail opens (from Recetas, from the favorites in Perfil and over the Plan) and never in the lists. See FLW-share-recipe.
-  - Four sections, in this order, each open on entry and collapsible on its own (the state is not remembered): Info general, Ingredientes, Pasos, Notas.
+  - Four sections, in this order, each collapsible on its own (the state is not remembered): Info general, Ingredientes, Pasos, Notas. Ingredientes and Pasos open on entry on every window. Info general and Notas open on entry on medium and large windows and start collapsed on small ones; the window size when the recipe opens decides, and each recipe opened starts again from that rule.
   - Info general: Categoría, Tiempo, Dificultad, Raciones, Técnica, Cocina, Dieta, Proteína and Ocasión. Tiempo shows the total (preparation + cooking + resting) as "N min" or "H h M min"; tapping it shows Preparación, Cocción and Reposo. Anything the recipe lacks shows "-" and its row stays. Servings units are fixed: personas, unidades, porciones.
   - Ingredientes: ungrouped lines first, then each named group (for example masa, relleno) in order of first appearance. A line shows quantity, name and note. Mass and volume units are abbreviated (g, kg, ml, l); other units are pluralized by quantity; lines "al gusto", "cantidad suficiente" or "pizca" show no number; a measurable line without quantity shows "-"; optional lines carry an "opcional" tag. A line that points to a recipe in the library is a link that opens its detail.
   - Pasos: numbered, in order. Notas: notes, variations and source (with its link); the section is absent when there is nothing to show. Empty ingredients or steps show "-".
@@ -324,9 +328,9 @@ Filtering and searching the recipe list and reading a recipe. Everything works f
 
 - **Design system reference:** `CollapsibleSection`, `components/recipes/detail/CollapsibleSection`.
 - **Functional role:** a titled section of the detail that folds and unfolds.
-- **Behavior rules:** starts open; folds independently of the others; announced to screen readers as expanded or collapsed.
+- **Behavior rules:** starts open, or collapsed where its screen says so (Info general and Notas on small windows); folds independently of the others; announced to screen readers as expanded or collapsed.
 - **Used on:** SCR-recipe-detail.
-- **Source:** `002_recipe-detail_prd.md`; implementation in `src/components/recipes/detail/CollapsibleSection.tsx`.
+- **Source:** `002_recipe-detail_prd.md`, `015_shopping-list-section_prd.md` (US-4); implementation in `src/components/recipes/detail/CollapsibleSection.tsx`.
 
 #### CMP-recipe-link Recipe link
 
@@ -339,10 +343,10 @@ Filtering and searching the recipe list and reading a recipe. Everything works f
 #### CMP-share-button Share button
 
 - **Design system reference:** `ShareButton`, `components/recipes/ShareButton` (see `context/ui_kit_registry.md`).
-- **Functional role:** the control that shares the open recipe.
-- **Behavior rules:** icon-only on the title row of small windows; with the text "Compartir" under the photo on medium and large windows, with the width of its content. Disabled (busy) while the photo is awaited. A tap opens the device's share menu (see FLW-share-recipe); where the browser has none it copies the link.
-- **Used on:** SCR-recipe-detail (never in lists).
-- **Source:** `010_share-recipe_prd.md` (US-1), `010_share-recipe_ux_flow.md` (§2.2); implementation in `src/components/recipes/ShareButton.tsx`.
+- **Functional role:** the control that shares the open recipe or the shopping list.
+- **Behavior rules:** icon-only on the title row of small windows; with the text "Compartir" under the photo on medium and large windows, with the width of its content. Disabled (busy) while the photo is awaited. A tap opens the device's share menu (see FLW-share-recipe); where the browser has none it copies the link. In Compra: with the text "Compartir" next to the search, hidden when the list is empty (FLW-share-shopping-list).
+- **Used on:** SCR-recipe-detail and SCR-shopping-list (never in recipe lists).
+- **Source:** `010_share-recipe_prd.md` (US-1), `010_share-recipe_ux_flow.md` (§2.2), `015_shopping-list-section_prd.md` (US-3); implementation in `src/components/recipes/ShareButton.tsx`.
 
 ### Flows
 
@@ -420,23 +424,24 @@ No section is a placeholder today: every section has its own screen.
 #### CMP-main-navigation Main navigation
 
 - **Design system reference:** `AppFrame`, `components/layout/AppFrame`; `BottomNav` and `SideNav`, `components/navigation/Nav` (see `context/ui_kit_registry.md`).
-- **Functional role:** lets the user go to Recetas, Plan, Despensa or Perfil from any screen, and shows which section is current.
+- **Functional role:** lets the user go to Recetas, Plan, Compra, Despensa or Perfil from any screen, and shows which section is current.
 - **Behavior rules:**
-  - The four sections are always in this order. The current section is the one whose address matches, including addresses below it; Recetas is current for `/` and for any recipe detail. For an unknown address no section is marked.
+  - The five sections are always in this order. The current section is the one whose address matches, including addresses below it; Recetas is current for `/` and for any recipe detail. For an unknown address no section is marked.
   - Below 640 px it is a bottom bar with icon and text; from 640 px it is a sidebar. Crossing 640 px switches between them at once without changing the section or the open recipe.
   - The bottom bar is not shown while a recipe detail is open on a small window.
   - The sidebar can be collapsed (icons only; the names stay available to assistive technology) or expanded. With no saved choice it starts expanded on large windows and collapsed on medium ones. The choice is saved on the device and applies to both sizes; if the browser cannot save it, the default applies and the app works as usual.
   - The sidebar shows the app icon (a pot with steam) and the name "My Food" beside it when expanded.
   - Switching sections does not reload the page and needs no connection.
+  - Compra shows over its icon the number of ingredients with "Comprar" on (pending changes included), "99+" above 99, in the bottom bar and the sidebar (collapsed too); with none, no badge. The number is part of the item's name for assistive technology ("Compra, N por comprar").
 - **Used on:** every screen.
-- **Source:** `006_main-navigation_prd.md` / `_ux_flow.md`; implementation in `src/components/layout/AppFrame.tsx`, `src/components/navigation/Nav.tsx` and `src/lib/domain/navigation.ts`.
+- **Source:** `006_main-navigation_prd.md` / `_ux_flow.md`, `015_shopping-list-section_prd.md` / `_ux_flow.md`; implementation in `src/components/layout/AppFrame.tsx`, `src/components/navigation/Nav.tsx` and `src/lib/domain/navigation.ts`.
 
 ### Flows
 
 #### FLW-switch-section Switch section
 
 - **Goal / trigger:** go to another part of the app.
-- **Screens involved (in sequence):** any screen → (tap a section in the bottom bar or sidebar) → SCR-library-list, SCR-plan, SCR-ingredients or SCR-profile.
+- **Screens involved (in sequence):** any screen → (tap a section in the bottom bar or sidebar) → SCR-library-list, SCR-plan, SCR-shopping-list, SCR-ingredients or SCR-profile.
 - **Business rules governing the flow:** the tapped section becomes the current one. Browser back and forward follow the address and the current section follows it. Leaving Recetas and coming back shows the list with no filters, no search text and scrolled to the top. Library sync is unaffected.
 - **Source:** `006_main-navigation_prd.md` / `_ux_flow.md`.
 
@@ -453,7 +458,7 @@ No section is a placeholder today: every section has its own screen.
 
 ### Overview
 
-The pantry and the shopping list over the ingredient catalog, with writes to Drive. It is the only part of the app that writes: only `have` and `to_buy` of `pantry/pantry.yaml`. Reading works from the stored library, online or offline.
+The pantry (Despensa) and the shopping list (Compra) over the ingredient catalog, with writes to Drive: only `have` and `to_buy` of `pantry/pantry.yaml`. Compra can also share the list as text. Reading works from the stored library, online or offline.
 
 ### Screens / Pages
 
@@ -461,32 +466,48 @@ The pantry and the shopping list over the ingredient catalog, with writes to Dri
 
 - **Platform:** Web.
 - **Purpose:** record in one tap whether an ingredient is at home and whether it must be bought, and see what is to buy. Address `/ingredients`; the browser tab is titled "Despensa · My Food".
-- **Entry points:** Despensa in the main navigation; direct address; "Ir a Despensa" from an empty shopping list.
+- **Entry points:** Despensa in the main navigation; direct address; "Ir a Despensa" from an empty Compra.
 - **Functional composition:** CMP-main-navigation, CMP-app-shell, CMP-pantry-list, CMP-pending-changes, CMP-write-key.
 - **Data & business rules:**
-  - Two tabs, "Despensa" and "Lista de compra"; the second shows how many ingredients are marked "Comprar". It opens on "Despensa". Leaving the section or reloading resets the tab, the search and the filters.
-  - Tab "Despensa": a Tengo / No tengo / Todos filter ("Tengo" by default). Every ingredient row has two independent switches, "Tengo" and "Comprar"; neither changes the other. An active search ignores the Tengo / No tengo / Todos filter. A row whose "Tengo" changes stays in place until the filter, the search or the tab changes.
-  - Tab "Lista de compra": the ingredients with "Comprar" on, with the family filter only. Turning "Comprar" off leaves the row struck through until leaving the tab, so a slip is undone with one tap.
+  - No tabs: the shopping list is its own section, Compra (SCR-shopping-list). Leaving the section or reloading resets the search and the filters.
+  - A Todos / Tengo / No tengo filter ("Todos" by default). Every ingredient row has two independent switches, "Tengo" and "Comprar"; neither changes the other. An active search ignores the Todos / Tengo / No tengo filter. A row whose "Tengo" changes stays in place until the filter or the search changes.
   - Staples are shown with "Tengo" on and locked and "Comprar" off and locked, labelled "Básico, siempre disponible"; the pantry file never lists them.
   - Data: ingredient catalog, family vocabulary and the pantry.
 - **States (business meaning):**
   - Loading, no library while offline, and error: as the recipe list, with "Reintentar".
   - No match: "Ningún ingrediente coincide", with "Borrar búsqueda" and/or "Quitar filtros".
-  - Empty shopping list: "Tu lista está vacía", with "Ir a Despensa".
 - **Related flows:** FLW-flip-switch, FLW-enter-write-key.
-- **Source:** `007_pantry-shopping-list-switches_prd.md`, `007_pantry-shopping-list-switches_ux_flow.md`; implementation in `src/components/pantry/` and `src/app/ingredients/page.tsx`.
+- **Source:** `007_pantry-shopping-list-switches_prd.md`, `007_pantry-shopping-list-switches_ux_flow.md`, `015_shopping-list-section_prd.md` (US-2); implementation in `src/components/pantry/` and `src/app/ingredients/page.tsx`.
+
+#### SCR-shopping-list Compra
+
+- **Platform:** Web.
+- **Purpose:** see and tick off what is to buy, and send the list. Address `/shopping-list`, title "Lista de compra"; the browser tab is titled "Lista de compra · My Food".
+- **Entry points:** Compra in the main navigation; direct address.
+- **Functional composition:** CMP-main-navigation, CMP-app-shell, CMP-pantry-list, CMP-share-button, CMP-pending-changes, CMP-write-key.
+- **Data & business rules:**
+  - The ingredients with "Comprar" on, with search and the family filter only; each row has only "Comprar". Turning "Comprar" off leaves the row struck through until leaving Compra, so a slip is undone with one tap.
+  - "Compartir" next to the search while the list has at least one ingredient (see FLW-share-shopping-list).
+  - Leaving the section or reloading resets the search, the filter and the struck rows.
+  - Data: ingredient catalog, family vocabulary and the pantry.
+- **States (business meaning):**
+  - Loading, no library while offline, and error: as Despensa, with "Reintentar".
+  - No match: "Ningún ingrediente coincide", with "Borrar búsqueda" and/or "Quitar filtros".
+  - Empty list: "Tu lista está vacía", with "Ir a Despensa".
+- **Related flows:** FLW-flip-switch, FLW-enter-write-key, FLW-share-shopping-list.
+- **Source:** `007_pantry-shopping-list-switches_prd.md` / `_ux_flow.md`, `015_shopping-list-section_prd.md` (US-1, US-3) / `_ux_flow.md` (§2.2); implementation in `src/components/pantry/IngredientsScreen.tsx` and `src/app/shopping-list/page.tsx`.
 
 ### Functionally-Significant Components
 
 #### CMP-pantry-list Ingredient search and filters
 
 - **Design system reference:** `SearchInput`, `FilterChip`, `FilterOptions` (see `context/ui_kit_registry.md`); temporary `TmpSwitch` and `TmpSegmentedControl`.
-- **Functional role:** the search bar, the family filter and the switch rows of both tabs.
+- **Functional role:** the search bar, the family filter and the switch rows of Despensa and Compra.
 - **Behavior rules:**
   - Search: 3 characters minimum; applies 1 second after the last keystroke or on Enter; "x" and Esc clear it. Case and accents are ignored ("ñ" is a different letter); it searches the name and the synonyms, and with several words all must be in the same name or synonym. The text never leaves the device.
-  - Family filter: one family at a time, with the count per option. The options are the families present in the tab's list, in vocabulary order; an ingredient with no family counts under "Otros".
+  - Family filter: one family at a time, with the count per option. The options are the families present in the screen's list, in vocabulary order; an ingredient with no family counts under "Otros".
   - Sorted alphabetically (Spanish).
-- **Used on:** SCR-ingredients.
+- **Used on:** SCR-ingredients, SCR-shopping-list.
 - **Source:** `007_pantry-shopping-list-switches_prd.md`, `_ux_flow.md`; implementation in `src/components/pantry/IngredientsScreen.tsx`, `IngredientRow.tsx` and `src/lib/domain/pantry-view.ts`.
 
 #### CMP-pending-changes Pending changes
@@ -510,7 +531,7 @@ The pantry and the shopping list over the ingredient catalog, with writes to Dri
 #### FLW-flip-switch Flip a switch
 
 - **Goal / trigger:** record that an ingredient is at home or must be bought.
-- **Screens involved (in sequence):** SCR-ingredients → (flip "Tengo" or "Comprar") → SCR-ingredients with the new value and, until confirmed, CMP-pending-changes.
+- **Screens involved (in sequence):** SCR-ingredients or SCR-shopping-list → (flip "Tengo" or "Comprar") → the same screen with the new value and, until confirmed, CMP-pending-changes.
 - **Business rules governing the flow:** the change shows at once and goes to the device's outbox; it is sent as soon as there is a connection and a key. Several changes to the same switch collapse into the last one. Without connection or after a failure it retries after 2, 5, 15 and 60 seconds, then every 60 seconds while the app is visible. The server applies the changes to the latest `pantry.yaml`, retrying once on a conflict, edits only the touched lines and sets `updated` with offset `-05:00`.
 - **Edge cases & error handling:** an unknown ingredient, a staple, or a file that is not schema 2 is rejected with a notice, never merged into another format. A Drive outage or a repeated conflict keeps the change pending. The other phone sees the change at its next sync; the last change to an ingredient wins.
 - **Source:** `007_pantry-shopping-list-switches_prd.md` (§5, §10).
@@ -522,6 +543,14 @@ The pantry and the shopping list over the ingredient catalog, with writes to Dri
 - **Business rules governing the flow:** the key is stored on the device; once accepted, pending changes are sent in order.
 - **Edge cases & error handling:** a wrong key keeps the dialog open with "La clave no es correcta"; "Ahora no" leaves the changes pending.
 - **Source:** `007_pantry-shopping-list-switches_prd.md`, `_ux_flow.md`.
+
+#### FLW-share-shopping-list Share the shopping list
+
+- **Goal / trigger:** Al taps "Compartir" in Compra to send the list.
+- **Screens involved (in sequence):** SCR-shopping-list → the device's share menu → SCR-shopping-list.
+- **Business rules governing the flow:** the menu receives text only, with no title, link or image: the line "Lista de la compra", then one block per family, separated by a blank line, with the family label and one "☐ Name" line per ingredient in alphabetical order. Families follow the vocabulary order, then unknown families alphabetically, and "Otros" last. It always shares the whole list, ignoring the search and the family filter, and leaves out the rows struck through; pending changes count. Nothing is written to Drive, and it works offline.
+- **Edge cases & error handling:** cancelling the menu does nothing; any other failure says "No se pudo compartir". A browser with no share menu copies the text and says "Lista copiada", or "No se pudo copiar la lista" if the clipboard is refused. The button is disabled while the menu opens.
+- **Source:** `015_shopping-list-section_prd.md` (US-3, §7, §10).
 
 ---
 

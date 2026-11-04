@@ -1,6 +1,6 @@
 import type { Layout } from "@/lib/domain/layout";
 
-export type DestinationId = "recipes" | "plan" | "ingredients" | "profile";
+export type DestinationId = "recipes" | "plan" | "shopping" | "ingredients" | "profile";
 
 export interface Destination {
   id: DestinationId;
@@ -11,6 +11,7 @@ export interface Destination {
 export const DESTINATIONS: readonly Destination[] = [
   { id: "recipes", href: "/", label: "Recetas" },
   { id: "plan", href: "/plan", label: "Plan" },
+  { id: "shopping", href: "/shopping-list", label: "Compra" },
   { id: "ingredients", href: "/ingredients", label: "Despensa" },
   { id: "profile", href: "/profile", label: "Perfil" },
 ];
@@ -33,3 +34,6 @@ export function sidebarExpanded(stored: boolean | null, layout: Layout): boolean
 export function showBottomNav(layout: Layout, pathname: string): boolean {
   return layout === "small" && !pathname.startsWith("/recipes/");
 }
+
+/** The count over a navigation icon; large numbers are capped so the badge stays small. */
+export const badgeText = (count: number) => (count > 99 ? "99+" : String(count));

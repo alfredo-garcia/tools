@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>My Food — Prototipo 015 Sección Compra</title>
+<style>
+/* Tokens: ui_standards §2-§6 (same names as src/app/globals.css) */
+:root{
+  --color-bg:#15130F; --color-surface-1:#1F1C17; --color-surface-2:#2A2620; --color-border:#38332B;
+  --color-text:#F6EFE4; --color-text-muted:#A99F90;
+  --color-primary-500:#FF7A45; --color-primary-contrast:#15130F; --color-primary-soft:rgba(255,122,69,.16);
+  --color-success-500:#7BD88F; --color-warning-500:#F2C14E; --color-danger-500:#FF6B6B;
+  --radius-sm:10px; --radius-md:18px; --radius-lg:28px; --radius-full:999px;
+  --elevation-1:0 1px 2px rgba(0,0,0,.4); --elevation-3:0 18px 40px rgba(0,0,0,.55); --focus:0 0 0 3px rgba(255,122,69,.55);
+  --font:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+:root[data-theme="light"]{
+  --color-bg:#FBF7F1; --color-surface-1:#FFFFFF; --color-surface-2:#F3EDE3; --color-border:#E4DACB;
+  --color-text:#1E1A14; --color-text-muted:#6B6254;
+  --color-primary-500:#C2410C; --color-primary-contrast:#FFFFFF; --color-primary-soft:rgba(194,65,12,.1);
+  --color-success-500:#2E7D32; --color-warning-500:#B7791F; --color-danger-500:#B42318;
+  --elevation-1:0 1px 2px rgba(60,40,10,.12); --elevation-3:0 18px 40px rgba(60,40,10,.2); --focus:0 0 0 3px rgba(194,65,12,.4);
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--color-bg);color:var(--color-text);font:400 16px/1.5 var(--font);display:flex;flex-direction:column}
+button,input{font:inherit;color:inherit}
+button{background:none;border:0;padding:0;cursor:pointer}
+:focus-visible{outline:none;box-shadow:var(--focus)}
+svg.i{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+svg.i.md{width:20px;height:20px} svg.i.sm{width:12px;height:12px}
+
+/* Prototype-only toolbar */
+.proto{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;padding:8px 16px;background:var(--color-surface-2);border-bottom:1px solid var(--color-border);font-size:12px;color:var(--color-text-muted)}
+.proto b{color:var(--color-text)}
+.proto .seg{display:inline-flex;border:1px solid var(--color-border);border-radius:var(--radius-full);overflow:hidden}
+.proto .seg button{padding:4px 12px;font-size:12px;font-weight:600}
+.proto .seg button[aria-pressed="true"]{background:var(--color-primary-500);color:var(--color-primary-contrast)}
+.stage{flex:1;min-height:0;display:flex;justify-content:center;overflow:auto}
+.frame{position:relative;width:100%;overflow:hidden;background:var(--color-bg);display:flex}
+.frame.phone{width:390px;flex:none;margin:12px 0;border:8px solid #000;border-radius:36px;max-height:820px}
+.main{flex:1;min-width:0;position:relative}
+.scroll{position:absolute;inset:0;overflow:auto;padding-bottom:80px}
+.frame:not(.phone) .scroll{padding-bottom:16px}
+
+/* Nav (Nav.tsx) */
+.bottom{position:absolute;left:0;right:0;bottom:0;z-index:30;display:flex;border-top:1px solid var(--color-border);background:var(--color-surface-1)}
+.bottom a{position:relative;flex:1;min-height:64px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:12px;font-weight:600;color:var(--color-text-muted);cursor:pointer;text-decoration:none}
+.bottom a[aria-current]{color:var(--color-primary-500)}
+.bottom a[aria-current]::before{content:"";position:absolute;left:30%;right:30%;top:0;height:3px;border-radius:0 0 3px 3px;background:var(--color-primary-500)}
+.side{flex:none;width:224px;display:flex;flex-direction:column;gap:4px;border-right:1px solid var(--color-border);background:var(--color-surface-1);padding:12px}
+.side .brand{height:48px;display:flex;align-items:center;gap:12px;padding:0 10px;font-weight:800}
+.side .brand i{width:32px;height:32px;border-radius:8px;background:var(--color-primary-500)}
+.side a{height:48px;display:flex;align-items:center;gap:12px;border-radius:var(--radius-full);padding:0 12px;font-size:14px;font-weight:600;color:var(--color-text-muted);cursor:pointer;text-decoration:none}
+.side a[aria-current]{background:var(--color-primary-soft);color:var(--color-primary-500)}
+.ico{position:relative;display:inline-flex}
+/* TmpNavBadge */
+.nbadge{position:absolute;top:-6px;left:14px;min-width:18px;height:18px;padding:0 5px;border-radius:var(--radius-full);background:var(--color-primary-500);color:var(--color-primary-contrast);font-size:11px;font-weight:800;line-height:18px;text-align:center;box-shadow:0 0 0 2px var(--color-surface-1)}
+
+/* Screens */
+.shell{padding:16px;max-width:760px;margin:0 auto}
+.head{display:flex;align-items:center;justify-content:space-between;margin:8px 0 12px;gap:8px}
+.head h1{font:800 24px/1.15 var(--font);margin:0}
+.sync{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;color:var(--color-text-muted)}
+.sync i{width:8px;height:8px;border-radius:50%;background:var(--color-success-500)}
+.searchrow{display:flex;gap:8px;align-items:center}
+.search{flex:1;min-width:0;display:flex;align-items:center;gap:8px;height:48px;padding:0 16px;border:1px solid var(--color-border);border-radius:var(--radius-full);background:var(--color-surface-1);color:var(--color-text-muted)}
+.search input{flex:1;min-width:0;border:0;background:none;outline:none;color:var(--color-text)}
+.share{display:inline-flex;align-items:center;gap:8px;min-height:48px;padding:0 20px;border:1px solid var(--color-border);border-radius:var(--radius-full);background:var(--color-surface-1);font-size:14px;font-weight:600;flex:none}
+.chips{display:flex;margin-top:12px}
+.chip{display:inline-flex;align-items:center;gap:6px;height:40px;padding:0 16px;border:1px solid var(--color-border);border-radius:var(--radius-full);font-size:14px;font-weight:600;background:var(--color-surface-1)}
+.segc{display:flex;gap:4px;border-radius:var(--radius-full);background:var(--color-surface-2);padding:4px;margin-top:12px}
+.segc button{flex:1;min-height:44px;border-radius:var(--radius-full);font-size:14px;font-weight:600;color:var(--color-text-muted)}
+.segc button[aria-checked="true"]{background:var(--color-surface-1);color:var(--color-text);box-shadow:var(--elevation-1),inset 0 0 0 2px var(--color-primary-500)}
+ul.rows{list-style:none;margin:8px 0 0;padding:0}
+.irow{display:flex;min-height:64px;align-items:center;gap:8px;border-bottom:1px solid var(--color-border);padding:6px 0}
+.irow .n{flex:1;min-width:0;font-weight:600}
+.irow.struck .n{color:var(--color-text-muted);text-decoration:line-through}
+.irow small{display:block;font-size:12px;font-weight:400;color:var(--color-text-muted)}
+.sw{display:inline-flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;font-weight:600;color:var(--color-text-muted);min-width:56px}
+.sw span{width:44px;height:26px;border-radius:13px;background:var(--color-border);position:relative;transition:.15s}
+.sw span::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.15s}
+.sw[aria-checked="true"].ok span{background:var(--color-success-500)}
+.sw[aria-checked="true"].buy span{background:var(--color-primary-500)}
+.sw[aria-checked="true"] span::after{left:21px}
+.sw:disabled{opacity:.45}
+.empty{text-align:center;padding:48px 16px}
+.empty .e{font-size:40px}
+.empty h2{font:700 18px/1.3 var(--font);margin:8px 0 4px}
+.empty p{margin:0 0 16px;color:var(--color-text-muted);font-size:14px}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 20px;border-radius:var(--radius-full);background:var(--color-primary-500);color:var(--color-primary-contrast);font-weight:700}
+
+/* Recipe rows */
+.rrow{display:flex;align-items:center;border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-surface-1);box-shadow:var(--elevation-1);margin-bottom:8px;cursor:pointer}
+.rrow .l{display:flex;flex:1;min-width:0;align-items:center;gap:12px;padding:8px;min-height:56px}
+.ph{width:56px;height:56px;border-radius:var(--radius-sm);flex:none;background:linear-gradient(135deg,#8a5a2b,#d9a05b)}
+.rt{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.meta{font-size:12px;color:var(--color-text-muted);line-height:16px}
+.meta.fixed{display:flex;align-items:center}
+.dot{margin:0 6px;opacity:.6}
+.rm{display:inline-flex;align-items:center;gap:2px;font-weight:700;color:var(--color-warning-500)}
+.rm svg{fill:currentColor}
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.cmp h3{margin:0 0 6px;font-size:12px;font-weight:700;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.04em}
+.zoom{transform:scale(1.6);transform-origin:left top;height:62px}
+
+/* Detail */
+.dbar{display:flex;align-items:center;gap:8px;margin:4px 0 8px}
+.dbar button{width:44px;height:44px;display:grid;place-items:center;border-radius:50%}
+.hero{aspect-ratio:16/9;border-radius:var(--radius-md);background:linear-gradient(135deg,#8a5a2b,#d9a05b)}
+.dtitle{font:800 24px/1.2 var(--font);margin:12px 0 0}
+.sec{margin-top:16px;border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-surface-1);box-shadow:var(--elevation-1)}
+.sec h2{margin:0}
+.sec h2 button{display:flex;width:100%;min-height:56px;align-items:center;padding:0 16px;font-size:18px;font-weight:700;text-align:left}
+.sec h2 svg{margin-left:auto;color:var(--color-text-muted);transition:transform .2s}
+.sec[data-open="false"] h2 svg{transform:rotate(-90deg)}
+.sec .body{padding:0 16px 16px;font-size:15px}
+.sec[data-open="false"] .body{display:none}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 16px}
+.kv dt{color:var(--color-text-muted)}
+.kv dd{margin:0}
+
+/* Share sheet (simulated device UI) and toast */
+.overlay{position:absolute;inset:0;z-index:50;background:rgba(0,0,0,.5);display:flex;align-items:flex-end;justify-content:center}
+.sheet{width:100%;max-width:420px;background:var(--color-surface-1);border-radius:var(--radius-lg) var(--radius-lg) 0 0;padding:16px;box-shadow:var(--elevation-3)}
+.frame:not(.phone) .overlay{align-items:center}
+.frame:not(.phone) .sheet{border-radius:var(--radius-lg)}
+.sheet .cap{font-size:12px;color:var(--color-text-muted);margin-bottom:8px}
+.sheet pre{margin:0;max-height:340px;overflow:auto;padding:12px;border-radius:var(--radius-sm);background:var(--color-surface-2);font:400 14px/1.45 var(--font);white-space:pre-wrap}
+.sheet .apps{display:flex;gap:16px;margin:12px 0}
+.sheet .apps span{width:48px;height:48px;border-radius:14px;background:var(--color-surface-2)}
+.sheet .x{display:block;width:100%;min-height:44px;border-radius:var(--radius-full);border:1px solid var(--color-border);font-weight:600}
+.toast{position:absolute;left:50%;bottom:88px;transform:translateX(-50%);z-index:60;background:var(--color-text);color:var(--color-bg);padding:10px 16px;border-radius:var(--radius-full);font-size:14px;font-weight:600;white-space:nowrap}
+.frame:not(.phone) .toast{bottom:24px}
+.note{font-size:12px;color:var(--color-text-muted);margin:4px 0 12px}
+</style>
+</head>
+<body>
+<div class="proto">
+  <b>Prototipo 015</b>
+  <span>Tema <span class="seg" id="theme"><button data-v="dark" aria-pressed="true">Oscuro</button><button data-v="light" aria-pressed="false">Claro</button></span></span>
+  <span>Vista <span class="seg" id="frame"><button data-v="phone" aria-pressed="true">Móvil</button><button data-v="desktop" aria-pressed="false">Escritorio</button></span></span>
+  <span>Compartir <span class="seg" id="sharemode"><button data-v="menu" aria-pressed="true">Con menú</button><button data-v="clip" aria-pressed="false">Sin menú (copia)</button></span></span>
+  <span><button class="seg" id="reset" style="padding:4px 12px;font-weight:600">Reiniciar datos</button></span>
+</div>
+<div class="stage"><div class="frame phone" id="app"></div></div>
+
+<script>
+const ic = {
+  recipes:'<path d="M17 21a1 1 0 0 0 1-1v-5.35c0-.457.316-.844.727-1.041a4 4 0 0 0-2.134-7.589 5 5 0 0 0-9.186 0 4 4 0 0 0-2.134 7.588c.411.198.727.585.727 1.041V20a1 1 0 0 0 1 1Z"/><path d="M6 17h12"/>',
+  plan:'<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+  list:'<circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>',
+  ingredients:'<path d="M5 6a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6Z"/><path d="M5 10h14M15 7v6"/>',
+  profile:'<circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/>',
+  share:'<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.59 13.51 6.83 3.98M15.41 6.51l-6.82 3.98"/>',
+  search:'<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
+  star:'<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
+  down:'<path d="m6 9 6 6 6-6"/>',
+  back:'<path d="m12 19-7-7 7-7M19 12H5"/>',
+  heart:'<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>',
+};
+const svg = (k, cls='') => `<svg class="i ${cls}" viewBox="0 0 24 24" aria-hidden="true">${ic[k]}</svg>`;
+
+const FAMILIES = [['verduras','Verduras'],['frutas','Frutas'],['carnes','Carnes'],['lacteos','Lácteos'],['despensa','Despensa']];
+const SEED = [
+  ['cebolla','cebolla','verduras',1,1],['tomate','tomate','verduras',0,1],['ajo','ajo','verduras',1,0],['pimiento','pimiento rojo','verduras',0,0],
+  ['limon','limón','frutas',0,1],['platano','plátano','frutas',1,0],
+  ['pollo','pechuga de pollo','carnes',0,1],['chorizo','chorizo','carnes',0,0],
+  ['nata','nata','lacteos',0,1],['leche','leche','lacteos',1,0],['queso','queso manchego','lacteos',0,0],
+  ['arroz','arroz','despensa',0,1],['aceite','aceite de oliva','despensa',1,0,1],['sal','sal','despensa',1,0,1],
+  ['cilantro','cilantro',null,0,1],['panela','panela','endulzantes',0,1],
+];
+let items, state;
+function reset(){
+  items = SEED.map(([id,name,family,have,buy,staple])=>({id,name,family,have:!!have,buy:!!buy,staple:!!staple}));
+  state = {screen:'list', filter:'todos', struck:new Set(), openRecipe:null, sheet:null, toast:null, sections:null};
+}
+reset();
+const ui = {theme:'dark', frame:'phone', share:'menu'};
+const cap = s => s.charAt(0).toUpperCase()+s.slice(1);
+const coll = new Intl.Collator('es');
+const buyCount = () => items.filter(i=>i.buy).length;
+const badgeText = n => n>99 ? '99+' : String(n);
+
+// Shared text (PRD §7)
+function shareText(){
+  const groups = new Map();
+  for (const i of items.filter(i=>i.buy)) {
+    const f = i.family ?? '';
+    if (!groups.has(f)) groups.set(f, []);
+    groups.get(f).push(i);
+  }
+  const known = FAMILIES.map(f=>f[0]);
+  const keys = [...groups.keys()].sort((a,b)=>{
+    const rank = k => k==='' ? 2e3 : known.includes(k) ? known.indexOf(k) : 1e3;
+    return rank(a)-rank(b) || coll.compare(a,b);
+  });
+  const label = k => k==='' ? 'Otros' : (FAMILIES.find(f=>f[0]===k)?.[1] ?? cap(k));
+  const blocks = keys.map(k => [label(k), ...groups.get(k).sort((a,b)=>coll.compare(a.name,b.name)).map(i=>'☐ '+cap(i.name))].join('\n'));
+  return ['Lista de la compra', ...blocks].join('\n\n');
+}
+
+const NAV = [['recipes','Recetas'],['plan','Plan'],['list','Compra'],['ingredients','Despensa'],['profile','Perfil']];
+function navItem(id,label){
+  const n = buyCount();
+  const badge = id==='list' && n>0 ? `<span class="nbadge" aria-hidden="true">${badgeText(n)}</span>` : '';
+  const name = id==='list' && n>0 ? `aria-label="Compra, ${n} por comprar"` : '';
+  const cur = state.screen===id || (id==='recipes' && state.screen==='detail') ? 'aria-current="page"' : '';
+  return `<a data-nav="${id}" ${cur} ${name}><span class="ico">${svg(id)}${badge}</span>${ui.frame==='phone'?label:`<span>${label}</span>`}</a>`;
+}
+
+function sw(kind,i){
+  const on = kind==='have' ? i.have : i.buy;
+  return `<button class="sw ${kind==='have'?'ok':'buy'}" role="switch" aria-checked="${on}" ${i.staple?'disabled':''} data-flip="${kind}" data-id="${i.id}" aria-label="${kind==='have'?'Tengo':'Comprar'} ${i.name}"><span></span>${kind==='have'?'Tengo':'Comprar'}</button>`;
+}
+
+function head(title){ return `<div class="head"><h1>${title}</h1><span class="sync"><i></i>Sincronizado · hace 1 min</span></div>`; }
+
+function screenList(){
+  const rows = items.filter(i=>i.buy || state.struck.has(i.id)).sort((a,b)=>coll.compare(a.name,b.name));
+  const live = buyCount();
+  let h = head('Lista de compra');
+  h += `<div class="searchrow"><label class="search">${svg('search','md')}<input placeholder="Buscar ingrediente" aria-label="Buscar ingrediente"></label>${live>0?`<button class="share" id="share">${svg('share','md')}<span>Compartir</span></button>`:''}</div>`;
+  h += `<div class="chips"><span class="chip">Familia ${svg('down','md')}</span></div>`;
+  if (rows.length===0) {
+    h += `<div class="empty"><div class="e">🛒</div><h2>Tu lista está vacía</h2><p>Activa Comprar en un ingrediente de Despensa.</p><button class="btn" data-nav="ingredients">Ir a Despensa</button></div>`;
+  } else {
+    h += '<ul class="rows">'+rows.map(i=>`<li class="irow ${i.buy?'':'struck'}"><span class="n">${cap(i.name)}</span>${sw('buy',i)}</li>`).join('')+'</ul>';
+  }
+  return h;
+}
+
+function screenPantry(){
+  const f = state.filter;
+  const rows = items.filter(i=> f==='todos' || (f==='tengo' ? i.have : !i.have)).sort((a,b)=>coll.compare(a.name,b.name));
+  let h = head('Despensa');
+  h += `<label class="search">${svg('search','md')}<input placeholder="Buscar ingrediente" aria-label="Buscar ingrediente"></label>`;
+  h += `<div class="chips"><span class="chip">Familia ${svg('down','md')}</span></div>`;
+  h += `<div class="segc" role="radiogroup" aria-label="Estado">${[['todos','Todos'],['tengo','Tengo'],['notengo','No tengo']].map(([v,l])=>`<button role="radio" aria-checked="${f===v}" data-filter="${v}">${l}</button>`).join('')}</div>`;
+  h += '<ul class="rows">'+rows.map(i=>`<li class="irow"><span class="n">${cap(i.name)}${i.staple?'<small>Básico, siempre disponible</small>':''}</span>${sw('have',i)}${sw('buy',i)}</li>`).join('')+'</ul>';
+  return h;
+}
+
+const RECIPES = [['ajiaco','Ajiaco santafereño','Sopa',5],['tortilla','Tortilla de patatas','Plato principal',4],['flan','Flan de huevo','Postre',null],['curry','Curry de garbanzos','Plato principal',3]];
+function recipeRow([id,t,c,r], fixed){
+  const rm = r ? `<span class="dot" aria-hidden="true">·</span><span class="rm" aria-label="Rating ${r} de 5">${svg('star','sm')}${r}</span>` : '';
+  return `<div class="rrow" data-open="${id}"><div class="l"><span class="ph"></span><div style="min-width:0"><div class="rt">${t}</div><div class="meta ${fixed?'fixed':''}">${c}${rm}</div></div></div><div style="padding-right:4px;width:44px;height:44px;display:grid;place-items:center;color:var(--color-text-muted)">${svg('heart')}</div></div>`;
+}
+function screenRecipes(){
+  let h = head('Recetas');
+  h += `<div class="cmp"><div><h3>Hoy</h3><div class="zoom">${recipeRow(RECIPES[0],false).replace('data-open','data-x')}</div></div><div><h3>Con 015</h3><div class="zoom">${recipeRow(RECIPES[0],true).replace('data-open','data-x')}</div></div></div>`;
+  h += `<p class="note">Ampliado arriba para comparar. La estrella y el número quedan centrados en la línea de la categoría (también en Perfil y Plan).</p>`;
+  h += RECIPES.map(r=>recipeRow(r,true)).join('');
+  return h;
+}
+
+function section(key,title,body){
+  const open = state.sections[key];
+  return `<section class="sec" data-open="${open}"><h2><button aria-expanded="${open}" data-sec="${key}">${title}${svg('down','md')}</button></h2><div class="body">${body}</div></section>`;
+}
+function screenDetail(){
+  const r = RECIPES.find(x=>x[0]===state.openRecipe);
+  let h = `<div class="dbar"><button data-nav="recipes" aria-label="Volver">${svg('back')}</button></div><div class="hero"></div><h1 class="dtitle">${r[1]}</h1>`;
+  h += section('info','Info general',`<dl class="kv"><dt>Categoría</dt><dd>${r[2]}</dd><dt>Tiempo</dt><dd>1 h 15 min</dd><dt>Dificultad</dt><dd>Media</dd><dt>Raciones</dt><dd>4 personas</dd><dt>Cocina</dt><dd>Colombiana</dd></dl>`);
+  h += section('ing','Ingredientes','<ul style="margin:0;padding-left:18px"><li>1 kg pechuga de pollo</li><li>3 mazorcas</li><li>1 kg papa criolla</li><li>Guascas al gusto</li></ul>');
+  h += section('steps','Pasos','<ol style="margin:0;padding-left:18px"><li>Cocer el pollo con las mazorcas.</li><li>Añadir las papas y las guascas.</li><li>Servir con nata y alcaparras.</li></ol>');
+  h += section('notes','Notas','<p style="margin:0">Mejor al día siguiente. Fuente: receta familiar.</p>');
+  return h;
+}
+function screenPlaceholder(t){ return head(t)+'<p class="note">Sin cambios en esta feature.</p>'; }
+
+function render(){
+  document.documentElement.dataset.theme = ui.theme;
+  const app = document.getElementById('app');
+  app.className = 'frame ' + (ui.frame==='phone'?'phone':'');
+  const body = {list:screenList, ingredients:screenPantry, recipes:screenRecipes, detail:screenDetail, plan:()=>screenPlaceholder('Plan'), profile:()=>screenPlaceholder('Perfil')}[state.screen]();
+  const nav = NAV.map(n=>navItem(...n)).join('');
+  const side = ui.frame==='phone' ? '' : `<nav class="side" aria-label="Principal"><div class="brand"><i></i>My Food</div>${nav}</nav>`;
+  const bottom = ui.frame==='phone' && state.screen!=='detail' ? `<nav class="bottom" aria-label="Principal">${nav}</nav>` : '';
+  const sheet = state.sheet ? `<div class="overlay" id="ov"><div class="sheet" role="dialog" aria-label="Menú de compartir"><div class="cap">Menú de compartir del dispositivo (simulado): el texto que recibe la app</div><pre>${state.sheet}</pre><div class="apps"><span></span><span></span><span></span><span></span></div><button class="x" id="closesheet">Cancelar</button></div></div>` : '';
+  const toast = state.toast ? `<div class="toast" role="status">${state.toast}</div>` : '';
+  app.innerHTML = `${side}<div class="main"><div class="scroll"><div class="shell">${body}</div></div>${bottom}${sheet}${toast}</div>`;
+}
+
+let toastTimer;
+function showToast(t){ state.toast=t; render(); clearTimeout(toastTimer); toastTimer=setTimeout(()=>{state.toast=null;render();},4000); }
+
+document.getElementById('app').addEventListener('click', e=>{
+  const t = e.target.closest('[data-nav],[data-flip],[data-filter],[data-open],[data-sec],#share,#closesheet,#ov');
+  if (!t) return;
+  if (t.id==='ov' && e.target!==t) return;
+  if (t.dataset.nav){
+    if (state.screen==='list') state.struck=new Set();
+    state.screen=t.dataset.nav; if (t.dataset.nav==='ingredients') state.filter='todos';
+  } else if (t.dataset.flip){
+    const i = items.find(x=>x.id===t.dataset.id);
+    if (t.dataset.flip==='have') i.have=!i.have;
+    else { i.buy=!i.buy; if (state.screen==='list') { if (!i.buy) state.struck.add(i.id); else state.struck.delete(i.id); } }
+  } else if (t.dataset.filter){ state.filter=t.dataset.filter; }
+  else if (t.dataset.open){
+    state.openRecipe=t.dataset.open; state.screen='detail';
+    const small = ui.frame==='phone';
+    state.sections={info:!small, ing:true, steps:true, notes:!small};
+  } else if (t.dataset.sec){ state.sections[t.dataset.sec]=!state.sections[t.dataset.sec]; }
+  else if (t.id==='share'){
+    if (ui.share==='menu') state.sheet=shareText();
+    else { navigator.clipboard?.writeText(shareText()).catch(()=>{}); showToast('Lista copiada'); return; }
+  } else if (t.id==='closesheet' || t.id==='ov'){ state.sheet=null; }
+  render();
+});
+for (const [id,key] of [['theme','theme'],['frame','frame'],['sharemode','share']]) {
+  document.getElementById(id).addEventListener('click', e=>{
+    const b=e.target.closest('button'); if(!b) return;
+    ui[key]=b.dataset.v;
+    for (const x of document.querySelectorAll('#'+id+' button')) x.setAttribute('aria-pressed', x===b);
+    render();
+  });
+}
+document.getElementById('reset').addEventListener('click', ()=>{reset();render();});
+render();
+</script>
+</body>
+</html>

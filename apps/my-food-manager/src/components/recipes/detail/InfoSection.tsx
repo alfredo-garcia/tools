@@ -82,12 +82,20 @@ function TimeRow({ time }: { time: Recipe["time"] }) {
   );
 }
 
-export function InfoSection({ recipe, library }: { recipe: Recipe; library: Library }) {
+export function InfoSection({
+  recipe,
+  library,
+  defaultOpen,
+}: {
+  recipe: Recipe;
+  library: Library;
+  defaultOpen?: boolean;
+}) {
   const hasCategory = recipe.category && recipe.category !== "unclassified";
   const difficulty = difficultyLabel(recipe.difficulty);
   const servings = servingsLabel(recipe.servings);
   return (
-    <CollapsibleSection title="Info general">
+    <CollapsibleSection title="Info general" defaultOpen={defaultOpen}>
       <dl className="grid grid-cols-[104px_1fr] gap-y-1">
         <Row label="Categoría">
           {hasCategory ? (

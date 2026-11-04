@@ -49,6 +49,7 @@
 | `TmpSwitch` | Inputs | Web | Beta (temporary) | `components/inputs/TmpSwitch` |
 | `TmpSegmentedControl` | Inputs | Web | Beta (temporary) | `components/inputs/TmpSegmentedControl` |
 | `TmpPendingChanges` | Feedback/Overlays | Web | Beta (temporary) | `components/feedback/TmpPendingChanges` |
+| `TmpNavBadge` | Navigation | Web | Beta (temporary) | `components/navigation/TmpNavBadge` |
 | `PersonPicker` | Inputs | Web | Beta | `components/inputs/PersonPicker` |
 | `PlanScreen` | Data Display (assembly) | Web | Beta | `components/plan/PlanScreen` |
 | `PlanDayList` / `PlanDay` | Data Display | Web | Beta | `components/plan/PlanDayList`, `components/plan/PlanDay` |
@@ -76,8 +77,8 @@
 
 ### BottomNav / SideNav (`Nav`)
 - **Category:** Navigation. **Import:** `components/navigation/Nav`. **Status:** Beta.
-- **Description:** the four destinations (Recetas, Plan, Despensa, Perfil) with lucide icons (`ChefHat`, `CalendarDays`, `Refrigerator`, `User`). `BottomNav` (below 640px): fixed bar, icon above label, min height 64px, bottom safe-area inset respected; the current item has `aria-current="page"`, `color.primary.500`, a heavier icon and a 3px top bar. `SideNav` (from 640px): sticky, full height, 72px collapsed (icons only, labels visually hidden but kept for assistive technology) or 224px expanded; a brand row with the PWA icon and "My Food", and a collapse/expand button at the bottom (`aria-expanded`, label "Contraer menú" / "Expandir menú").
-- **Props:** both: `items: Destination[]` (`id`, `href`, `label`), `currentId: DestinationId | null`; `SideNav` also `expanded: boolean`, `onToggle()`.
+- **Description:** the five destinations (Recetas, Plan, Compra, Despensa, Perfil) with lucide icons (`ChefHat`, `CalendarDays`, `ShoppingCart`, `Refrigerator`, `User`). An item with a count shows `TmpNavBadge` over its icon and gets `aria-label` "<label>, N por comprar". `BottomNav` (below 640px): fixed bar, icon above label, min height 64px, bottom safe-area inset respected; the current item has `aria-current="page"`, `color.primary.500`, a heavier icon and a 3px top bar. `SideNav` (from 640px): sticky, full height, 72px collapsed (icons only, labels visually hidden but kept for assistive technology) or 224px expanded; a brand row with the PWA icon and "My Food", and a collapse/expand button at the bottom (`aria-expanded`, label "Contraer menú" / "Expandir menú").
+- **Props:** both: `items: Destination[]` (`id`, `href`, `label`), `currentId: DestinationId | null`, `badges?: Partial<Record<DestinationId, number>>` (no badge when 0 or absent); `SideNav` also `expanded: boolean`, `onToggle()`.
 - **A11y:** `<nav aria-label="Principal">`, items are links, min 44px, label always visible in `BottomNav`.
 
 ### Button
@@ -159,8 +160,8 @@
 
 ### CollapsibleSection
 - **Category:** Data Display. **Import:** `components/recipes/detail/CollapsibleSection`. **Status:** Beta.
-- **Description:** titled card (`radius.md`, `elevation.1`) whose body folds with a height animation. Starts open, keeps its own state, chevron points down when open and right when closed.
-- **Props:** `title: string`, `children`.
+- **Description:** titled card (`radius.md`, `elevation.1`) whose body folds with a height animation. Starts open unless `defaultOpen` is false, keeps its own state, chevron points down when open and right when closed.
+- **Props:** `title: string`, `defaultOpen?: boolean` (default `true`; Info general and Notas pass `false` on small windows), `children`.
 - **A11y:** the title is an `h2` containing a button with `aria-expanded` and `aria-controls`; the panel is a labelled `region`, `inert` while closed; button min height 56px.
 
 ### RecipeDetail
@@ -182,7 +183,7 @@
 
 ### RatingStars / RatingMark / FavoriteButton
 - **RatingStars props:** `value: 0-5` (0 = no rating), `onChange(n)`, `recipeTitle` (for the group's accessible name); five buttons of 44 px with `aria-pressed` and label "N estrella(s)"; `lucide-react` `Star`, filled with `text-warning-500` when pressed. Implemented in feature `my-food-manager/012`: in the recipe detail only, next to `FavoriteButton` and `ShareButton`.
-- **RatingMark props:** `stars` (1-5); a filled star and the number, `aria-label` "Rating N de 5"; display only, after the category on `RecipeRow` and after the title on `PlanRecipeItem`. Import: `components/recipes/RatingMark`.
+- **RatingMark props:** `stars` (1-5); a filled star and the number, `aria-label` "Rating N de 5"; display only, after the category on `RecipeRow` (the category line is a centered flex row) and after the title on `PlanRecipeItem`; `align-middle` so it centers on a text line. Import: `components/recipes/RatingMark`.
 - **FavoriteButton props:** `pressed`, `onToggle`, `recipeTitle` (for the accessible name), `label?` (shows the text next to the heart and gives the button the width of its content), `fullWidth?` (with `label`: spans its container, small-window detail); heart fills with the lime accent when pressed; 44px hit area; `aria-pressed`. Implemented in feature `my-food-manager/009`: icon-only in rows and the small-window title row, labeled under the photo on medium and large.
 
 ### DetailShortcuts / ShoppingListSheet / IngredientGroups
@@ -237,7 +238,7 @@ Feature `my-food-manager/007` (pantry) added `TmpSwitch`, `TmpSegmentedControl` 
 Not applicable (web only).
 
 ## 6. Versioning
-- **Last updated:** 2026-11-03 (recipe detail shortcuts of feature `my-food-manager/013`: `DetailShortcuts`, `ShoppingListSheet`, `IngredientGroups` added; `RecipeDetail.onAddToPlan`, `RecipePickerSheet.suggestedId`, `MissingIngredientsSheet` with groups, `Sheet.back`, `FavoriteButton.fullWidth`); earlier: 2026-11-02 (ratings of feature `my-food-manager/012`: `RatingStars` implemented, `RatingMark` added, `RecipeRow.rating`, Rating filter in `RecipeFilters`); earlier: 2026-11-02 (Estado filter of feature `my-food-manager/011`, no new components); earlier: 2026-10-30 (pantry switches of feature `my-food-manager/007`: `TmpSwitch`, `TmpSegmentedControl`, `TmpPendingChanges`; earlier: 2026-10-29 (recipe search of feature `my-food-manager/005`: `SearchInput` as implemented, `TmpResultGroup`; earlier: main navigation of feature `my-food-manager/006`: `AppFrame`, `BottomNav` / `SideNav` rewritten, `TmpComingSoon`, `AppShell` corrected; earlier: responsive layout: DetailLayer modes, RecipeLibrary, RecipeLink props; added FilterChip, FilterOptions, RecipeFilters, useListReorder; recipe detail components; `RecipePhoto` props corrected to the implementation))
+- **Last updated:** 2026-11-03 (shopping list section of feature `my-food-manager/015`: `TmpNavBadge` added; `Nav.badges` and the Compra destination, `ShareButton.subject`, `CollapsibleSection.defaultOpen`, `RatingMark` alignment); earlier: 2026-11-03 (recipe detail shortcuts of feature `my-food-manager/013`: `DetailShortcuts`, `ShoppingListSheet`, `IngredientGroups` added; `RecipeDetail.onAddToPlan`, `RecipePickerSheet.suggestedId`, `MissingIngredientsSheet` with groups, `Sheet.back`, `FavoriteButton.fullWidth`); earlier: 2026-11-02 (ratings of feature `my-food-manager/012`: `RatingStars` implemented, `RatingMark` added, `RecipeRow.rating`, Rating filter in `RecipeFilters`); earlier: 2026-11-02 (Estado filter of feature `my-food-manager/011`, no new components); earlier: 2026-10-30 (pantry switches of feature `my-food-manager/007`: `TmpSwitch`, `TmpSegmentedControl`, `TmpPendingChanges`; earlier: 2026-10-29 (recipe search of feature `my-food-manager/005`: `SearchInput` as implemented, `TmpResultGroup`; earlier: main navigation of feature `my-food-manager/006`: `AppFrame`, `BottomNav` / `SideNav` rewritten, `TmpComingSoon`, `AppShell` corrected; earlier: responsive layout: DetailLayer modes, RecipeLibrary, RecipeLink props; added FilterChip, FilterOptions, RecipeFilters, useListReorder; recipe detail components; `RecipePhoto` props corrected to the implementation))
 - **Owner:** Al
 - Initial registry, all entries Beta pending implementation.
 
@@ -246,5 +247,12 @@ Not applicable (web only).
 - **Guidance:** photo, title and category open the detail (a `RecipeLink`, or a button when `onOpen` is given, as in Perfil); the heart is a sibling at the right, never inside the link. `dimmed` is an unfavorited row kept on screen in Perfil. Implemented in feature `my-food-manager/009`.
 
 ### ShareButton
-- **Props:** `onShare`, `recipeTitle` (for the accessible name), `busy?` (disabled with `aria-busy`), `label?` (shows the text next to the icon and gives the button the width of its content); icon `Share2`; 44px hit area; no pressed state.
-- **Guidance:** sibling of `FavoriteButton` in the recipe detail (title row on small windows, under the photo on medium and large); never in lists. Implemented in feature `my-food-manager/010`.
+- **Props:** `onShare`, `subject` (what is shared, for the accessible name of the icon-only button), `busy?` (disabled with `aria-busy`), `label?` (shows the text next to the icon and gives the button the width of its content); icon `Share2`; 44px hit area; no pressed state.
+- **Guidance:** sibling of `FavoriteButton` in the recipe detail (title row on small windows, under the photo on medium and large); with `label="Compartir"` next to the search of Compra (`my-food-manager/015`); never in recipe lists. Implemented in feature `my-food-manager/010`.
+
+### TmpNavBadge
+- **Category:** Navigation. **Import:** `components/navigation/TmpNavBadge`. **Status:** Beta, temporary (feature `my-food-manager/015`).
+- **Description:** a count pill over a navigation icon: `color.primary.500` background, `color.primary.contrast` text, 11px extra-bold, 18px high, `radius.full`, a 2px `color.surface.1` ring to separate it from the icon. Shows "99+" above 99.
+- **Props:** `count: number` (rendered only when > 0 by `Nav`).
+- **A11y:** `aria-hidden`; the number is in the item's accessible name.
+- **Guidance:** used for Compra only; formalize as a `Badge` if another count appears.

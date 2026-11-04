@@ -10,11 +10,11 @@ const Heading = ({ children }: { children: React.ReactNode }) => (
 );
 
 /** Not rendered at all when the recipe has no notes, variations or source. */
-export function NotesSection({ recipe }: { recipe: Recipe }) {
+export function NotesSection({ recipe, defaultOpen }: { recipe: Recipe; defaultOpen?: boolean }) {
   const view = notesView(recipe);
   if (!view) return null;
   return (
-    <CollapsibleSection title="Notas">
+    <CollapsibleSection title="Notas" defaultOpen={defaultOpen}>
       {view.notes.length > 0 && (
         <>
           <Heading>Notas</Heading>

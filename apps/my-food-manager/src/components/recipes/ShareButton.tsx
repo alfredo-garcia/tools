@@ -1,14 +1,15 @@
 import { Share2 } from "lucide-react";
 
-/** Opens the share menu for a recipe: icon only on the title row, or with the text "Compartir" under the photo. */
+/** Opens the share menu (a recipe, the shopping list): icon only on the title row, or with the text "Compartir" under the photo. */
 export function ShareButton({
   onShare,
-  recipeTitle,
+  subject,
   busy = false,
   label,
 }: {
   onShare: () => void;
-  recipeTitle: string;
+  /** What is shared, for the accessible name of the icon-only button. */
+  subject: string;
   busy?: boolean;
   /** Shows the text next to the icon; the button then takes the width of its content. */
   label?: string;
@@ -18,7 +19,7 @@ export function ShareButton({
       type="button"
       disabled={busy}
       aria-busy={busy}
-      aria-label={label ? undefined : `Compartir: ${recipeTitle}`}
+      aria-label={label ? undefined : `Compartir: ${subject}`}
       onClick={onShare}
       className={
         label

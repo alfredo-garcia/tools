@@ -126,3 +126,26 @@ export function familyOptions(
     count: counts.get(id) ?? 0,
   }));
 }
+
+/**
+ * The shopping list as plain text to share: a heading, then one block per family (vocabulary order, unknown ones
+ * after it alphabetically, "Otros" last) with one "☐ Name" line per ingredient, alphabetical.
+ */
+export function shoppingListText(
+  items: readonly IngredientItem[],
+  buy: ReadonlySet<string>,
+  vocab: Library["vocab"]["families"],
+): string {
+  const list = items.filter((i) => buy.has(i.id));
+  const blocks = familyOptions(list, vocab)
+    .sort((a, b) => Number(a.value === DEFAULT_FAMILY) - Number(b.value === DEFAULT_FAMILY))
+    .map(({ value, label }) =>
+      [
+        label,
+        ...sortByName(list.filter((i) => i.family === value)).map(
+          (i) => `☐ ${i.name.charAt(0).toUpperCase()}${i.name.slice(1)}`,
+        ),
+      ].join("\n"),
+    );
+  return ["Lista de la compra", ...blocks].join("\n\n");
+}

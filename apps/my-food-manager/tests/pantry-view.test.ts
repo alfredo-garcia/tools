@@ -7,6 +7,7 @@ import {
   inFamily,
   matchesText,
   pantryWithPending,
+  shoppingListText,
   sortByName,
   type IngredientItem,
   type ListQuery,
@@ -136,5 +137,31 @@ describe("families", () => {
 
   it("counts what is to buy", () => {
     expect(buyCount(ITEMS, view)).toBe(1);
+  });
+});
+
+describe("shoppingListText", () => {
+  it("groups by family in vocabulary order, unknown families after it and Otros last", () => {
+    const buy = new Set(["patata", "nata", "leche", "arroz", "extra", "agua"]);
+    expect(shoppingListText(ITEMS, buy, VOCAB)).toBe(
+      [
+        "Lista de la compra",
+        "Verduras y hortalizas\n☐ Patata",
+        "Huevos y lácteos\n☐ Leche\n☐ Nata",
+        "Cereales y harinas\n☐ Arroz",
+        "Mystery\n☐ Extra",
+        "Otros\n☐ Agua",
+      ].join("\n\n"),
+    );
+  });
+  it("leaves out what is not to buy and ends without a blank line", () => {
+    const text = shoppingListText(ITEMS, new Set(["nata"]), VOCAB);
+    expect(text).toBe("Lista de la compra\n\nHuevos y lácteos\n☐ Nata");
+  });
+  it("puts Otros last even when the vocabulary lists it earlier", () => {
+    const vocab = { other: { label: "Otros" }, vegetables: { label: "Verduras" } };
+    expect(shoppingListText(ITEMS, new Set(["agua", "patata"]), vocab)).toBe(
+      "Lista de la compra\n\nVerduras\n☐ Patata\n\nOtros\n☐ Agua",
+    );
   });
 });

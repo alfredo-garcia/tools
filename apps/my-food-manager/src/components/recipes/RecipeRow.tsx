@@ -42,7 +42,7 @@ export function RecipeRow({
       />
       <div className="min-w-0">
         <div className="truncate font-semibold">{recipe.title}</div>
-        <div className="text-xs text-text-muted">
+        <div className="flex items-center text-xs text-text-muted">
           {categoryLabel}
           {rating !== undefined && (
             <>

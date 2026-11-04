@@ -8,14 +8,17 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Refrigerator,
+  ShoppingCart,
   User,
   type LucideIcon,
 } from "lucide-react";
 import type { Destination, DestinationId } from "@/lib/domain/navigation";
+import { TmpNavBadge } from "./TmpNavBadge";
 
 const ICONS: Record<DestinationId, LucideIcon> = {
   recipes: ChefHat,
   plan: CalendarDays,
+  shopping: ShoppingCart,
   ingredients: Refrigerator,
   profile: User,
 };
@@ -23,22 +26,40 @@ const ICONS: Record<DestinationId, LucideIcon> = {
 interface NavProps {
   items: readonly Destination[];
   currentId: DestinationId | null;
+  /** Counts shown over an item's icon (Compra: ingredients to buy); nothing when 0 or absent. */
+  badges?: Partial<Record<DestinationId, number>>;
 }
 
-export function BottomNav({ items, currentId }: NavProps) {
+/** The icon with its count, and the item's accessible name when the count shows. */
+function itemIcon(item: Destination, current: boolean, badges: NavProps["badges"]) {
+  const Icon = ICONS[item.id];
+  const count = badges?.[item.id] ?? 0;
+  return {
+    icon: (
+      <span className="relative inline-flex shrink-0">
+        <Icon className="size-6" strokeWidth={current ? 2.6 : 2} aria-hidden />
+        {count > 0 && <TmpNavBadge count={count} />}
+      </span>
+    ),
+    name: count > 0 ? `${item.label}, ${count} por comprar` : undefined,
+  };
+}
+
+export function BottomNav({ items, currentId, badges }: NavProps) {
   return (
     <nav
       aria-label="Principal"
       className="fixed inset-x-0 bottom-0 z-30 flex border-t border-border bg-surface-1 pb-[env(safe-area-inset-bottom)]"
     >
       {items.map((item) => {
-        const Icon = ICONS[item.id];
         const current = item.id === currentId;
+        const { icon, name } = itemIcon(item, current, badges);
         return (
           <Link
             key={item.id}
             href={item.href}
             aria-current={current ? "page" : undefined}
+            aria-label={name}
             className={`relative flex min-h-16 flex-1 flex-col items-center justify-center gap-0.5 text-xs font-semibold ${
               current ? "text-primary-500" : "text-text-muted"
             }`}
@@ -49,7 +70,7 @@ export function BottomNav({ items, currentId }: NavProps) {
                 className="absolute inset-x-[30%] top-0 h-[3px] rounded-b-[3px] bg-primary-500"
               />
             )}
-            <Icon className="size-6" strokeWidth={current ? 2.6 : 2} aria-hidden />
+            {icon}
             {item.label}
           </Link>
         );
@@ -61,6 +82,7 @@ export function BottomNav({ items, currentId }: NavProps) {
 export function SideNav({
   items,
   currentId,
+  badges,
   expanded,
   onToggle,
 }: NavProps & { expanded: boolean; onToggle: () => void }) {
@@ -87,20 +109,21 @@ export function SideNav({
         <span className={label}>My Food</span>
       </div>
       {items.map((item) => {
-        const Icon = ICONS[item.id];
         const current = item.id === currentId;
+        const { icon, name } = itemIcon(item, current, badges);
         return (
           <Link
             key={item.id}
             href={item.href}
             aria-current={current ? "page" : undefined}
+            aria-label={name}
             className={`flex h-12 items-center gap-3 rounded-full px-3 text-sm font-semibold whitespace-nowrap ${
               current
                 ? "bg-primary-500/15 text-primary-500"
                 : "text-text-muted hover:bg-surface-2 hover:text-text"
             }`}
           >
-            <Icon className="size-6 shrink-0" strokeWidth={current ? 2.6 : 2} aria-hidden />
+            {icon}
             <span className={label}>{item.label}</span>
           </Link>
         );

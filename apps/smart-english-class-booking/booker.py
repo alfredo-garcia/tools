@@ -24,6 +24,7 @@ import sys
 import time
 import urllib.request
 import urllib.parse
+from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -306,15 +307,25 @@ def book_one(page, prog, fecha: str, slot: str, skip: int):
     return True, desc, "confirmada"
 
 
-def run_slots(page, prog, fecha: str, taken: set[str], results: list[str]):
-    """Intenta reservar cada slot libre. Devuelve (prog, nº de slots confirmados/simulados)."""
-    done = 0
+@dataclass
+class Outcome:
+    """Qué pasó en la ejecución; de aquí sale el mensaje de Telegram."""
+    previas: set[str] = field(default_factory=set)           # slots que ya estaban reservados
+    reservadas: list[tuple[str, str | None]] = field(default_factory=list)  # (slot, clase)
+    sin_horario: list[str] = field(default_factory=list)     # slots no ofertados / llenos / día no habilitado
+    quiz: str | None = None                                  # descripción del quiz que cortó la reserva
+    quiz_previo: bool = False                                # ya había un quiz programado ese día
+    sin_pendientes: bool = False
+    errores: list[str] = field(default_factory=list)
+
+
+def run_slots(page, prog, fecha: str, out: Outcome):
+    """Intenta reservar cada slot libre, en orden, hasta topar con un quiz. Devuelve prog."""
     for slot in SLOTS:
-        if slot in taken:
-            results.append(f"{slot}: ya estaba reservada")
+        if slot in out.previas:
             continue
         try:
-            ok, desc, why = book_one(page, prog, fecha, slot, skip=done if DRY_RUN else 0)
+            ok, desc, why = book_one(page, prog, fecha, slot, skip=len(out.reservadas) if DRY_RUN else 0)
         except Exception as e:
             # Estado incierto: se reconstruye el flujo desde el login y se comprueba qué quedó programado
             screenshot(page, f"error-{slot.replace(':', '')}.png")
@@ -323,23 +334,89 @@ def run_slots(page, prog, fecha: str, taken: set[str], results: list[str]):
             if slot in slots_of(read_programadas(prog, fecha), fecha):
                 ok, desc, why = True, None, "confirmada (verificada tras error)"
             else:
-                results.append(f"{slot}: ❌ error {type(e).__name__}: {e}")
-                log(results[-1])
+                out.errores.append(f"{slot}: {type(e).__name__}: {e}"[:200])
                 continue
-        results.append(f"{slot}: {'✅' if ok else '❌'} {desc or ''} — {why}")
-        log(results[-1])
+        log(f"{slot}: {'OK' if ok else 'NO'} {desc or ''} — {why}")
         if ok:
-            done += 1
-        if not ok and (desc is None or why == QUIZ_SKIP or "aún no está habilitado" in why):
+            out.reservadas.append((slot, desc))
+        elif why == QUIZ_SKIP:
+            out.quiz = desc
             break
+        elif desc is None:
+            out.sin_pendientes = True
+            break
+        elif "aún no está habilitado" in why:
+            out.sin_horario.append(slot)
+            break
+        elif why.startswith("slot "):
+            out.sin_horario.append(slot)
+        else:
+            out.errores.append(f"{slot}: {why}"[:200])
         prog = get_prog(page)
-    return prog, done
+    return prog
+
+
+DIAS = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"]
+
+
+def hora(slot: str) -> str:
+    return slot.lstrip("0")
+
+
+def clase(desc: str | None) -> str:
+    return desc or "clase"
+
+
+def build_report(fecha: str, out: Outcome) -> tuple[str, bool]:
+    """Mensaje legible y si es "silencioso" (no había nada que hacer ni que avisar)."""
+    dia = datetime.strptime(fecha, "%d/%m/%y")
+    cuando = f"{DIAS[dia.weekday()]} {dia:%d/%m}"
+    n = len(out.reservadas)
+    lineas = "\n".join(f"• {hora(s)} · {clase(d)}" for s, d in out.reservadas)
+    total = len(out.previas) + n
+    quiet = False
+
+    if n and total == len(SLOTS) and not out.errores:
+        head = f"🟢 Reservadas tus próximas {n} clases" if n > 1 else "🟢 Reservada tu próxima clase"
+        body = lineas
+    elif n:
+        head = f"🟡 Reserva parcial de {n} clase{'s' if n > 1 else ''}"
+        body = lineas
+        if out.quiz:
+            body += f"\n• Te toca presentar Quiz ({out.quiz}) antes de seguir con más clases"
+        elif out.errores:
+            body += "\n• Hubo problemas con otros horarios:\n  " + "\n  ".join(out.errores)
+        elif out.sin_horario:
+            body += "\n• No había más horarios disponibles"
+    elif out.errores:
+        head = "🔴 No se pudieron reservar clases (hubo un error)"
+        body = "\n".join(f"• {e}" for e in out.errores)
+    elif out.quiz or out.quiz_previo:
+        head = ("🟡 No pude reservar clases porque tu próxima clase es un Quiz" if out.quiz
+                else "🟡 No pude reservar clases porque ese día ya tienes un Quiz")
+        body = f"Quiz pendiente: {out.quiz}" if out.quiz else ""
+        quiet = True
+    elif out.previas and len(out.previas) >= len(SLOTS):
+        head = "🔴 No reservé clases porque ya había clases reservadas previamente"
+        body = ""
+        quiet = True
+    elif out.sin_pendientes:
+        head = "🔴 No reservé clases porque no te quedan clases pendientes"
+        body = ""
+    else:
+        head = "🔴 No se pudieron reservar clases, no hay horarios disponibles"
+        body = ""
+
+    if out.previas and n:
+        body += f"\n\nYa tenías reservado: {', '.join(hora(s) for s in sorted(out.previas))}"
+    sim = "🧪 SIMULACRO (no se reservó nada)\n" if DRY_RUN else ""
+    return f"{sim}{head}\nClases del {cuando}\n\n{body}".rstrip(), quiet
 
 
 def main() -> int:
     fecha = target_date()
     log(f"Reservando para {fecha} {'(DRY RUN)' if DRY_RUN else ''}")
-    results: list[str] = []
+    out = Outcome()
     SHOTS_DIR.mkdir(parents=True, exist_ok=True)
     with sync_playwright() as pw:
         browser = pw.chromium.launch()
@@ -355,28 +432,18 @@ def main() -> int:
             wait_until(w)
 
             ya = read_programadas(prog, fecha)
-            taken = slots_of(ya, fecha)
-            quiz_ya = any("QUIZ" in " ".join(r).upper() for r in ya)
+            out.previas = slots_of(ya, fecha)
+            out.quiz_previo = any("QUIZ" in " ".join(r).upper() for r in ya)
             if ya:
-                log(f"Ya programadas ese día: {len(ya)} ({', '.join(sorted(taken)) or '-'})")
-            done = 0
-            if quiz_ya:
-                results.append("Ya hay un quiz ese día: no se reserva nada más.")
-            else:
-                prog, done = run_slots(page, prog, fecha, taken, results)
+                log(f"Ya programadas ese día: {len(ya)} ({', '.join(sorted(out.previas)) or '-'})")
+            if not out.quiz_previo:
+                prog = run_slots(page, prog, fecha, out)
 
-            final = read_programadas(prog, fecha)
-            resumen = "\n".join(" ".join(c for c in r if c)[:120] for r in final) or "(ninguna)"
-            quiz_skip = any(QUIZ_SKIP in r for r in results)
-            completo = quiz_ya or quiz_skip or len(taken) + done == len(SLOTS)
-            noop = done == 0 and all("ya estaba" in r or "quiz" in r.lower() for r in results)
-            status = "OK" if completo else "PARCIAL"
-            text = (f"Smart · reservas {fecha} [{status}]{' DRY RUN' if DRY_RUN else ''}\n"
-                    + "\n".join(results)
-                    + (f"\nAvisos del sitio: {dialogs}" if dialogs else "")
-                    + f"\n\nProgramadas ese día:\n{resumen}")
+            text, quiet = build_report(fecha, out)
+            if dialogs:
+                text += f"\n\nAvisos del sitio: {dialogs}"
             log(text)
-            if QUIET_IF_NOOP and noop and not DRY_RUN:
+            if QUIET_IF_NOOP and quiet and not DRY_RUN:
                 log("Nada que hacer: sin aviso por Telegram")
             else:
                 notify(text)
@@ -384,7 +451,9 @@ def main() -> int:
             return 0
         except Exception as e:
             screenshot(page, "error.png")
-            text = f"Smart · reservas {fecha} [ERROR]\n{type(e).__name__}: {e}\n" + "\n".join(results)
+            hechas = "".join(f"\n• {hora(s)} · {clase(d)}" for s, d in out.reservadas)
+            text = (f"🔴 Error al reservar las clases del {fecha}\n{type(e).__name__}: {str(e)[:300]}"
+                    + (f"\n\nAntes del error se reservó:{hechas}" if hechas else ""))
             log(text)
             notify(text)
             return 1

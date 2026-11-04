@@ -66,3 +66,16 @@ Reintentar cada 2 h, **solo si ese día no hay los 3 slots (07:30, 09:00, 10:30)
 - Excepción: si ese día hay un quiz, no reintentar.
 - Pasos técnicos previstos: leer slots libres de la sede 59 sin confirmar, cancelar con BUTTON2 (Cancelar) en el
   filtro *Programadas*, y añadir un `cron` cada 2 h (o un job que se re-agenda) al workflow.
+
+## Mensajes de Telegram
+
+Siempre con un semáforo y la lista de clases (`build_report` en `booker.py`):
+
+- 🟢 Reservadas tus próximas N clases (hora · clase).
+- 🟡 Reserva parcial de N clases, con el motivo: no había más horarios, o te toca un Quiz.
+- 🟡 No pude reservar porque tu próxima clase (o ese día) es un Quiz.
+- 🔴 No se pudieron reservar clases (sin horarios, sin clases pendientes o error).
+- 🔴 No reservé porque ya había clases reservadas previamente.
+
+Si entre las 3 clases hay un Quiz, se reservan las anteriores y se para en él. En los runs programados
+no se envía mensaje cuando no había nada que hacer (ya reservado o quiz pendiente).

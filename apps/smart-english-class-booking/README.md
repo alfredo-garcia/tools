@@ -3,8 +3,10 @@
 Reserva automática de clases del portal Smart / Schoolpack (GeneXus,
 `https://schoolpack.smart.edu.co/idiomas/alumnos.aspx`) con Playwright, ejecutada por GitHub Actions.
 
-Los lunes y miércoles a las 06:00 (Bogotá) reserva para el día siguiente los slots **07:30, 09:00 y 10:30**.
-Si la siguiente clase pendiente es un **QUIZ**, la agenda y no reserva más ese día. El resultado llega por Telegram.
+Los lunes (para el martes) y miércoles (para el jueves) reserva los slots **07:30, 09:00 y 10:30**.
+Se intenta 4 veces al día, hora Bogotá: **05:40** (espera hasta las 06:00), **07:00**, **11:00** y **14:00**,
+porque GitHub puede retrasar o saltarse un cron. Si la siguiente clase pendiente es un **QUIZ**, no reserva nada.
+El resultado llega por Telegram (en los runs programados solo si hubo algo que reservar o un problema).
 
 - Script: [booker.py](booker.py) · dependencias: [requirements.txt](requirements.txt)
 - Workflow: [.github/workflows/smart-english-class-booking.yml](../../.github/workflows/smart-english-class-booking.yml)
@@ -17,8 +19,8 @@ Si la siguiente clase pendiente es un **QUIZ**, la agenda y no reserva más ese 
 
 1. Día objetivo = mañana (zona `America/Bogota`), o `TARGET_DATE` si se fuerza.
 2. Slots deseados: 07:30, 09:00, 10:30. Si uno no está disponible se reservan los demás.
-3. Siempre se toma la siguiente clase *Pendiente*. Si es un QUIZ → sede de quizzes (70), y se termina el día.
-4. Idempotente: un slot ya programado ese día no se repite; si ya hay un quiz ese día no se reserva nada.
+3. Siempre se toma la siguiente clase *Pendiente*. Si es un QUIZ **no se reserva nada** (los quizzes se agendan a mano; sede 70).
+4. Idempotente: un slot ya programado ese día no se repite; si ya hay un quiz ese día no se reserva nada. Por eso son seguros los reintentos del cron.
 5. Cada reserva se verifica contra el estado real (la clase aparece en *Programadas*); no se fía solo de que el popup se cierre.
 
 ## Detalles del portal

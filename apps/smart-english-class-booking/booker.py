@@ -4,8 +4,8 @@ Reserva automática de clases en Smart (Schoolpack / GeneXus).
 Reglas (v1):
   - Reserva para el día siguiente (se ejecuta lunes -> martes, miércoles -> jueves).
   - Slots deseados: 07:30, 09:00, 10:30. Si uno no está disponible, reserva los demás.
-  - Toma siempre la siguiente clase "Pendiente". Si es un QUIZ, la agenda (sede de
-    exámenes) y no reserva más ese día.
+  - Toma siempre la siguiente clase "Pendiente". Si es un QUIZ no la reserva ni reserva
+    nada más (los quizzes se agendan a mano).
   - Idempotente: si ya hay clases programadas ese día en un slot, no lo repite.
   - Notifica el resultado por Telegram.
 
@@ -15,6 +15,7 @@ Variables de entorno:
   DRY_RUN=1                          hace todo menos pulsar "Confirmar"
   WAIT_UNTIL=06:00                   (opcional) espera hasta esa hora de Bogotá antes de reservar
   TARGET_DATE=dd/mm/yy               (opcional) fuerza el día a reservar
+  QUIET_IF_NOOP=1                    no avisa por Telegram si no había nada que hacer
   SHOTS_DIR=.                        (opcional) carpeta donde dejar capturas (error.png, final.png)
 """
 import os
@@ -33,7 +34,6 @@ BASE = "https://schoolpack.smart.edu.co/idiomas/alumnos.aspx"
 TZ = ZoneInfo("America/Bogota")
 SLOTS = ["07:30", "09:00", "10:30"]
 SEDE_CLASES = "59"    # MANIZALES
-SEDE_QUIZ = "70"      # 2. PROGRAMAR EXÁMENES/QUIZZES/TEST
 FILTER_PENDIENTES = "2"
 FILTER_PROGRAMADAS = "3"
 
@@ -46,7 +46,10 @@ COL_HORA = 2
 # un slot lleno: la fila completa se loguea para poder afinar esto.
 FULL_HINT = re.compile(r"llen|agotad|sin\s+cupo|no\s+disponible|cupo\s*:?\s*0\b", re.I)
 
+QUIZ_SKIP = "la siguiente pendiente es un quiz: no se reserva"
+
 DRY_RUN = os.getenv("DRY_RUN", "0") == "1"
+QUIET_IF_NOOP = os.getenv("QUIET_IF_NOOP", "0") == "1"
 SHOTS_DIR = Path(os.getenv("SHOTS_DIR", "."))
 log_lines: list[str] = []
 dialogs: list[str] = []
@@ -252,16 +255,19 @@ def nth_pending(prog, skip: int = 0):
 def book_one(page, prog, fecha: str, slot: str, skip: int):
     """Reserva la primera pendiente en fecha/slot. Devuelve (ok, descripcion, motivo).
 
-    `skip` solo se usa en DRY_RUN: salta las pendientes que ya "habríamos reservado".
+    `skip` solo se usa en DRY_RUN: describe las pendientes que ya "habríamos reservado". El portal
+    solo deja asignar la primera pendiente, así que el clic se hace siempre sobre ella.
     """
-    idx, desc = nth_pending(prog, skip)
-    if idx is None:
+    idx, _ = nth_pending(prog, 0)
+    _, desc = nth_pending(prog, skip)
+    if idx is None or desc is None:
         return False, None, "no hay clases pendientes"
-    is_quiz = "QUIZ" in desc.upper()
+    if "QUIZ" in desc.upper():
+        return False, desc, QUIZ_SKIP
     click_row(prog, idx, COL_DESC)
     prog.click("input[name=BUTTON1]")  # Asignar
     sel = popup(page, 1, "#vREGCONREG")
-    set_select(sel, "vREGCONREG", SEDE_QUIZ if is_quiz else SEDE_CLASES)
+    set_select(sel, "vREGCONREG", SEDE_CLASES)
 
     sel.wait_for_selector("#vDIA", timeout=15000)
     opts = sel.eval_on_selector("#vDIA", "s => [...s.options].map(o => [o.value, o.text])")
@@ -324,10 +330,7 @@ def run_slots(page, prog, fecha: str, taken: set[str], results: list[str]):
         log(results[-1])
         if ok:
             done += 1
-        if ok and desc and "QUIZ" in desc.upper():
-            results.append("Era un quiz: no se reservan más clases ese día.")
-            break
-        if not ok and (desc is None or "aún no está habilitado" in why):
+        if not ok and (desc is None or why == QUIZ_SKIP or "aún no está habilitado" in why):
             break
         prog = get_prog(page)
     return prog, done
@@ -364,14 +367,19 @@ def main() -> int:
 
             final = read_programadas(prog, fecha)
             resumen = "\n".join(" ".join(c for c in r if c)[:120] for r in final) or "(ninguna)"
-            completo = quiz_ya or len(taken) + done == len(SLOTS) or any("era un quiz" in r.lower() for r in results)
+            quiz_skip = any(QUIZ_SKIP in r for r in results)
+            completo = quiz_ya or quiz_skip or len(taken) + done == len(SLOTS)
+            noop = done == 0 and all("ya estaba" in r or "quiz" in r.lower() for r in results)
             status = "OK" if completo else "PARCIAL"
             text = (f"Smart · reservas {fecha} [{status}]{' DRY RUN' if DRY_RUN else ''}\n"
                     + "\n".join(results)
                     + (f"\nAvisos del sitio: {dialogs}" if dialogs else "")
                     + f"\n\nProgramadas ese día:\n{resumen}")
             log(text)
-            notify(text)
+            if QUIET_IF_NOOP and noop and not DRY_RUN:
+                log("Nada que hacer: sin aviso por Telegram")
+            else:
+                notify(text)
             screenshot(page, "final.png")
             return 0
         except Exception as e:

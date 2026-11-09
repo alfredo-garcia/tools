@@ -79,3 +79,22 @@ Siempre con un semáforo y la lista de clases (`build_report` en `booker.py`):
 
 Si entre las 3 clases hay un Quiz, se reservan las anteriores y se para en él. En los runs programados
 no se envía mensaje cuando no había nada que hacer (ya reservado o quiz pendiente).
+
+## Disparo externo (cron-job.org)
+
+Los cron de GitHub llegan con horas de retraso o se pierden, así que el disparo fiable es externo: un
+cron con zona `America/Bogota` que llama a la API (lunes y miércoles, 05:40, 07:00, 11:00 y 14:00):
+
+```
+POST https://api.github.com/repos/alfredo-garcia/tools/actions/workflows/smart-english-class-booking.yml/dispatches
+Authorization: Bearer <token fine-grained, solo este repo, permiso Actions: write>
+Accept: application/vnd.github+json
+X-GitHub-Api-Version: 2022-11-28
+Content-Type: application/json
+
+{"ref":"main","inputs":{"dry_run":"0","wait_until":"06:00","quiet":"1"}}
+```
+
+- `dry_run` **debe ir a `"0"`**: por defecto un disparo manual es un simulacro.
+- `wait_until: "06:00"` solo espera en el run de las 05:40; en los demás ya es más tarde y no espera.
+- Respuesta correcta: `204 No Content`. Los cron de GitHub se mantienen como respaldo (el script es idempotente).

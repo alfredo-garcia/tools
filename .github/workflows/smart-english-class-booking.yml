@@ -18,6 +18,12 @@ on:
       target_date:
         description: "Forzar día dd/mm/yy (vacío = mañana)"
         default: ""
+      wait_until:
+        description: "HH:MM Bogotá: esperar hasta esa hora antes de reservar (vacío = no esperar)"
+        default: ""
+      quiet:
+        description: "1 = sin aviso por Telegram si no había nada que hacer"
+        default: "0"
 
 concurrency:
   group: smart-english-class-booking
@@ -44,12 +50,13 @@ jobs:
           SMART_PASS: ${{ secrets.SMART_PASS }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          # En schedule no hay inputs: ambos quedan vacíos / '0'.
+          # En schedule no hay inputs: DRY_RUN queda en '0' (reserva real).
           DRY_RUN: ${{ inputs.dry_run || '0' }}
           TARGET_DATE: ${{ inputs.target_date }}
-          WAIT_UNTIL: ${{ github.event_name == 'schedule' && '06:00' || '' }}
-          # En los runs programados no se avisa si no había nada que hacer (ya reservado / quiz).
-          QUIET_IF_NOOP: ${{ github.event_name == 'schedule' && '1' || '0' }}
+          # Los runs programados (o disparados desde fuera con wait_until/quiet) esperan hasta las
+          # 06:00 y no avisan si no había nada que hacer (ya reservado / quiz).
+          WAIT_UNTIL: ${{ inputs.wait_until || (github.event_name == 'schedule' && '06:00' || '') }}
+          QUIET_IF_NOOP: ${{ (github.event_name == 'schedule' || inputs.quiet == '1') && '1' || '0' }}
           SHOTS_DIR: shots
         run: python booker.py
       - if: always()

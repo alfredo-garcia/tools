@@ -122,7 +122,8 @@ Mismo endpoint y cabeceras que el disparo externo; solo cambia el cuerpo. Todas 
 
 - `slots` admite varios (`"07:30,09:00"`); un valor no válido no reserva nada y avisa por Telegram.
 - Cancelar **no toca los quizzes** (se avisa en el mensaje). Pruébalo antes con `"dry_run":"1"`: solo lista lo que cancelaría.
-- Cancelar aún no se ha probado contra el portal real (BUTTON2 *Cancelar* de la grilla *Programadas*).
+- Cancelar usa BUTTON2 *Cancelar* de la grilla *Programadas*. El portal solo deja cancelar de la **última clase a la primera**
+  ("No es posible eliminar la clase debido a que la clase siguiente esta programada"), así que el script empieza por la más tardía.
 - Si un slot suelto rompe la regla de clases consecutivas, el portal lo rechaza y el mensaje lo cuenta.
 - En HTTP Shortcuts: método POST, cabeceras `Authorization: Bearer <token>`, `Accept: application/vnd.github+json`,
   cuerpo JSON como arriba; la respuesta correcta es `204`. Un shortcut por acción.

@@ -97,7 +97,7 @@ def portal_message(frame) -> str:
         )
     except Exception:
         return ""
-    text = re.sub(r"Selección de Clases|Sede:|Día:|Confirmar|Regresar", " ", text)
+    text = re.sub(r"Selección de Clases|Programar clases|Estado de las clases:|Sede:|Día:|Confirmar|Regresar|Asignar|Cancelar", " ", text)
     return re.sub(r"\s+", " ", text).strip()[:120]
 
 
@@ -450,10 +450,12 @@ def cancel_day(prog, fecha: str, out: Outcome) -> None:
 
     rows = del_dia()
     if DRY_RUN:
-        out.canceladas = [(h, d) for _, h, d in rows]
+        out.canceladas = sorted(((h, d) for _, h, d in rows), reverse=True)
         return
     for _ in range(len(rows)):
-        pend = [r for r in del_dia() if (r[1], r[2]) not in out.canceladas]
+        # El portal solo deja cancelar de la última clase a la primera ("no es posible eliminar la clase
+        # debido a que la clase siguiente esta programada"), así que se empieza por la más tardía.
+        pend = sorted((r for r in del_dia() if (r[1], r[2]) not in out.canceladas), key=lambda r: r[1], reverse=True)
         if not pend:
             break
         i, h, d = pend[0]
@@ -472,7 +474,7 @@ def cancel_day(prog, fecha: str, out: Outcome) -> None:
                 break
         if sigue:
             screenshot(prog.page, f"no-cancelo-{h.replace(':', '')}.png")
-            out.cancel_fallos.append((h, "el portal no la canceló tras esperar 25 s"))
+            out.cancel_fallos.append((h, "el portal no la canceló" + (f" (dijo: «{msg}»)" if (msg := portal_message(prog)) else " tras esperar 25 s")))
             break
         out.canceladas.append((h, d))
     set_select(prog, "vTPEAPROBO", FILTER_PENDIENTES)

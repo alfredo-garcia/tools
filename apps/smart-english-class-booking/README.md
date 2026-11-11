@@ -114,6 +114,7 @@ Mismo endpoint y cabeceras que el disparo externo; solo cambia el cuerpo. Todas 
 
 | Acción | Cuerpo |
 |---|---|
+| Reservar las 3 (07:30, 09:00 y 10:30) | `{"ref":"main","inputs":{"dry_run":"0"}}` |
 | Reservar 7:30 | `{"ref":"main","inputs":{"dry_run":"0","slots":"07:30"}}` |
 | Reservar 9:00 | `{"ref":"main","inputs":{"dry_run":"0","slots":"09:00"}}` |
 | Reservar 10:30 | `{"ref":"main","inputs":{"dry_run":"0","slots":"10:30"}}` |

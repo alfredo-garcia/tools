@@ -6,6 +6,12 @@ este repo, permiso *Actions: write*); no lo guardes en el repo.
 
 Respuesta correcta: `204`. Todas actúan sobre el día siguiente. `dry_run` va a `"0"`: con `"1"` solo simula.
 
+## Reservar las 3 del día siguiente (como el script programado)
+
+```
+curl -X POST 'https://api.github.com/repos/alfredo-garcia/tools/actions/workflows/smart-english-class-booking.yml/dispatches' -H 'Authorization: Bearer TU_TOKEN' -H 'Accept: application/vnd.github+json' -H 'X-GitHub-Api-Version: 2022-11-28' -H 'Content-Type: application/json' -d '{"ref":"main","inputs":{"dry_run":"0"}}'
+```
+
 ## Reservar 7:30
 
 ```

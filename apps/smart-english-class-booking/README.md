@@ -3,10 +3,10 @@
 Reserva automática de clases del portal Smart / Schoolpack (GeneXus,
 `https://schoolpack.smart.edu.co/idiomas/alumnos.aspx`) con Playwright, ejecutada por GitHub Actions.
 
-Los lunes (para el martes) y miércoles (para el jueves) reserva los slots **07:30, 09:00 y 10:30**.
-Se intenta 4 veces al día, hora Bogotá: **05:40** (espera hasta las 06:00), **07:00**, **11:00** y **14:00**,
-porque GitHub puede retrasar o saltarse un cron. Si la siguiente clase pendiente es un **QUIZ**, no reserva nada.
-El resultado llega por Telegram (en los runs programados solo si hubo algo que reservar o un problema).
+Reserva los slots **07:30, 09:00 y 10:30** del día siguiente. El workflow **no tiene cron propio**: solo se
+dispara por `workflow_dispatch`, desde cron-job.org (reservas programadas, ver "Disparo externo") o a demanda con
+HTTP Shortcuts. Los cron de GitHub se eliminaron porque llegaban con horas de retraso o se perdían.
+Si la siguiente clase pendiente es un **QUIZ**, no reserva nada. El resultado llega por Telegram.
 
 - Script: [booker.py](booker.py) · dependencias: [requirements.txt](requirements.txt)
 - Workflow: [.github/workflows/smart-english-class-booking.yml](../../.github/workflows/smart-english-class-booking.yml)
@@ -20,7 +20,7 @@ El resultado llega por Telegram (en los runs programados solo si hubo algo que r
 1. Día objetivo = mañana (zona `America/Bogota`), o `TARGET_DATE` si se fuerza.
 2. Slots deseados: 07:30, 09:00, 10:30. Si uno no está disponible se reservan los demás.
 3. Siempre se toma la siguiente clase *Pendiente*. Si es un QUIZ **no se reserva nada** (los quizzes se agendan a mano; sede 70).
-4. Idempotente: un slot ya programado ese día no se repite; si ya hay un quiz ese día no se reserva nada. Por eso son seguros los reintentos del cron.
+4. Idempotente: un slot ya programado ese día no se repite; si ya hay un quiz ese día no se reserva nada. Por eso son seguros los reintentos.
 5. Cada reserva se verifica contra el estado real (la clase aparece en *Programadas*); no se fía solo de que el popup se cierre.
 
 ## Detalles del portal
@@ -77,12 +77,12 @@ Siempre con un semáforo y la lista de clases (`build_report` en `booker.py`):
 - 🔴 No se pudieron reservar clases (sin horarios, sin clases pendientes o error).
 - 🔴 No reservé porque ya había clases reservadas previamente.
 
-Si entre las 3 clases hay un Quiz, se reservan las anteriores y se para en él. En los runs programados
+Si entre las 3 clases hay un Quiz, se reservan las anteriores y se para en él. Con `quiet:"1"` (los disparos de cron-job.org)
 no se envía mensaje cuando no había nada que hacer (ya reservado o quiz pendiente).
 
 ## Disparo externo (cron-job.org)
 
-Los cron de GitHub llegan con horas de retraso o se pierden, así que el disparo fiable es externo: un
+El disparo fiable es externo: un
 cron con zona `America/Bogota` que llama a la API (lunes y miércoles, 05:40, 07:00, 11:00 y 14:00):
 
 ```
@@ -97,7 +97,7 @@ Content-Type: application/json
 
 - `dry_run` **debe ir a `"0"`**: por defecto un disparo manual es un simulacro.
 - `wait_until: "06:00"` solo espera en el run de las 05:40; en los demás ya es más tarde y no espera.
-- Respuesta correcta: `204 No Content`. Los cron de GitHub se mantienen como respaldo (el script es idempotente).
+- Respuesta correcta: `204 No Content`. El script es idempotente, así que se puede disparar varias veces el mismo día.
 
 ## Errores legibles
 

@@ -15,6 +15,8 @@ Variables de entorno:
   DRY_RUN=1                          hace todo menos pulsar "Confirmar"
   WAIT_UNTIL=06:00                   (opcional) espera hasta esa hora de Bogotá antes de reservar
   TARGET_DATE=dd/mm/yy               (opcional) fuerza el día a reservar
+  ONLY_SLOTS=07:30,09:00             (opcional) reserva solo esos slots (por defecto los tres)
+  CANCEL=1                           en vez de reservar, cancela las clases (no quizzes) del día objetivo
   QUIET_IF_NOOP=1                    no avisa por Telegram si no había nada que hacer
   SHOTS_DIR=.                        (opcional) carpeta donde dejar capturas (error.png, final.png)
 """
@@ -146,6 +148,11 @@ def norm_hour(text: str) -> str | None:
     """'7:30', '07:30', '07:30 AM' -> '07:30' (None si no hay hora)."""
     m = re.search(r"\b(\d{1,2}):(\d{2})\b", text)
     return f"{int(m.group(1)):02d}:{m.group(2)}" if m else None
+
+
+# Slots que esta ejecución debe reservar (ONLY_SLOTS=07:30 -> solo ese; vacío -> los tres)
+WANTED = [h for h in (norm_hour(x) for x in os.getenv("ONLY_SLOTS", "").split(",")) if h in SLOTS] or SLOTS
+CANCEL = os.getenv("CANCEL", "0") == "1"
 
 
 # --- Grillas GeneXus -------------------------------------------------------------------
@@ -383,11 +390,13 @@ class Outcome:
     quiz_previo: bool = False                                # ya había un quiz programado ese día
     sin_pendientes: bool = False
     errores: list[tuple[str, str]] = field(default_factory=list)
+    canceladas: list[tuple[str, str | None]] = field(default_factory=list)  # modo CANCEL
+    cancel_fallos: list[tuple[str, str]] = field(default_factory=list)
 
 
 def run_slots(page, prog, fecha: str, out: Outcome):
     """Intenta reservar cada slot libre, en orden, hasta topar con un quiz. Devuelve prog."""
-    for slot in SLOTS:
+    for slot in WANTED:
         if slot in out.previas:
             continue
         try:
@@ -422,6 +431,44 @@ def run_slots(page, prog, fecha: str, out: Outcome):
     return prog
 
 
+def cancel_day(prog, fecha: str, out: Outcome) -> None:
+    """Cancela las clases programadas de `fecha` (menos los quizzes). Con DRY_RUN solo las lista."""
+    etapa("leer tus clases programadas")
+    set_select(prog, "vTPEAPROBO", FILTER_PROGRAMADAS)
+
+    def del_dia():
+        rows = []
+        for i, cells in grid_rows(prog):
+            f = next((c for c in cells if c.startswith(fecha)), None)
+            if f is None:
+                continue
+            if "QUIZ" in " ".join(cells).upper():
+                out.quiz_previo = True  # los quizzes no se cancelan
+                continue
+            rows.append((i, norm_hour(f[len(fecha):]) or "?", cells[COL_DESC] if len(cells) > COL_DESC else None))
+        return rows
+
+    rows = del_dia()
+    if DRY_RUN:
+        out.canceladas = [(h, d) for _, h, d in rows]
+        return
+    for _ in range(len(rows)):
+        pend = [r for r in del_dia() if (r[1], r[2]) not in out.canceladas]
+        if not pend:
+            break
+        i, h, d = pend[0]
+        etapa(f"cancelar la clase de las {hora(h)}")
+        click_row(prog, i, COL_DESC)
+        prog.click("input[name=BUTTON2]")  # Cancelar (el diálogo de confirmación se acepta solo)
+        settle(prog)
+        if (h, d) in [(x[1], x[2]) for x in del_dia()]:
+            screenshot(prog.page, f"no-cancelo-{h.replace(':', '')}.png")
+            out.cancel_fallos.append((h, "el portal no la canceló" + (f" (avisó: «{dialogs[-1][:120]}»)" if dialogs else "")))
+            break
+        out.canceladas.append((h, d))
+    set_select(prog, "vTPEAPROBO", FILTER_PENDIENTES)
+
+
 DIAS = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"]
 
 
@@ -439,10 +486,9 @@ def build_report(fecha: str, out: Outcome) -> tuple[str, bool]:
     cuando = f"{DIAS[dia.weekday()]} {dia:%d/%m}"
     n = len(out.reservadas)
     lineas = "\n".join(f"• {hora(s)} · {clase(d)}" for s, d in out.reservadas)
-    total = len(out.previas) + n
     quiet = False
 
-    if n and total == len(SLOTS) and not out.errores:
+    if n and set(out.previas) | {s for s, _ in out.reservadas} >= set(WANTED) and not out.errores:
         head = f"🟢 Reservadas tus próximas {n} clases" if n > 1 else "🟢 Reservada tu próxima clase"
         body = lineas
     elif n:
@@ -462,8 +508,9 @@ def build_report(fecha: str, out: Outcome) -> tuple[str, bool]:
                 else "🟡 No pude reservar clases porque ese día ya tienes un Quiz")
         body = f"Quiz pendiente: {out.quiz}" if out.quiz else ""
         quiet = True
-    elif out.previas and len(out.previas) >= len(SLOTS):
-        head = "🔴 No reservé clases porque ya había clases reservadas previamente"
+    elif out.previas and out.previas >= set(WANTED):
+        head = ("🔴 No reservé clases porque ya había clases reservadas previamente" if len(WANTED) > 1
+                else f"🔴 No reservé las {hora(WANTED[0])} porque ya estaba reservada")
         body = ""
         quiet = True
     elif out.sin_pendientes:
@@ -479,9 +526,34 @@ def build_report(fecha: str, out: Outcome) -> tuple[str, bool]:
     return f"{sim}{head}\nClases del {cuando}\n\n{body}".rstrip(), quiet
 
 
+def build_cancel_report(fecha: str, out: Outcome) -> str:
+    dia = datetime.strptime(fecha, "%d/%m/%y")
+    cuando = f"{DIAS[dia.weekday()]} {dia:%d/%m}"
+    n = len(out.canceladas)
+    lineas = "\n".join(f"• {hora(s)} · {clase(d)}" for s, d in out.canceladas)
+    sim = "🧪 SIMULACRO (no se canceló nada)\n" if DRY_RUN else ""
+    verbo = "Se cancelarían" if DRY_RUN else "Canceladas"
+    plural = "s" if n != 1 else ""
+    if out.cancel_fallos:
+        head = f"🔴 No pude cancelar todas las clases" if not n else f"🟡 Cancelación parcial: {n} clase{plural}"
+        body = lineas + "".join(f"\n• Las {hora(h)}: {m}" for h, m in out.cancel_fallos)
+    elif n:
+        head = f"🟢 {verbo} {n} clase{plural}"
+        body = lineas
+    else:
+        head = "🟡 No tenías clases reservadas que cancelar"
+        body = ""
+    if out.quiz_previo:
+        body += "\n\nEl Quiz de ese día no se toca: si quieres cancelarlo, hazlo en el portal."
+    return f"{sim}{head}\nClases del {cuando}\n\n{body}".rstrip()
+
+
 def main() -> int:
     fecha = target_date()
-    log(f"Reservando para {fecha} {'(DRY RUN)' if DRY_RUN else ''}")
+    if os.getenv("ONLY_SLOTS", "").strip() and not {norm_hour(x) for x in os.getenv("ONLY_SLOTS").split(",")} <= set(SLOTS):
+        notify(f"🔴 Slot no válido: «{os.getenv('ONLY_SLOTS')}». Usa solo {', '.join(SLOTS)}.")
+        return 1
+    log(f"{'Cancelando' if CANCEL else 'Reservando'} {WANTED if not CANCEL else ''} para {fecha} {'(DRY RUN)' if DRY_RUN else ''}")
     out = Outcome()
     SHOTS_DIR.mkdir(parents=True, exist_ok=True)
     with sync_playwright() as pw:
@@ -502,10 +574,13 @@ def main() -> int:
             out.quiz_previo = any("QUIZ" in " ".join(r).upper() for r in ya)
             if ya:
                 log(f"Ya programadas ese día: {len(ya)} ({', '.join(sorted(out.previas)) or '-'})")
-            if not out.quiz_previo:
-                prog = run_slots(page, prog, fecha, out)
-
-            text, quiet = build_report(fecha, out)
+            if CANCEL:
+                cancel_day(prog, fecha, out)
+                text, quiet = build_cancel_report(fecha, out), False
+            else:
+                if not out.quiz_previo:
+                    prog = run_slots(page, prog, fecha, out)
+                text, quiet = build_report(fecha, out)
             if dialogs:
                 text += "\n\nAvisos del sitio: " + " · ".join(d[:150] for d in dialogs)
             log(text)
@@ -517,12 +592,12 @@ def main() -> int:
             return 0
         except Exception as e:
             screenshot(page, "error.png")
-            hechas = "".join(f"\n• {hora(s)} · {clase(d)}" for s, d in out.reservadas)
+            hechas = "".join(f"\n• {hora(s)} · {clase(d)}" for s, d in (out.canceladas if CANCEL else out.reservadas))
             log(f"Error técnico en '{stage}': {type(e).__name__}: {e}")
             dia = datetime.strptime(fecha, "%d/%m/%y")
-            text = (f"🔴 No pude reservar las clases del {DIAS[dia.weekday()]} {dia:%d/%m}\n"
+            text = (f"🔴 No pude {'cancelar' if CANCEL else 'reservar'} las clases del {DIAS[dia.weekday()]} {dia:%d/%m}\n"
                     f"{explain(e).capitalize()}."
-                    + (f"\n\nAntes del error sí se reservó:{hechas}" if hechas else "")
+                    + (f"\n\nAntes del error sí se {'canceló' if CANCEL else 'reservó'}:{hechas}" if hechas else "")
                     + "\n\nEl detalle técnico está en el log del run (GitHub Actions).")
             notify(text)
             return 1

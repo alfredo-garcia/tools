@@ -24,6 +24,12 @@ on:
       quiet:
         description: "1 = sin aviso por Telegram si no había nada que hacer"
         default: "0"
+      slots:
+        description: "Solo reservar estos slots, separados por coma (07:30, 09:00, 10:30). Vacío = los tres"
+        default: ""
+      cancelar:
+        description: "1 = en vez de reservar, cancelar las clases (no quizzes) del día objetivo"
+        default: "0"
 
 concurrency:
   group: smart-english-class-booking
@@ -56,6 +62,8 @@ jobs:
           # Los runs programados (o disparados desde fuera con wait_until/quiet) esperan hasta las
           # 06:00 y no avisan si no había nada que hacer (ya reservado / quiz).
           WAIT_UNTIL: ${{ inputs.wait_until || (github.event_name == 'schedule' && '06:00' || '') }}
+          ONLY_SLOTS: ${{ inputs.slots }}
+          CANCEL: ${{ inputs.cancelar || '0' }}
           QUIET_IF_NOOP: ${{ (github.event_name == 'schedule' || inputs.quiet == '1') && '1' || '0' }}
           SHOTS_DIR: shots
         run: python booker.py

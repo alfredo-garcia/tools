@@ -106,3 +106,22 @@ a frases como "el portal no respondió a tiempo mientras intentaba abrir Program
 una reserva se cita solo su mensaje real (sin la lista de sedes) o "sin ningún mensaje"; el volcado completo y
 una captura (`no-confirmo-HHMM.png`) quedan en el log y el artifact. El login se reintenta hasta 3 veces ante timeouts.
 Los ids de sede se nombran en `SEDES`.
+
+## Acciones a demanda (HTTP Shortcuts u otra app)
+
+Mismo endpoint y cabeceras que el disparo externo; solo cambia el cuerpo. Todas actúan sobre el **día siguiente**
+(o `target_date`), y `dry_run` debe ir a `"0"` para que sea real (con `"1"` solo simula y lo cuenta por Telegram).
+
+| Acción | Cuerpo |
+|---|---|
+| Reservar 7:30 | `{"ref":"main","inputs":{"dry_run":"0","slots":"07:30"}}` |
+| Reservar 9:00 | `{"ref":"main","inputs":{"dry_run":"0","slots":"09:00"}}` |
+| Reservar 10:30 | `{"ref":"main","inputs":{"dry_run":"0","slots":"10:30"}}` |
+| Cancelar las clases del día siguiente | `{"ref":"main","inputs":{"dry_run":"0","cancelar":"1"}}` |
+
+- `slots` admite varios (`"07:30,09:00"`); un valor no válido no reserva nada y avisa por Telegram.
+- Cancelar **no toca los quizzes** (se avisa en el mensaje). Pruébalo antes con `"dry_run":"1"`: solo lista lo que cancelaría.
+- Cancelar aún no se ha probado contra el portal real (BUTTON2 *Cancelar* de la grilla *Programadas*).
+- Si un slot suelto rompe la regla de clases consecutivas, el portal lo rechaza y el mensaje lo cuenta.
+- En HTTP Shortcuts: método POST, cabeceras `Authorization: Bearer <token>`, `Accept: application/vnd.github+json`,
+  cuerpo JSON como arriba; la respuesta correcta es `204`. Un shortcut por acción.

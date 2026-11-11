@@ -98,3 +98,11 @@ Content-Type: application/json
 - `dry_run` **debe ir a `"0"`**: por defecto un disparo manual es un simulacro.
 - `wait_until: "06:00"` solo espera en el run de las 05:40; en los demás ya es más tarde y no espera.
 - Respuesta correcta: `204 No Content`. Los cron de GitHub se mantienen como respaldo (el script es idempotente).
+
+## Errores legibles
+
+Los errores técnicos (timeouts de Playwright, volcados del popup) no van a Telegram: se traducen con `explain()`
+a frases como "el portal no respondió a tiempo mientras intentaba abrir Programación". Si el portal no confirma
+una reserva se cita solo su mensaje real (sin la lista de sedes) o "sin ningún mensaje"; el volcado completo y
+una captura (`no-confirmo-HHMM.png`) quedan en el log y el artifact. El login se reintenta hasta 3 veces ante timeouts.
+Los ids de sede se nombran en `SEDES`.

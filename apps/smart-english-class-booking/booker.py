@@ -34,7 +34,8 @@ from playwright.sync_api import sync_playwright
 BASE = "https://schoolpack.smart.edu.co/idiomas/alumnos.aspx"
 TZ = ZoneInfo("America/Bogota")
 SLOTS = ["07:30", "09:00", "10:30"]
-SEDE_CLASES = "59"    # MANIZALES
+SEDE_CLASES = "59"
+SEDES = {"59": "Manizales", "70": "Quizzes/Exámenes"}  # ids del selector #vREGCONREG
 FILTER_PENDIENTES = "2"
 FILTER_PROGRAMADAS = "3"
 
@@ -54,6 +55,48 @@ QUIET_IF_NOOP = os.getenv("QUIET_IF_NOOP", "0") == "1"
 SHOTS_DIR = Path(os.getenv("SHOTS_DIR", "."))
 log_lines: list[str] = []
 dialogs: list[str] = []
+stage = "arrancar"  # qué estaba haciendo el script; se usa para explicar los errores
+
+
+def etapa(txt: str) -> None:
+    """Anota qué intenta hacer el script, para explicar un error en lenguaje claro."""
+    global stage
+    stage = txt
+
+
+def explain(e: Exception) -> str:
+    """Error técnico -> frase legible. El detalle completo queda en el log del run."""
+    first = re.split(r"\n=+ logs =+|\nCall log:", str(e))[0].strip().splitlines()
+    detail = first[0][:150] if first else ""
+    if type(e).__name__ == "TimeoutError":
+        return f"el portal no respondió a tiempo mientras intentaba {stage}"
+    if isinstance(e, RuntimeError) and detail:
+        return detail
+    return f"error inesperado al {stage} ({type(e).__name__}: {detail})"
+
+
+def portal_message(frame) -> str:
+    """Texto útil de un popup: sin selectores (listas de sedes), grillas ni etiquetas fijas."""
+    try:
+        text = frame.evaluate(
+            """() => {
+                const skip = new Set(['SELECT', 'OPTION', 'SCRIPT', 'STYLE']);
+                const out = [];
+                const walk = (n) => {
+                    if (n.nodeType === 3) { const t = n.textContent.trim(); if (t) out.push(t); return; }
+                    if (n.nodeType !== 1 || skip.has(n.tagName) || n.id === 'Grid1ContainerTbl') return;
+                    const st = getComputedStyle(n);
+                    if (st.display === 'none' || st.visibility === 'hidden') return;
+                    n.childNodes.forEach(walk);
+                };
+                walk(document.body);
+                return out.join(' ');
+            }"""
+        )
+    except Exception:
+        return ""
+    text = re.sub(r"Selección de Clases|Sede:|Día:|Confirmar|Regresar", " ", text)
+    return re.sub(r"\s+", " ", text).strip()[:120]
 
 
 def log(msg: str) -> None:
@@ -189,7 +232,8 @@ def get_prog(page):
 
 # --- Portal ----------------------------------------------------------------------------
 
-def login_and_open_programar(page):
+def _login_and_open_programar(page):
+    etapa("abrir el portal")
     page.goto(BASE, wait_until="domcontentloaded", timeout=45000)
     try:
         page.wait_for_selector("#vUSUCOD", timeout=30000)
@@ -198,6 +242,7 @@ def login_and_open_programar(page):
         if re.search(r"cloudflare|just a moment|verify you are human|attention required", body, re.I):
             raise RuntimeError(f"Cloudflare bloquea la IP del runner: {body!r}")
         raise
+    etapa("iniciar sesión")
     page.fill("#vUSUCOD", os.environ["SMART_USER"])
     page.fill("#vPASS", os.environ["SMART_PASS"])
     page.click("#BUTTON1")
@@ -215,13 +260,28 @@ def login_and_open_programar(page):
     page.wait_for_url(re.compile(r"wv0480\.aspx"), wait_until="commit", timeout=30000)
     log("Login OK")
     # El menú son imágenes sin texto: "Programación" es Resources/PROGRAMACION.png
+    etapa("abrir Programación")
     page.click("img[src*='PROGRAMACION']", timeout=30000)
     page.wait_for_url(re.compile(r"wv0527\.aspx"), wait_until="commit", timeout=30000)
     # Seleccionar el (único) plan de estudios y pulsar Iniciar
+    etapa("elegir tu plan de estudios")
     page.wait_for_selector("#W0030Grid1ContainerTbl tr", timeout=20000)
     page.locator("#W0030Grid1ContainerTbl tr").nth(1).locator("td").locator("visible=true").last.click()
     page.click("#W0030BUTTON1")
+    etapa("cargar tus clases")
     return get_prog(page)
+
+
+def login_and_open_programar(page, tries: int = 3):
+    """El portal a veces tarda más de 30 s en responder: se reintenta el flujo de login completo."""
+    for n in range(1, tries + 1):
+        try:
+            return _login_and_open_programar(page)
+        except Exception as e:
+            if n == tries or type(e).__name__ != "TimeoutError":
+                raise
+            log(f"Intento {n}/{tries} fallido al {stage} ({type(e).__name__}); reintentando")
+            screenshot(page, f"login-intento{n}.png")
 
 
 def read_programadas(prog, fecha: str) -> list[list[str]]:
@@ -265,9 +325,11 @@ def book_one(page, prog, fecha: str, slot: str, skip: int):
         return False, None, "no hay clases pendientes"
     if "QUIZ" in desc.upper():
         return False, desc, QUIZ_SKIP
+    etapa("elegir la clase pendiente")
     click_row(prog, idx, COL_DESC)
     prog.click("input[name=BUTTON1]")  # Asignar
     sel = popup(page, 1, "#vREGCONREG")
+    etapa(f"elegir la sede {SEDES[SEDE_CLASES]} y el día")
     set_select(sel, "vREGCONREG", SEDE_CLASES)
 
     sel.wait_for_selector("#vDIA", timeout=15000)
@@ -278,6 +340,7 @@ def book_one(page, prog, fecha: str, slot: str, skip: int):
         return False, desc, f"el día {fecha} aún no está habilitado (opciones: {[t for _, t in opts]})"
     set_select(sel, "vDIA", day)
 
+    etapa(f"elegir el horario de las {hora(slot)}")
     rows = grid_rows(sel)
     for _, cells in rows:
         log(f"  slot-grid: {cells}")
@@ -295,14 +358,17 @@ def book_one(page, prog, fecha: str, slot: str, skip: int):
         close_popup(page, sel, 1)
         return True, desc, "DRY_RUN (no confirmado)"
 
+    etapa(f"confirmar la reserva de las {hora(slot)}")
     n_dialogs = len(dialogs)
     sel.click("input[name=BUTTON1]")  # Confirmar
     try:
         page.wait_for_selector("#gxp1_ifrm", state="detached", timeout=15000)
     except Exception:
-        msg = sel.evaluate("() => document.body.innerText.slice(0, 300)")
+        msg = " ".join(dialogs[n_dialogs:]) or portal_message(sel)
+        log(f"  popup tras Confirmar: {sel.evaluate('() => document.body.innerText')[:500]!r}")
+        screenshot(page, f"no-confirmo-{slot.replace(':', '')}.png")
         close_popup(page, sel, 1)
-        return False, desc, f"no confirmó: {msg!r} {dialogs[n_dialogs:]}"
+        return False, desc, "el portal no confirmó la reserva" + (f" (dijo: «{msg[:120]}»)" if msg else " (sin ningún mensaje)")
     page.wait_for_timeout(1500)
     return True, desc, "confirmada"
 
@@ -316,7 +382,7 @@ class Outcome:
     quiz: str | None = None                                  # descripción del quiz que cortó la reserva
     quiz_previo: bool = False                                # ya había un quiz programado ese día
     sin_pendientes: bool = False
-    errores: list[str] = field(default_factory=list)
+    errores: list[tuple[str, str]] = field(default_factory=list)
 
 
 def run_slots(page, prog, fecha: str, out: Outcome):
@@ -334,7 +400,7 @@ def run_slots(page, prog, fecha: str, out: Outcome):
             if slot in slots_of(read_programadas(prog, fecha), fecha):
                 ok, desc, why = True, None, "confirmada (verificada tras error)"
             else:
-                out.errores.append(f"{slot}: {type(e).__name__}: {e}"[:200])
+                out.errores.append((slot, explain(e)))
                 continue
         log(f"{slot}: {'OK' if ok else 'NO'} {desc or ''} — {why}")
         if ok:
@@ -351,7 +417,7 @@ def run_slots(page, prog, fecha: str, out: Outcome):
         elif why.startswith("slot "):
             out.sin_horario.append(slot)
         else:
-            out.errores.append(f"{slot}: {why}"[:200])
+            out.errores.append((slot, why))
         prog = get_prog(page)
     return prog
 
@@ -385,12 +451,12 @@ def build_report(fecha: str, out: Outcome) -> tuple[str, bool]:
         if out.quiz:
             body += f"\n• Te toca presentar Quiz ({out.quiz}) antes de seguir con más clases"
         elif out.errores:
-            body += "\n• Hubo problemas con otros horarios:\n  " + "\n  ".join(out.errores)
+            body += "".join(f"\n• No pude reservar las {hora(sl)}: {m}" for sl, m in out.errores)
         elif out.sin_horario:
             body += "\n• No había más horarios disponibles"
     elif out.errores:
-        head = "🔴 No se pudieron reservar clases (hubo un error)"
-        body = "\n".join(f"• {e}" for e in out.errores)
+        head = "🔴 No se pudieron reservar clases"
+        body = "\n".join(f"• Las {hora(sl)}: {m}" for sl, m in out.errores)
     elif out.quiz or out.quiz_previo:
         head = ("🟡 No pude reservar clases porque tu próxima clase es un Quiz" if out.quiz
                 else "🟡 No pude reservar clases porque ese día ya tienes un Quiz")
@@ -441,7 +507,7 @@ def main() -> int:
 
             text, quiet = build_report(fecha, out)
             if dialogs:
-                text += f"\n\nAvisos del sitio: {dialogs}"
+                text += "\n\nAvisos del sitio: " + " · ".join(d[:150] for d in dialogs)
             log(text)
             if QUIET_IF_NOOP and quiet and not DRY_RUN:
                 log("Nada que hacer: sin aviso por Telegram")
@@ -452,9 +518,12 @@ def main() -> int:
         except Exception as e:
             screenshot(page, "error.png")
             hechas = "".join(f"\n• {hora(s)} · {clase(d)}" for s, d in out.reservadas)
-            text = (f"🔴 Error al reservar las clases del {fecha}\n{type(e).__name__}: {str(e)[:300]}"
-                    + (f"\n\nAntes del error se reservó:{hechas}" if hechas else ""))
-            log(text)
+            log(f"Error técnico en '{stage}': {type(e).__name__}: {e}")
+            dia = datetime.strptime(fecha, "%d/%m/%y")
+            text = (f"🔴 No pude reservar las clases del {DIAS[dia.weekday()]} {dia:%d/%m}\n"
+                    f"{explain(e).capitalize()}."
+                    + (f"\n\nAntes del error sí se reservó:{hechas}" if hechas else "")
+                    + "\n\nEl detalle técnico está en el log del run (GitHub Actions).")
             notify(text)
             return 1
         finally:

@@ -460,10 +460,19 @@ def cancel_day(prog, fecha: str, out: Outcome) -> None:
         etapa(f"cancelar la clase de las {hora(h)}")
         click_row(prog, i, COL_DESC)
         prog.click("input[name=BUTTON2]")  # Cancelar (el diálogo de confirmación se acepta solo)
-        settle(prog)
-        if (h, d) in [(x[1], x[2]) for x in del_dia()]:
+        # El portal tarda en cancelar y la grilla no cambia hasta que responde: se espera a que la fila desaparezca
+        sigue = True
+        for _ in range(25):
+            prog.page.wait_for_timeout(1000)
+            try:
+                sigue = (h, d) in [(x[1], x[2]) for x in del_dia()]
+            except Exception:  # el frame se está recargando
+                continue
+            if not sigue:
+                break
+        if sigue:
             screenshot(prog.page, f"no-cancelo-{h.replace(':', '')}.png")
-            out.cancel_fallos.append((h, "el portal no la canceló" + (f" (avisó: «{dialogs[-1][:120]}»)" if dialogs else "")))
+            out.cancel_fallos.append((h, "el portal no la canceló tras esperar 25 s"))
             break
         out.canceladas.append((h, d))
     set_select(prog, "vTPEAPROBO", FILTER_PENDIENTES)

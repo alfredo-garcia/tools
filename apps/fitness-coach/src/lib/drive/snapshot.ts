@@ -86,7 +86,10 @@ function readItem<S extends z.ZodType>(
   return { ok: true, value: { fm: fm.value, sections: split.sections } };
 }
 
-/** Local calendar date (YYYY-MM-DD) of `d` shifted by `days`. */
+/**
+ * Local calendar date (YYYY-MM-DD) of `d` shifted by `days`. On Vercel the local zone is UTC, so
+ * the 14-day cutoff can be one day off from Bogotá in the evening; harmless for this window.
+ */
 function localDate(d: Date, days = 0): string {
   const x = new Date(d.getFullYear(), d.getMonth(), d.getDate() + days);
   const pad = (n: number) => String(n).padStart(2, "0");
@@ -120,6 +123,10 @@ export function buildSnapshot(files: KbFile[], now: Date): Snapshot {
   const routines: Routine[] = [];
   for (const f of files) {
     if (!/^routines\/items\/[^/]+\/[^/]+\.md$/.test(f.path)) continue;
+    // draft and archived routines are never shown, so they never count as skipped either
+    if (/^status:[ \t]*["']?(draft|archived)\b/m.test(splitItem(f.content)?.frontmatter ?? "")) {
+      continue;
+    }
     const r = readItem(f.content, routineFrontmatterSchema);
     if (!r.ok) {
       skip(f.path, r.reason);

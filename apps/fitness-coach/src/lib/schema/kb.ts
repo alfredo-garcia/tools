@@ -1,7 +1,8 @@
 /**
  * zod mirror of fitness/_system/schema.md (exercises 1, routines 3, program 1, sessions 1).
  * Objects are loose: unknown fields are kept as they are (tech_standards §9).
- * Only the fields the contract marks as required are required here.
+ * Only the fields the contract marks as required are required here; optional fields accept
+ * `null`, because an empty YAML key (`stresses:`) parses to null and schema.md allows "empty".
  */
 import { z } from "zod";
 
@@ -30,10 +31,10 @@ export const exerciseFrontmatterSchema = z.looseObject({
   region: id,
   goals: ids,
   measure: z.enum(["reps", "time", "duration"]),
-  zones: ids.optional(),
-  muscles: z.looseObject({ primary: ids.optional(), secondary: ids.optional() }).optional(),
-  equipment: ids.optional(),
-  stresses: ids.optional(),
+  zones: ids.nullish(),
+  muscles: z.looseObject({ primary: ids.nullish(), secondary: ids.nullish() }).nullish(),
+  equipment: ids.nullish(),
+  stresses: ids.nullish(),
 });
 
 export const routineItemSchema = z.looseObject({ ex: id });
@@ -53,18 +54,20 @@ export const routineFrontmatterSchema = z.looseObject({
   user: z.string(),
   status: routineStatus,
   blocks: z.array(routineBlockSchema),
-  days: z.array(weekday).optional(),
+  days: z.array(weekday).nullish(),
 });
 
 export const programSchema = z.looseObject({
-  phase: z.looseObject({ label: z.string() }),
+  // program 1 lists no required field; the three blocks the app reads must be objects, and
+  // anything inside them may be empty (`sun:` parses to null).
+  phase: z.looseObject({ label: z.string().nullish() }),
   constraints: z.looseObject({
-    avoid_stresses: ids.optional(),
-    avoid_text: z.array(z.string()).optional(),
-    rules: z.array(z.string()).optional(),
+    avoid_stresses: ids.nullish(),
+    avoid_text: z.array(z.string()).nullish(),
+    rules: z.array(z.string()).nullish(),
   }),
   schedule: z.looseObject({
-    week: z.partialRecord(weekday, ids),
+    week: z.partialRecord(weekday, ids.nullish()).nullish(),
   }),
 });
 

@@ -40,3 +40,34 @@ describe("driveErrorKind", () => {
     expect(driveErrorKind("private_key leaked")).toEqual(["string"]);
   });
 });
+
+describe("driveErrorKind filters every field", () => {
+  it("replaces a free-text error name", () => {
+    const e = new Error("x");
+    e.name = "lumbar pain notes";
+    expect(driveErrorKind(e)).toEqual(["Error"]);
+  });
+
+  it("drops statuses outside 100..599 or not integers", () => {
+    for (const status of [NaN, 42, 1e9, 404.5]) {
+      const e = Object.assign(new Error("x"), { status });
+      expect(driveErrorKind(e)).toEqual(["Error"]);
+    }
+  });
+
+  it("keeps codes with digits and Google's string error such as invalid_grant", () => {
+    const e = Object.assign(new Error("x"), {
+      code: "EAI_AGAIN2",
+      response: { status: 400, data: { error: "invalid_grant" } },
+    });
+    expect(driveErrorKind(e)).toEqual(["Error", "400", "EAI_AGAIN2", "invalid_grant"]);
+  });
+
+  it("drops over-long codes and reasons", () => {
+    const e = Object.assign(new Error("x"), {
+      code: "A".repeat(60),
+      response: { data: { error: "a".repeat(60) } },
+    });
+    expect(driveErrorKind(e)).toEqual(["Error"]);
+  });
+});

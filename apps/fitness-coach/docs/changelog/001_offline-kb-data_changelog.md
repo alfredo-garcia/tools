@@ -39,6 +39,10 @@ None.
 | Sin botón "Sincronizar" | Botón "Actualizar" en pantalla ancha (≥ 640 px); en móvil, solo el gesto. Ya incorporado al PRD (FR-6e, AC-20) | Al, 2026-11-12 (prototipo) |
 | Rutinas y Ejercicios dentro del marco (FR-16) | Cabecera con el título de la pantalla ("Rutinas", "Ejercicios") en lugar de "My Coach" | Al, 2026-11-12 |
 
+## Post-merge Fixes
+
+- 2026-11-13, rama `fitness-coach/001-config-diagnostics`: el log de `GET /api/snapshot` dice qué falló sin exponer datos. Con `500 server_misconfigured` lista los nombres de las variables que faltan o no son válidas; con `502 drive_unavailable`, la clase del error, el status HTTP y el código de motivo de Google. Sin cambios de comportamiento para el usuario. Integración con el Drive comprobada a mano en local (51 ficheros, 0 saltados).
+
 ## Open Questions / Follow-Ups
 
 - Confirmar en el UX Flow (2.1, 2.6) los textos de error del servidor caído y de sin red en el sheet, y añadir sus e2e.
@@ -46,4 +50,4 @@ None.
 - Fallo de descarga de un fichero del Drive: hoy falla toda la actualización (502); el PRD no lo fija.
 - Formalizar `TmpKeyField` en el registro; decidir sobre `TmpSummaryCard` con la #2. Re-sincronizar el design system "My Coach" de Claude Design.
 - UX Flow escribe `lastSyncedAt` como prop de `SyncBadge`; el registro, `syncedAt`.
-- Comprobaciones manuales antes del primer despliegue: instalación en el móvil (AC-17), rendimiento (PRD §11) e integración con el Drive.
+- Comprobaciones manuales antes del primer despliegue: instalación en el móvil (AC-17) y rendimiento (PRD §11). La integración con el Drive ya se comprobó en local (2026-11-13).

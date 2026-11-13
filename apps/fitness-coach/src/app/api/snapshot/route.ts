@@ -1,11 +1,12 @@
 /**
  * GET /api/snapshot (PRD §8, tech_standards §3–§5, §10): the whole knowledge-base snapshot,
- * read-only, behind the shared access key. Logs carry only method, route, status, duration and
- * counts; never file contents, error messages from the Drive, or the key.
+ * read-only, behind the shared access key. Logs carry only method, route, status, duration,
+ * counts, the names of missing or invalid environment variables and a filtered error kind (class,
+ * status, codes); never values, file contents, error messages from the Drive, or the key.
  */
 import { createHash, timingSafeEqual } from "node:crypto";
 import { readServerConfig, serverConfigProblems } from "@/lib/drive/config";
-import { driveErrorKind } from "@/lib/drive/errors";
+import { DRIVE_TIMEOUT, driveErrorKind } from "@/lib/drive/errors";
 import { readKbFiles } from "@/lib/drive/files";
 import { buildSnapshot } from "@/lib/drive/snapshot";
 import { SNAPSHOT_FORMAT, type Snapshot } from "@/lib/schema/snapshot";
@@ -89,7 +90,7 @@ function etagMatches(ifNoneMatch: string | null, etag: string): boolean {
 function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
   let timer: ReturnType<typeof setTimeout> | undefined;
   const timeout = new Promise<never>((_, reject) => {
-    timer = setTimeout(() => reject(new Error("timeout")), ms);
+    timer = setTimeout(() => reject(new Error(DRIVE_TIMEOUT)), ms);
   });
   return Promise.race([p, timeout]).finally(() => clearTimeout(timer));
 }

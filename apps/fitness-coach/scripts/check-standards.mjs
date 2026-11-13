@@ -29,6 +29,8 @@ const APPROVED = new Set([
   "idb-keyval",
   "serwist",
   "@serwist/next",
+  "@serwist/cli", // ADR 004
+  "esbuild", // ADR 004 (amendment): bundles the service worker at build time
   "vitest",
   "@playwright/test",
   "eslint",

@@ -1,7 +1,7 @@
 # ADR 004: Cómo se construye el service worker con Next.js 16
 
 > Project: `fitness-coach`
-> Status: Proposed (2026-11-13), pendiente de Al
+> Status: Accepted (2026-11-13) por Al
 > Triggered by: `fitness-coach/001` T6 (FR-15, AC-2)
 
 ## Context
@@ -30,6 +30,9 @@ Propuesta: **A**. Añadir `@serwist/cli` a la lista aprobada de tech_standards �
 - Se completa T6 de `fitness-coach/001`: `src/sw.ts` precachea el shell (assets de `_next/static`, iconos y las rutas `/`, `/routines`, `/exercises`), `/api/**` es `NetworkOnly` y nunca entra en la caché, páginas y payloads RSC con `NetworkFirst` (3 s).
 - Hay que vigilar `npm audit`: `@serwist/next` 9.5.13 fija `zod` 4.6.5 (aviso alto); se resuelve con `overrides: { "zod": "4.6.7" }`, la misma que usa la app.
 - Hasta que se decida, la app es instalable (manifest e iconos, AC-17) pero no arranca en frío sin red (AC-2 en rojo).
+
+## Amendment accepted (2026-11-13) by Al
+`serwist build` bundles `src/sw.ts` with **`esbuild`**, an optional peer dependency of `@serwist/cli` (`>=0.25 <1`). Without it the CLI stops ("This command needs esbuild"). Proposal: add `esbuild` as a dev dependency (build time only; it never reaches the client or the server) to tech_standards §1 next to `@serwist/cli`, and to the E1 allowlist.
 
 ## Enforcement
 E1 (allowlist) cambia en el mismo PR. Revisión de alto riesgo: el service worker nunca cachea `/api/**` (tech_standards §17, §5/§10); e2e AC-2.

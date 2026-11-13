@@ -102,6 +102,8 @@ Vercel Hobby, proyecto con raíz `apps/fitness-coach`, producción al hacer merg
 | Modelo sin conexión y escrituras | Snapshot en IndexedDB + outbox de operaciones de intención, merge en el servidor | [001](adr/001_offline-first-with-operation-outbox.md) |
 | Acceso a Drive | Service account con la carpeta `fitness` compartida, credencial en variables de entorno | [002](adr/002_drive-access-via-service-account.md) |
 | Clave de acceso para leer y escribir | Una clave compartida, pedida al instalar | [003](adr/003_access-key-for-reads-and-writes.md) |
+| Build del service worker | `@serwist/next` en modo configurator + `@serwist/cli` tras `next build` (Turbopack) | [004](adr/004_service-worker-build.md) |
+| Runtime | Node 22 LTS | [005](adr/005_node-runtime-22.md) |
 
 ## 12. Deliberately Deferred
 

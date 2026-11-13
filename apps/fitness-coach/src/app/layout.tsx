@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
+import { SerwistProvider } from "@serwist/next/react";
 import { SyncProvider } from "@/lib/sync/provider";
 import { AppGate } from "./_screens/AppGate";
 import { COLOR_BG_DARK, COLOR_BG_LIGHT } from "./brand";
@@ -28,9 +29,16 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="es" className={inter.variable}>
       <body className="min-h-dvh font-sans antialiased">
-        <SyncProvider>
-          <AppGate>{children}</AppGate>
-        </SyncProvider>
+        {/* FR-15: the app decides when to refresh (FR-6), so never reload when the network returns */}
+        <SerwistProvider
+          swUrl="/sw.js"
+          disable={process.env.NODE_ENV === "development"}
+          reloadOnOnline={false}
+        >
+          <SyncProvider>
+            <AppGate>{children}</AppGate>
+          </SyncProvider>
+        </SerwistProvider>
       </body>
     </html>
   );

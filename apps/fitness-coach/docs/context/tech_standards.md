@@ -9,7 +9,7 @@
 
 | Capa | Elección | Política de versiones | Por qué (driver de la visión) |
 |---|---|---|---|
-| Lenguaje | TypeScript, `strict: true` | Node 20 LTS | Un solo lenguaje de punta a punta; conocido por el autor |
+| Lenguaje | TypeScript, `strict: true` | Node 22 LTS (ADR 005) | Un solo lenguaje de punta a punta; conocido por el autor |
 | Web | Next.js (App Router) + React | Major actual al empezar; subir majors a propósito | PWA y rutas de servidor en un solo deployable (hl_architecture §3) |
 | Backend / API | Route Handlers de Next.js (runtime Node) como pasarela fina a Drive | igual | Credencial solo en el servidor; sin backend aparte |
 | Base de datos | Ninguna. La carpeta `fitness` de Drive es la fuente de verdad; IndexedDB es la caché sin conexión | | Visión §8.1, §10 |
@@ -27,7 +27,7 @@
 | YAML | `yaml` (API de documento para conservar comentarios) |
 | Validación | `zod` |
 | Almacenamiento sin conexión | `idb-keyval` (IndexedDB) |
-| Service worker / PWA | `serwist` (integración con Next.js) |
+| Service worker / PWA | `serwist` con `@serwist/next` en modo configurator y su CLI `@serwist/cli`, que empaqueta el worker con `esbuild` (solo en build) (`next build && serwist build`, compatible con Turbopack; ADR 004) |
 | Tests unitarios | `vitest` |
 | Tests end-to-end | `@playwright/test` |
 | Lint / formato | ESLint (`eslint-config-next`) y Prettier, con `eslint-config-prettier` para que no se pisen |

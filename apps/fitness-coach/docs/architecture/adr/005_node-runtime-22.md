@@ -1,7 +1,7 @@
 # ADR 005: Runtime Node 22 LTS
 
 > Project: `fitness-coach`
-> Status: Proposed (2026-11-13), pendiente de Al
+> Status: Accepted (2026-11-13) por Al: Node 22 LTS
 > Triggered by: `fitness-coach/001` T2 (install of `@googleapis/drive`)
 
 ## Context

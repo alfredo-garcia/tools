@@ -1,10 +1,12 @@
 /**
  * GET /api/snapshot (PRD §8, tech_standards §3–§5, §10): the whole knowledge-base snapshot,
- * read-only, behind the shared access key. Logs carry only method, route, status, duration and
- * counts; never file contents, error messages from the Drive, or the key.
+ * read-only, behind the shared access key. Logs carry only method, route, status, duration,
+ * counts, the names of missing or invalid environment variables and a filtered error kind (class,
+ * status, codes); never values, file contents, error messages from the Drive, or the key.
  */
 import { createHash, timingSafeEqual } from "node:crypto";
-import { readServerConfig } from "@/lib/drive/config";
+import { readServerConfig, serverConfigProblems } from "@/lib/drive/config";
+import { DRIVE_TIMEOUT, driveErrorKind } from "@/lib/drive/errors";
 import { readKbFiles } from "@/lib/drive/files";
 import { buildSnapshot } from "@/lib/drive/snapshot";
 import { SNAPSHOT_FORMAT, type Snapshot } from "@/lib/schema/snapshot";
@@ -31,7 +33,11 @@ const STATUS: Record<ErrorCode, number> = {
   server_misconfigured: 500,
 };
 
-function log(status: number, startedAt: number, extra: Record<string, string | number> = {}) {
+function log(
+  status: number,
+  startedAt: number,
+  extra: Record<string, string | number | string[]> = {},
+) {
   console.log(
     JSON.stringify({
       method: "GET",
@@ -43,9 +49,13 @@ function log(status: number, startedAt: number, extra: Record<string, string | n
   );
 }
 
-function errorResponse(code: ErrorCode, startedAt: number): Response {
+function errorResponse(
+  code: ErrorCode,
+  startedAt: number,
+  extra: Record<string, string[]> = {},
+): Response {
   const status = STATUS[code];
-  log(status, startedAt, { code });
+  log(status, startedAt, { code, ...extra });
   return Response.json(
     { error: { code, message: MESSAGES[code] } },
     { status, headers: { "cache-control": NO_STORE } },
@@ -80,7 +90,7 @@ function etagMatches(ifNoneMatch: string | null, etag: string): boolean {
 function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
   let timer: ReturnType<typeof setTimeout> | undefined;
   const timeout = new Promise<never>((_, reject) => {
-    timer = setTimeout(() => reject(new Error("timeout")), ms);
+    timer = setTimeout(() => reject(new Error(DRIVE_TIMEOUT)), ms);
   });
   return Promise.race([p, timeout]).finally(() => clearTimeout(timer));
 }
@@ -88,7 +98,8 @@ function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
 export async function GET(request: Request): Promise<Response> {
   const startedAt = Date.now();
   const config = readServerConfig();
-  if (!config) return errorResponse("server_misconfigured", startedAt);
+  // Variable names only (never values), so the Vercel log says what to fix.
+  if (!config) return errorResponse("server_misconfigured", startedAt, serverConfigProblems());
 
   if (!keyMatches(request.headers.get("x-app-key"), config.accessKey)) {
     return errorResponse("invalid_key", startedAt);
@@ -100,9 +111,9 @@ export async function GET(request: Request): Promise<Response> {
   let files: Awaited<ReturnType<typeof readKbFiles>>;
   try {
     files = await withTimeout(readKbFiles(), DRIVE_TIMEOUT_MS);
-  } catch {
-    // The error may quote file contents or credentials: it is never logged nor returned.
-    return errorResponse("drive_unavailable", startedAt);
+  } catch (error) {
+    // The message may quote file contents or credentials: only its kind is logged, never returned.
+    return errorResponse("drive_unavailable", startedAt, { cause: driveErrorKind(error) });
   }
 
   let snapshot: Snapshot;

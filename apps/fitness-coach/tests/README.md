@@ -56,3 +56,4 @@ The acceptance tests were written before the code. The implementation must provi
 |---|---|---|---|
 | 2026-11-12 | `unit/merge-snapshot.test.ts` | `_dropped` destructuring → copy + `delete` | ESLint unused-variable warning; same behavior |
 | 2026-11-13 | `unit/snapshot-build.test.ts` | Non-null assertions (`!`) on `find(...)`, `s.program` and `s.vocabularies.<name>` | Type-only: with the real `Snapshot` type, strict TypeScript flags possibly-undefined access. At runtime an undefined value still makes the test fail; no assertion changed |
+| 2026-11-13 | `unit/merge-snapshot.test.ts` (AC-16, first case) | `pausedRoutines: 0` in both `makeSnapshot` calls | Test-data error: `makeSnapshot` adds 1 paused routine by default, so "3 active" gave 4 routines while the test expects 3. The assertion (`toHaveLength(3)`) is unchanged |

@@ -14,9 +14,9 @@ import { makeSnapshot } from "../fixtures/snapshot";
 
 describe("[fitness-coach/001] mergeSnapshot", () => {
   it("[fitness-coach/001] AC-16: an unreadable program keeps the previous program; exercises and routines update", () => {
-    const previous = makeSnapshot({ exercises: 3, activeRoutines: 2 });
+    const previous = makeSnapshot({ exercises: 3, activeRoutines: 2, pausedRoutines: 0 });
     const incoming = {
-      ...makeSnapshot({ exercises: 4, activeRoutines: 3 }),
+      ...makeSnapshot({ exercises: 4, activeRoutines: 3, pausedRoutines: 0 }),
       program: null,
       skipped: [{ path: "program/al.yaml", reason: "parse_error" as const }],
     };

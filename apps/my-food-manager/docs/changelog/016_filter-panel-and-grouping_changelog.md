@@ -1,7 +1,7 @@
 # Changelog: Filter Panel and Family Grouping
 
 > Project: `my-food-manager`
-> Merged: documented on the feature branch `my-food-manager/016-filter-panel-and-grouping` before the merge, as `CLAUDE.md` and `tech_standards.md` §11 require
+> Merged: documented on the feature branch `my-food-manager/016-filter-panel-and-grouping` before the merge, as `CLAUDE.md` and `tech_standards.md` §11 require; merge commit `050e2d19`, merged and pushed at the user's request on 2026-11-13
 > Source PRD: `016_filter-panel-and-grouping_prd.md`
 > Source UX Flow: `016_filter-panel-and-grouping_ux_flow.md`
 > Master doc file(s) touched: `docs/functional-spec.md` (Product Overview, Domain Map, Glossary, Recent Changes; domains library, recipes, profile, pantry); also `docs/context/ui_kit_registry.md` and `docs/product/product_vision.md` (§7 #11 note)

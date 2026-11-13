@@ -63,6 +63,16 @@ test.describe("[fitness-coach/001] US-1 sin conexión", () => {
       });
       await page.reload(); // the service worker now controls the page and has the shell cached
       await expect(summary(page)).toBeVisible();
+      // PRD §11: nothing from /api/** (health data, the key) is ever in the service worker caches
+      const cached = await page.evaluate(async () => {
+        const urls: string[] = [];
+        for (const name of await caches.keys()) {
+          for (const req of await (await caches.open(name)).keys()) urls.push(req.url);
+        }
+        return urls;
+      });
+      expect(cached.length).toBeGreaterThan(0);
+      expect(cached.filter((u) => new URL(u).pathname.startsWith("/api/"))).toEqual([]);
       await page.close();
 
       await context.setOffline(true);
@@ -220,9 +230,12 @@ test.describe("[fitness-coach/001] US-2 se actualiza sola", () => {
   }) => {
     await firstSync(page, api);
     await setTime(page, T0 + 2 * MIN);
+    const before = api.count;
     api.hold();
     await toForeground(page);
     await expect(badge(page)).toContainText("Sincronizando…");
+    // the badge can show "Sincronizando…" before the held request reaches the mock
+    await expect.poll(() => api.count).toBe(before + 1);
     const during = api.count;
     await page.evaluate(() => window.dispatchEvent(new Event("online")));
     await toForeground(page);

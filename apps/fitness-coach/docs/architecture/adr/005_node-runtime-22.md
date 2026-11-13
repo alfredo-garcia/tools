@@ -13,7 +13,7 @@ tech_standards §1 fija "Node 20 LTS". Node 20 dejó de tener soporte en abril d
 - **Node 24 LTS:** LTS activo, soporte hasta 2028 (un año más que 22); también lo ofrece Vercel. Contrapartida: menos probado con Next 16 y las librerías de Google; habría que repetir los tests y el build en local antes de cambiar.
 
 ## Decision
-Propuesta: **Node 22 LTS** (o 24 si Al prefiere el soporte más largo; ambas cumplen). Cambiar la celda "Lenguaje" de tech_standards §1, `engines.node` en `package.json`, `@types/node` a la misma major y la versión de Node del proyecto de Vercel; instalar esa versión en local.
+**Node 22 LTS** (aceptada por Al). Cambiar la celda "Lenguaje" de tech_standards §1, `engines.node` en `package.json`, `@types/node` a la misma major y la versión de Node del proyecto de Vercel; instalar esa versión en local.
 
 ## Consequences
 Se quitan los avisos `EBADENGINE`. No resuelve, previsiblemente, el build de webpack de ADR 004.

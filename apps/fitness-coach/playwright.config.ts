@@ -10,6 +10,9 @@ const PORT = 3100;
 export default defineConfig({
   testDir: "tests/e2e",
   fullyParallel: true,
+  // Each test drives a full production page; more workers than this makes them time out on load
+  // (seen with 12–16 workers), not fail on behaviour.
+  workers: 4,
   forbidOnly: true,
   retries: 0,
   reporter: [["list"], ["html", { open: "never" }]],

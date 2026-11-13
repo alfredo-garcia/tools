@@ -24,20 +24,21 @@ Node 20.19 ya hace `require()` de ESM (fuera de Next, `require("magic-string")` 
 - **D. Service worker escrito a mano, sin serwist:** contradice tech_standards §1 (se eligió serwist para no mantener la caché a mano).
 
 ## Decision
-Propuesta: **A**. Añadir `@serwist/cli` a la lista aprobada de tech_standards §1 (y a la allowlist de `scripts/check-standards.mjs`, E1) como parte de la integración de serwist; build `next build && serwist build`.
+**A** (aceptada por Al). Añadir `@serwist/cli` a la lista aprobada de tech_standards §1 (y a la allowlist de `scripts/check-standards.mjs`, E1) como parte de la integración de serwist; build `next build && serwist build`.
 
 ## Consequences
 - Se completa T6 de `fitness-coach/001`: `src/sw.ts` precachea el shell (assets de `_next/static`, iconos y las rutas `/`, `/routines`, `/exercises`), `/api/**` es `NetworkOnly` y nunca entra en la caché, páginas y payloads RSC con `NetworkFirst` (3 s).
 - Hay que vigilar `npm audit`: `@serwist/next` 9.5.13 fija `zod` 4.6.5 (aviso alto); se resuelve con `overrides: { "zod": "4.6.7" }`, la misma que usa la app.
-- Hasta que se decida, la app es instalable (manifest e iconos, AC-17) pero no arranca en frío sin red (AC-2 en rojo).
+- `serwist.config.js` añade las fuentes (`.next/static/media/*.woff2`) al precache, que el patrón por defecto no incluye (FR-15).
+- La caché de páginas solo guarda los shells `/`, `/routines` y `/exercises` (estáticos, sin datos), con caducidad; una página renderizada en el servidor nunca entra en ella.
 
-## Amendment accepted (2026-11-13) by Al
-`serwist build` bundles `src/sw.ts` with **`esbuild`**, an optional peer dependency of `@serwist/cli` (`>=0.25 <1`). Without it the CLI stops ("This command needs esbuild"). Proposal: add `esbuild` as a dev dependency (build time only; it never reaches the client or the server) to tech_standards §1 next to `@serwist/cli`, and to the E1 allowlist.
+## Enmienda (aceptada por Al, 2026-11-13)
+`serwist build` empaqueta `src/sw.ts` con **`esbuild`**, dependencia opcional (peer) de `@serwist/cli` (`>=0.25 <1`); sin ella el CLI se para ("This command needs esbuild"). Se añade `esbuild` como dependencia de desarrollo (solo en build; nunca llega al cliente ni al servidor) a tech_standards §1, junto a `@serwist/cli`, y a la allowlist de E1.
 
 ## Enforcement
 E1 (allowlist) cambia en el mismo PR. Revisión de alto riesgo: el service worker nunca cachea `/api/**` (tech_standards §17, §5/§10); e2e AC-2.
 
-## Appendix: borrador de `src/sw.ts` (probado en tipos y lint, no construido)
+## Apéndice: borrador inicial de `src/sw.ts` (la versión vigente está en el código)
 
 ```ts
 /**

@@ -38,7 +38,9 @@ const badge = (page: import("@playwright/test").Page) => page.getByTestId("sync-
 const summary = (page: import("@playwright/test").Page) => page.getByTestId("summary-card");
 
 test.describe("[fitness-coach/001] US-1 sin conexión", () => {
-  test("[fitness-coach/001] AC-1: con copia y sin red, la Home muestra el resumen y «Sin conexión»", async ({ page }) => {
+  test("[fitness-coach/001] AC-1: con copia y sin red, la Home muestra el resumen y «Sin conexión»", async ({
+    page,
+  }) => {
     await firstSync(page, api, makeSnapshot({ exercises: 29, activeRoutines: 7 }));
     await setTime(page, T0 + 2 * H);
     await setOnline(page, api, false);
@@ -51,7 +53,10 @@ test.describe("[fitness-coach/001] US-1 sin conexión", () => {
   test.describe("arranque en frío con service worker", () => {
     test.use({ serviceWorkers: "allow" });
 
-    test("[fitness-coach/001] AC-2: cerrada del todo y sin red, la app arranca desde la caché", async ({ page, context }) => {
+    test("[fitness-coach/001] AC-2: cerrada del todo y sin red, la app arranca desde la caché", async ({
+      page,
+      context,
+    }) => {
       await firstSync(page, api);
       await page.evaluate(async () => {
         await navigator.serviceWorker.ready;
@@ -69,7 +74,9 @@ test.describe("[fitness-coach/001] US-1 sin conexión", () => {
     });
   });
 
-  test("[fitness-coach/001] AC-3: primera apertura sin red pide conexión; con red, «Reintentar» lleva a la clave", async ({ page }) => {
+  test("[fitness-coach/001] AC-3: primera apertura sin red pide conexión; con red, «Reintentar» lleva a la clave", async ({
+    page,
+  }) => {
     await page.addInitScript(() => {
       // only on the very first load of this tab, so toggling online later survives reloads
       if (!sessionStorage.getItem("__e2e_started")) {
@@ -96,7 +103,9 @@ test.describe("[fitness-coach/001] US-1 sin conexión", () => {
 });
 
 test.describe("[fitness-coach/001] US-2 se actualiza sola", () => {
-  test("[fitness-coach/001] AC-4: primero la copia guardada, luego los datos nuevos y «hace un momento»", async ({ page }) => {
+  test("[fitness-coach/001] AC-4: primero la copia guardada, luego los datos nuevos y «hace un momento»", async ({
+    page,
+  }) => {
     await firstSync(page, api, makeSnapshot({ exercises: 29, activeRoutines: 7 }));
     await setTime(page, T0 + 2 * H);
     api.hold();
@@ -108,7 +117,9 @@ test.describe("[fitness-coach/001] US-2 se actualiza sola", () => {
     await expect(badge(page)).toContainText("Sincronizado · hace un momento");
   });
 
-  test("[fitness-coach/001] AC-5: al volver a primer plano tras más de 1 min, se actualiza", async ({ page }) => {
+  test("[fitness-coach/001] AC-5: al volver a primer plano tras más de 1 min, se actualiza", async ({
+    page,
+  }) => {
     await firstSync(page, api);
     const before = api.count;
     await setTime(page, T0 + 2 * MIN);
@@ -118,7 +129,9 @@ test.describe("[fitness-coach/001] US-2 se actualiza sola", () => {
     expect(api.count).toBe(before + 1);
   });
 
-  test("[fitness-coach/001] AC-5 (FR-6b): al volver a primer plano antes de 1 min, no se actualiza", async ({ page }) => {
+  test("[fitness-coach/001] AC-5 (FR-6b): al volver a primer plano antes de 1 min, no se actualiza", async ({
+    page,
+  }) => {
     await firstSync(page, api);
     const before = api.count;
     await setTime(page, T0 + 30_000);
@@ -127,7 +140,9 @@ test.describe("[fitness-coach/001] US-2 se actualiza sola", () => {
     expect(api.count).toBe(before);
   });
 
-  test("[fitness-coach/001] AC-6: al volver la conexión, se actualiza sin hacer nada", async ({ page }) => {
+  test("[fitness-coach/001] AC-6: al volver la conexión, se actualiza sin hacer nada", async ({
+    page,
+  }) => {
     await firstSync(page, api);
     await setOnline(page, api, false);
     await expect(badge(page)).toContainText("Sin conexión");
@@ -139,7 +154,9 @@ test.describe("[fitness-coach/001] US-2 se actualiza sola", () => {
     expect(api.count).toBeGreaterThan(before);
   });
 
-  test("[fitness-coach/001] AC-7: tirar para refrescar actualiza aunque sea antes de 1 min y muestra «Sincronizando…»", async ({ page }) => {
+  test("[fitness-coach/001] AC-7: tirar para refrescar actualiza aunque sea antes de 1 min y muestra «Sincronizando…»", async ({
+    page,
+  }) => {
     await firstSync(page, api);
     const before = api.count;
     await setTime(page, T0 + 10_000);
@@ -151,7 +168,9 @@ test.describe("[fitness-coach/001] US-2 se actualiza sola", () => {
     await expect(badge(page)).toContainText("Sincronizado");
   });
 
-  test("[fitness-coach/001] AC-20: por debajo de 640 px no hay botón «Actualizar»", async ({ page }) => {
+  test("[fitness-coach/001] AC-20: por debajo de 640 px no hay botón «Actualizar»", async ({
+    page,
+  }) => {
     await firstSync(page, api);
     await expect(page.getByTestId("refresh-button")).toHaveCount(0);
   });
@@ -159,7 +178,9 @@ test.describe("[fitness-coach/001] US-2 se actualiza sola", () => {
   test.describe("pantalla ancha", () => {
     test.use(DESKTOP);
 
-    test("[fitness-coach/001] AC-20: desde 640 px, «Actualizar» actualiza aunque sea antes de 1 min", async ({ page }) => {
+    test("[fitness-coach/001] AC-20: desde 640 px, «Actualizar» actualiza aunque sea antes de 1 min", async ({
+      page,
+    }) => {
       await firstSync(page, api);
       const before = api.count;
       await setTime(page, T0 + 10_000);
@@ -174,13 +195,19 @@ test.describe("[fitness-coach/001] US-2 se actualiza sola", () => {
     });
   });
 
-  test("[fitness-coach/001] AC-8: sin cambios en el Drive (304), los datos siguen y la hora pasa a la actual", async ({ page }) => {
+  test("[fitness-coach/001] AC-8: sin cambios en el Drive (304), los datos siguen y la hora pasa a la actual", async ({
+    page,
+  }) => {
     await firstSync(page, api, makeSnapshot({ exercises: 29, activeRoutines: 7 }));
     await setTime(page, T0 + 10 * MIN);
     api.respond((req) =>
       req.headers["if-none-match"] === '"etag-1"'
         ? { kind: "status", status: 304 }
-        : { kind: "ok", snapshot: makeSnapshot({ exercises: 1, activeRoutines: 1 }), etag: '"otro"' },
+        : {
+            kind: "ok",
+            snapshot: makeSnapshot({ exercises: 1, activeRoutines: 1 }),
+            etag: '"otro"',
+          },
     );
     await toForeground(page);
     await expect(badge(page)).toContainText("Sincronizado · hace un momento");
@@ -188,7 +215,9 @@ test.describe("[fitness-coach/001] US-2 se actualiza sola", () => {
     expect(api.requests.at(-1)!.headers["if-none-match"]).toBe('"etag-1"');
   });
 
-  test("[fitness-coach/001] AC-9: con una actualización en curso, otros disparadores no lanzan otra", async ({ page }) => {
+  test("[fitness-coach/001] AC-9: con una actualización en curso, otros disparadores no lanzan otra", async ({
+    page,
+  }) => {
     await firstSync(page, api);
     await setTime(page, T0 + 2 * MIN);
     api.hold();
@@ -206,7 +235,9 @@ test.describe("[fitness-coach/001] US-2 se actualiza sola", () => {
 });
 
 test.describe("[fitness-coach/001] US-3 la clave", () => {
-  test("[fitness-coach/001] AC-10: clave correcta → Home; la siguiente apertura no la pide", async ({ page }) => {
+  test("[fitness-coach/001] AC-10: clave correcta → Home; la siguiente apertura no la pide", async ({
+    page,
+  }) => {
     await page.goto("/");
     await expect(page.getByTestId("enter-button")).toBeDisabled();
     await firstSync(page, api);
@@ -222,7 +253,9 @@ test.describe("[fitness-coach/001] US-3 la clave", () => {
     expect(api.requests.at(-1)!.headers["x-app-key"]).toBe(KEY);
   });
 
-  test("[fitness-coach/001] AC-11: clave incorrecta → «Esa clave no es correcta» y no se guarda nada", async ({ page }) => {
+  test("[fitness-coach/001] AC-11: clave incorrecta → «Esa clave no es correcta» y no se guarda nada", async ({
+    page,
+  }) => {
     api.respondStatus(401);
     await page.goto("/");
     await page.getByTestId("key-input").fill("mala");
@@ -235,7 +268,9 @@ test.describe("[fitness-coach/001] US-3 la clave", () => {
     await expect(page.getByTestId("key-input")).toHaveValue("");
   });
 
-  test("[fitness-coach/001] AC-11: el campo de la clave se puede mostrar y ocultar", async ({ page }) => {
+  test("[fitness-coach/001] AC-11: el campo de la clave se puede mostrar y ocultar", async ({
+    page,
+  }) => {
     await page.goto("/");
     const input = page.getByTestId("key-input");
     await expect(input).toHaveAttribute("type", "password");
@@ -245,12 +280,18 @@ test.describe("[fitness-coach/001] US-3 la clave", () => {
     await expect(input).toHaveAttribute("type", "password");
   });
 
-  test("[fitness-coach/001] AC-12: clave rechazada → datos visibles, «Clave no válida» y sheet; la nueva completa la actualización", async ({ page }) => {
+  test("[fitness-coach/001] AC-12: clave rechazada → datos visibles, «Clave no válida» y sheet; la nueva completa la actualización", async ({
+    page,
+  }) => {
     await firstSync(page, api, makeSnapshot({ exercises: 29, activeRoutines: 7 }));
     await setTime(page, T0 + 2 * MIN);
     api.respond((req) =>
       req.headers["x-app-key"] === "clave-nueva"
-        ? { kind: "ok", snapshot: makeSnapshot({ exercises: 32, activeRoutines: 7 }), etag: '"etag-2"' }
+        ? {
+            kind: "ok",
+            snapshot: makeSnapshot({ exercises: 32, activeRoutines: 7 }),
+            etag: '"etag-2"',
+          }
         : { kind: "status", status: 401 },
     );
     await page.reload();
@@ -342,7 +383,9 @@ test.describe("[fitness-coach/001] US-4 estado de los datos", () => {
     await expectOnEveryScreen(page, "Clave no válida · toca para introducirla", "key-round");
   });
 
-  test("[fitness-coach/001] AC-14: el Drive falla → copia intacta y «No se pudo actualizar»; el siguiente disparador reintenta", async ({ page }) => {
+  test("[fitness-coach/001] AC-14: el Drive falla → copia intacta y «No se pudo actualizar»; el siguiente disparador reintenta", async ({
+    page,
+  }) => {
     await firstSync(page, api, makeSnapshot({ exercises: 29, activeRoutines: 7 }));
     await setTime(page, T0 + 2 * H);
     api.respondStatus(502);
@@ -357,7 +400,9 @@ test.describe("[fitness-coach/001] US-4 estado de los datos", () => {
     expect(api.count).toBe(before + 1);
   });
 
-  test("[fitness-coach/001] AC-14: más de 15 s sin respuesta → «No se pudo actualizar», copia intacta", async ({ page }) => {
+  test("[fitness-coach/001] AC-14: más de 15 s sin respuesta → «No se pudo actualizar», copia intacta", async ({
+    page,
+  }) => {
     test.slow();
     await firstSync(page, api, makeSnapshot({ exercises: 29, activeRoutines: 7 }));
     await setTime(page, T0 + 2 * H);
@@ -370,19 +415,27 @@ test.describe("[fitness-coach/001] US-4 estado de los datos", () => {
 });
 
 test.describe("[fitness-coach/001] US-5 ficheros que no se pueden leer", () => {
-  test("[fitness-coach/001] AC-15: el resumen cuenta lo leído y avisa de 1 fichero, sin mostrar cuál", async ({ page }) => {
+  test("[fitness-coach/001] AC-15: el resumen cuenta lo leído y avisa de 1 fichero, sin mostrar cuál", async ({
+    page,
+  }) => {
     const path = "routines/items/02-strength/rutina-rota.md";
     await firstSync(
       page,
       api,
-      makeSnapshot({ exercises: 29, activeRoutines: 6, skipped: [{ path, reason: "schema_error" }] }),
+      makeSnapshot({
+        exercises: 29,
+        activeRoutines: 6,
+        skipped: [{ path, reason: "schema_error" }],
+      }),
     );
     await expect(summary(page)).toContainText(summaryText(29, 6));
     await expect(page.getByTestId("skipped-warning")).toHaveText("1 fichero no se pudo leer");
     await expect(page.locator("body")).not.toContainText("rutina-rota");
   });
 
-  test("[fitness-coach/001] AC-15: varios ficheros en plural; ninguno, sin aviso", async ({ page }) => {
+  test("[fitness-coach/001] AC-15: varios ficheros en plural; ninguno, sin aviso", async ({
+    page,
+  }) => {
     await firstSync(
       page,
       api,
@@ -403,15 +456,23 @@ test.describe("[fitness-coach/001] US-5 ficheros que no se pueden leer", () => {
 });
 
 test.describe("[fitness-coach/001] FR-17 Home provisional", () => {
-  test("[fitness-coach/001] FR-17: saludo, resumen, pausadas y hora de la última sincronización", async ({ page }) => {
-    await firstSync(page, api, makeSnapshot({ exercises: 29, activeRoutines: 7, pausedRoutines: 1 }));
+  test("[fitness-coach/001] FR-17: saludo, resumen, pausadas y hora de la última sincronización", async ({
+    page,
+  }) => {
+    await firstSync(
+      page,
+      api,
+      makeSnapshot({ exercises: 29, activeRoutines: 7, pausedRoutines: 1 }),
+    );
     await expect(page.getByText("Hola, Al")).toBeVisible();
     await expect(summary(page)).toContainText(summaryText(29, 7));
     await expect(summary(page)).toContainText("1 pausada");
     await expect(summary(page)).toContainText("Actualizado hace un momento");
   });
 
-  test("[fitness-coach/001] FR-17: sin pausadas no hay línea de pausadas; varias en plural", async ({ page }) => {
+  test("[fitness-coach/001] FR-17: sin pausadas no hay línea de pausadas; varias en plural", async ({
+    page,
+  }) => {
     await firstSync(page, api, makeSnapshot({ pausedRoutines: 0 }));
     await expect(summary(page)).not.toContainText("pausada");
 
@@ -428,7 +489,10 @@ test.describe("[fitness-coach/001] FR-17 Home provisional", () => {
 });
 
 test.describe("[fitness-coach/001] US-6 instalable", () => {
-  test("[fitness-coach/001] AC-17: manifest «My Coach», standalone, iconos 192/512/maskable y apple-touch-icon", async ({ page, request }) => {
+  test("[fitness-coach/001] AC-17: manifest «My Coach», standalone, iconos 192/512/maskable y apple-touch-icon", async ({
+    page,
+    request,
+  }) => {
     await page.goto("/");
     const href = await page.locator('link[rel="manifest"]').getAttribute("href");
     expect(href).toBeTruthy();
@@ -453,7 +517,9 @@ test.describe("[fitness-coach/001] US-6 instalable", () => {
 });
 
 test.describe("[fitness-coach/001] US-7 marco de la app", () => {
-  test("[fitness-coach/001] AC-18: en móvil, barra inferior con Inicio activo; Rutinas y Ejercicios dicen «Próximamente»", async ({ page }) => {
+  test("[fitness-coach/001] AC-18: en móvil, barra inferior con Inicio activo; Rutinas y Ejercicios dicen «Próximamente»", async ({
+    page,
+  }) => {
     await firstSync(page, api);
     const home = page.getByTestId("nav-home");
     await expect(home).toHaveAttribute("aria-current", "page");
@@ -474,7 +540,9 @@ test.describe("[fitness-coach/001] US-7 marco de la app", () => {
   test.describe("pantalla ancha", () => {
     test.use(DESKTOP);
 
-    test("[fitness-coach/001] AC-19: desde 640 px, barra lateral con el icono y «My Coach»", async ({ page }) => {
+    test("[fitness-coach/001] AC-19: desde 640 px, barra lateral con el icono y «My Coach»", async ({
+      page,
+    }) => {
       await firstSync(page, api);
       const nav = page.getByRole("navigation");
       await expect(nav).toContainText("My Coach");
@@ -486,7 +554,9 @@ test.describe("[fitness-coach/001] US-7 marco de la app", () => {
 });
 
 test.describe("[fitness-coach/001] PRD §10 casos límite", () => {
-  test("[fitness-coach/001] PRD §10: sin almacenamiento, Toast que se cierra solo y la app funciona con red", async ({ page }) => {
+  test("[fitness-coach/001] PRD §10: sin almacenamiento, Toast que se cierra solo y la app funciona con red", async ({
+    page,
+  }) => {
     await page.addInitScript(() => {
       IDBFactory.prototype.open = function () {
         throw new DOMException("blocked", "InvalidStateError");
@@ -501,7 +571,9 @@ test.describe("[fitness-coach/001] PRD §10 casos límite", () => {
     await expect(summary(page)).toBeVisible();
   });
 
-  test("[fitness-coach/001] PRD §10: 409 client_outdated → la app se recarga y vuelve a pedir el snapshot", async ({ page }) => {
+  test("[fitness-coach/001] PRD §10: 409 client_outdated → la app se recarga y vuelve a pedir el snapshot", async ({
+    page,
+  }) => {
     await firstSync(page, api);
     await setTime(page, T0 + 2 * MIN);
     let loads = 0;
@@ -519,7 +591,10 @@ test.describe("[fitness-coach/001] PRD §10 casos límite", () => {
     expect(loads).toBeGreaterThanOrEqual(1);
   });
 
-  test("[fitness-coach/001] PRD §10: datos del navegador borrados → vuelve a pedir la clave", async ({ page, context }) => {
+  test("[fitness-coach/001] PRD §10: datos del navegador borrados → vuelve a pedir la clave", async ({
+    page,
+    context,
+  }) => {
     await firstSync(page, api);
     await page.evaluate(async () => {
       const dbs = await indexedDB.databases();

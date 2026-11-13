@@ -12,13 +12,33 @@ const config = [
       // E6: no focused tests left behind (tech_standards §14-§15; never weaken tests).
       "no-restricted-properties": [
         "error",
-        { object: "describe", property: "only", message: "No dejes tests con .only (tech_standards §17 E6)." },
-        { object: "it", property: "only", message: "No dejes tests con .only (tech_standards §17 E6)." },
-        { object: "test", property: "only", message: "No dejes tests con .only (tech_standards §17 E6)." },
+        {
+          object: "describe",
+          property: "only",
+          message: "No dejes tests con .only (tech_standards §17 E6).",
+        },
+        {
+          object: "it",
+          property: "only",
+          message: "No dejes tests con .only (tech_standards §17 E6).",
+        },
+        {
+          object: "test",
+          property: "only",
+          message: "No dejes tests con .only (tech_standards §17 E6).",
+        },
       ],
     },
   },
-  { ignores: [".next/**", "prototypes/**", "public/sw.js", "playwright-report/**", "test-results/**"] },
+  {
+    ignores: [
+      ".next/**",
+      "prototypes/**",
+      "public/sw.js",
+      "playwright-report/**",
+      "test-results/**",
+    ],
+  },
 ];
 
 export default config;

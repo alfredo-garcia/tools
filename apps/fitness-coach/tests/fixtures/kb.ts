@@ -44,13 +44,25 @@ export const vocabularyFiles: KbFile[] = [
       'quadriceps: { label: "Cuádriceps", zone: legs }\n' +
       'latissimus-dorsi: { label: "Dorsal ancho", zone: back }\n',
   },
-  { path: "_system/goals.yaml", content: vocab({ strength: "Fuerza", stability: "Estabilidad", mobility: "Movilidad" }) },
-  { path: "_system/patterns.yaml", content: vocab({ "anti-extension": "Antiextensión", squat: "Sentadilla", pull: "Tirón" }) },
+  {
+    path: "_system/goals.yaml",
+    content: vocab({ strength: "Fuerza", stability: "Estabilidad", mobility: "Movilidad" }),
+  },
+  {
+    path: "_system/patterns.yaml",
+    content: vocab({ "anti-extension": "Antiextensión", squat: "Sentadilla", pull: "Tirón" }),
+  },
   { path: "_system/positions.yaml", content: vocab({ prone: "Boca abajo", standing: "De pie" }) },
   { path: "_system/equipment.yaml", content: vocab({ mat: "Esterilla", band: "Banda elástica" }) },
   { path: "_system/resistances.yaml", content: vocab({ light: "Ligera", medium: "Media" }) },
-  { path: "_system/stresses.yaml", content: vocab({ "spinal-flexion": "Flexión lumbar", "axial-load": "Carga axial" }) },
-  { path: "_system/levels.yaml", content: vocab({ beginner: "Inicial", intermediate: "Intermedio" }) },
+  {
+    path: "_system/stresses.yaml",
+    content: vocab({ "spinal-flexion": "Flexión lumbar", "axial-load": "Carga axial" }),
+  },
+  {
+    path: "_system/levels.yaml",
+    content: vocab({ beginner: "Inicial", intermediate: "Intermedio" }),
+  },
   {
     path: "routines/_system/categories.yaml",
     content:
@@ -189,7 +201,7 @@ export const routineFiles: KbFile[] = [
     "03-mobility",
     "paused",
     'title: "Movilidad sintética"\ncategory: mobility\ndays: ["sun"]\n',
-    "blocks:\n  - id: mobility\n    items:\n      - { ex: \"plancha-sintetica\" }\n",
+    'blocks:\n  - id: mobility\n    items:\n      - { ex: "plancha-sintetica" }\n',
   ),
   routine(
     "borrador-sintetico",

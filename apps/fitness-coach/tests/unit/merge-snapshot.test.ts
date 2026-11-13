@@ -37,7 +37,10 @@ describe("[fitness-coach/001] mergeSnapshot", () => {
   });
 
   it("[fitness-coach/001] FR-4: an unreadable sessions file keeps the previous sessions", () => {
-    const previous = { ...makeSnapshot(), sessions: [{ date: "2026-11-10", routine: "x", status: "completed" }] };
+    const previous = {
+      ...makeSnapshot(),
+      sessions: [{ date: "2026-11-10", routine: "x", status: "completed" }],
+    };
     const incoming = {
       ...makeSnapshot(),
       sessions: [],
@@ -49,7 +52,8 @@ describe("[fitness-coach/001] mergeSnapshot", () => {
   it("[fitness-coach/001] FR-4: an unreadable vocabulary keeps the previous one", () => {
     const previous = makeSnapshot();
     const incoming = makeSnapshot();
-    const { regions: _dropped, ...rest } = incoming.vocabularies;
+    const rest: Partial<typeof incoming.vocabularies> = { ...incoming.vocabularies };
+    delete rest.regions;
     const broken = {
       ...incoming,
       vocabularies: rest,

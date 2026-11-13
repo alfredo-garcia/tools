@@ -1,0 +1,111 @@
+/*
+ * Design tokens from docs/context/ui_standards.md (source of truth). Dots become dashes with a
+ * `--` prefix (§10): color.primary.500 → --color-primary-500. Dark by default; light follows
+ * prefers-color-scheme and can be forced with data-theme on <html>.
+ */
+@import "tailwindcss";
+
+:root,
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --color-bg: #15130f;
+  --color-surface-1: #1f1c17;
+  --color-surface-2: #2a2620;
+  --color-border: #38332b;
+  --color-text: #f6efe4;
+  --color-text-muted: #a99f90;
+  --color-primary-500: #ff7a45;
+  --color-primary-contrast: #15130f;
+  --color-accent-lime: #b7e04a;
+  --color-success-500: #7bd88f;
+  --color-warning-500: #f2c14e;
+  --color-danger-500: #ff6b6b;
+  --color-focus: color-mix(in srgb, #ff7a45 55%, transparent);
+  --elevation-1: 0 1px 2px rgb(0 0 0 / 0.4);
+  --elevation-3: 0 18px 40px rgb(0 0 0 / 0.55);
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    color-scheme: light;
+    --color-bg: #fbf7f1;
+    --color-surface-1: #ffffff;
+    --color-surface-2: #f3ede3;
+    --color-border: #e4dacb;
+    --color-text: #1e1a14;
+    --color-text-muted: #6b6254;
+    --color-primary-500: #c2410c;
+    --color-primary-contrast: #ffffff;
+    --color-accent-lime: #4d7c0f;
+    --color-success-500: #2e7d32;
+    --color-warning-500: #b7791f;
+    --color-danger-500: #b42318;
+    --color-focus: color-mix(in srgb, #c2410c 55%, transparent);
+    --elevation-1: 0 1px 2px rgb(60 40 20 / 0.12);
+    --elevation-3: 0 18px 40px rgb(60 40 20 / 0.2);
+  }
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --color-bg: #fbf7f1;
+  --color-surface-1: #ffffff;
+  --color-surface-2: #f3ede3;
+  --color-border: #e4dacb;
+  --color-text: #1e1a14;
+  --color-text-muted: #6b6254;
+  --color-primary-500: #c2410c;
+  --color-primary-contrast: #ffffff;
+  --color-accent-lime: #4d7c0f;
+  --color-success-500: #2e7d32;
+  --color-warning-500: #b7791f;
+  --color-danger-500: #b42318;
+  --color-focus: color-mix(in srgb, #c2410c 55%, transparent);
+  --elevation-1: 0 1px 2px rgb(60 40 20 / 0.12);
+  --elevation-3: 0 18px 40px rgb(60 40 20 / 0.2);
+}
+
+/* Tailwind utilities read the tokens (bg-bg, text-text-muted, bg-primary-500, rounded-md…). */
+@theme inline {
+  --color-bg: var(--color-bg);
+  --color-surface-1: var(--color-surface-1);
+  --color-surface-2: var(--color-surface-2);
+  --color-border: var(--color-border);
+  --color-text: var(--color-text);
+  --color-text-muted: var(--color-text-muted);
+  --color-primary-500: var(--color-primary-500);
+  --color-primary-contrast: var(--color-primary-contrast);
+  --color-accent-lime: var(--color-accent-lime);
+  --color-success-500: var(--color-success-500);
+  --color-warning-500: var(--color-warning-500);
+  --color-danger-500: var(--color-danger-500);
+  --font-sans: var(--font-inter), system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --radius-sm: 10px;
+  --radius-md: 18px;
+  --radius-lg: 28px;
+  --radius-full: 999px;
+  --shadow-elevation-1: var(--elevation-1);
+  --shadow-elevation-3: var(--elevation-3);
+  --breakpoint-medium: 640px;
+  --breakpoint-large: 1280px;
+}
+
+html,
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}

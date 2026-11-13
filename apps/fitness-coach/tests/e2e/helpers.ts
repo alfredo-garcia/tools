@@ -72,9 +72,12 @@ export class SnapshotApi {
     if (r.status === 304) return route.fulfill({ status: 304, headers: {} });
     const code =
       r.code ??
-      { 401: "invalid_key", 409: "client_outdated", 500: "server_misconfigured", 502: "drive_unavailable" }[
-        r.status
-      ];
+      {
+        401: "invalid_key",
+        409: "client_outdated",
+        500: "server_misconfigured",
+        502: "drive_unavailable",
+      }[r.status];
     return route.fulfill({
       status: r.status,
       contentType: "application/json",

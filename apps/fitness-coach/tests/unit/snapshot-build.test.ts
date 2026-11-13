@@ -28,13 +28,21 @@ describe("[fitness-coach/001] buildSnapshot", () => {
     expect(s.format).toBe(1);
     expect(typeof s.generated_at).toBe("string");
     expect(Number.isNaN(Date.parse(s.generated_at))).toBe(false);
-    expect(ids(s.exercises)).toEqual(["plancha-sintetica", "remo-sintetico", "sentadilla-sintetica"]);
+    expect(ids(s.exercises)).toEqual([
+      "plancha-sintetica",
+      "remo-sintetico",
+      "sentadilla-sintetica",
+    ]);
     expect(s.skipped).toEqual([]);
   });
 
   it("[fitness-coach/001] FR-2: only active and paused routines; draft and archived are left out", () => {
     const s = buildSnapshot(kbFiles(), NOW);
-    expect(ids(s.routines)).toEqual(["expres-sintetica", "fuerza-sintetica", "movilidad-sintetica"]);
+    expect(ids(s.routines)).toEqual([
+      "expres-sintetica",
+      "fuerza-sintetica",
+      "movilidad-sintetica",
+    ]);
   });
 
   it("[fitness-coach/001] FR-2: exercise sections are extracted from the Markdown body", () => {
@@ -114,7 +122,11 @@ describe("[fitness-coach/001] buildSnapshot", () => {
   it("[fitness-coach/001] AC-15: a routine with broken YAML is skipped as parse_error, without its content", () => {
     const s = buildSnapshot([...kbFiles(), BROKEN_YAML_ROUTINE], NOW);
     expect(s.skipped).toEqual([{ path: BROKEN_YAML_ROUTINE.path, reason: "parse_error" }]);
-    expect(ids(s.routines)).toEqual(["expres-sintetica", "fuerza-sintetica", "movilidad-sintetica"]);
+    expect(ids(s.routines)).toEqual([
+      "expres-sintetica",
+      "fuerza-sintetica",
+      "movilidad-sintetica",
+    ]);
     expect(JSON.stringify(s)).not.toContain(HEALTH_MARKERS.brokenRoutineTitle);
   });
 

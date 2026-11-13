@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>My Food — Prototipo 016 Panel de filtros y agrupar</title>
+<style>
+/* Tokens: ui_standards §2-§6 (same names as src/app/globals.css) */
+:root{
+  --color-bg:#15130F; --color-surface-1:#1F1C17; --color-surface-2:#2A2620; --color-border:#38332B;
+  --color-text:#F6EFE4; --color-text-muted:#A99F90;
+  --color-primary-500:#FF7A45; --color-primary-contrast:#15130F; --color-primary-soft:rgba(255,122,69,.16);
+  --color-success-500:#7BD88F; --color-warning-500:#F2C14E; --color-danger-500:#FF6B6B;
+  --radius-sm:10px; --radius-md:18px; --radius-lg:28px; --radius-full:999px;
+  --elevation-1:0 1px 2px rgba(0,0,0,.4); --elevation-3:0 18px 40px rgba(0,0,0,.55); --focus:0 0 0 3px rgba(255,122,69,.55);
+  --font:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+:root[data-theme="light"]{
+  --color-bg:#FBF7F1; --color-surface-1:#FFFFFF; --color-surface-2:#F3EDE3; --color-border:#E4DACB;
+  --color-text:#1E1A14; --color-text-muted:#6B6254;
+  --color-primary-500:#C2410C; --color-primary-contrast:#FFFFFF; --color-primary-soft:rgba(194,65,12,.1);
+  --color-success-500:#2E7D32; --color-warning-500:#B7791F; --color-danger-500:#B42318;
+  --elevation-1:0 1px 2px rgba(60,40,10,.12); --elevation-3:0 18px 40px rgba(60,40,10,.2); --focus:0 0 0 3px rgba(194,65,12,.4);
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--color-bg);color:var(--color-text);font:400 16px/1.5 var(--font);display:flex;flex-direction:column}
+button,input{font:inherit;color:inherit}
+button{background:none;border:0;padding:0;cursor:pointer}
+:focus-visible{outline:none;box-shadow:var(--focus)}
+svg.i{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+svg.i.md{width:20px;height:20px} svg.i.sm{width:12px;height:12px}
+
+/* Prototype-only toolbar */
+.proto{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;padding:8px 16px;background:var(--color-surface-2);border-bottom:1px solid var(--color-border);font-size:12px;color:var(--color-text-muted)}
+.proto b{color:var(--color-text)}
+.proto .seg{display:inline-flex;border:1px solid var(--color-border);border-radius:var(--radius-full);overflow:hidden}
+.proto .seg button{padding:4px 12px;font-size:12px;font-weight:600}
+.proto .seg button[aria-pressed="true"]{background:var(--color-primary-500);color:var(--color-primary-contrast)}
+.stage{flex:1;min-height:0;display:flex;justify-content:center;overflow:auto}
+.frame{position:relative;width:100%;overflow:hidden;background:var(--color-bg);display:flex}
+.frame.phone{width:390px;flex:none;margin:12px 0;border:8px solid #000;border-radius:36px;max-height:820px}
+.main{flex:1;min-width:0;position:relative}
+.scroll{position:absolute;inset:0;overflow:auto;padding-bottom:80px}
+.frame:not(.phone) .scroll{padding-bottom:16px}
+
+/* Nav (Nav.tsx) */
+.bottom{position:absolute;left:0;right:0;bottom:0;z-index:30;display:flex;border-top:1px solid var(--color-border);background:var(--color-surface-1)}
+.bottom a{position:relative;flex:1;min-height:64px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:12px;font-weight:600;color:var(--color-text-muted);cursor:pointer;text-decoration:none}
+.bottom a[aria-current]{color:var(--color-primary-500)}
+.bottom a[aria-current]::before{content:"";position:absolute;left:30%;right:30%;top:0;height:3px;border-radius:0 0 3px 3px;background:var(--color-primary-500)}
+.side{flex:none;width:224px;display:flex;flex-direction:column;gap:4px;border-right:1px solid var(--color-border);background:var(--color-surface-1);padding:12px}
+.side .brand{height:48px;display:flex;align-items:center;gap:12px;padding:0 10px;font-weight:800}
+.side .brand i{width:32px;height:32px;border-radius:8px;background:var(--color-primary-500)}
+.side a{height:48px;display:flex;align-items:center;gap:12px;border-radius:var(--radius-full);padding:0 12px;font-size:14px;font-weight:600;color:var(--color-text-muted);cursor:pointer;text-decoration:none}
+.side a[aria-current]{background:var(--color-primary-soft);color:var(--color-primary-500)}
+.ico{position:relative;display:inline-flex}
+/* TmpNavBadge */
+.nbadge{position:absolute;top:-6px;left:14px;min-width:18px;height:18px;padding:0 5px;border-radius:var(--radius-full);background:var(--color-primary-500);color:var(--color-primary-contrast);font-size:11px;font-weight:800;line-height:18px;text-align:center;box-shadow:0 0 0 2px var(--color-surface-1)}
+
+/* Screens */
+.shell{padding:16px;max-width:760px;margin:0 auto}
+.head{display:flex;align-items:center;justify-content:space-between;margin:8px 0 12px;gap:8px}
+.head h1{font:800 24px/1.15 var(--font);margin:0}
+.sync{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;color:var(--color-text-muted)}
+.sync i{width:8px;height:8px;border-radius:50%;background:var(--color-success-500)}
+.searchrow{display:flex;gap:8px;align-items:center}
+.search{flex:1;min-width:0;display:flex;align-items:center;gap:8px;height:48px;padding:0 16px;border:1px solid var(--color-border);border-radius:var(--radius-full);background:var(--color-surface-1);color:var(--color-text-muted)}
+.search input{flex:1;min-width:0;border:0;background:none;outline:none;color:var(--color-text)}
+.share{display:inline-flex;align-items:center;gap:8px;min-height:48px;padding:0 20px;border:1px solid var(--color-border);border-radius:var(--radius-full);background:var(--color-surface-1);font-size:14px;font-weight:600;flex:none}
+.chips{display:flex;margin-top:12px}
+.chip{display:inline-flex;align-items:center;gap:6px;height:40px;padding:0 16px;border:1px solid var(--color-border);border-radius:var(--radius-full);font-size:14px;font-weight:600;background:var(--color-surface-1)}
+.segc{display:flex;gap:4px;border-radius:var(--radius-full);background:var(--color-surface-2);padding:4px;margin-top:12px}
+.segc button{flex:1;min-height:44px;border-radius:var(--radius-full);font-size:14px;font-weight:600;color:var(--color-text-muted)}
+.segc button[aria-checked="true"]{background:var(--color-surface-1);color:var(--color-text);box-shadow:var(--elevation-1),inset 0 0 0 2px var(--color-primary-500)}
+ul.rows{list-style:none;margin:8px 0 0;padding:0}
+.irow{display:flex;min-height:64px;align-items:center;gap:8px;border-bottom:1px solid var(--color-border);padding:6px 0}
+.irow .n{flex:1;min-width:0;font-weight:600}
+.irow.struck .n{color:var(--color-text-muted);text-decoration:line-through}
+.irow small{display:block;font-size:12px;font-weight:400;color:var(--color-text-muted)}
+.sw{display:inline-flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;font-weight:600;color:var(--color-text-muted);min-width:56px}
+.sw span{width:44px;height:26px;border-radius:13px;background:var(--color-border);position:relative;transition:.15s}
+.sw span::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.15s}
+.sw[aria-checked="true"].ok span{background:var(--color-success-500)}
+.sw[aria-checked="true"].buy span{background:var(--color-primary-500)}
+.sw[aria-checked="true"] span::after{left:21px}
+.sw:disabled{opacity:.45}
+.empty{text-align:center;padding:48px 16px}
+.empty .e{font-size:40px}
+.empty h2{font:700 18px/1.3 var(--font);margin:8px 0 4px}
+.empty p{margin:0 0 16px;color:var(--color-text-muted);font-size:14px}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 20px;border-radius:var(--radius-full);background:var(--color-primary-500);color:var(--color-primary-contrast);font-weight:700}
+
+/* Recipe rows */
+.rrow{display:flex;align-items:center;border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-surface-1);box-shadow:var(--elevation-1);margin-bottom:8px;cursor:pointer}
+.rrow .l{display:flex;flex:1;min-width:0;align-items:center;gap:12px;padding:8px;min-height:56px}
+.ph{width:56px;height:56px;border-radius:var(--radius-sm);flex:none;background:linear-gradient(135deg,#8a5a2b,#d9a05b)}
+.rt{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.meta{font-size:12px;color:var(--color-text-muted);line-height:16px}
+.meta.fixed{display:flex;align-items:center}
+.dot{margin:0 6px;opacity:.6}
+.rm{display:inline-flex;align-items:center;gap:2px;font-weight:700;color:var(--color-warning-500)}
+.rm svg{fill:currentColor}
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.cmp h3{margin:0 0 6px;font-size:12px;font-weight:700;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.04em}
+.zoom{transform:scale(1.6);transform-origin:left top;height:62px}
+
+/* Detail */
+.dbar{display:flex;align-items:center;gap:8px;margin:4px 0 8px}
+.dbar button{width:44px;height:44px;display:grid;place-items:center;border-radius:50%}
+.hero{aspect-ratio:16/9;border-radius:var(--radius-md);background:linear-gradient(135deg,#8a5a2b,#d9a05b)}
+.dtitle{font:800 24px/1.2 var(--font);margin:12px 0 0}
+.sec{margin-top:16px;border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-surface-1);box-shadow:var(--elevation-1)}
+.sec h2{margin:0}
+.sec h2 button{display:flex;width:100%;min-height:56px;align-items:center;padding:0 16px;font-size:18px;font-weight:700;text-align:left}
+.sec h2 svg{margin-left:auto;color:var(--color-text-muted);transition:transform .2s}
+.sec[data-open="false"] h2 svg{transform:rotate(-90deg)}
+.sec .body{padding:0 16px 16px;font-size:15px}
+.sec[data-open="false"] .body{display:none}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 16px}
+.kv dt{color:var(--color-text-muted)}
+.kv dd{margin:0}
+
+/* Share sheet (simulated device UI) and toast */
+.overlay{position:absolute;inset:0;z-index:50;background:rgba(0,0,0,.5);display:flex;align-items:flex-end;justify-content:center}
+.sheet{width:100%;max-width:420px;background:var(--color-surface-1);border-radius:var(--radius-lg) var(--radius-lg) 0 0;padding:16px;box-shadow:var(--elevation-3)}
+.frame:not(.phone) .overlay{align-items:center}
+.frame:not(.phone) .sheet{border-radius:var(--radius-lg)}
+.sheet .cap{font-size:12px;color:var(--color-text-muted);margin-bottom:8px}
+.sheet pre{margin:0;max-height:340px;overflow:auto;padding:12px;border-radius:var(--radius-sm);background:var(--color-surface-2);font:400 14px/1.45 var(--font);white-space:pre-wrap}
+.sheet .apps{display:flex;gap:16px;margin:12px 0}
+.sheet .apps span{width:48px;height:48px;border-radius:14px;background:var(--color-surface-2)}
+.sheet .x{display:block;width:100%;min-height:44px;border-radius:var(--radius-full);border:1px solid var(--color-border);font-weight:600}
+.toast{position:absolute;left:50%;bottom:88px;transform:translateX(-50%);z-index:60;background:var(--color-text);color:var(--color-bg);padding:10px 16px;border-radius:var(--radius-full);font-size:14px;font-weight:600;white-space:nowrap}
+.frame:not(.phone) .toast{bottom:24px}
+.note{font-size:12px;color:var(--color-text-muted);margin:4px 0 12px}
+
+/* 016 */
+.chips{flex-wrap:wrap;gap:8px}
+.chip{cursor:pointer;background:var(--color-surface-2)}
+.chip.on{border-color:var(--color-primary-500);background:var(--color-primary-soft);color:var(--color-primary-500)}
+.chip .x{display:inline-grid;place-items:center;width:20px;height:20px;margin-right:-6px}
+.chip:disabled{opacity:.4}
+/* TmpFilterToggle (NEW) */
+.ftog{position:relative;flex:none;width:48px;height:48px;display:grid;place-items:center;border:1px solid var(--color-border);border-radius:var(--radius-full);background:var(--color-surface-1)}
+.ftog[aria-expanded="true"]{border-color:var(--color-primary-500);color:var(--color-primary-500);background:var(--color-primary-soft)}
+.ftog .nbadge{top:-4px;left:auto;right:-4px}
+.share.ic{padding:0 14px}
+.opts{margin-top:8px;border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-surface-1);box-shadow:var(--elevation-3);padding:6px;max-width:320px}
+.opts button{display:flex;width:100%;min-height:44px;align-items:center;justify-content:space-between;padding:0 12px;border-radius:var(--radius-sm);font-size:14px}
+.opts button[aria-selected="true"]{color:var(--color-primary-500);font-weight:700}
+.opts button:disabled{opacity:.4}
+.opts .c{color:var(--color-text-muted);font-size:12px}
+.countline{display:flex;align-items:center;gap:12px;margin-top:12px;font-size:14px;color:var(--color-text-muted)}
+.countline button{font-weight:700;color:var(--color-primary-500)}
+.grow{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px;min-height:48px;padding:0 4px;font-size:14px;font-weight:600}
+.tsw{width:44px;height:26px;border-radius:13px;background:var(--color-border);position:relative;flex:none}
+.tsw::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.15s}
+.tsw[aria-checked="true"]{background:var(--color-primary-500)}
+.tsw[aria-checked="true"]::after{left:21px}
+.grp{margin-top:16px}
+.grp h2{margin:0 0 2px;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--color-text-muted)}
+.grp h2 span{color:var(--color-text)}
+.rrow .hb{width:44px;height:44px;display:grid;place-items:center;color:var(--color-text-muted)}
+.rrow .hb[aria-pressed="true"]{color:var(--color-primary-500)}
+.rrow .hb[aria-pressed="true"] svg{fill:currentColor}
+.tabs{display:flex;gap:8px;border-bottom:1px solid var(--color-border);margin-bottom:12px}
+.tabs span{padding:10px 4px;font-weight:700;border-bottom:3px solid var(--color-primary-500)}
+</style>
+</head>
+<body>
+<div class="proto">
+  <b>Prototipo 016</b>
+  <span>Tema <span class="seg" id="theme"><button data-v="dark" aria-pressed="true">Oscuro</button><button data-v="light" aria-pressed="false">Claro</button></span></span>
+  <span>Vista <span class="seg" id="frame"><button data-v="phone" aria-pressed="true">Móvil</button><button data-v="desktop" aria-pressed="false">Escritorio</button></span></span>
+  <span><button class="seg" id="reset" style="padding:4px 12px;font-weight:600">Reiniciar datos</button></span>
+</div>
+<div class="stage"><div class="frame phone" id="app"></div></div>
+
+<script>
+const ic = {
+  recipes:'<path d="M17 21a1 1 0 0 0 1-1v-5.35c0-.457.316-.844.727-1.041a4 4 0 0 0-2.134-7.589 5 5 0 0 0-9.186 0 4 4 0 0 0-2.134 7.588c.411.198.727.585.727 1.041V20a1 1 0 0 0 1 1Z"/><path d="M6 17h12"/>',
+  plan:'<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+  list:'<circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>',
+  ingredients:'<path d="M5 6a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6Z"/><path d="M5 10h14M15 7v6"/>',
+  profile:'<circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/>',
+  share:'<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.59 13.51 6.83 3.98M15.41 6.51l-6.82 3.98"/>',
+  search:'<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
+  star:'<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
+  down:'<path d="m6 9 6 6 6-6"/>',
+  x:'<path d="M18 6 6 18M6 6l12 12"/>',
+  heart:'<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>',
+  // lucide SlidersHorizontal
+  sliders:'<path d="M10 5H3M12 19H3M14 3v4M16 17v4M21 12h-9M21 19h-5M21 5h-7M8 10v4M8 12H3"/>',
+};
+const svg = (k, cls='') => `<svg class="i ${cls}" viewBox="0 0 24 24" aria-hidden="true">${ic[k]}</svg>`;
+const cap = s => s.charAt(0).toUpperCase()+s.slice(1);
+const coll = new Intl.Collator('es');
+const norm = s => s.normalize('NFD').replace(/[̀-̂̄-ͯ]/g,'').toLowerCase();
+
+const FAMILIES = [['verduras','Verduras'],['frutas','Frutas'],['carnes','Carnes'],['lacteos','Lácteos'],['despensa','Despensa']];
+const SEED = [
+  ['cebolla','cebolla','verduras',1,1],['tomate','tomate','verduras',0,1],['ajo','ajo','verduras',1,0],['pimiento','pimiento rojo','verduras',0,0],['zanahoria','zanahoria','verduras',0,1],
+  ['limon','limón','frutas',0,1],['platano','plátano','frutas',1,0],
+  ['pollo','pechuga de pollo','carnes',0,1],['chorizo','chorizo','carnes',0,0],
+  ['nata','nata','lacteos',0,1],['leche','leche','lacteos',1,0],['queso','queso manchego','lacteos',0,0],
+  ['arroz','arroz','despensa',0,1],['aceite','aceite de oliva','despensa',1,0,1],['sal','sal','despensa',1,0,1],
+  ['cilantro','cilantro',null,0,1],['panela','panela','endulzantes',0,1],
+];
+// id, title, category, time, diet, cuisine, difficulty, protein, status, rating, fav
+const RSEED = [
+  ['ajiaco','Ajiaco santafereño','Sopa','60','Sin gluten','Colombiana','Media','Pollo','tried',5,1],
+  ['tortilla','Tortilla de patatas','Plato principal','30','Vegetariana','Española','Fácil','Huevo','tried',4,1],
+  ['curry','Curry de garbanzos','Plato principal','30','Vegana','India','Fácil','Legumbres','tried',3,0],
+  ['flan','Flan de huevo','Postre','over60','Vegetariana','Española','Media','Huevo','to-try',null,0],
+  ['ramen','Ramen de cerdo','Sopa','over60',null,'Japonesa','Difícil','Cerdo','to-try',null,1],
+  ['bandeja','Bandeja paisa','Plato principal','over60',null,'Colombiana','Difícil','Cerdo','tried',null,0],
+  ['gazpacho','Gazpacho','Sopa','15','Vegana','Española','Fácil',null,'discarded',2,0],
+  ['arepas','Arepas de queso','Desayuno','30','Vegetariana','Colombiana','Fácil','Queso','tried',4,0],
+];
+const FILTERS = [
+  ['category','Categoría'],['time','Tiempo'],['diet','Dieta'],['cuisine','Cocina'],['difficulty','Dificultad'],
+  ['protein','Proteína'],['status','Estado'],['rating','Rating'],['fav','Favoritos'],
+];
+const FIXED = {
+  time:[['15','Hasta 15 min'],['30','Hasta 30 min'],['60','Hasta 1 h'],['over60','Más de 1 h']],
+  difficulty:[['Fácil','Fácil'],['Media','Media'],['Difícil','Difícil']],
+  status:[['tried','Probadas'],['to-try','Por probar'],['discarded','Descartadas']],
+  rating:[['1','1+ ★'],['2','2+ ★'],['3','3+ ★'],['4','4+ ★'],['5','5 ★'],['none','Sin rating']],
+  fav:[['yes','Favoritos'],['no','No favoritos']],
+};
+const TIME_RANK = {'15':15,'30':30,'60':60,'over60':999};
+
+let items, recipes, st;
+function freshScreen(){
+  return {panel:false, open:null, f:{}, q:'', family:null, group:false, filter:'todos', struck:new Set(), autoHave:new Set(), frozen:null};
+}
+function reset(){
+  items = SEED.map(([id,name,family,have,buy,staple])=>({id,name,family,have:!!have,buy:!!buy,staple:!!staple}));
+  recipes = RSEED.map(([id,title,category,time,diet,cuisine,difficulty,protein,status,rating,fav])=>({id,title,category,time,diet,cuisine,difficulty,protein,status,rating,fav:!!fav}));
+  st = {screen:'recipes', ...freshScreen(), toast:null};
+}
+reset();
+const ui = {theme:'dark', frame:'phone'};
+const buyCount = () => items.filter(i=>i.buy).length;
+const badgeText = n => n>99 ? '99+' : String(n);
+
+/* ---------- recipe filters ---------- */
+function rMatch(r,key,v){
+  switch(key){
+    case 'time': return v==='over60' ? r.time==='over60' : r.time!=null && TIME_RANK[r.time] <= +v;
+    case 'rating': return v==='none' ? r.rating==null : v==='5' ? r.rating===5 : (r.rating??0) >= +v;
+    case 'fav': return v==='yes' ? r.fav : !r.fav;
+    default: return r[key]===v;
+  }
+}
+function applyR(list, f, except){
+  return list.filter(r=>Object.entries(f).every(([k,v])=>k===except || rMatch(r,k,v)));
+}
+function rOptions(base,key){
+  const fixed = FIXED[key] ?? [...new Set(base.map(r=>r[key]).filter(Boolean))].sort(coll.compare).map(v=>[v,v]);
+  const pool = applyR(base, st.f, key);
+  return fixed.map(([v,l])=>[v,l,pool.filter(r=>rMatch(r,key,v)).length]);
+}
+
+/* ---------- shared bits ---------- */
+function head(title){ return `<div class="head"><h1>${title}</h1><span class="sync"><i></i>Sincronizado · hace 1 min</span></div>`; }
+function filterToggle(n){
+  const name = n>0 ? `Filtros, ${n} ${n===1?'activo':'activos'}` : 'Filtros';
+  return `<button class="ftog" id="ftog" aria-expanded="${st.panel}" aria-label="${name}">${svg('sliders','md')}${n>0?`<span class="nbadge" aria-hidden="true">${n}</span>`:''}</button>`;
+}
+function searchBox(ph){
+  return `<label class="search">${svg('search','md')}<input id="q" placeholder="${ph}" aria-label="${ph}" value="${st.q}"></label>`;
+}
+function chip(key,label,valueLabel,disabled){
+  if (valueLabel!=null) return `<span class="chip on">${valueLabel}<button class="x" data-clear="${key}" aria-label="Quitar ${label}">${svg('x','sm')}</button></span>`;
+  return `<button class="chip" data-chip="${key}" aria-expanded="${st.open===key}" ${disabled?'disabled':''}>${label}${svg('down','md')}</button>`;
+}
+function optsPanel(key,opts){
+  if (st.open!==key) return '';
+  const cur = key==='family' ? st.family : st.f[key];
+  return `<div class="opts" role="listbox">${opts.map(([v,l,c])=>`<button role="option" data-opt="${key}" data-v="${v}" aria-selected="${cur===v}" ${c===0&&cur!==v?'disabled':''}><span>${l}</span><span class="c">${c}</span></button>`).join('')}</div>`;
+}
+
+/* ---------- Recetas / Perfil ---------- */
+function recipeRow(r){
+  const rm = r.rating ? `<span class="dot" aria-hidden="true">·</span><span class="rm" aria-label="Rating ${r.rating} de 5">${svg('star','sm')}${r.rating}</span>` : '';
+  return `<div class="rrow"><div class="l"><span class="ph"></span><div style="min-width:0"><div class="rt">${r.title}</div><div class="meta fixed">${r.category}${rm}</div></div></div><button class="hb" data-fav="${r.id}" aria-pressed="${r.fav}" aria-label="${r.fav?'Quitar de favoritos':'Añadir a favoritos'}">${svg('heart')}</button></div>`;
+}
+function screenRecipes(profile){
+  const base = profile ? recipes.filter(r=>r.fav || st.frozen?.has(r.id)) : recipes;
+  const keys = FILTERS.filter(([k])=>!(profile && k==='fav'));
+  const active = Object.keys(st.f).length;
+  let shown = applyR(base, st.f);
+  if (st.frozen) shown = base.filter(r=>st.frozen.has(r.id));
+  if (st.q.length>=3) shown = shown.filter(r=>norm(r.title).includes(norm(st.q)));
+  shown = [...shown].sort((a,b)=>(b.rating??0)-(a.rating??0) || coll.compare(a.title,b.title));
+  let h = head(profile?'Perfil':'Recetas');
+  if (profile) h += '<div class="tabs"><span>Recetas favoritas</span></div>';
+  h += `<div class="searchrow">${searchBox('Buscar receta o ingrediente')}${filterToggle(active)}</div>`;
+  if (st.panel){
+    h += '<div class="chips">'+keys.map(([k,l])=>{
+      const v = st.f[k]; const opts = rOptions(base,k);
+      return chip(k,l, v!=null ? opts.find(o=>o[0]===v)?.[1] : null, opts.length===0);
+    }).join('')+'</div>';
+    const ok = keys.find(([k])=>k===st.open);
+    if (ok) h += optsPanel(ok[0], rOptions(base, ok[0]));
+  }
+  if (active>0 || st.q.length>=3) h += `<div class="countline"><span>${shown.length} de ${base.length} recetas</span>${active>=2?'<button id="clearall">Limpiar</button>':''}</div>`;
+  else h += `<div class="countline"><span>${base.length} recetas</span></div>`;
+  h += '<div style="margin-top:8px">'+(shown.length? shown.map(recipeRow).join('') : '<div class="empty"><div class="e">🔎</div><h2>Ninguna receta coincide</h2><button class="btn" id="clearall">Quitar filtros</button></div>')+'</div>';
+  return h;
+}
+
+/* ---------- Compra / Despensa ---------- */
+function famLabel(k){ return k==null ? 'Otros' : (FAMILIES.find(f=>f[0]===k)?.[1] ?? cap(k)); }
+function famRank(k){ const known=FAMILIES.map(f=>f[0]); return k==null ? 2e3 : known.includes(k) ? known.indexOf(k) : 1e3; }
+function sw(kind,i){
+  const on = kind==='have' ? i.have : i.buy;
+  return `<button class="sw ${kind==='have'?'ok':'buy'}" role="switch" aria-checked="${on}" ${i.staple?'disabled':''} data-flip="${kind}" data-id="${i.id}" aria-label="${kind==='have'?'Tengo':'Comprar'} ${i.name}"><span></span>${kind==='have'?'Tengo':'Comprar'}</button>`;
+}
+function row(i){
+  const struck = st.screen==='list' && !i.buy;
+  return `<li class="irow ${struck?'struck':''}"><span class="n">${cap(i.name)}${i.staple?'<small>Básico, siempre disponible</small>':''}</span>${sw('have',i)}${sw('buy',i)}</li>`;
+}
+function rowsHtml(list){
+  if (!st.group) return '<ul class="rows">'+list.map(row).join('')+'</ul>';
+  const g = new Map();
+  for (const i of list){ const k=i.family??null; if(!g.has(k)) g.set(k,[]); g.get(k).push(i); }
+  return [...g.keys()].sort((a,b)=>famRank(a)-famRank(b) || coll.compare(a??'',b??'')).map(k=>
+    `<section class="grp"><h2>${famLabel(k)} · <span>${g.get(k).length}</span></h2><ul class="rows" style="margin:0">${g.get(k).map(row).join('')}</ul></section>`).join('');
+}
+function pantryScreen(isList){
+  const pool = isList ? items.filter(i=>i.buy || st.struck.has(i.id)) : items;
+  let list = pool;
+  if (st.q.length>=3) list = list.filter(i=>norm(i.name).includes(norm(st.q)));
+  else if (!isList && st.filter!=='todos') list = list.filter(i=> st.filter==='tengo' ? i.have : !i.have);
+  const famOpts = [...new Set(pool.map(i=>i.family??null))].sort((a,b)=>famRank(a)-famRank(b)).map(k=>[k??'__otros', famLabel(k), list.filter(i=>(i.family??null)===k).length]);
+  if (st.family) list = list.filter(i=>(i.family??'__otros')===st.family);
+  list = [...list].sort((a,b)=>coll.compare(a.name,b.name));
+  const live = buyCount();
+  let h = head(isList ? 'Lista de compra' : 'Despensa');
+  h += `<div class="searchrow">${searchBox('Buscar ingrediente')}${isList && live>0 ? (ui.frame==='phone' ? `<button class="ftog" id="share" aria-label="Compartir">${svg('share','md')}</button>` : `<button class="share" id="share">${svg('share','md')}<span>Compartir</span></button>`):''}${filterToggle(st.family?1:0)}</div>`;
+  if (st.panel){
+    h += `<div class="chips">${chip('family','Familia', st.family ? famOpts.find(o=>o[0]===st.family)?.[1] : null, famOpts.length===0)}</div>`;
+    h += optsPanel('family', famOpts);
+    h += `<div class="grow"><span id="glabel">Agrupar por familia</span><button class="tsw" role="switch" id="group" aria-checked="${st.group}" aria-labelledby="glabel"></button></div>`;
+  }
+  if (!isList) h += `<div class="segc" role="radiogroup" aria-label="Estado">${[['todos','Todos'],['tengo','Tengo'],['notengo','No tengo']].map(([v,l])=>`<button role="radio" aria-checked="${st.filter===v}" data-filter="${v}">${l}</button>`).join('')}</div>`;
+  if (isList && pool.length===0) h += `<div class="empty"><div class="e">🛒</div><h2>Tu lista está vacía</h2><p>Activa Comprar en un ingrediente de Despensa.</p><button class="btn" data-nav="ingredients">Ir a Despensa</button></div>`;
+  else if (list.length===0) h += `<div class="empty"><div class="e">🔎</div><h2>Ningún ingrediente coincide</h2><button class="btn" id="clearall">Quitar filtros</button></div>`;
+  else h += rowsHtml(list);
+  return h;
+}
+
+/* ---------- shell ---------- */
+const NAV = [['recipes','Recetas'],['plan','Plan'],['list','Compra'],['ingredients','Despensa'],['profile','Perfil']];
+function navItem(id,label){
+  const n = buyCount();
+  const badge = id==='list' && n>0 ? `<span class="nbadge" aria-hidden="true">${badgeText(n)}</span>` : '';
+  const name = id==='list' && n>0 ? `aria-label="Compra, ${n} por comprar"` : '';
+  const cur = st.screen===id ? 'aria-current="page"' : '';
+  return `<a data-nav="${id}" ${cur} ${name}><span class="ico">${svg(id)}${badge}</span><span>${label}</span></a>`;
+}
+function render(){
+  document.documentElement.dataset.theme = ui.theme;
+  const app = document.getElementById('app');
+  app.className = 'frame ' + (ui.frame==='phone'?'phone':'');
+  const body = {recipes:()=>screenRecipes(false), profile:()=>screenRecipes(true), list:()=>pantryScreen(true), ingredients:()=>pantryScreen(false), plan:()=>head('Plan')+'<p class="note">Sin cambios en esta feature.</p>'}[st.screen]();
+  const nav = NAV.map(n=>navItem(...n)).join('');
+  const side = ui.frame==='phone' ? '' : `<nav class="side" aria-label="Principal"><div class="brand"><i></i>My Food</div>${nav}</nav>`;
+  const bottom = ui.frame==='phone' ? `<nav class="bottom" aria-label="Principal">${nav}</nav>` : '';
+  const toast = st.toast ? `<div class="toast" role="status">${st.toast}</div>` : '';
+  const focused = document.activeElement?.id==='q';
+  app.innerHTML = `${side}<div class="main"><div class="scroll"><div class="shell">${body}</div></div>${bottom}${toast}</div>`;
+  if (focused){ const q=document.getElementById('q'); q.focus(); q.setSelectionRange(q.value.length,q.value.length); }
+}
+let toastTimer;
+function showToast(t){ st.toast=t; render(); clearTimeout(toastTimer); toastTimer=setTimeout(()=>{st.toast=null;render();},4000); }
+
+const app = document.getElementById('app');
+app.addEventListener('input', e=>{ if (e.target.id==='q'){ st.q=e.target.value; st.frozen=null; render(); } });
+app.addEventListener('click', e=>{
+  const t = e.target.closest('[data-nav],[data-flip],[data-filter],[data-chip],[data-opt],[data-clear],[data-fav],#ftog,#group,#clearall,#share');
+  if (!t) { if (st.open){ st.open=null; render(); } return; }
+  if (t.dataset.nav){ st = {...st, ...freshScreen(), screen:t.dataset.nav}; }
+  else if (t.id==='ftog'){ st.panel=!st.panel; st.open=null; }
+  else if (t.dataset.chip){ st.open = st.open===t.dataset.chip ? null : t.dataset.chip; }
+  else if (t.dataset.opt){
+    const k=t.dataset.opt, v=t.dataset.v;
+    if (k==='family') st.family=v; else st.f[k]=v;
+    st.open=null; st.frozen=null;
+  }
+  else if (t.dataset.clear){ if (t.dataset.clear==='family') st.family=null; else delete st.f[t.dataset.clear]; st.frozen=null; }
+  else if (t.id==='clearall'){ st.f={}; st.family=null; st.q=''; st.filter='todos'; st.frozen=null; }
+  else if (t.dataset.fav){
+    // FR-3: rows stay put until the filters or the search change
+    const visible=[...app.querySelectorAll('[data-fav]')].map(b=>b.dataset.fav);
+    if (!st.frozen) st.frozen=new Set(visible);
+    const r=recipes.find(x=>x.id===t.dataset.fav); r.fav=!r.fav;
+  }
+  else if (t.id==='group'){ st.group=!st.group; }
+  else if (t.dataset.filter){ st.filter=t.dataset.filter; }
+  else if (t.dataset.flip){
+    const i = items.find(x=>x.id===t.dataset.id);
+    const inList = st.screen==='list';
+    if (t.dataset.flip==='have'){ i.have=!i.have; st.autoHave.delete(i.id); }
+    else {
+      i.buy=!i.buy;
+      if (inList){
+        if (!i.buy){ st.struck.add(i.id); if (!i.have){ i.have=true; st.autoHave.add(i.id); } }
+        else if (st.autoHave.has(i.id)){ i.have=false; st.autoHave.delete(i.id); }
+      }
+    }
+  }
+  else if (t.id==='share'){ showToast('Abre el menú de compartir (feature 015, sin cambios)'); return; }
+  render();
+});
+for (const [id,key] of [['theme','theme'],['frame','frame']]) {
+  document.getElementById(id).addEventListener('click', e=>{
+    const b=e.target.closest('button'); if(!b) return;
+    ui[key]=b.dataset.v;
+    for (const x of document.querySelectorAll('#'+id+' button')) x.setAttribute('aria-pressed', x===b);
+    render();
+  });
+}
+document.getElementById('reset').addEventListener('click', ()=>{reset();render();});
+render();
+</script>
+</body>
+</html>

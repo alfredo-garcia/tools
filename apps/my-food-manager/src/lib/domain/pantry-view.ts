@@ -1,6 +1,14 @@
 import type { FilterOption } from "@/lib/domain/filters";
 import { normalize } from "@/lib/domain/search";
-import type { FavoriteOp, Library, PantryOp, PlanOp, RatingOp, ReviewOp } from "@/lib/schema";
+import type {
+  FavoriteOp,
+  Library,
+  PantryOp,
+  PantryOpKind,
+  PlanOp,
+  RatingOp,
+  ReviewOp,
+} from "@/lib/schema";
 
 /** A change made on this device and not confirmed by the server yet. */
 export type PendingOp = PantryOp | PlanOp | ReviewOp;
@@ -136,16 +144,49 @@ export function shoppingListText(
   buy: ReadonlySet<string>,
   vocab: Library["vocab"]["families"],
 ): string {
-  const list = items.filter((i) => buy.has(i.id));
-  const blocks = familyOptions(list, vocab)
-    .sort((a, b) => Number(a.value === DEFAULT_FAMILY) - Number(b.value === DEFAULT_FAMILY))
-    .map(({ value, label }) =>
-      [
-        label,
-        ...sortByName(list.filter((i) => i.family === value)).map(
-          (i) => `☐ ${i.name.charAt(0).toUpperCase()}${i.name.slice(1)}`,
-        ),
-      ].join("\n"),
-    );
+  const blocks = groupByFamily(
+    items.filter((i) => buy.has(i.id)),
+    vocab,
+  ).map(({ label, items: rows }) =>
+    [label, ...rows.map((i) => `☐ ${i.name.charAt(0).toUpperCase()}${i.name.slice(1)}`)].join("\n"),
+  );
   return ["Lista de la compra", ...blocks].join("\n\n");
+}
+
+export interface FamilyGroup {
+  value: string;
+  label: string;
+  items: IngredientItem[];
+}
+
+/** The list by family: vocabulary order, unknown families after it alphabetically, "Otros" last; rows alphabetical. */
+export function groupByFamily(
+  list: readonly IngredientItem[],
+  vocab: Library["vocab"]["families"],
+): FamilyGroup[] {
+  return familyOptions(list, vocab)
+    .sort((a, b) => Number(a.value === DEFAULT_FAMILY) - Number(b.value === DEFAULT_FAMILY))
+    .map(({ value, label }) => ({
+      value,
+      label,
+      items: sortByName(list.filter((i) => i.family === value)),
+    }));
+}
+
+/**
+ * What flipping "Comprar" on a row of Compra does (my-food-manager/016): turning it off also turns "Tengo" on when it
+ * was off, and turning it back on undoes that automatic "Tengo" (but not one set by hand).
+ */
+export function listBuyFlip(row: { toBuy: boolean; atHome: boolean; autoHave: boolean }): {
+  ops: { kind: PantryOpKind; value: boolean }[];
+  autoHave: boolean;
+} {
+  if (row.toBuy) {
+    const ops: { kind: PantryOpKind; value: boolean }[] = [{ kind: "pantry.setBuy", value: false }];
+    if (!row.atHome) ops.push({ kind: "pantry.setHave", value: true });
+    return { ops, autoHave: !row.atHome };
+  }
+  const ops: { kind: PantryOpKind; value: boolean }[] = [{ kind: "pantry.setBuy", value: true }];
+  if (row.autoHave) ops.push({ kind: "pantry.setHave", value: false });
+  return { ops, autoHave: false };
 }

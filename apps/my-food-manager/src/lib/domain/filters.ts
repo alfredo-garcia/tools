@@ -2,7 +2,15 @@ import type { Library, Recipe, RecipeStatus } from "@/lib/schema";
 import type { RatedRecipe } from "./ratings";
 
 export type FilterKey =
-  "category" | "time" | "diet" | "cuisine" | "difficulty" | "protein" | "status" | "rating";
+  | "category"
+  | "time"
+  | "diet"
+  | "cuisine"
+  | "difficulty"
+  | "protein"
+  | "status"
+  | "rating"
+  | "favorite";
 
 export const FILTERS: { key: FilterKey; label: string }[] = [
   { key: "category", label: "Categoría" },
@@ -13,6 +21,7 @@ export const FILTERS: { key: FilterKey; label: string }[] = [
   { key: "protein", label: "Proteína" },
   { key: "status", label: "Estado" },
   { key: "rating", label: "Rating" },
+  { key: "favorite", label: "Favoritos" },
 ];
 
 export type FilterState = Partial<Record<FilterKey, string>>;
@@ -26,12 +35,26 @@ export const STATUS_OPTIONS: { value: RecipeStatus; label: string }[] = [
   { value: "discarded", label: "Descartadas" },
 ];
 
-/** Filter state a recipe list or the favorites tab starts with. */
-export const DEFAULT_FILTER_STATE: FilterState = { status: "tried" };
+/** Filter state a recipe list or the favorites tab starts with: nothing active (my-food-manager/016). */
+export const DEFAULT_FILTER_STATE: FilterState = {};
 
 /** Recipes that may be picked for the plan: everything but the discarded ones. */
 export const withoutDiscarded = (recipes: Recipe[]): Recipe[] =>
   recipes.filter((r) => recipeStatus(r) !== "discarded");
+
+/** A recipe as the Favoritos filter sees it: flagged when it is one of Al's favorites. */
+export type FavoriteFlagged = Recipe & { favorite?: boolean };
+
+/** Flags Al's favorites on copies of the recipes, for the Favoritos filter. */
+export const withFavorites = <R extends Recipe>(
+  recipes: readonly R[],
+  favorites: ReadonlySet<string>,
+): (R & { favorite: boolean })[] => recipes.map((r) => ({ ...r, favorite: favorites.has(r.id) }));
+
+export const FAVORITE_OPTIONS = [
+  { value: "yes", label: "Favoritos" },
+  { value: "no", label: "No favoritos" },
+];
 
 /** Rating options: "N+" matches Al's rating of N stars or more, "5" exactly five, "none" the unrated ones. */
 export const RATING_OPTIONS = [
@@ -86,6 +109,8 @@ function recipeValues(recipe: Recipe, key: FilterKey): string[] {
         ? ["none"]
         : RATING_OPTIONS.filter((o) => o.value !== "none" && +o.value <= stars).map((o) => o.value);
     }
+    case "favorite":
+      return [(recipe as FavoriteFlagged).favorite ? "yes" : "no"];
     case "time": {
       const min = totalMinutes(recipe.time);
       return min === undefined ? [] : TIME_BUCKETS.filter((b) => b.test(min)).map((b) => b.value);
@@ -146,6 +171,9 @@ export function filterOptions(
   } else if (key === "rating") {
     ids = RATING_OPTIONS.map((o) => o.value);
     label = (id) => RATING_OPTIONS.find((o) => o.value === id)!.label;
+  } else if (key === "favorite") {
+    ids = FAVORITE_OPTIONS.map((o) => o.value);
+    label = (id) => FAVORITE_OPTIONS.find((o) => o.value === id)!.label;
   } else if (key === "time") {
     ids = TIME_BUCKETS.map((b) => b.value).filter((v) => present.has(v));
     label = (id) => TIME_BUCKETS.find((b) => b.value === id)!.label;

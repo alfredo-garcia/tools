@@ -7,6 +7,7 @@ import { useLayout } from "@/components/layout/use-layout";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { Button } from "@/components/inputs/Button";
 import { SearchInput } from "@/components/inputs/SearchInput";
+import { TmpFilterToggle } from "@/components/inputs/TmpFilterToggle";
 import { RecipeFilters } from "@/components/recipes/RecipeFilters";
 import { RecipeRow } from "@/components/recipes/RecipeRow";
 import { TmpPendingChanges } from "@/components/feedback/TmpPendingChanges";
@@ -18,6 +19,7 @@ import {
   DEFAULT_FILTER_STATE,
   activeFilterCount,
   filterRecipes,
+  withFavorites,
   type FilterState,
 } from "@/lib/domain/filters";
 import { sortByRating } from "@/lib/domain/ratings";
@@ -46,16 +48,45 @@ export function RecipeLibrary() {
   const { favorites, toggle: toggleFavorite } = useFavorites();
   const outbox = useOutbox();
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTER_STATE);
+  const [panelOpen, setPanelOpen] = useState(false);
   const { typed, applied, setTyped, applyNow, clear } = useSearchQuery();
   const searching = applied !== "";
+  // Hearts tapped while shown keep their earlier favorite state for the Favoritos filter until search or filters
+  // change, so the row does not move or leave (my-food-manager/016 FR-3).
+  const context = `${applied}|${JSON.stringify(filters)}`;
+  const [kept, setKept] = useState<{ context: string; was: ReadonlyMap<string, boolean> }>({
+    context,
+    was: new Map(),
+  });
+  const keptWas = kept.context === context ? kept.was : undefined;
+  const filterFavorites = useMemo(() => {
+    if (!keptWas?.size) return favorites;
+    const out = new Set(favorites);
+    for (const [id, was] of keptWas)
+      if (was) out.add(id);
+      else out.delete(id);
+    return out;
+  }, [favorites, keptWas]);
+  const flagged = useMemo(
+    () =>
+      library
+        ? { ...library, recipes: withFavorites(library.recipes, filterFavorites) }
+        : undefined,
+    [library, filterFavorites],
+  );
   const visible = useMemo(
-    () => (library ? sortByRating(filterRecipes(library.recipes, filters)) : []),
-    [library, filters],
+    () => (flagged ? sortByRating(filterRecipes(flagged.recipes, filters)) : []),
+    [flagged, filters],
   );
   const results = useMemo(
-    () => (library && searching ? searchRecipes(library, applied, filters) : undefined),
-    [library, searching, applied, filters],
+    () => (flagged && searching ? searchRecipes(flagged, applied, filters) : undefined),
+    [flagged, searching, applied, filters],
   );
+  const onToggleFavorite = (id: string) => {
+    const was = keptWas ?? new Map<string, boolean>();
+    if (!was.has(id)) setKept({ context, was: new Map(was).set(id, favorites.has(id)) });
+    toggleFavorite(id);
+  };
   // The list scrolls with the page below the large layout and inside its column in it. The offset is
   // tracked as it changes because the browser clamps the page scroll as soon as the layout switches.
   const listOffset = useRef(0);
@@ -124,7 +155,7 @@ export function RecipeLibrary() {
         categoryLabel={categoryLabel(library.vocab.categories, r.category)}
         favorite={favorites.has(r.id)}
         rating={ratings.get(r.id)}
-        onToggleFavorite={() => toggleFavorite(r.id)}
+        onToggleFavorite={() => onToggleFavorite(r.id)}
         current={r.id === detailId}
         replace={large && detailId !== undefined}
       />
@@ -132,20 +163,33 @@ export function RecipeLibrary() {
     const noResults = results ? results.groups.length === 0 : visible.length === 0;
     content = (
       <>
-        <SearchInput
-          value={typed}
-          onChange={setTyped}
-          onClear={clear}
-          onSubmit={applyNow}
-          placeholder="Buscar por nombre, proteína o ingrediente"
-          label="Buscar recetas"
-        />
+        <div className="flex items-center gap-2">
+          <div className="min-w-0 flex-1">
+            <SearchInput
+              value={typed}
+              onChange={setTyped}
+              onClear={clear}
+              onSubmit={applyNow}
+              placeholder="Buscar por nombre, proteína o ingrediente"
+              label="Buscar recetas"
+            />
+          </div>
+          <TmpFilterToggle
+            expanded={panelOpen}
+            count={activeFilterCount(filters)}
+            onToggle={() => setPanelOpen((o) => !o)}
+            controls="recipe-filters"
+          />
+        </div>
         <RecipeFilters
-          library={library}
+          library={flagged ?? library}
           state={filters}
           onChange={setFilters}
           shown={shown}
           searching={searching}
+          expanded={panelOpen}
+          withFavorites
+          panelId="recipe-filters"
         />
         {outbox.pending.length > 0 && (
           <TmpPendingChanges

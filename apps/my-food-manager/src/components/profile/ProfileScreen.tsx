@@ -6,6 +6,7 @@ import { EmptyState } from "@/components/feedback/EmptyState";
 import { TmpPendingChanges } from "@/components/feedback/TmpPendingChanges";
 import { Button } from "@/components/inputs/Button";
 import { SearchInput } from "@/components/inputs/SearchInput";
+import { TmpFilterToggle } from "@/components/inputs/TmpFilterToggle";
 import { TmpSegmentedControl } from "@/components/inputs/TmpSegmentedControl";
 import { AppShell } from "@/components/layout/AppShell";
 import { RecipeDetail } from "@/components/recipes/detail/RecipeDetail";
@@ -42,6 +43,7 @@ export function ProfileScreen() {
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTER_STATE);
   const { typed, applied, setTyped, applyNow, clear } = useSearchQuery();
   const [openId, setOpenId] = useState<string | null>(null);
+  const [panelOpen, setPanelOpen] = useState(false);
   // Recipes unfavorited while shown stay (dimmed) until search or filters change.
   const context = `${applied}|${JSON.stringify(filters)}`;
   const [kept, setKept] = useState<{ context: string; ids: ReadonlySet<string> }>({
@@ -125,14 +127,22 @@ export function ProfileScreen() {
     const noResults = results ? results.groups.length === 0 : visible.length === 0;
     content = (
       <>
-        <div className="mt-3">
-          <SearchInput
-            value={typed}
-            onChange={setTyped}
-            onClear={clear}
-            onSubmit={applyNow}
-            placeholder="Buscar en tus favoritas"
-            label="Buscar recetas"
+        <div className="mt-3 flex items-center gap-2">
+          <div className="min-w-0 flex-1">
+            <SearchInput
+              value={typed}
+              onChange={setTyped}
+              onClear={clear}
+              onSubmit={applyNow}
+              placeholder="Buscar en tus favoritas"
+              label="Buscar recetas"
+            />
+          </div>
+          <TmpFilterToggle
+            expanded={panelOpen}
+            count={activeFilterCount(filters)}
+            onToggle={() => setPanelOpen((o) => !o)}
+            controls="profile-filters"
           />
         </div>
         <RecipeFilters
@@ -141,6 +151,8 @@ export function ProfileScreen() {
           onChange={setFilters}
           shown={shown}
           searching={searching}
+          expanded={panelOpen}
+          panelId="profile-filters"
         />
         {outbox.pending.length > 0 && (
           <TmpPendingChanges

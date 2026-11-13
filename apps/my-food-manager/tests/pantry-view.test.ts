@@ -4,7 +4,9 @@ import {
   buyCount,
   catalogItems,
   familyOptions,
+  groupByFamily,
   inFamily,
+  listBuyFlip,
   matchesText,
   pantryWithPending,
   shoppingListText,
@@ -163,5 +165,68 @@ describe("shoppingListText", () => {
     expect(shoppingListText(ITEMS, new Set(["agua", "patata"]), vocab)).toBe(
       "Lista de la compra\n\nVerduras\n☐ Patata\n\nOtros\n☐ Agua",
     );
+  });
+});
+
+// my-food-manager/016: grouping by family (US-5) and "Comprar" off in Compra (US-4).
+describe("groupByFamily", () => {
+  it("orders groups like the shared text, with alphabetical rows and counts", () => {
+    const list = ITEMS.filter((i) =>
+      ["patata", "nata", "leche", "arroz", "extra", "agua"].includes(i.id),
+    );
+    const groups = groupByFamily(list, VOCAB);
+    expect(groups.map((g) => g.label)).toEqual([
+      "Verduras y hortalizas",
+      "Huevos y lácteos",
+      "Cereales y harinas",
+      "Mystery",
+      "Otros",
+    ]);
+    expect(groups[1].items.map((i) => i.id)).toEqual(["leche", "nata"]);
+  });
+  it("puts Otros last even when the vocabulary lists it earlier, and skips empty families", () => {
+    const vocab = {
+      other: { label: "Otros" },
+      vegetables: { label: "Verduras" },
+      dairy: { label: "Lácteos" },
+    };
+    const list = ITEMS.filter((i) => ["agua", "patata"].includes(i.id));
+    expect(groupByFamily(list, vocab).map((g) => g.label)).toEqual(["Verduras", "Otros"]);
+  });
+  it("gives no groups for an empty list", () => {
+    expect(groupByFamily([], VOCAB)).toEqual([]);
+  });
+});
+
+describe("listBuyFlip", () => {
+  it("turning Comprar off turns Tengo on when it was off, and remembers it", () => {
+    expect(listBuyFlip({ toBuy: true, atHome: false, autoHave: false })).toEqual({
+      ops: [
+        { kind: "pantry.setBuy", value: false },
+        { kind: "pantry.setHave", value: true },
+      ],
+      autoHave: true,
+    });
+  });
+  it("turning Comprar off leaves Tengo alone when it was already on", () => {
+    expect(listBuyFlip({ toBuy: true, atHome: true, autoHave: false })).toEqual({
+      ops: [{ kind: "pantry.setBuy", value: false }],
+      autoHave: false,
+    });
+  });
+  it("turning Comprar back on undoes an automatic Tengo", () => {
+    expect(listBuyFlip({ toBuy: false, atHome: true, autoHave: true })).toEqual({
+      ops: [
+        { kind: "pantry.setBuy", value: true },
+        { kind: "pantry.setHave", value: false },
+      ],
+      autoHave: false,
+    });
+  });
+  it("turning Comprar back on keeps a Tengo set by hand", () => {
+    expect(listBuyFlip({ toBuy: false, atHome: true, autoHave: false })).toEqual({
+      ops: [{ kind: "pantry.setBuy", value: true }],
+      autoHave: false,
+    });
   });
 });

@@ -73,9 +73,13 @@ export function SideNav({ current }: Props) {
                 href={href}
                 data-testid={`nav-${id}`}
                 aria-current={active ? "page" : undefined}
-                className={`flex min-h-(--size-touch-min) items-center gap-md rounded-full px-md text-label ${active ? "bg-primary-500/14 text-primary-500" : "text-text-muted hover:bg-surface-2"}`}
+                className={`flex min-h-(--size-touch-min) items-center gap-md rounded-full px-md text-label ${active ? "bg-primary-500/14 text-text" : "text-text-muted hover:bg-surface-2"}`}
               >
-                <Icon aria-hidden className="size-(--icon-nav)" strokeWidth={active ? 2.5 : 2} />
+                <Icon
+                  aria-hidden
+                  className={`size-(--icon-nav) ${active ? "text-primary-500" : ""}`}
+                  strokeWidth={active ? 2.5 : 2}
+                />
                 {label}
               </Link>
             </li>

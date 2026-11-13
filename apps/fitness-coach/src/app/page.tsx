@@ -1,4 +1,5 @@
-// Placeholder from the scaffold (fitness-coach/001 T0). The real screens arrive with T5.
+import { Home } from "./_screens/Home";
+
 export default function Page() {
-  return <main />;
+  return <Home />;
 }

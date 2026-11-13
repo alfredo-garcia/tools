@@ -1,7 +1,7 @@
 # Changelog: Datos del knowledge-base sin conexión
 
 > Project: `fitness-coach`
-> Merged: pendiente; se escribe en la rama `fitness-coach/001-offline-kb-data` antes del merge, como pide tech_standards §15 (el hash del merge se añade al mergear)
+> Merged: PR #1, merge commit `cc44d5a8` en `main` (2026-11-13); escrito en la rama antes del merge (tech_standards §15)
 > Source PRD: `001_offline-kb-data_prd.md`
 > Source UX Flow: `001_offline-kb-data_ux_flow.md`
 > Master doc file(s) touched: `docs/functional-spec.md` (creación)

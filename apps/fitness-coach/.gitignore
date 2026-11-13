@@ -1,0 +1,16 @@
+# Drafts and prototype briefs (tech_standards §2)
+prototypes/
+
+# Next / tooling
+.next/
+next-env.d.ts
+playwright-report/
+test-results/
+
+# Service worker built by `serwist build` (ADR 004)
+public/sw.js
+public/sw.js.map
+
+# Secrets (tech_standards §10)
+.env*.local
+*.tsbuildinfo

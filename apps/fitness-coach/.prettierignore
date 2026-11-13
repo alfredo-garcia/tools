@@ -1,0 +1,13 @@
+# Formatting check (tech_standards §17, E4). Docs are prose: not formatted.
+docs/
+prototypes/
+.next/
+node_modules/
+coverage/
+playwright-report/
+test-results/
+public/sw.js
+package-lock.json
+next-env.d.ts
+.claude/
+*.md

@@ -1,0 +1,55 @@
+{
+  "name": "fitness-coach",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build && serwist build",
+    "start": "next start",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "check:standards": "node scripts/check-standards.mjs",
+    "check": "npm run format:check && npm run lint && npm run typecheck && npm run check:standards",
+    "test:unit": "vitest run",
+    "test:e2e": "playwright test",
+    "test": "npm run test:unit && npm run test:e2e"
+  },
+  "dependencies": {
+    "@googleapis/drive": "27.0.0",
+    "@serwist/next": "9.5.13",
+    "idb-keyval": "6.3.0",
+    "lucide-react": "1.64.0",
+    "next": "16.4.6",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "yaml": "2.9.1",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.65.0",
+    "@serwist/cli": "9.5.13",
+    "@tailwindcss/postcss": "4.3.5",
+    "@types/node": "22.20.5",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "esbuild": "0.28.2",
+    "eslint": "9.39.5",
+    "eslint-config-next": "16.4.6",
+    "eslint-config-prettier": "10.1.8",
+    "postcss": "8.5.32",
+    "prettier": "3.10.1",
+    "serwist": "9.5.13",
+    "tailwindcss": "4.3.5",
+    "typescript": "6.0.3",
+    "vitest": "4.1.12"
+  },
+  "overrides": {
+    "zod": "4.6.7"
+  }
+}

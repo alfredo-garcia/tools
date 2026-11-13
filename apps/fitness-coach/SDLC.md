@@ -15,8 +15,8 @@
 ## Paths
 - docs_root: docs
 - features_root: docs/features
-- web_app: none                     # set once code exists
-- web_components: none
+- web_app: src/app
+- web_components: src/components
 - mobile_app: none
 - mobile_components: none
 - prototypes: prototypes

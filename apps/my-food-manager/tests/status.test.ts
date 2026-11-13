@@ -67,7 +67,7 @@ describe("recipe status in the schema", () => {
 });
 
 describe("Estado filter", () => {
-  it("is the seventh filter, before Rating, and starts on Probadas", () => {
+  it("is the seventh filter, before Rating, with no initial value", () => {
     expect(FILTERS.map((f) => f.key)).toEqual([
       "category",
       "time",
@@ -77,9 +77,11 @@ describe("Estado filter", () => {
       "protein",
       "status",
       "rating",
+      "favorite",
     ]);
     expect(FILTERS[6].label).toBe("Estado");
-    expect(DEFAULT_FILTER_STATE).toEqual({ status: "tried" });
+    // my-food-manager/016: no filter is active on opening.
+    expect(DEFAULT_FILTER_STATE).toEqual({});
   });
 
   it("Probadas includes recipes without status", () => {
@@ -100,7 +102,8 @@ describe("Estado filter", () => {
   });
 
   it("counts Estado as an active filter", () => {
-    expect(activeFilterCount(DEFAULT_FILTER_STATE)).toBe(1);
+    expect(activeFilterCount(DEFAULT_FILTER_STATE)).toBe(0);
+    expect(activeFilterCount({ status: "tried" })).toBe(1);
     expect(activeFilterCount({ status: "tried", category: "mains" })).toBe(2);
   });
 
@@ -122,7 +125,7 @@ describe("Estado filter", () => {
   });
 
   it("other filters' counts take Estado into account", () => {
-    const cats = filterOptions(library, "category", DEFAULT_FILTER_STATE);
+    const cats = filterOptions(library, "category", { status: "tried" });
     expect(cats.find((o) => o.value === "mains")?.count).toBe(2);
     expect(cats.find((o) => o.value === "desserts")?.count).toBe(0);
   });

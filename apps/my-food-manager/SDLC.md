@@ -31,6 +31,10 @@
 ## Conventions
 - slug_case: kebab-case
 
+## Design
+- claude_design: unavailable           # prototypes are code-first HTML in prototypes/ (user, 2026-11-12)
+- claude_design_system: none
+
 ## Phase 0
 - product_vision: approved (2026-10-29)           # v2, stage 2
 - tech_foundations: approved (2026-10-30)   # re-checked for plan/pantry data and writes (vision v2); §5 pantry schema 2, §9 write key at first change

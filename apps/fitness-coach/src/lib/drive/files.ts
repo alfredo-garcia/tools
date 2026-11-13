@@ -119,8 +119,15 @@ async function mapLimit<T, R>(items: T[], limit: number, fn: (x: T) => Promise<R
 export async function readKbFiles(): Promise<KbFile[]> {
   const config = readServerConfig();
   if (!config) throw new Error("server_misconfigured");
-  const client = driveClient(config.serviceAccountJson);
-  const entries = await listKbEntries(client, config.folderId);
+  return readKbFilesWith(driveClient(config.serviceAccountJson), config.folderId);
+}
+
+/**
+ * Same as `readKbFiles` with an explicit client (tests use a fake one). If one download fails
+ * the whole read fails, so the route answers 502 and the stored copy stays untouched.
+ */
+export async function readKbFilesWith(client: drive_v3.Drive, folderId: string): Promise<KbFile[]> {
+  const entries = await listKbEntries(client, folderId);
   const contents = await mapLimit(entries, DOWNLOAD_CONCURRENCY, (e) => download(client, e));
   return entries.map((e, i) => ({ path: e.path, content: contents[i] }));
 }

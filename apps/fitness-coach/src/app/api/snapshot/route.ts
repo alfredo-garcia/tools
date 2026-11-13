@@ -105,7 +105,18 @@ export async function GET(request: Request): Promise<Response> {
     return errorResponse("drive_unavailable", startedAt);
   }
 
-  const snapshot = buildSnapshot(files, new Date());
+  let snapshot: Snapshot;
+  try {
+    snapshot = buildSnapshot(files, new Date());
+  } catch {
+    // Defensive: buildSnapshot handles bad files one by one; a throw here is a bug, never logged
+    // with its message because it could quote file contents.
+    log(500, startedAt, { code: "build_failed" });
+    return Response.json(
+      { error: { code: "server_error", message: "Error interno." } },
+      { status: 500, headers: { "cache-control": NO_STORE } },
+    );
+  }
   const etag = etagOf(snapshot);
   const counts = { files: files.length, skipped: snapshot.skipped.length };
 

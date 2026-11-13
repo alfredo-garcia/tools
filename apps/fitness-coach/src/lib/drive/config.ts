@@ -14,5 +14,15 @@ export function readServerConfig(env: NodeJS.ProcessEnv = process.env): ServerCo
   const serviceAccountJson = env.GOOGLE_SERVICE_ACCOUNT_JSON;
   const folderId = env.GOOGLE_DRIVE_FOLDER_ID;
   if (!accessKey || !serviceAccountJson || !folderId) return null;
+  if (!isServiceAccountJson(serviceAccountJson)) return null;
   return { accessKey, serviceAccountJson, folderId };
+}
+
+function isServiceAccountJson(json: string): boolean {
+  try {
+    const v = JSON.parse(json) as Record<string, unknown>;
+    return typeof v === "object" && v !== null;
+  } catch {
+    return false;
+  }
 }

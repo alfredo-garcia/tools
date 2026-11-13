@@ -11,6 +11,7 @@ import {
   routineFrontmatterSchema,
   sessionsFileSchema,
   vocabularySchema,
+  WEEKDAYS,
 } from "@/lib/schema/kb";
 import {
   PROGRAM_FILE,
@@ -179,7 +180,12 @@ export function buildSnapshot(files: KbFile[], now: Date): Snapshot {
     ? {
         phase: rawProgram.phase,
         constraints: rawProgram.constraints,
-        schedule: rawProgram.schedule,
+        schedule: {
+          ...rawProgram.schedule,
+          week: Object.fromEntries(
+            WEEKDAYS.map((d) => [d, rawProgram.schedule.week?.[d] ?? []]),
+          ) as Program["schedule"]["week"],
+        },
       }
     : null;
 

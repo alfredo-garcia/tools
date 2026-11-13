@@ -2,6 +2,7 @@
  * The snapshot document (PRD §7): what GET /api/snapshot returns and what the client stores.
  */
 import type { z } from "zod";
+import type { WEEKDAYS } from "./kb";
 import type {
   exerciseFrontmatterSchema,
   programSchema,
@@ -11,6 +12,8 @@ import type {
 } from "./kb";
 
 export const SNAPSHOT_FORMAT = 1;
+
+type Weekday = (typeof WEEKDAYS)[number];
 
 export type SkipReason = "parse_error" | "schema_error";
 export type Skipped = { path: string; reason: SkipReason };
@@ -28,7 +31,13 @@ export type Routine = z.infer<typeof routineFrontmatterSchema> & {
   status: "active" | "paused";
   sections: RoutineSections;
 };
-export type Program = Pick<z.infer<typeof programSchema>, "phase" | "constraints" | "schedule">;
+type RawProgram = z.infer<typeof programSchema>;
+/** The program as the client sees it: `schedule.week` always has the seven days, each a list. */
+export type Program = {
+  phase: RawProgram["phase"];
+  constraints: RawProgram["constraints"];
+  schedule: Omit<RawProgram["schedule"], "week"> & { week: Record<Weekday, string[]> };
+};
 export type Session = z.infer<typeof sessionSchema>;
 export type Vocabulary = z.infer<typeof vocabularySchema>;
 

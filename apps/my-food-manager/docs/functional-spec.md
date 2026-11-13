@@ -10,7 +10,7 @@
 
 My Food Manager (shown to users as "My Food") is a personal, visual, mobile-first web app (installable PWA) that helps Al and his household partner decide what to cook and shop without forgetting anything. It reads the Google Drive folder `food`, which the food-manager skill maintains, and keeps working without a connection. There are no logins. Platform: web only.
 
-Today the app lets you browse the library with filters and a text search and open each recipe's detail, and it has a main navigation with five sections: Recetas, Plan, Compra, Despensa and Perfil. Perfil shows Al's favorite recipes. Recipes can be marked as favorites from the list and from the detail, with a heart, and shared from the detail; favorites are saved to Drive in the same way as the pantry and the plan. Plan is the household's meal calendar: from today on, each day has Desayuno, Almuerzo and Cena, to which recipes are added and removed, and every recipe added is checked against the pantry, offering to put what is missing on the shopping list. A slot can also be marked from the picker as eaten out ("Comer fuera") or ordered in ("Pedir a domicilio"); the mark shows with its own icon so it is clear that meal is not cooked. Despensa holds the pantry and Compra the shopping list, which can be shared as text grouped by family; each ingredient has two switches, "Tengo" and "Comprar", saved to Drive (also from the device without a connection, with a shared write key). Plan changes are saved to Drive in the same way (offline queue and shared write key). Each recipe has a status (Probada, Por probar or Descartada), set outside the app by the food-manager skill; Recetas and the favorites in Perfil start showing only the Probadas and can switch to the others or show all. Al can rate each recipe from 1 to 5 stars from its detail; the rating shows on the rows of Recetas, the favorites of Perfil and the Plan, can be filtered, and sorts Recetas and the favorites from the best rated down; ratings are saved to Drive like favorites. From the recipe detail Al can put what a recipe lacks on the shopping list (a window that sorts its ingredients into Faltan, En mi lista de la compra and Ya tengo) or take the recipe to the Plan, where the picker offers it first the first time it opens. On small windows the recipe detail opens with Info general and Notas collapsed. Comments, the "curated" flag and the person picker of the profile are still pending (see `product/product_vision.md` §7).
+Today the app lets you browse the library with filters and a text search and open each recipe's detail, and it has a main navigation with five sections: Recetas, Plan, Compra, Despensa and Perfil. Perfil shows Al's favorite recipes. Recipes can be marked as favorites from the list and from the detail, with a heart, and shared from the detail; favorites are saved to Drive in the same way as the pantry and the plan. Plan is the household's meal calendar: from today on, each day has Desayuno, Almuerzo and Cena, to which recipes are added and removed, and every recipe added is checked against the pantry, offering to put what is missing on the shopping list. A slot can also be marked from the picker as eaten out ("Comer fuera") or ordered in ("Pedir a domicilio"); the mark shows with its own icon so it is clear that meal is not cooked. Despensa holds the pantry and Compra the shopping list, which can be shared as text grouped by family and shown grouped by family; ticking an ingredient off in Compra marks it as "Tengo"; each ingredient has two switches, "Tengo" and "Comprar", saved to Drive (also from the device without a connection, with a shared write key). Plan changes are saved to Drive in the same way (offline queue and shared write key). Each recipe has a status (Probada, Por probar or Descartada), set outside the app by the food-manager skill; Recetas and the favorites in Perfil open showing every recipe, with their filters hidden behind a filter icon next to the search; Recetas can also filter by favorites. Al can rate each recipe from 1 to 5 stars from its detail; the rating shows on the rows of Recetas, the favorites of Perfil and the Plan, can be filtered, and sorts Recetas and the favorites from the best rated down; ratings are saved to Drive like favorites. From the recipe detail Al can put what a recipe lacks on the shopping list (a window that sorts its ingredients into Faltan, En mi lista de la compra and Ya tengo) or take the recipe to the Plan, where the picker offers it first the first time it opens. On small windows the recipe detail opens with Info general and Notas collapsed. Comments, the "curated" flag and the person picker of the profile are still pending (see `product/product_vision.md` §7).
 
 ## 2. How to Read This Documentation
 
@@ -24,7 +24,7 @@ Today the app lets you browse the library with filters and a text search and ope
 | Domain | One-line description | File | Status |
 |---|---|---|---|
 | library | Library sync, offline storage and the recipe list | inline below | Active |
-| recipes | Filtering (including by recipe status and rating) and searching the recipe list, reading a recipe, rating it and, from its detail, adding its missing ingredients to the shopping list or taking it to the Plan | inline below | Active |
+| recipes | Filtering (including by recipe status, rating and favorites) and searching the recipe list, reading a recipe, rating it and, from its detail, adding its missing ingredients to the shopping list or taking it to the Plan | inline below | Active |
 | navigation | Main navigation between sections and their placeholders | inline below | Active |
 | pantry | Pantry (Despensa) and shopping list (Compra, shareable as text), with writes to Drive | inline below | Active |
 | plan | Meal-plan calendar with recipe picking (offering first the recipe Al came from), eat-out and delivery marks and a pantry check, with writes to Drive | inline below | Active |
@@ -135,17 +135,19 @@ None.
 - **Mark (marca) / Comer fuera / Pedir a domicilio:** a slot's `out` dish, meaning that meal is not cooked at home. Comer fuera (`eat-out`) takes the whole slot; Pedir a domicilio (`delivery`) may share the slot with recipes, at most once. The picker offers them as "Salir fuera" and "Pedir".
 - **Faltan / En mi lista de la compra / Ya tengo:** the three groups of a recipe's ingredients (catalog ingredients only, each once, in recipe order, optional ones included). Ya tengo: a staple, or "Tengo" on even if "Comprar" is also on. En mi lista de la compra: not Ya tengo and "Comprar" on. Faltan: the rest. Ingredients outside the catalog are not listed.
 - **Receta de origen / "Tu receta":** the recipe whose detail Al left with "Añadir al plan"; the Plan's picker lists it first, chosen, with the tag "Tu receta".
-- **Filter:** one of Categoría, Tiempo, Dieta, Cocina, Dificultad, Proteína, Estado or Rating; each holds one chosen value at a time.
+- **Filter:** one of Categoría, Tiempo, Dieta, Cocina, Dificultad, Proteína, Estado, Rating or Favoritos (Recetas only); each holds one chosen value at a time. None is active on opening.
+- **Filter icon (icono de filtros):** the round button at the right of the search in Recetas, Perfil, Compra and Despensa that shows or hides the filters, with the number of active ones.
 - **Search / applied text:** the text typed in the search bar is the typed text; the applied text is the trimmed typed text once it has 3 or more characters and 1 second has passed without typing (or Enter was pressed). Only the applied text filters the list.
-- **Tengo / Comprar:** the two independent switches of an ingredient: "Tengo" (it is at home, `have`) and "Comprar" (it must be bought, `to_buy`). Any combination is valid.
+- **Tengo / Comprar:** the two switches of an ingredient: "Tengo" (it is at home, `have`) and "Comprar" (it must be bought, `to_buy`). Any combination is valid. They are independent, except that turning "Comprar" off in Compra also turns "Tengo" on.
 - **Staple (básico):** an ingredient that is always available (water, salt…); it shows "Tengo" on and locked, "Comprar" off and locked.
 - **Outbox (cola de cambios):** the ordered list of changes made on the device that Drive has not confirmed yet.
 - **Write key (clave de escritura):** the household's shared key that authorizes writes; asked once per device.
-- **Family (familia):** the classification of an ingredient (verdura, lácteo…), used by the family filter of Despensa and Compra and to group the shared list.
+- **Family (familia):** the classification of an ingredient (verdura, lácteo…), used by the family filter of Despensa and Compra, by "Agrupar por familia" and to group the shared list.
 - **Result group:** one of Recetas (the name matched), Proteína (a protein label matched) or Ingredientes (an ingredient name matched). A recipe appears in every group where it matches.
 
 ## 11. Recent Changes
 
+- 2026-11-13 — recipes, library, profile, pantry: filters behind a filter icon next to the search in Recetas, Perfil, Compra and Despensa; Recetas and Perfil open with no filter (no Probadas default) and Recetas gains a Favoritos filter; Compra rows get "Tengo", and ticking an ingredient off there marks it as "Tengo"; Compra and Despensa can group by family (see `changelog/016_filter-panel-and-grouping_changelog.md`).
 - 2026-11-03 — navigation, pantry, recipes: the shopping list becomes the Compra section, with a badge and sharing as text grouped by family; Despensa without tabs, its filter opening on Todos; Info general and Notas collapsed on small windows; rating mark centered on the category line (see `changelog/015_shopping-list-section_changelog.md`).
 - 2026-11-03 — plan: slots can be marked as Comer fuera or Pedir a domicilio from the picker, shown first in the slot with their own icon and saved to Drive (see `changelog/014_plan-eat-out-delivery_changelog.md`).
 - 2026-11-03 — recipes, plan: shortcuts in the recipe detail to add a recipe's missing ingredients to the shopping list and to take it to the Plan, where the picker offers it first; the Plan's missing-ingredients sheet uses the same three groups (see `changelog/013_recipe-detail-shortcuts_changelog.md`).
@@ -179,7 +181,7 @@ How data travels from Drive to the device, and how its state is shown. It is the
 - **Purpose:** browse the library and open a recipe. Rows open SCR-recipe-detail.
 - **Entry points:** opening the app (`/`); Recetas in the main navigation; FLW-first-sync.
 - **Functional composition:** CMP-app-shell, CMP-sync-badge, CMP-recipe-photo, CMP-recipe-search, CMP-recipe-filters, CMP-favorite-button, CMP-pending-changes.
-- **Data & business rules:** lists recipes from the best rated down: by stars from 5 to 1, then the unrated ones, and recipes with the same rating alphabetically by title (Spanish collation). Each row shows the photo or fallback tile, the title and the category name followed, on the same line and centered with it, by Al's rating mark when the recipe has one (display only; the stars to rate are in the detail, CMP-rating-stars), and opens the recipe's detail (rows are at least 56 px high). At the right of every row is a heart (CMP-favorite-button) that marks or unmarks the recipe as a favorite without opening it; the row stays where it is and the list does not reorder for it. A change of rating, in contrast, reorders the list at once with animation. "N cambios pendientes" (CMP-pending-changes) shows above the list while changes wait. Under the title is the search bar (see CMP-recipe-search) and below it the eight filters (see CMP-recipe-filters). The list opens with Estado on Probadas, so only the Probadas show and the count reads "N de M recetas" from the start, with M counting every recipe of every status; leaving Recetas and coming back restores that initial state. The count line "N de M recetas" and "Limpiar" show when a filter is active, and the count also shows while a search is applied. With an applied search, the list becomes up to three groups of rows (Recetas, Proteína, Ingredientes), each headed by its name and its number of recipes, e.g. "Proteína · 3"; empty groups are not shown, and N counts the different recipes shown. "N con avisos" shows when there are warnings. With an applied search the groups keep their own order and the rating order does not apply. If the browser cannot store data, a notice says that offline only shows what is already loaded.
+- **Data & business rules:** lists recipes from the best rated down: by stars from 5 to 1, then the unrated ones, and recipes with the same rating alphabetically by title (Spanish collation). Each row shows the photo or fallback tile, the title and the category name followed, on the same line and centered with it, by Al's rating mark when the recipe has one (display only; the stars to rate are in the detail, CMP-rating-stars), and opens the recipe's detail (rows are at least 56 px high). At the right of every row is a heart (CMP-favorite-button) that marks or unmarks the recipe as a favorite without opening it; the row stays where it is and the list does not reorder for it. A change of rating, in contrast, reorders the list at once with animation. "N cambios pendientes" (CMP-pending-changes) shows above the list while changes wait. Under the title is the search bar (see CMP-recipe-search) with the filter icon at its right; the icon shows or hides the nine filters (see CMP-recipe-filters), which start hidden. The list opens with no filter active, showing every recipe of every status, and the count reads "N recetas"; leaving Recetas and coming back, or reloading, hides the filters and clears them again. The count line "N de M recetas" and "Limpiar" show when a filter is active, and the count also shows while a search is applied. With an applied search, the list becomes up to three groups of rows (Recetas, Proteína, Ingredientes), each headed by its name and its number of recipes, e.g. "Proteína · 3"; empty groups are not shown, and N counts the different recipes shown. "N con avisos" shows when there are warnings. With an applied search the groups keep their own order and the rating order does not apply. If the browser cannot store data, a notice says that offline only shows what is already loaded.
 - **States (business meaning):**
   - Loading: no stored library and the first sync is running; "Cargando tus recetas…".
   - Offline with no data: "Necesitas conexión la primera vez", with a "Reintentar" button.
@@ -294,19 +296,22 @@ Filtering and searching the recipe list and reading a recipe. Everything works f
 #### CMP-recipe-filters Recipe filters
 
 - **Design system reference:** `RecipeFilters`, `components/recipes/RecipeFilters` (see `context/ui_kit_registry.md`).
-- **Functional role:** the filter row above the list, its option panel, the count and "Limpiar".
+- **Functional role:** the filter icon next to the search, the filter row it shows or hides, its option panel, the count and "Limpiar".
 - **Behavior rules:**
-  - Eight filters, in this order: Categoría, Tiempo, Dieta, Cocina, Dificultad, Proteína, Estado, Rating. A filter shows only its name until a value is chosen; then it shows the value with an "x" that removes it and brings the name back. Opening one filter closes any other; Esc or a tap outside closes the options.
+  - Nine filters in Recetas, in this order: Categoría, Tiempo, Dieta, Cocina, Dificultad, Proteína, Estado, Rating, Favoritos; eight in Perfil (no Favoritos).
+  - The filters are hidden on opening; a filter icon at the right of the search shows or hides them. The icon shows the number of active filters when there is at least one, and its accessible name says it ("Filtros, 2 activos"). The count line and "Limpiar" stay visible whether the filters are shown or hidden. Leaving the screen or reloading hides them again.
+  - A filter shows only its name until a value is chosen; then it shows the value with an "x" that removes it and brings the name back. Opening one filter closes any other; Esc or a tap outside closes the options.
   - One value per filter. Filters combine, so a recipe must match all active ones. With several tags in a family (cuisine, diet, protein), a recipe matches if any of them equals the chosen value.
   - Options are the values present in the library, in vocabulary order (values missing from the vocabulary come last, alphabetically), each with the number of recipes it would give with the other active filters. An option with 0 is disabled; the chosen one never is. A filter with no values in the library is disabled.
-  - Estado starts on "Probadas" each time the list or the favorites tab opens. Its options are always "Probadas", "Por probar" and "Descartadas", in that order, even when the library has none of one of them (it is then disabled with 0). Its "x" removes the filter, which applies no status condition and shows every status. A recipe without a valid status counts as Probada. The counts of the other filters take Estado into account.
+  - Estado has no initial value: with it off every status shows. Its options are always "Probadas", "Por probar" and "Descartadas", in that order, even when the library has none of one of them (it is then disabled with 0). Its "x" removes the filter, which applies no status condition and shows every status. A recipe without a valid status counts as Probada. The counts of the other filters take Estado into account.
+  - Favoritos has two fixed options, "Favoritos" and "No favoritos", each with its count; favorites count the changes pending on the device. With Favoritos active, tapping a heart does not move or remove the row until the filters or the search change.
   - Rating has six fixed options, in this order: "1+ ★", "2+ ★", "3+ ★", "4+ ★", "5 ★" and "Sin rating", each with its count. "N+" matches Al's rating of N stars or more, "5 ★" exactly five, and "Sin rating" the unrated recipes. It has no initial value, so with it off rated and unrated recipes show. It counts for "Limpiar".
   - Tiempo uses total time with four options: "Hasta 15 min", "Hasta 30 min", "Hasta 1 h", "Más de 1 h". Dificultad shows "Fácil", "Media", "Difícil". A recipe with no time or no difficulty never matches those filters when active.
   - Option and chip labels come from the vocabularies with the first letter capitalized; a value missing from the vocabulary shows its id, also capitalized.
-  - The count reads "N recetas" with no filter and "N de M recetas" with filters. "Limpiar" clears all filters, Estado included, and appears when two or more are active (Estado counts).
+  - The count reads "N recetas" with no filter and "N de M recetas" with filters. "Limpiar" clears all filters and appears when two or more are active.
   - The list reorders with animation, which is off when the device asks for reduced motion.
 - **Used on:** SCR-library-list.
-- **Source:** `003_recipe-filters_prd.md`, `003_recipe-filters_ux_flow.md`, `011_recipe-status-filter_prd.md` / `_ux_flow.md`, `012_recipe-ratings_prd.md` / `_ux_flow.md`; implementation in `src/components/recipes/RecipeFilters.tsx`.
+- **Source:** `003_recipe-filters_prd.md`, `003_recipe-filters_ux_flow.md`, `011_recipe-status-filter_prd.md` / `_ux_flow.md`, `012_recipe-ratings_prd.md` / `_ux_flow.md`, `016_filter-panel-and-grouping_prd.md` / `_ux_flow.md`; implementation in `src/components/recipes/RecipeFilters.tsx` and `src/components/inputs/TmpFilterToggle.tsx`.
 
 #### CMP-rating-stars Rating stars
 
@@ -344,7 +349,7 @@ Filtering and searching the recipe list and reading a recipe. Everything works f
 
 - **Design system reference:** `ShareButton`, `components/recipes/ShareButton` (see `context/ui_kit_registry.md`).
 - **Functional role:** the control that shares the open recipe or the shopping list.
-- **Behavior rules:** icon-only on the title row of small windows; with the text "Compartir" under the photo on medium and large windows, with the width of its content. Disabled (busy) while the photo is awaited. A tap opens the device's share menu (see FLW-share-recipe); where the browser has none it copies the link. In Compra: with the text "Compartir" next to the search, hidden when the list is empty (FLW-share-shopping-list).
+- **Behavior rules:** icon-only on the title row of small windows; with the text "Compartir" under the photo on medium and large windows, with the width of its content. Disabled (busy) while the photo is awaited. A tap opens the device's share menu (see FLW-share-recipe); where the browser has none it copies the link. In Compra: next to the search, before the filter icon, icon-only on small windows and with the text "Compartir" on medium and large ones; hidden when the list is empty (FLW-share-shopping-list).
 - **Used on:** SCR-recipe-detail and SCR-shopping-list (never in recipe lists).
 - **Source:** `010_share-recipe_prd.md` (US-1), `010_share-recipe_ux_flow.md` (§2.2), `015_shopping-list-section_prd.md` (US-3); implementation in `src/components/recipes/ShareButton.tsx`.
 
@@ -378,7 +383,7 @@ Filtering and searching the recipe list and reading a recipe. Everything works f
 
 - **Goal / trigger:** narrow the list in two taps.
 - **Screens involved (in sequence):** SCR-library-list.
-- **Business rules governing the flow:** tapping a filter opens its options; choosing one applies it and the filter shows the chosen value with an "x" to remove it. "Limpiar" removes all filters, Estado included, when two or more are active. Estado starts on Probadas and has two more options, Por probar and Descartadas; its "x" shows every status. Rating starts empty and narrows by Al's stars (1+ to 4+, 5, or Sin rating). Time options: hasta 15 min, hasta 30 min, hasta 1 h, más de 1 h, measured on total time. Recipes with no time or difficulty never match those options. Filters are not kept across reloads.
+- **Business rules governing the flow:** the filter icon shows the filters; tapping a filter opens its options; choosing one applies it and the filter shows the chosen value with an "x" to remove it. "Limpiar" removes all filters when two or more are active. Estado has no initial value and offers Probadas, Por probar and Descartadas; its "x" shows every status again. Favoritos narrows to Al's favorites or to the rest. Rating starts empty and narrows by Al's stars (1+ to 4+, 5, or Sin rating). Time options: hasta 15 min, hasta 30 min, hasta 1 h, más de 1 h, measured on total time. Recipes with no time or difficulty never match those options. Filters are not kept across reloads.
 - **Edge cases & error handling:** filters that match nothing show "Ninguna receta coincide" with "Quitar filtros". A sync re-applies the active filters in place.
 - **Source:** `003_recipe-filters_prd.md` (US-1 to US-6).
 
@@ -469,15 +474,15 @@ The pantry (Despensa) and the shopping list (Compra) over the ingredient catalog
 - **Entry points:** Despensa in the main navigation; direct address; "Ir a Despensa" from an empty Compra.
 - **Functional composition:** CMP-main-navigation, CMP-app-shell, CMP-pantry-list, CMP-pending-changes, CMP-write-key.
 - **Data & business rules:**
-  - No tabs: the shopping list is its own section, Compra (SCR-shopping-list). Leaving the section or reloading resets the search and the filters.
-  - A Todos / Tengo / No tengo filter ("Todos" by default). Every ingredient row has two independent switches, "Tengo" and "Comprar"; neither changes the other. An active search ignores the Todos / Tengo / No tengo filter. A row whose "Tengo" changes stays in place until the filter or the search changes.
+  - No tabs: the shopping list is its own section, Compra (SCR-shopping-list). The search has the filter icon at its right, which shows or hides the family filter and "Agrupar por familia" (CMP-pantry-list). Leaving the section or reloading hides them and resets the search, the filters and the grouping.
+  - A Todos / Tengo / No tengo filter ("Todos" by default), always visible, outside the filter icon's panel. Every ingredient row has two independent switches, "Tengo" and "Comprar"; neither changes the other. An active search ignores the Todos / Tengo / No tengo filter. A row whose "Tengo" changes stays in place until the filter or the search changes.
   - Staples are shown with "Tengo" on and locked and "Comprar" off and locked, labelled "Básico, siempre disponible"; the pantry file never lists them.
   - Data: ingredient catalog, family vocabulary and the pantry.
 - **States (business meaning):**
   - Loading, no library while offline, and error: as the recipe list, with "Reintentar".
-  - No match: "Ningún ingrediente coincide", with "Borrar búsqueda" and/or "Quitar filtros".
+  - No match: "Ningún ingrediente coincide", with "Borrar búsqueda" and/or "Quitar filtros"; "Quitar filtros" removes the family filter, and keeps Todos / Tengo / No tengo and the grouping.
 - **Related flows:** FLW-flip-switch, FLW-enter-write-key.
-- **Source:** `007_pantry-shopping-list-switches_prd.md`, `007_pantry-shopping-list-switches_ux_flow.md`, `015_shopping-list-section_prd.md` (US-2); implementation in `src/components/pantry/` and `src/app/ingredients/page.tsx`.
+- **Source:** `007_pantry-shopping-list-switches_prd.md`, `007_pantry-shopping-list-switches_ux_flow.md`, `015_shopping-list-section_prd.md` (US-2), `016_filter-panel-and-grouping_prd.md` / `_ux_flow.md`; implementation in `src/components/pantry/` and `src/app/ingredients/page.tsx`.
 
 #### SCR-shopping-list Compra
 
@@ -486,27 +491,30 @@ The pantry (Despensa) and the shopping list (Compra) over the ingredient catalog
 - **Entry points:** Compra in the main navigation; direct address.
 - **Functional composition:** CMP-main-navigation, CMP-app-shell, CMP-pantry-list, CMP-share-button, CMP-pending-changes, CMP-write-key.
 - **Data & business rules:**
-  - The ingredients with "Comprar" on, with search and the family filter only; each row has only "Comprar". Turning "Comprar" off leaves the row struck through until leaving Compra, so a slip is undone with one tap.
-  - "Compartir" next to the search while the list has at least one ingredient (see FLW-share-shopping-list).
-  - Leaving the section or reloading resets the search, the filter and the struck rows.
+  - The ingredients with "Comprar" on, with search, the family filter and "Agrupar por familia" behind the filter icon. Each row has "Tengo" and "Comprar", as in Despensa.
+  - Turning "Comprar" off also turns "Tengo" on when it was off, and leaves the row struck through until leaving Compra. Turning it back on in the same visit undoes it, and "Tengo" returns to off if it was turned on that way and not changed by hand since (see FLW-flip-switch). Flipping "Tengo" never changes "Comprar" and does not remove the row.
+  - "Compartir" between the search and the filter icon while the list has at least one ingredient: icon only on small windows, with the text on medium and large ones (see FLW-share-shopping-list).
+  - Leaving the section or reloading hides the filters and resets the search, the filter, the grouping and the struck rows.
   - Data: ingredient catalog, family vocabulary and the pantry.
 - **States (business meaning):**
   - Loading, no library while offline, and error: as Despensa, with "Reintentar".
   - No match: "Ningún ingrediente coincide", with "Borrar búsqueda" and/or "Quitar filtros".
   - Empty list: "Tu lista está vacía", with "Ir a Despensa".
 - **Related flows:** FLW-flip-switch, FLW-enter-write-key, FLW-share-shopping-list.
-- **Source:** `007_pantry-shopping-list-switches_prd.md` / `_ux_flow.md`, `015_shopping-list-section_prd.md` (US-1, US-3) / `_ux_flow.md` (§2.2); implementation in `src/components/pantry/IngredientsScreen.tsx` and `src/app/shopping-list/page.tsx`.
+- **Source:** `007_pantry-shopping-list-switches_prd.md` / `_ux_flow.md`, `015_shopping-list-section_prd.md` (US-1, US-3) / `_ux_flow.md` (§2.2), `016_filter-panel-and-grouping_prd.md` / `_ux_flow.md`; implementation in `src/components/pantry/IngredientsScreen.tsx` and `src/app/shopping-list/page.tsx`.
 
 ### Functionally-Significant Components
 
 #### CMP-pantry-list Ingredient search and filters
 
 - **Design system reference:** `SearchInput`, `FilterChip`, `FilterOptions` (see `context/ui_kit_registry.md`); temporary `TmpSwitch` and `TmpSegmentedControl`.
-- **Functional role:** the search bar, the family filter and the switch rows of Despensa and Compra.
+- **Functional role:** the search bar, the filter icon with its panel (family filter and "Agrupar por familia"), and the switch rows of Despensa and Compra.
 - **Behavior rules:**
   - Search: 3 characters minimum; applies 1 second after the last keystroke or on Enter; "x" and Esc clear it. Case and accents are ignored ("ñ" is a different letter); it searches the name and the synonyms, and with several words all must be in the same name or synonym. The text never leaves the device.
   - Family filter: one family at a time, with the count per option. The options are the families present in the screen's list, in vocabulary order; an ingredient with no family counts under "Otros".
-  - Sorted alphabetically (Spanish).
+  - Filter icon: hidden panel on opening; shows the number of active filters (the family filter; grouping and Todos / Tengo / No tengo are not counted).
+  - Agrupar por familia: off on opening. When on, the rows that remain after search and filters are shown in one block per family, headed by the family label and its count ("Verduras · 3"): vocabulary order, unknown families after it alphabetically, "Otros" last, empty families left out. Struck rows of Compra stay in their block.
+  - Sorted alphabetically (Spanish), within each block when grouped.
 - **Used on:** SCR-ingredients, SCR-shopping-list.
 - **Source:** `007_pantry-shopping-list-switches_prd.md`, `_ux_flow.md`; implementation in `src/components/pantry/IngredientsScreen.tsx`, `IngredientRow.tsx` and `src/lib/domain/pantry-view.ts`.
 
@@ -531,9 +539,9 @@ The pantry (Despensa) and the shopping list (Compra) over the ingredient catalog
 #### FLW-flip-switch Flip a switch
 
 - **Goal / trigger:** record that an ingredient is at home or must be bought.
-- **Screens involved (in sequence):** SCR-ingredients or SCR-shopping-list → (flip "Tengo" or "Comprar") → the same screen with the new value and, until confirmed, CMP-pending-changes.
-- **Business rules governing the flow:** the change shows at once and goes to the device's outbox; it is sent as soon as there is a connection and a key. Several changes to the same switch collapse into the last one. Without connection or after a failure it retries after 2, 5, 15 and 60 seconds, then every 60 seconds while the app is visible. The server applies the changes to the latest `pantry.yaml`, retrying once on a conflict, edits only the touched lines and sets `updated` with offset `-05:00`.
-- **Edge cases & error handling:** an unknown ingredient, a staple, or a file that is not schema 2 is rejected with a notice, never merged into another format. A Drive outage or a repeated conflict keeps the change pending. The other phone sees the change at its next sync; the last change to an ingredient wins.
+- **Screens involved (in sequence):** SCR-ingredients or SCR-shopping-list → (flip "Tengo" or "Comprar"; in Compra, turning "Comprar" off may also turn "Tengo" on) → the same screen with the new value and, until confirmed, CMP-pending-changes.
+- **Business rules governing the flow:** the change shows at once and goes to the device's outbox; it is sent as soon as there is a connection and a key. Several changes to the same switch collapse into the last one. Without connection or after a failure it retries after 2, 5, 15 and 60 seconds, then every 60 seconds while the app is visible. The server applies the changes to the latest `pantry.yaml`, retrying once on a conflict, edits only the touched lines and sets `updated` with offset `-05:00`. In Compra, turning "Comprar" off on an ingredient without "Tengo" sends two changes, "Comprar" off then "Tengo" on; turning "Comprar" back on in the same visit sends "Comprar" on and, if "Tengo" was turned on that way and not touched by hand since, "Tengo" off. In Despensa the two switches stay independent.
+- **Edge cases & error handling:** an unknown ingredient, a staple, or a file that is not schema 2 is rejected with a notice, never merged into another format. A Drive outage or a repeated conflict keeps the change pending. The other phone sees the change at its next sync; the last change to an ingredient wins. If the server rejects one of the two changes made by turning "Comprar" off in Compra, that switch returns to its stored value with its notice and the other change stands.
 - **Source:** `007_pantry-shopping-list-switches_prd.md` (§5, §10).
 
 #### FLW-enter-write-key Enter the write key
@@ -674,11 +682,11 @@ Perfil: Al's favorite recipes and the heart that marks them. Favorites are saved
 - **Entry points:** Perfil in the main navigation; direct address; "Ver recetas" is the way out, to SCR-library-list.
 - **Functional composition:** CMP-app-shell, CMP-recipe-search, CMP-recipe-filters, CMP-favorite-button, CMP-pending-changes, CMP-write-key, SCR-recipe-detail.
 - **Data & business rules:**
-  - A tab bar with a single tab, "Recetas favoritas", selected. Under it, the search bar and the eight filters of Recetas, working only among the favorites (filter options and counts are computed over them). Estado starts on Probadas here too, independent of Recetas; a favorite that is Descartada or Por probar stays in the file and shows when Estado is changed or removed.
+  - A tab bar with a single tab, "Recetas favoritas", selected. Under it, the search bar with the filter icon, which shows or hides the eight filters of Recetas (no Favoritos), working only among the favorites (filter options and counts are computed over them). Nothing is filtered on opening, so every favorite of every status shows.
   - The list shows the favorite recipes in the same row format as SCR-library-list (photo or fallback tile, title, category and rating mark), ordered like Recetas (best rated first, unrated last, ties alphabetical, no rating order while a search is applied), each with its heart filled. "N cambios pendientes" shows while changes wait.
   - Tapping a heart unmarks the recipe; its row stays, dimmed with an empty heart, until the search or the filters change or Perfil is left, and can be marked again. Nothing else reorders.
   - Tapping a row opens SCR-recipe-detail over Perfil without changing the address (full screen on small windows, modal on medium and large). Closing returns to Perfil as it was.
-  - Search text and filters are emptied when Perfil is left or reloaded; Estado returns to Probadas.
+  - Search text and filters are emptied, and the filters hidden, when Perfil is left or reloaded.
 - **States (business meaning):**
   - Loading: "Cargando tus recetas…".
   - No library and offline, or error: the same messages as the list, with "Reintentar".

@@ -50,6 +50,7 @@
 | `TmpSegmentedControl` | Inputs | Web | Beta (temporary) | `components/inputs/TmpSegmentedControl` |
 | `TmpPendingChanges` | Feedback/Overlays | Web | Beta (temporary) | `components/feedback/TmpPendingChanges` |
 | `TmpNavBadge` | Navigation | Web | Beta (temporary) | `components/navigation/TmpNavBadge` |
+| `TmpFilterToggle` | Inputs | Web | Beta (temporary) | `components/inputs/TmpFilterToggle` |
 | `PersonPicker` | Inputs | Web | Beta | `components/inputs/PersonPicker` |
 | `PlanScreen` | Data Display (assembly) | Web | Beta | `components/plan/PlanScreen` |
 | `PlanDayList` / `PlanDay` | Data Display | Web | Beta | `components/plan/PlanDayList`, `components/plan/PlanDay` |
@@ -105,8 +106,8 @@
 
 ### RecipeFilters
 - **Category:** Data Display (assembly). **Import:** `components/recipes/RecipeFilters`. **Status:** Beta.
-- **Description:** the eight recipe filters (Categoría, Tiempo, Dieta, Cocina, Dificultad, Proteína, Estado, Rating) in a horizontal scrolling row, the options panel of the open one below it, and the "N de M recetas" count with "Limpiar".
-- **Props:** `library: Pick<Library, "recipes" | "vocab">`, `state: FilterState`, `onChange(state)`, `shown: number`. Logic lives in `lib/domain/filters.ts`; screens start from `DEFAULT_FILTER_STATE` (Estado = Probadas), and Estado's three options are fixed (`STATUS_OPTIONS`), as are Rating's six (`RATING_OPTIONS`: "1+ ★" to "4+ ★", "5 ★", "Sin rating"; no initial value).
+- **Description:** the recipe filters (Categoría, Tiempo, Dieta, Cocina, Dificultad, Proteína, Estado, Rating and, with `withFavorites`, Favoritos) in a wrapping row shown only while `expanded`, the options panel of the open one below it, and the "N de M recetas" count with "Limpiar".
+- **Props:** `library: Pick<Library, "recipes" | "vocab">`, `state: FilterState`, `onChange(state)`, `shown: number`, `searching?`, `expanded?` (chips shown; the count and "Limpiar" always render), `withFavorites?` (Favoritos filter; the recipes must carry their `favorite` flag, `withFavorites()` in the domain), `panelId?`. Logic lives in `lib/domain/filters.ts`; screens start from `DEFAULT_FILTER_STATE` (`{}`, nothing active; `my-food-manager/016`), Favoritos has two fixed options (`FAVORITE_OPTIONS`), and Estado's three options are fixed (`STATUS_OPTIONS`), as are Rating's six (`RATING_OPTIONS`: "1+ ★" to "4+ ★", "5 ★", "Sin rating"; no initial value).
 
 ### useListReorder
 - **Category:** hook. **Import:** `components/recipes/use-list-reorder`. **Status:** Beta.
@@ -122,7 +123,7 @@
 - **Category:** Data Display. **Import:** `components/recipes/TmpResultGroup`. **Status:** Beta, temporary.
 - **Description:** group of search results: an `<h2>` reading "<label> · <count>" (small uppercase label, count in `color.text`) and the rows under it.
 - **Props:** `label: string`, `count: number`, `children`.
-- **Guidance:** formalize or replace when the grouped-list pattern is reused (for example in the shopping list).
+- **Guidance:** also used for the family blocks of Compra and Despensa ("Agrupar por familia", `my-food-manager/016`); formalize as a `ListGroup` when it stays.
 
 ### RecipeTile
 - **Category:** Data Display. **Import:** `components/recipes/RecipeTile`. **Status:** Beta.
@@ -212,7 +213,7 @@
 - **Category:** Inputs. **Import:** `components/inputs/TmpSwitch`. **Status:** Beta, temporary (feature `my-food-manager/007`).
 - **Description:** labeled on/off switch. The state shows in the knob position, a check mark and the label weight, not only in color.
 - **Props:** `label`, `checked`, `tone: "success" | "primary"`, `disabled?`, `ariaLabel`, `onChange()`.
-- **Guidance:** formalize as `Switch` when a second feature reuses it.
+- **Guidance:** formalize as `Switch` when a second feature reuses it. Also used for "Agrupar por familia" in Compra and Despensa (`my-food-manager/016`), with an empty `label` next to a visible text.
 
 ### TmpSegmentedControl
 - **Category:** Inputs. **Import:** `components/inputs/TmpSegmentedControl`. **Status:** Beta, temporary (feature `my-food-manager/007`).
@@ -238,7 +239,7 @@ Feature `my-food-manager/007` (pantry) added `TmpSwitch`, `TmpSegmentedControl` 
 Not applicable (web only).
 
 ## 6. Versioning
-- **Last updated:** 2026-11-03 (shopping list section of feature `my-food-manager/015`: `TmpNavBadge` added; `Nav.badges` and the Compra destination, `ShareButton.subject`, `CollapsibleSection.defaultOpen`, `RatingMark` alignment); earlier: 2026-11-03 (recipe detail shortcuts of feature `my-food-manager/013`: `DetailShortcuts`, `ShoppingListSheet`, `IngredientGroups` added; `RecipeDetail.onAddToPlan`, `RecipePickerSheet.suggestedId`, `MissingIngredientsSheet` with groups, `Sheet.back`, `FavoriteButton.fullWidth`); earlier: 2026-11-02 (ratings of feature `my-food-manager/012`: `RatingStars` implemented, `RatingMark` added, `RecipeRow.rating`, Rating filter in `RecipeFilters`); earlier: 2026-11-02 (Estado filter of feature `my-food-manager/011`, no new components); earlier: 2026-10-30 (pantry switches of feature `my-food-manager/007`: `TmpSwitch`, `TmpSegmentedControl`, `TmpPendingChanges`; earlier: 2026-10-29 (recipe search of feature `my-food-manager/005`: `SearchInput` as implemented, `TmpResultGroup`; earlier: main navigation of feature `my-food-manager/006`: `AppFrame`, `BottomNav` / `SideNav` rewritten, `TmpComingSoon`, `AppShell` corrected; earlier: responsive layout: DetailLayer modes, RecipeLibrary, RecipeLink props; added FilterChip, FilterOptions, RecipeFilters, useListReorder; recipe detail components; `RecipePhoto` props corrected to the implementation))
+- **Last updated:** 2026-11-13 (filter panel and grouping of feature `my-food-manager/016`: `TmpFilterToggle` added; `RecipeFilters.expanded` / `withFavorites` / `panelId`, `ShareButton.round`, `TmpResultGroup` and `TmpSwitch` reused for family grouping); earlier: 2026-11-03 (shopping list section of feature `my-food-manager/015`: `TmpNavBadge` added; `Nav.badges` and the Compra destination, `ShareButton.subject`, `CollapsibleSection.defaultOpen`, `RatingMark` alignment); earlier: 2026-11-03 (recipe detail shortcuts of feature `my-food-manager/013`: `DetailShortcuts`, `ShoppingListSheet`, `IngredientGroups` added; `RecipeDetail.onAddToPlan`, `RecipePickerSheet.suggestedId`, `MissingIngredientsSheet` with groups, `Sheet.back`, `FavoriteButton.fullWidth`); earlier: 2026-11-02 (ratings of feature `my-food-manager/012`: `RatingStars` implemented, `RatingMark` added, `RecipeRow.rating`, Rating filter in `RecipeFilters`); earlier: 2026-11-02 (Estado filter of feature `my-food-manager/011`, no new components); earlier: 2026-10-30 (pantry switches of feature `my-food-manager/007`: `TmpSwitch`, `TmpSegmentedControl`, `TmpPendingChanges`; earlier: 2026-10-29 (recipe search of feature `my-food-manager/005`: `SearchInput` as implemented, `TmpResultGroup`; earlier: main navigation of feature `my-food-manager/006`: `AppFrame`, `BottomNav` / `SideNav` rewritten, `TmpComingSoon`, `AppShell` corrected; earlier: responsive layout: DetailLayer modes, RecipeLibrary, RecipeLink props; added FilterChip, FilterOptions, RecipeFilters, useListReorder; recipe detail components; `RecipePhoto` props corrected to the implementation))
 - **Owner:** Al
 - Initial registry, all entries Beta pending implementation.
 
@@ -247,12 +248,19 @@ Not applicable (web only).
 - **Guidance:** photo, title and category open the detail (a `RecipeLink`, or a button when `onOpen` is given, as in Perfil); the heart is a sibling at the right, never inside the link. `dimmed` is an unfavorited row kept on screen in Perfil. Implemented in feature `my-food-manager/009`.
 
 ### ShareButton
-- **Props:** `onShare`, `subject` (what is shared, for the accessible name of the icon-only button), `busy?` (disabled with `aria-busy`), `label?` (shows the text next to the icon and gives the button the width of its content); icon `Share2`; 44px hit area; no pressed state.
-- **Guidance:** sibling of `FavoriteButton` in the recipe detail (title row on small windows, under the photo on medium and large); with `label="Compartir"` next to the search of Compra (`my-food-manager/015`); never in recipe lists. Implemented in feature `my-food-manager/010`.
+- **Props:** `onShare`, `subject` (what is shared, for the accessible name of the icon-only button), `busy?` (disabled with `aria-busy`), `label?` (shows the text next to the icon and gives the button the width of its content), `round?` (icon-only 48px outlined round button, for a search row); icon `Share2`; 44px hit area; no pressed state.
+- **Guidance:** sibling of `FavoriteButton` in the recipe detail (title row on small windows, under the photo on medium and large); next to the search of Compra, with `label="Compartir"` on medium and large windows and `round` on small ones (`my-food-manager/015`, `016`); never in recipe lists. Implemented in feature `my-food-manager/010`.
 
 ### TmpNavBadge
 - **Category:** Navigation. **Import:** `components/navigation/TmpNavBadge`. **Status:** Beta, temporary (feature `my-food-manager/015`).
 - **Description:** a count pill over a navigation icon: `color.primary.500` background, `color.primary.contrast` text, 11px extra-bold, 18px high, `radius.full`, a 2px `color.surface.1` ring to separate it from the icon. Shows "99+" above 99.
 - **Props:** `count: number` (rendered only when > 0 by `Nav`).
 - **A11y:** `aria-hidden`; the number is in the item's accessible name.
-- **Guidance:** used for Compra only; formalize as a `Badge` if another count appears.
+- **Guidance:** used for Compra only; formalize as a `Badge` if another count appears (`TmpFilterToggle` reuses its look).
+
+### TmpFilterToggle
+- **Category:** Inputs. **Import:** `components/inputs/TmpFilterToggle`. **Status:** Beta, temporary (feature `my-food-manager/016`).
+- **Description:** 48px round outlined button with the `SlidersHorizontal` icon, at the right of a search bar; expanded state with the primary tint (`color.primary.500` border and text, primary soft background); a count pill with the `TmpNavBadge` look at its top right when filters are active.
+- **Props:** `expanded: boolean`, `count: number`, `onToggle()`, `controls?: string` (id of the panel).
+- **A11y:** `aria-expanded`; `aria-controls` only while expanded; name "Filtros", or "Filtros, N activo/activos".
+- **Guidance:** used in Recetas, Perfil, Compra and Despensa; formalize as `FilterToggle` if it stays.

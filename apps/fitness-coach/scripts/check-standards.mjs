@@ -111,7 +111,7 @@ const SECRET_PATTERNS = [
   [/-----BEGIN (RSA |EC |)PRIVATE KEY-----/, "clave privada"],
   [/"type"\s*:\s*"service_account"/, "credencial de service account de Google"],
   [/"private_key_id"\s*:\s*"[0-9a-f]{20,}"/, "private_key_id de Google"],
-  [/^\s*APP_ACCESS_KEY\s*=\s*\S+/m, "valor de APP_ACCESS_KEY"],
+  [/^[ \t]*APP_ACCESS_KEY[ \t]*=[ \t]*\S+/m, "valor de APP_ACCESS_KEY"],
 ];
 for (const file of tracked) {
   if (/(^|\/)\.env(\..*)?$/.test(file) && !file.endsWith(".example")) {

@@ -6,6 +6,7 @@ export function ShareButton({
   subject,
   busy = false,
   label,
+  round = false,
 }: {
   onShare: () => void;
   /** What is shared, for the accessible name of the icon-only button. */
@@ -13,6 +14,8 @@ export function ShareButton({
   busy?: boolean;
   /** Shows the text next to the icon; the button then takes the width of its content. */
   label?: string;
+  /** Icon-only, outlined 48 px round button, next to a search bar (Compra on small windows). */
+  round?: boolean;
 }) {
   return (
     <button
@@ -24,10 +27,12 @@ export function ShareButton({
       className={
         label
           ? "inline-flex min-h-12 items-center gap-2 rounded-full border border-border bg-surface-1 px-5 text-sm font-semibold text-text transition disabled:opacity-60"
-          : "grid size-11 shrink-0 place-items-center rounded-full text-text-muted transition disabled:opacity-60"
+          : round
+            ? "grid size-12 shrink-0 place-items-center rounded-full border border-border bg-surface-1 text-text transition disabled:opacity-60"
+            : "grid size-11 shrink-0 place-items-center rounded-full text-text-muted transition disabled:opacity-60"
       }
     >
-      <Share2 className={label ? "size-5" : "size-6"} aria-hidden />
+      <Share2 className={label || round ? "size-5" : "size-6"} aria-hidden />
       {label && <span>{label}</span>}
     </button>
   );

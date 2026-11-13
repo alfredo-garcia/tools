@@ -3,7 +3,7 @@ import type { IngredientItem } from "@/lib/domain/pantry-view";
 
 const cap = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
 
-/** One ingredient with its switches: "Tengo" and "Comprar" in Despensa, only "Comprar" in Lista de compra. */
+/** One ingredient with its two switches, "Tengo" and "Comprar", in Despensa and in Compra. */
 export function IngredientRow({
   item,
   tab,
@@ -31,16 +31,14 @@ export function IngredientRow({
           </small>
         )}
       </span>
-      {tab === "despensa" && (
-        <TmpSwitch
-          label="Tengo"
-          tone="success"
-          checked={atHome}
-          disabled={item.staple}
-          ariaLabel={`Tengo ${item.name}`}
-          onChange={() => onFlip(item.id, "pantry.setHave")}
-        />
-      )}
+      <TmpSwitch
+        label="Tengo"
+        tone="success"
+        checked={atHome}
+        disabled={item.staple}
+        ariaLabel={`Tengo ${item.name}`}
+        onChange={() => onFlip(item.id, "pantry.setHave")}
+      />
       <TmpSwitch
         label="Comprar"
         tone="primary"

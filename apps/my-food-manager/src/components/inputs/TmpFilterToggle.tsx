@@ -19,7 +19,7 @@ export function TmpFilterToggle({
     <button
       type="button"
       aria-expanded={expanded}
-      aria-controls={controls}
+      aria-controls={expanded ? controls : undefined}
       aria-label={name}
       onClick={onToggle}
       className={`relative grid size-12 shrink-0 place-items-center rounded-full border transition active:scale-[0.97] ${

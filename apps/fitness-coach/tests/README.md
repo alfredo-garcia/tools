@@ -60,3 +60,18 @@ The acceptance tests were written before the code. The implementation must provi
 | 2026-11-13 | `e2e` AC-2 | New assertion: after the online sync no service-worker cache holds a `/api/` URL (and the caches are not empty) | Stronger: proves the high-risk rule of tech_standards §17 (§5/§10) and PRD §11; T6 review |
 | 2026-11-13 | `e2e` AC-9 | Waits for the held request to reach the mock before reading `during` | Race in the test: the badge shows "Sincronizando…" a moment before the request is counted, so `during` could be one short. The assertion (`count` unchanged by other triggers) is the same |
 | 2026-11-13 | `playwright.config.ts` | `workers: 4` | With 12–16 parallel workers, tests timed out waiting for the first render under CPU load; no assertion or timeout changed |
+
+## Verification record: fitness-coach/001 (qa-engineer, Mode D)
+
+**Verdict: Verified (2026-11-13), automated scope.** Three manual checks remain, and they must pass before the first production deploy (see below).
+
+- Commit `b6a4dcfa`, Node 22.23.5. `npm run check` green; `npm test`: unit 8 files / 62 tests passed, e2e 34/34 passed.
+- Stability: e2e 34/34 in four more full runs and 102/102 with `--repeat-each=3` (4 workers). Earlier timeouts with 12–16 workers came from CPU load and a race in AC-9's own test; both are fixed and recorded above. Nothing is quarantined.
+- Traceability: every AC-1…AC-20 has at least one test tagged `[fitness-coach/001] AC-n`. FR-2, FR-3, FR-4 and FR-17 and PRD §8/§10 are covered as listed in the table above.
+- Nothing is skipped, `.only`, `fixme` or `test.fail`. Compared with the approved tests (`e370ad7d`), after normalising formatting the only differences are the five changes in "Test changes". Three of them strengthen or fix a test, two are type-only. No assertion was removed or loosened. Unit tests were added in `src/**` (Drive walk, sync reducer, fetch, empty YAML values).
+
+| Manual check | Status |
+|---|---|
+| AC-17 on the phone: add to the home screen on Android and iOS, "MC" icon, full screen | Pending: needs the deployed app |
+| PRD §11 performance: cached open < 1 s, refresh < 5 s on 4G, snapshot < 300 KB | Partial: the snapshot of the real KB is 52 KB (T1). Timings pending on the phone |
+| Drive integration against a copy of the `fitness` folder (tech_standards §14) | Pending: needs the service account and env vars (impl plan §5) |

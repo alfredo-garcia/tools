@@ -7,7 +7,7 @@
 > Issue: n/a (work_tracker: none)
 > Technical review (tech-lead Mode C): n/a (rigor personal)
 > Test plan (qa-engineer): n/a (rigor personal)
-> Prototype (ux-designer): required
+> Prototype (ux-designer): approved (2026-11-12), UX Flow `001_offline-kb-data_ux_flow.md` · cambio aprobado en el prototipo (2026-11-12): botón "Actualizar" desde 640 px (FR-6 e, AC-20)
 > Source feature doc: `001_offline-kb-data.md`
 > Master doc referenced: ninguno todavía (no existe `docs/functional-spec.md`; es la primera feature)
 > Status: Approved (2026-11-12)
@@ -34,7 +34,7 @@ La primera pieza de My Coach: la app lee la carpeta `fitness` del Drive de Al (e
 - Escribir en el Drive: ni sesiones (`session.complete`) ni la cola de envíos pendientes (outbox). Llega con la #5. Esta feature solo lee.
 - "Hoy te toca", listas, detalles y filtros de rutinas y ejercicios (#2, #3, #4). Aquí Rutinas y Ejercicios muestran "Próximamente".
 - Decidir qué se muestra de las rutinas pausadas (#2, #3); aquí solo se descargan.
-- Botón "Sincronizar"; sincronización entre dispositivos; notificaciones o avisos push.
+- Botón "Sincronizar" en el móvil (desde 640 px hay un botón "Actualizar", FR-6 e); sincronización entre dispositivos; notificaciones o avisos push.
 - Editar o reinterpretar el formato del knowledge-base; leer `sessions/_archive/`.
 - Diseñar el logo; el icono "MC" es provisional.
 - El diario del programa (`program.journal`): ninguna feature del MVP lo usa, así que no se descarga (ver FR-3).
@@ -52,6 +52,7 @@ La primera pieza de My Coach: la app lee la carpeta `fitness` del Drive de Al (e
 - AC-5 (FR-6): Given la app abierta en segundo plano y una rutina cambiada en el Drive, when Al vuelve a la app (pasa a primer plano) y la última sincronización correcta tiene más de 1 minuto, then se lanza una actualización y el resumen refleja el cambio.
 - AC-6 (FR-6): Given la app abierta sin red, when vuelve la conexión, then se lanza una actualización sin que Al haga nada.
 - AC-7 (FR-6): Given la Home provisional con red, when Al tira hacia abajo para refrescar, then se lanza una actualización aunque la última tenga menos de 1 minuto, y se ve el estado "Sincronizando".
+- AC-20 (FR-6): Given la Home provisional en una pantalla de 640 px o más con red, when Al pulsa "Actualizar" en la cabecera, then se lanza una actualización aunque la última tenga menos de 1 minuto, y se ve el estado "Sincronizando"; por debajo de 640 px el botón no aparece.
 - AC-8 (FR-7): Given que el Drive no ha cambiado desde la última copia, when se actualiza, then los datos no cambian y la hora de "Sincronizado" pasa a la actual.
 - AC-9 (FR-8): Given una actualización en curso, when se produce otro disparador (volver a la app, red, gesto), then no se lanza una segunda actualización en paralelo.
 
@@ -82,7 +83,7 @@ La primera pieza de My Coach: la app lee la carpeta `fitness` del Drive de Al (e
 3. **FR-3:** Del programa se incluyen `phase`, `constraints` y `schedule`; `journal` no se incluye.
 4. **FR-4:** Un fichero que no se puede leer o no cumple el esquema se excluye sin afectar a los demás. El snapshot indica cuántos ficheros se excluyeron y, por fichero, solo su ruta relativa y un código de motivo (`parse_error`, `schema_error`), nunca su contenido. Si un fichero de nivel único (programa, sesiones, un vocabulario) falla, el cliente conserva su versión anterior.
 5. **FR-5:** Al abrir la app, la copia guardada se muestra antes de cualquier petición de red.
-6. **FR-6:** La app pide una actualización: (a) al abrir; (b) al volver a primer plano, si la última sincronización correcta tiene más de 1 minuto; (c) al recuperar la conexión; (d) con el gesto de tirar para refrescar en la Home provisional, siempre.
+6. **FR-6:** La app pide una actualización: (a) al abrir; (b) al volver a primer plano, si la última sincronización correcta tiene más de 1 minuto; (c) al recuperar la conexión; (d) con el gesto de tirar para refrescar en la Home provisional, siempre; (e) desde 640 px, con el botón "Actualizar" de la cabecera, siempre.
 7. **FR-7:** La actualización es condicional: si el snapshot no ha cambiado, el servidor responde sin cuerpo y el cliente solo actualiza la hora de la última sincronización.
 8. **FR-8:** Como mucho hay una actualización en curso a la vez; los disparadores que llegan durante ella se ignoran.
 9. **FR-9:** El estado de sincronización es uno de: `synced` (con hace cuánto), `offline` (con la edad de los datos), `syncing`, `error` (con la edad de los datos) y `invalid_key`; se muestra con `SyncBadge` en las pantallas con navegación.
@@ -145,7 +146,7 @@ Componentes del registro: `AppFrame`, `AppShell`, `BottomNav` / `SideNav`, `Sync
 |---|---|
 | Primera apertura con red | Pantalla de bienvenida sin navegación: "My Coach", campo de clave (tipo contraseña, con mostrar/ocultar) y `Button` primario "Entrar". Cargando: el botón en `loading`. Error: "Esa clave no es correcta" bajo el campo |
 | Primera apertura sin red | `EmptyState` "Necesitas conexión la primera vez" + "Reintentar" |
-| Home provisional | `AppShell` "My Coach" + `SyncBadge`; saludo `display`; una card resumen: "29 ejercicios · 7 rutinas activas", "1 pausada", aviso de ficheros no leídos (si hay) en `caption` `text.muted` con icono `Info`; tirar para refrescar |
+| Home provisional | `AppShell` "My Coach" + `SyncBadge`; saludo `display`; una card resumen: "29 ejercicios · 7 rutinas activas", "1 pausada", aviso de ficheros no leídos (si hay) en `caption` `text.muted` con icono `Info`; tirar para refrescar (<640 px) o botón `ghost` de icono "Actualizar" (`RefreshCw`) en la cabecera (≥640 px) |
 | Rutinas / Ejercicios | `EmptyState` "Próximamente" con el icono del destino (`ListChecks`, `Dumbbell`) |
 | `SyncBadge` | `synced`: "Sincronizado · hace 5 min" (`success`, `Check`); `offline`: "Sin conexión · datos de hace 2 h" (`CloudOff`); `syncing`: "Sincronizando…"; `error`: "No se pudo actualizar · datos de hace 2 h"; `invalid_key`: "Clave no válida" (toca para introducirla). Textos de aviso según ui_standards §2 (contraste en claro) |
 | Clave no válida con datos | `Sheet` con el campo de clave y "Guardar"; cerrar el sheet deja la app en `invalid_key` con los datos visibles |

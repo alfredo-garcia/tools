@@ -1,0 +1,11 @@
+# Drafts and prototype briefs (tech_standards §2)
+prototypes/
+
+# Next / tooling
+.next/
+next-env.d.ts
+playwright-report/
+test-results/
+
+# Secrets (tech_standards §10)
+.env*.local

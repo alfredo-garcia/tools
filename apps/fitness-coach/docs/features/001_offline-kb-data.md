@@ -25,7 +25,7 @@
 * **Constraints / Out of Scope:**
   - Ninguna escritura en el Drive: ni sesiones ni la cola de envíos pendientes (llegan con la #5). Esta feature solo lee.
   - Ni "Hoy te toca", ni listas o detalles de rutinas o ejercicios, ni filtros (#2, #3, #4); qué se muestra de las rutinas pausadas se decide en la #2 y la #3.
-  - Sin botón "Sincronizar"; bastan los tres disparadores.
+  - Sin botón "Sincronizar" en el móvil; bastan los tres disparadores. En pantallas de 640 px o más, donde no hay gesto de tirar, la cabecera lleva un botón "Actualizar" (decidido en el prototipo, 2026-11-12).
   - Sin sincronización entre dispositivos, avisos ni notificaciones.
   - No se edita ni se reinterpreta el formato del knowledge-base: manda `fitness/_system/schema.md`.
   - No se diseña un logo; el icono "MC" es provisional.

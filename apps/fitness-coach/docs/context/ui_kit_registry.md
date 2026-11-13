@@ -46,7 +46,7 @@
 ## 3. Component Entries
 
 ### AppFrame / AppShell / BottomNav / SideNav
-- **Patrón My Food.** `AppFrame` monta la navegación alrededor de cada pantalla; `AppShell` es el marco de página (título, `SyncBadge`, contenido, pull-to-refresh = sincronizar).
+- **Patrón My Food.** `AppFrame` monta la navegación alrededor de cada pantalla; `AppShell` es el marco de página (título, `SyncBadge`, contenido, pull-to-refresh = sincronizar por debajo de 640 px; desde 640 px, botón `ghost` de icono "Actualizar" (`RefreshCw`) en la cabecera, en lugar del gesto).
 - **Destinos:** Inicio (`House`), Rutinas (`ListChecks`), Ejercicios (`Dumbbell`). Marca: icono de la PWA + "My Coach".
 - **Regla:** `AppFrame` no pinta la navegación en el modo guiado ni en el resumen.
 
@@ -55,7 +55,9 @@
 - `FilterChip` + `FilterOptions`: filtros de Rutinas (día, tipo) y de Ejercicios (grupo muscular, dificultad, equipamiento), con recuento por opción.
 
 ### DetailLayer / Sheet / CollapsibleSection / Toast / SyncBadge / EmptyState
-- **Patrón My Food**, mismas props y modos. `DetailLayer` aloja el detalle de rutina y el de ejercicio (pantalla completa en small, modal en medium y large). `Sheet` aloja el selector "Iniciar rutina" y las confirmaciones.
+- **Patrón My Food**, mismas props y modos, salvo `SyncBadge`. `DetailLayer` aloja el detalle de rutina y el de ejercicio (pantalla completa en small, modal en medium y large). `Sheet` aloja el selector "Iniciar rutina", las confirmaciones y la clave nueva.
+- **Toast:** `message`; se anuncia con `role="status"`; la pantalla que lo muestra lo cierra a los 4 s. Sin icono ni botón de cerrar.
+- **SyncBadge** (cambia respecto a My Food): `status: "synced" | "offline" | "syncing" | "error" | "invalid_key"`, `syncedAt?: string`, `onInvalidKey?`. `synced`: "Sincronizado · hace X" (`Check`, tinte `success`); `offline`: "Sin conexión · datos de hace X" (`CloudOff`, tinte `warning`); `syncing`: "Sincronizando…" (`RefreshCw` en `text.muted`, sin tinte); `error`: "No se pudo actualizar · datos de hace X" (`TriangleAlert`, tinte `warning`); `invalid_key`: "Clave no válida · toca para introducirla" (`KeyRound`, tinte `warning`; es un botón de ≥ 44 px que abre el `Sheet` de la clave). En claro, texto e icono de aviso en `color.text` (ui_standards §2).
 
 ### StickyFooter
 - **Nuevo.** Barra fija al pie dentro de un `DetailLayer` o una pantalla, con `elevation.3` y el inset de la zona segura. **Props:** `children` (normalmente un `Button` primario). Uso: "Iniciar rutina" en el detalle de rutina.
@@ -111,7 +113,12 @@
 
 ## 4. Temporary / Not-Yet-Formalized Components
 
-Ninguno todavía. Los que aparezcan en un prototipo llevan el prefijo `Tmp` y se anuncian antes de crearlos.
+Los que aparezcan en un prototipo llevan el prefijo `Tmp` y se anuncian antes de crearlos.
+
+| Componente | Feature | Para qué | Estado |
+|---|---|---|---|
+| `TmpKeyField` | `fitness-coach/001` | Campo de la clave de acceso: etiqueta visible, tipo contraseña, mostrar/ocultar (`Eye`/`EyeOff`), error bajo el campo | Aprobado en el prototipo (2026-11-12); se propone pasarlo al registro tras implementarlo |
+| `TmpSummaryCard` | `fitness-coach/001` | Card del resumen de la Home provisional: recuentos, aviso de ficheros no leídos, hora de la última sincronización | Ídem; puede desaparecer con la Home real (#2) |
 
 ## 5. Cross-Surface Parity Notes
 
@@ -119,4 +126,4 @@ n/a: una sola superficie (web).
 
 ## 6. Versioning
 
-- **Última actualización:** 2026-11-12 (versión inicial).
+- **Última actualización:** 2026-11-12: `SyncBadge` con cinco estados, `Toast` precisado, botón "Actualizar" de `AppShell` desde 640 px y `Tmp` de la feature 001.

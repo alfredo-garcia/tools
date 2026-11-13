@@ -49,3 +49,10 @@ The acceptance tests were written before the code. The implementation must provi
 | PRD §8 privacy | unit route: logs and error bodies without health data or the key |
 | PRD §10 | unit: empty sessions, missing program, no active routines; e2e: storage unavailable, 409 client_outdated, browser data cleared |
 | PRD §11 performance (< 1 s cached open, < 5 s refresh, < 300 KB) | **Manual** on the phone before the first deploy, together with the Drive integration check (tech_standards §14, §17) |
+
+## Test changes after the tests were written
+
+| Date | Test | Change | Why (qa-engineer) |
+|---|---|---|---|
+| 2026-11-12 | `unit/merge-snapshot.test.ts` | `_dropped` destructuring → copy + `delete` | ESLint unused-variable warning; same behavior |
+| 2026-11-13 | `unit/snapshot-build.test.ts` | Non-null assertions (`!`) on `find(...)`, `s.program` and `s.vocabularies.<name>` | Type-only: with the real `Snapshot` type, strict TypeScript flags possibly-undefined access. At runtime an undefined value still makes the test fail; no assertion changed |

@@ -47,7 +47,7 @@ describe("[fitness-coach/001] buildSnapshot", () => {
 
   it("[fitness-coach/001] FR-2: exercise sections are extracted from the Markdown body", () => {
     const s = buildSnapshot(kbFiles(), NOW);
-    const plancha = s.exercises.find((e: { id: string }) => e.id === "plancha-sintetica");
+    const plancha = s.exercises.find((e: { id: string }) => e.id === "plancha-sintetica")!;
     expect(plancha.sections.execution).toContain("Texto de ejecución inventado.");
     expect(plancha.sections.common_mistakes).toContain("Error inventado.");
     expect(plancha.sections.progression).toContain("Progresión inventada.");
@@ -56,13 +56,13 @@ describe("[fitness-coach/001] buildSnapshot", () => {
 
   it("[fitness-coach/001] FR-2 / PRD §7: unknown frontmatter fields are kept as they are", () => {
     const s = buildSnapshot(kbFiles(), NOW);
-    const plancha = s.exercises.find((e: { id: string }) => e.id === "plancha-sintetica");
+    const plancha = s.exercises.find((e: { id: string }) => e.id === "plancha-sintetica")!;
     expect(plancha.custom_unknown_field).toBe("conservar");
   });
 
   it("[fitness-coach/001] PRD §7: routine sections include guidelines and progression, never History", () => {
     const s = buildSnapshot(kbFiles(), NOW);
-    const fuerza = s.routines.find((r: { id: string }) => r.id === "fuerza-sintetica");
+    const fuerza = s.routines.find((r: { id: string }) => r.id === "fuerza-sintetica")!;
     expect(fuerza.sections.guidelines).toContain("Pauta inventada.");
     expect(fuerza.sections.progression).toContain("Progresión inventada.");
     expect(JSON.stringify(s)).not.toContain(HEALTH_MARKERS.routineHistory);
@@ -70,7 +70,7 @@ describe("[fitness-coach/001] buildSnapshot", () => {
 
   it("[fitness-coach/001] PRD §7: an item pointing to a missing exercise is kept with missing_exercise: true", () => {
     const s = buildSnapshot(kbFiles(), NOW);
-    const expres = s.routines.find((r: { id: string }) => r.id === "expres-sintetica");
+    const expres = s.routines.find((r: { id: string }) => r.id === "expres-sintetica")!;
     const items = expres.blocks[0].items;
     expect(items).toHaveLength(2);
     expect(items[0].missing_exercise ?? false).toBe(false);
@@ -79,9 +79,9 @@ describe("[fitness-coach/001] buildSnapshot", () => {
 
   it("[fitness-coach/001] FR-3: program has phase, constraints and schedule, never journal", () => {
     const s = buildSnapshot(kbFiles(), NOW);
-    expect(s.program.phase.label).toBe("Fase sintética");
-    expect(s.program.constraints.avoid_stresses).toEqual(["spinal-flexion"]);
-    expect(s.program.schedule.week.mon).toEqual(["fuerza-sintetica"]);
+    expect(s.program!.phase.label).toBe("Fase sintética");
+    expect(s.program!.constraints.avoid_stresses).toEqual(["spinal-flexion"]);
+    expect(s.program!.schedule.week.mon).toEqual(["fuerza-sintetica"]);
     expect(s.program).not.toHaveProperty("journal");
     expect(JSON.stringify(s)).not.toContain(HEALTH_MARKERS.journalText);
   });
@@ -108,8 +108,8 @@ describe("[fitness-coach/001] buildSnapshot", () => {
         "zones",
       ].sort(),
     );
-    expect(s.vocabularies.regions.core.label).toBe("Core");
-    expect(s.vocabularies.categories.strength.label).toBe("Fuerza");
+    expect(s.vocabularies.regions!.core.label).toBe("Core");
+    expect(s.vocabularies.categories!.strength.label).toBe("Fuerza");
   });
 
   it("[fitness-coach/001] FR-4: an empty sessions file gives sessions: [] without error", () => {

@@ -15,7 +15,7 @@ export function formatAge(from: Date, now: Date): string {
   if (diff < MIN) return "hace un momento"; // also a clock that went backwards
   if (diff < H) return `hace ${Math.floor(diff / MIN)} min`;
   if (diff < 24 * H) return `hace ${Math.floor(diff / H)} h`;
-  const yesterday = startOfLocalDay(now) - 24 * H;
+  const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1).getTime();
   if (startOfLocalDay(from) >= yesterday) return "ayer";
   return shortDate.format(from);
 }

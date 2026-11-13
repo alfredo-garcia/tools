@@ -38,6 +38,11 @@ describe("[fitness-coach/001] fetchSnapshot", () => {
     );
   });
 
+  it("PRD §10: broken JSON is an error, not offline", async () => {
+    const f = vi.fn(async () => new Response("not json", { status: 200 }));
+    expect((await fetchSnapshot({ key: "k", fetchImpl: f })).kind).toBe("error");
+  });
+
   it("no connection is offline", async () => {
     const f = vi.fn(async () => {
       throw new TypeError("Failed to fetch");

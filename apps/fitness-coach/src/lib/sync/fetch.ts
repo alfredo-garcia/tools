@@ -45,27 +45,35 @@ export async function fetchSnapshot(opts: {
     controller.abort();
   }, timeoutMs);
   try {
+    let res: Response;
     const headers: Record<string, string> = {
       "x-app-key": key,
       "x-client-format": String(SNAPSHOT_FORMAT),
     };
     if (etag) headers["if-none-match"] = etag;
-    const res = await fetchImpl("/api/snapshot", {
-      method: "GET",
-      headers,
-      cache: "no-store",
-      signal: controller.signal,
-    });
+    try {
+      res = await fetchImpl("/api/snapshot", {
+        method: "GET",
+        headers,
+        cache: "no-store",
+        signal: controller.signal,
+      });
+    } catch {
+      // Timeout (FR-13) is an error; any other failure to reach the server means no connection.
+      return timedOut ? { kind: "error" } : { kind: "offline" };
+    }
     if (res.status === 304) return { kind: "not_modified" };
     if (res.status === 401) return { kind: "invalid_key" };
     if (res.status === 409) return { kind: "client_outdated" };
     if (!res.ok) return { kind: "error" };
-    const body: unknown = await res.json();
+    let body: unknown;
+    try {
+      body = await res.json();
+    } catch {
+      return { kind: "error" }; // broken JSON or a cut body (PRD §10)
+    }
     if (!isSnapshot(body)) return { kind: "error" };
     return { kind: "ok", snapshot: body, etag: res.headers.get("etag") };
-  } catch {
-    // Timeout (FR-13) is an error; any other failure to reach the server means no connection.
-    return timedOut ? { kind: "error" } : { kind: "offline" };
   } finally {
     clearTimeout(timer);
   }

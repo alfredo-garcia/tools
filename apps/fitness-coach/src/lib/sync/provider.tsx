@@ -13,7 +13,6 @@ import {
   useMemo,
   useReducer,
   useRef,
-  useState,
   type ReactNode,
 } from "react";
 import { mergeSnapshot } from "@/lib/offline/merge";
@@ -69,16 +68,31 @@ export function SyncProvider({ children }: { children: ReactNode }) {
     switch (result.kind) {
       case "ok": {
         const snapshot = mergeSnapshot(s.snapshot, result.snapshot);
-        await saveStored({ snapshot, etag: result.etag, lastSyncedAt: at, accessKey: key });
+        if (
+          !(await saveStored({ snapshot, etag: result.etag, lastSyncedAt: at, accessKey: key }))
+        ) {
+          dispatch({ type: "storage_failed" });
+        }
         dispatch({ type: "sync_ok", snapshot, etag: result.etag, accessKey: key, at });
         return "ok";
       }
       case "not_modified":
         if (!s.snapshot) return "error";
-        await saveStored({ snapshot: s.snapshot, etag: s.etag, lastSyncedAt: at, accessKey: key });
+        if (
+          !(await saveStored({
+            snapshot: s.snapshot,
+            etag: s.etag,
+            lastSyncedAt: at,
+            accessKey: key,
+          }))
+        ) {
+          dispatch({ type: "storage_failed" });
+        }
         dispatch({ type: "sync_not_modified", at, accessKey: key });
         return "ok";
       case "client_outdated":
+        // With a key being typed (Welcome, KeySheet) the reload drops it: FR-10 forbids storing a
+        // key the server hasn't accepted. Open question for Al (impl plan §7, T3).
         if (reloadForNewVersion()) return "error";
         if (s.phase === "ready") dispatch({ type: "sync_failed", status: "error" });
         return "error";
@@ -108,6 +122,8 @@ export function SyncProvider({ children }: { children: ReactNode }) {
             status: outcome === "invalid_key" ? "invalid_key" : outcome,
           });
         }
+      } catch {
+        dispatch({ type: "sync_failed", status: "error" }); // never stuck in "syncing"
       } finally {
         inFlight.current = null;
       }
@@ -186,14 +202,4 @@ export function useSync(): SyncApi {
   const api = useContext(SyncContext);
   if (!api) throw new Error("useSync outside SyncProvider");
   return api;
-}
-
-/** Current time, refreshed every `intervalMs`, so relative ages ("hace 5 min") stay right. */
-export function useNow(intervalMs = 30_000): number {
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    const id = setInterval(() => setNow(Date.now()), intervalMs);
-    return () => clearInterval(id);
-  }, [intervalMs]);
-  return now;
 }

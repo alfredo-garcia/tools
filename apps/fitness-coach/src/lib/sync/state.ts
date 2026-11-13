@@ -52,6 +52,7 @@ export type SyncAction =
   | { type: "sync_not_modified"; at: string; accessKey: string }
   | { type: "sync_failed"; status: "offline" | "error" | "invalid_key" }
   | { type: "went_offline" }
+  | { type: "storage_failed" }
   | { type: "key_sheet"; open: boolean };
 
 export function syncReducer(state: SyncState, action: SyncAction): SyncState {
@@ -63,7 +64,8 @@ export function syncReducer(state: SyncState, action: SyncAction): SyncState {
         ...action.stored,
         phase: hasCopy ? "ready" : "no_data",
         storageAvailable: action.storageAvailable,
-        status: action.online ? "synced" : "offline",
+        // with a copy and network the first update (FR-6a) starts at once: never claim fresh data
+        status: !action.online ? "offline" : hasCopy ? "syncing" : "synced",
       };
     }
     case "sync_started":
@@ -100,6 +102,8 @@ export function syncReducer(state: SyncState, action: SyncAction): SyncState {
       };
     case "went_offline":
       return state.status === "syncing" ? state : { ...state, status: "offline" };
+    case "storage_failed":
+      return { ...state, storageAvailable: false };
     case "key_sheet":
       return { ...state, keySheetOpen: action.open };
   }

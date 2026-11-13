@@ -39,10 +39,7 @@ export async function probeStorage(): Promise<boolean> {
 export async function loadStored(): Promise<Stored> {
   const empty: Stored = { snapshot: null, etag: null, lastSyncedAt: null, accessKey: null };
   try {
-    const [snapshot, etag, lastSyncedAt, accessKey] = await getMany(
-      KEYS as unknown as string[],
-      db(),
-    );
+    const [snapshot, etag, lastSyncedAt, accessKey] = await getMany([...KEYS], db());
     // A copy is only usable with its key and sync time; anything partial counts as no copy.
     if (!snapshot || !accessKey || !lastSyncedAt) return empty;
     return { snapshot, etag: etag ?? null, lastSyncedAt, accessKey };

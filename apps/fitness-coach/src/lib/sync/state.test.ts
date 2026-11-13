@@ -18,6 +18,7 @@ describe("[fitness-coach/001] syncReducer", () => {
   it("FR-5: with a stored copy the app is ready before any request", () => {
     expect(ready().phase).toBe("ready");
     expect(ready().snapshot).toBe(snap);
+    expect(ready().status).toBe("syncing"); // G3: never "Sincronizado" for an old copy
   });
 
   it("FR-10/FR-11: without a copy it is the first open", () => {
@@ -85,6 +86,10 @@ describe("[fitness-coach/001] syncReducer", () => {
       lastSyncedAt: "2026-11-12T18:00:00.000Z",
       status: "synced",
     });
+  });
+
+  it("PRD §10: a refused write marks storage as unavailable", () => {
+    expect(syncReducer(ready(), { type: "storage_failed" }).storageAvailable).toBe(false);
   });
 
   it("going offline during an update keeps 'syncing'", () => {

@@ -48,7 +48,7 @@ export function AppShell({ title, badge, onRefresh, children }: Props) {
           />
         </div>
       )}
-      <div className="mx-auto max-w-(--size-content-max) px-md pt-lg pb-xl">
+      <div className="mx-auto max-w-(--size-content-max) px-md pt-[calc(var(--spacing-lg)+env(safe-area-inset-top))] pb-xl">
         <header className="mb-lg flex flex-col gap-sm medium:flex-row medium:items-center medium:justify-between">
           <h1 className="text-heading-1">{title}</h1>
           <div className="flex items-center gap-sm">

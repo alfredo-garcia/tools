@@ -6,7 +6,7 @@ import { Button } from "@/components/inputs/Button";
 
 export function FirstOpenOffline({ onRetry }: { onRetry: () => void }) {
   return (
-    <main className="flex min-h-dvh items-center justify-center">
+    <main className="flex min-h-dvh items-center justify-center pt-[env(safe-area-inset-top)]">
       <EmptyState
         icon={CloudOff}
         title="Necesitas conexión la primera vez"

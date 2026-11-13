@@ -23,6 +23,7 @@ export function KeySheet() {
     setKeySheetOpen(false);
     setKeyDraft("");
     setKeyError(null);
+    setKeyVisible(false);
   };
 
   const submit = async (e: FormEvent) => {

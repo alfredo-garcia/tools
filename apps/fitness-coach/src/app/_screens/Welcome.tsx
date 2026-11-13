@@ -1,5 +1,6 @@
 "use client";
 /** UX Flow 2.1: first open with network; asks for the key and validates it (FR-10, AC-10, AC-11). */
+import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { Button } from "@/components/inputs/Button";
 import { TmpKeyField } from "@/components/inputs/TmpKeyField";
@@ -15,6 +16,7 @@ const ERRORS = {
 
 export function Welcome({ onOffline }: Props) {
   const { submitKey } = useSync();
+  const router = useRouter();
   const [keyDraft, setKeyDraft] = useState("");
   const [isKeyVisible, setKeyVisible] = useState(false);
   const [isSubmitting, setSubmitting] = useState(false);
@@ -25,16 +27,17 @@ export function Welcome({ onOffline }: Props) {
     if (keyDraft.length === 0 || isSubmitting) return;
     setSubmitting(true);
     const result = await submitKey(keyDraft);
-    // On "ok" the provider switches the app to the Home; this screen unmounts.
-    if (result === "offline") onOffline();
-    else if (result !== "ok") {
+    // UX Flow 2.1: a 200 renders the Home, whatever URL the app was opened on
+    if (result === "ok") router.replace("/");
+    else if (result === "offline") onOffline();
+    else {
       setKeyError(result);
       setSubmitting(false);
     }
   };
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-(--size-dialog-max) flex-col justify-center gap-lg p-lg">
+    <main className="mx-auto flex min-h-dvh max-w-(--size-dialog-max) flex-col justify-center gap-lg p-lg pt-[calc(var(--spacing-lg)+env(safe-area-inset-top))]">
       <div className="flex flex-col gap-sm">
         <h1 className="text-display">My Coach</h1>
         <p className="text-body text-text-muted">Escribe tu clave para empezar</p>

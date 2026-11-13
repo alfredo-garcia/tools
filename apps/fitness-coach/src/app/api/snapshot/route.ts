@@ -4,7 +4,8 @@
  * counts; never file contents, error messages from the Drive, or the key.
  */
 import { createHash, timingSafeEqual } from "node:crypto";
-import { readServerConfig } from "@/lib/drive/config";
+import { readServerConfig, serverConfigProblems } from "@/lib/drive/config";
+import { driveErrorKind } from "@/lib/drive/errors";
 import { readKbFiles } from "@/lib/drive/files";
 import { buildSnapshot } from "@/lib/drive/snapshot";
 import { SNAPSHOT_FORMAT, type Snapshot } from "@/lib/schema/snapshot";
@@ -31,7 +32,11 @@ const STATUS: Record<ErrorCode, number> = {
   server_misconfigured: 500,
 };
 
-function log(status: number, startedAt: number, extra: Record<string, string | number> = {}) {
+function log(
+  status: number,
+  startedAt: number,
+  extra: Record<string, string | number | string[]> = {},
+) {
   console.log(
     JSON.stringify({
       method: "GET",
@@ -43,9 +48,13 @@ function log(status: number, startedAt: number, extra: Record<string, string | n
   );
 }
 
-function errorResponse(code: ErrorCode, startedAt: number): Response {
+function errorResponse(
+  code: ErrorCode,
+  startedAt: number,
+  extra: Record<string, string[]> = {},
+): Response {
   const status = STATUS[code];
-  log(status, startedAt, { code });
+  log(status, startedAt, { code, ...extra });
   return Response.json(
     { error: { code, message: MESSAGES[code] } },
     { status, headers: { "cache-control": NO_STORE } },
@@ -88,7 +97,8 @@ function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
 export async function GET(request: Request): Promise<Response> {
   const startedAt = Date.now();
   const config = readServerConfig();
-  if (!config) return errorResponse("server_misconfigured", startedAt);
+  // Variable names only (never values), so the Vercel log says what to fix.
+  if (!config) return errorResponse("server_misconfigured", startedAt, serverConfigProblems());
 
   if (!keyMatches(request.headers.get("x-app-key"), config.accessKey)) {
     return errorResponse("invalid_key", startedAt);
@@ -100,9 +110,9 @@ export async function GET(request: Request): Promise<Response> {
   let files: Awaited<ReturnType<typeof readKbFiles>>;
   try {
     files = await withTimeout(readKbFiles(), DRIVE_TIMEOUT_MS);
-  } catch {
-    // The error may quote file contents or credentials: it is never logged nor returned.
-    return errorResponse("drive_unavailable", startedAt);
+  } catch (error) {
+    // The message may quote file contents or credentials: only its kind is logged, never returned.
+    return errorResponse("drive_unavailable", startedAt, { cause: driveErrorKind(error) });
   }
 
   let snapshot: Snapshot;

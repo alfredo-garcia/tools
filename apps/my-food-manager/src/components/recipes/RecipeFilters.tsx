@@ -21,6 +21,9 @@ export function RecipeFilters({
   onChange,
   shown,
   searching = false,
+  expanded = true,
+  withFavorites = false,
+  panelId,
 }: {
   library: Pick<Library, "recipes" | "vocab">;
   state: FilterState;
@@ -28,6 +31,11 @@ export function RecipeFilters({
   shown: number;
   /** A search text is in effect, so the count reads "N de M" even with no filter. */
   searching?: boolean;
+  /** The filter chips show only while the panel is expanded; the count line and "Limpiar" always show. */
+  expanded?: boolean;
+  /** Offers the Favoritos filter (Recetas); the recipes must carry their favorite flag. */
+  withFavorites?: boolean;
+  panelId?: string;
 }) {
   const [open, setOpen] = useState<FilterKey | null>(null);
   const root = useRef<HTMLDivElement>(null);
@@ -56,30 +64,33 @@ export function RecipeFilters({
   };
 
   const active = activeFilterCount(state);
-  const openDef = FILTERS.find((f) => f.key === open);
+  const keys = withFavorites ? FILTERS : FILTERS.filter((f) => f.key !== "favorite");
+  const openDef = expanded ? keys.find((f) => f.key === open) : undefined;
 
   return (
     <div ref={root} className="mb-4">
-      <div role="group" aria-label="Filtros" className="flex flex-wrap gap-2">
-        {FILTERS.map(({ key, label }) => {
-          const value = state[key];
-          const options = filterOptions(library, key, state);
-          return (
-            <FilterChip
-              key={key}
-              label={label}
-              value={value === undefined ? undefined : selectedLabel(options, value)}
-              open={open === key}
-              disabled={options.length === 0 && value === undefined}
-              onToggle={() => setOpen(open === key ? null : key)}
-              onClear={() => {
-                set(key, undefined);
-                if (open === key) setOpen(null);
-              }}
-            />
-          );
-        })}
-      </div>
+      {expanded && (
+        <div id={panelId} role="group" aria-label="Filtros" className="flex flex-wrap gap-2">
+          {keys.map(({ key, label }) => {
+            const value = state[key];
+            const options = filterOptions(library, key, state);
+            return (
+              <FilterChip
+                key={key}
+                label={label}
+                value={value === undefined ? undefined : selectedLabel(options, value)}
+                open={open === key}
+                disabled={options.length === 0 && value === undefined}
+                onToggle={() => setOpen(open === key ? null : key)}
+                onClear={() => {
+                  set(key, undefined);
+                  if (open === key) setOpen(null);
+                }}
+              />
+            );
+          })}
+        </div>
+      )}
 
       {openDef && (
         <div

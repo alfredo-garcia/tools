@@ -66,17 +66,17 @@
 - **Nuevo.** Título de sección `heading-2` con acción opcional a la derecha. **Props:** `title`, `action?: ReactNode`. Uso: secciones de la Home y grupos "Para hoy" / "Otras rutinas".
 
 ### RoutineCard
-- **Nuevo.** Card (`radius.md`, `elevation.1`) con tinte de `cat.<category>`: emoji, título, descripción breve, duración (`Clock`), nº de ejercicios, `DayChips` y, si aplica, `StatusBadge`.
-- **Props:** `routine: RoutineSummary`, `status?: "pending" | "partial"`, `variant: "link" | "start"` (`link`: toda la card abre el detalle; `start`: botón "Iniciar", o "Seguir" si es parcial), `onOpen?`, `onStart?`.
+- **Nuevo.** Card (`radius.md`, `elevation.1`, borde 1 px `color.border`) con tinte de `cat.<category>`: `Chip` con emoji + `label` de la categoría, título (una línea con elipsis), descripción breve opcional, duración (`Clock`, "~N min", solo si existe), nº de ejercicios, `DayChips` (con `aria-label` "Días: L · J"; sin días, las 7 vacías + "Sin día fijo") y, si aplica, `StatusBadge`. Texto alineado arriba; la card crece hacia abajo.
+- **Props:** `routine: RoutineSummary`, `status?: "pending" | "partial" | "paused"`, `variant: "link" | "start"` (`link`: toda la card abre el detalle; `start`: botón "Iniciar", o "Seguir" si es parcial), `onOpen?`, `onStart?`.
 
 ### RoutineDetail
-- **Nuevo.** Contenido del detalle: cabecera (categoría, título, duración, días, momento del día), pautas, y un `CollapsibleSection` por bloque con sus ejercicios (`ExerciseFigure` pequeño + nombre + `DoseLabel`, toque = detalle del ejercicio). **Props:** `routineId`.
+- **Nuevo.** Contenido del detalle: cabecera (categoría, `StatusBadge` si está pausada, título completo, duración, días, momento del día), un `CollapsibleSection` abierto por bloque (nombre en `block-label`, duración y nota en `caption`) con sus ejercicios, y "Pautas" y "Progresión" como `CollapsibleSection` plegados al final (texto en `caption` `text.muted`, interlineado 1.5). Cada ejercicio es una fila-card (`surface.1`, borde `color.border`, `radius.sm`, padding 12 px, 8 px entre filas, contenido alineado arriba): `ExerciseFigure` pequeño + nombre + `DoseLabel`; ejercicio inexistente: su id + "Ejercicio no encontrado" (`TriangleAlert`). Cabeceras plegables con `space.md` sobre la línea separadora. **Props:** `routineId`, `onOpenExercise?` (sin él, las filas no son interactivas; llega con "Mis ejercicios").
 
 ### DayChips
 - **Nuevo.** Fila de 7 letras (L M X J V S D); los días de la rutina rellenos, hoy con borde `color.accent.lime`. **Props:** `days: Weekday[]`, `today?: Weekday`.
 
 ### StatusBadge
-- **Nuevo.** Badge píldora `caption`. **Props:** `status: "partial" | "done" | "pending-sync"` → "Parcial" (tinte `warning`; texto `color.text` en claro, ui_standards §2), "Hecha" (`success`), "Pendiente de sincronizar" (igual, icono `CloudOff`).
+- **Nuevo.** Badge píldora `caption`. **Props:** `status: "partial" | "done" | "pending-sync" | "paused"` → "Pausada" (tinte neutro: `surface.2`, texto `text.muted`, sin icono), "Parcial" (tinte `warning`; texto `color.text` en claro, ui_standards §2), "Hecha" (`success`), "Pendiente de sincronizar" (igual, icono `CloudOff`).
 
 ### ExerciseCard
 - **Nuevo.** Card con `ExerciseFigure` (posición final) sobre el tinte `region.<id>`, título, nivel (`Flame` × 1-3), equipamiento en `caption`. Toda la card abre el detalle. **Props:** `exercise: ExerciseSummary`, `onOpen`.
@@ -126,4 +126,5 @@ n/a: una sola superficie (web).
 
 ## 6. Versioning
 
-- **Última actualización:** 2026-11-12: `SyncBadge` con cinco estados, `Toast` precisado, botón "Actualizar" de `AppShell` desde 640 px y `Tmp` de la feature 001.
+- **Última actualización:** 2026-11-14: `StatusBadge` `paused`, `RoutineCard` y `RoutineDetail` según el prototipo de fitness-coach/002.
+- 2026-11-12: `SyncBadge` con cinco estados, `Toast` precisado, botón "Actualizar" de `AppShell` desde 640 px y `Tmp` de la feature 001.

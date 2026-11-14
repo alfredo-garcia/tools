@@ -69,7 +69,7 @@ Categorías de rutina: `cat.swim-day #6FC3E8` 🏊, `cat.strength #E4572E` 💪,
 
 - **Set:** solo `lucide-react`. Tamaños `icon.sm` 14 (chips, badges, metadatos), `icon.md` 20 (botones, cards), `icon.nav` 24 (navegación) e `icon.guided` 28 (controles del modo guiado).
 - **Estilo:** contorno, trazo 2 px, extremos redondeados.
-- Iconos de referencia: `House` (Inicio), `ListChecks` (Rutinas), `Dumbbell` (Ejercicios), `Play` / `Pause`, `SkipForward`, `ChevronsRight` (saltar ejercicio), `Timer`, `Repeat`, `Check`, `CalendarDays`, `Clock`, `Flame` (nivel), `ArrowDown` / `Equal` / `ArrowUp` (valoración), `Info` ("Aún no se guarda"), `CloudOff` (sin conexión / pendiente de sincronizar), `RefreshCw` (sincronizando), `TriangleAlert` (no se pudo actualizar), `KeyRound` (clave no válida), `Eye` / `EyeOff` (mostrar / ocultar clave), `X` (cerrar sheets y modales).
+- Iconos de referencia: `House` (Inicio), `ListChecks` (Rutinas), `Dumbbell` (Ejercicios), `Play` / `Pause`, `SkipForward`, `ChevronsRight` (saltar ejercicio), `Timer`, `Repeat`, `Check`, `CalendarDays`, `Clock`, `Flame` (nivel), `ArrowDown` / `Equal` / `ArrowUp` (valoración), `Info` ("Aún no se guarda"), `CloudOff` (sin conexión / pendiente de sincronizar), `RefreshCw` (sincronizando), `TriangleAlert` (no se pudo actualizar), `KeyRound` (clave no válida), `Eye` / `EyeOff` (mostrar / ocultar clave), `X` (cerrar sheets y modales), `ChevronLeft` (Atrás), `ChevronDown` (plegar / desplegar secciones).
 - Aún no hay logo: hasta que exista el icono de la PWA, la marca es "My Coach" en texto.
 - Los emoji de categoría son glifos de texto en cards y chips; nunca sustituyen a iconos funcionales.
 
@@ -125,5 +125,5 @@ Solo web (PWA mobile-first).
 
 ## 12. Versioning
 
-- **Última actualización:** 2026-11-12 (aprobado; reglas de contraste en claro y nombres de tokens tomados del design system de Claude Design; iconos de sincronización, clave y cierre añadidos con fitness-coach/001).
+- **Última actualización:** 2026-11-12 (aprobado; reglas de contraste en claro y nombres de tokens tomados del design system de Claude Design; iconos de sincronización, clave y cierre añadidos con fitness-coach/001; `ChevronLeft` y `ChevronDown` añadidos con fitness-coach/002 el 2026-11-14).
 - **Responsable:** Al.

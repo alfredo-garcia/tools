@@ -7,7 +7,7 @@
 > Master doc file(s) touched: `docs/functional-spec.md` (dominio `routines`, mapa de dominios, snapshot, cambios recientes)
 > Date applied: 2026-11-14
 > Test plan: n/a (rigor personal); trazabilidad en `tests/README.md`
-> Reviewed and approved by: pendiente (Al)
+> Reviewed and approved by: Al, 2026-11-14
 
 ## Summary
 

@@ -1,7 +1,7 @@
 # Changelog: Mis rutinas
 
 > Project: `fitness-coach`
-> Merged: pendiente; escrito en la rama `fitness-coach/002-my-routines` antes del merge (tech_standards §15)
+> Merged: merge commit `369a2fb2` en `main` (2026-11-14); escrito en la rama antes del merge (tech_standards §15)
 > Source PRD: `002_my-routines_prd.md`
 > Source UX Flow: `002_my-routines_ux_flow.md`
 > Master doc file(s) touched: `docs/functional-spec.md` (dominio `routines`, mapa de dominios, snapshot, cambios recientes)

@@ -19,10 +19,12 @@ export function RoutineDetailScreen() {
   const router = useRouter();
   const wide = useMediaQuery(MEDIUM_UP);
   const { state } = useSync();
-  const [id, setId] = useState<string | null>(null);
+  // undefined: not read yet; null: nothing stored (a direct launch of /routines/detail)
+  const [id, setId] = useState<string | null | undefined>(undefined);
   const [toast, setToast] = useState(false);
 
-  // The id lives on the device, not in the URL (FR-8); read after mount (sessionStorage)
+  // The id lives on the device, not in the URL (FR-8). sessionStorage only exists in the browser,
+  // and reading it during render would differ from the prerendered HTML, so it is read after mount.
   useEffect(() => {
     const t = setTimeout(() => setId(routinesUi.selected), 0);
     return () => clearTimeout(t);
@@ -42,12 +44,15 @@ export function RoutineDetailScreen() {
   );
 
   const back = useCallback(() => {
-    // Back to the list through history when we came from it, so the browser stack stays right
-    if (window.history.length > 1) router.back();
+    // Opened from the list: history back keeps the browser stack right (and the list's state).
+    // Opened directly (reload, launch): the previous entry may be anything, so go to the list.
+    const fromList = routinesUi.openedFromList;
+    routinesUi.leftDetail();
+    if (fromList) router.back();
     else router.replace("/routines");
   }, [router]);
 
-  const ready = snapshot !== null && id !== null;
+  const ready = snapshot !== null && id !== undefined;
   const content = !ready ? null : routine ? (
     <RoutineDetail
       routine={routine}
@@ -88,7 +93,7 @@ export function RoutineDetailScreen() {
 
   return (
     <>
-      {wide && <RoutinesList />}
+      {wide && <RoutinesList background />}
       <DetailLayer onBack={back} label={routine?.title ?? "Detalle de rutina"} footer={footer}>
         {content}
       </DetailLayer>

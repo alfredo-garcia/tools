@@ -36,7 +36,12 @@ const DAY_NAMES: Record<(typeof WEEKDAYS)[number], string> = {
   sun: "domingo",
 };
 
-export function RoutinesList() {
+type Props = {
+  /** Drawn behind the detail modal (from 640 px): inert, and it does not consume the scroll. */
+  background?: boolean;
+};
+
+export function RoutinesList({ background = false }: Props) {
   const router = useRouter();
   const { state } = useSync();
   const routines = useMemo(() => state.snapshot?.routines ?? [], [state.snapshot]);
@@ -50,12 +55,12 @@ export function RoutinesList() {
 
   // Back from the detail: same scroll as before (AC-15)
   useLayoutEffect(() => {
-    const y = routinesUi.takeScroll();
+    const y = background ? routinesUi.peekScroll() : routinesUi.takeScroll();
     if (y === null) return;
     window.scrollTo(0, y);
     const raf = requestAnimationFrame(() => window.scrollTo(0, y));
     return () => cancelAnimationFrame(raf);
-  }, []);
+  }, [background]);
 
   const { active, paused } = useMemo(() => groupRoutines(routines, filters), [routines, filters]);
   const counts = useMemo(() => filterCounts(routines, filters), [routines, filters]);
@@ -85,73 +90,75 @@ export function RoutinesList() {
   );
 
   return (
-    <Screen current="routines" title="Rutinas">
-      {routines.length === 0 ? (
-        <EmptyState icon={ListChecks} title="Todavía no hay rutinas" />
-      ) : (
-        <div className="flex flex-col gap-md">
-          <div className="flex flex-col gap-3">
-            <FilterOptions label="Día">
-              {(["all", ...WEEKDAYS] as DayFilter[]).map((d) => (
-                <FilterChip
-                  key={d}
-                  selected={filters.day === d}
-                  onSelect={() => setFilters({ ...filters, day: d })}
-                  count={counts.day[d]}
-                  aria-label={d === "all" ? "Todos los días" : DAY_NAMES[d]}
-                  data-testid={`day-filter-${d}`}
-                >
-                  {d === "all" ? "Todos" : DAY_INITIALS[d]}
-                </FilterChip>
-              ))}
-            </FilterOptions>
-            <FilterOptions label="Tipo">
-              {Object.keys(counts.type).map((t) => (
-                <FilterChip
-                  key={t}
-                  selected={filters.type === t}
-                  onSelect={() => setFilters({ ...filters, type: t })}
-                  count={counts.type[t]}
-                  data-testid={`type-filter-${t}`}
-                >
-                  {t === "all"
-                    ? "Todos"
-                    : categories?.[t]
-                      ? `${CATEGORY_EMOJI[t] ?? ""} ${categories[t].label}`.trim()
-                      : t}
-                </FilterChip>
-              ))}
-            </FilterOptions>
-          </div>
-
-          {active.length === 0 && paused.length === 0 && (
-            <EmptyState
-              icon={ListChecks}
-              title="Ninguna rutina con estos filtros"
-              action={
-                <Button
-                  variant="secondary"
-                  onClick={() => setFilters({ day: "all", type: "all" })}
-                  data-testid="clear-filters-button"
-                >
-                  Quitar filtros
-                </Button>
-              }
-            />
-          )}
-
-          {active.length > 0 && (
-            <div className="grid grid-cols-1 gap-3 medium:grid-cols-2">{active.map(card)}</div>
-          )}
-
-          {paused.length > 0 && (
-            <div className="flex flex-col gap-3 pt-sm">
-              <SectionHeader title="Pausadas" />
-              <div className="grid grid-cols-1 gap-3 medium:grid-cols-2">{paused.map(card)}</div>
+    <div inert={background} aria-hidden={background || undefined}>
+      <Screen current="routines" title="Rutinas">
+        {routines.length === 0 ? (
+          <EmptyState icon={ListChecks} title="Todavía no hay rutinas" />
+        ) : (
+          <div className="flex flex-col gap-md">
+            <div className="flex flex-col gap-3">
+              <FilterOptions label="Día">
+                {(["all", ...WEEKDAYS] as DayFilter[]).map((d) => (
+                  <FilterChip
+                    key={d}
+                    selected={filters.day === d}
+                    onSelect={() => setFilters({ ...filters, day: d })}
+                    count={counts.day[d]}
+                    aria-label={d === "all" ? "Todos los días" : DAY_NAMES[d]}
+                    data-testid={`day-filter-${d}`}
+                  >
+                    {d === "all" ? "Todos" : DAY_INITIALS[d]}
+                  </FilterChip>
+                ))}
+              </FilterOptions>
+              <FilterOptions label="Tipo">
+                {Object.keys(counts.type).map((t) => (
+                  <FilterChip
+                    key={t}
+                    selected={filters.type === t}
+                    onSelect={() => setFilters({ ...filters, type: t })}
+                    count={counts.type[t]}
+                    data-testid={`type-filter-${t}`}
+                  >
+                    {t === "all"
+                      ? "Todos"
+                      : categories?.[t]
+                        ? `${CATEGORY_EMOJI[t] ?? ""} ${categories[t].label}`.trim()
+                        : t}
+                  </FilterChip>
+                ))}
+              </FilterOptions>
             </div>
-          )}
-        </div>
-      )}
-    </Screen>
+
+            {active.length === 0 && paused.length === 0 && (
+              <EmptyState
+                icon={ListChecks}
+                title="Ninguna rutina con estos filtros"
+                action={
+                  <Button
+                    variant="secondary"
+                    onClick={() => setFilters({ day: "all", type: "all" })}
+                    data-testid="clear-filters-button"
+                  >
+                    Quitar filtros
+                  </Button>
+                }
+              />
+            )}
+
+            {active.length > 0 && (
+              <div className="grid grid-cols-1 gap-3 medium:grid-cols-2">{active.map(card)}</div>
+            )}
+
+            {paused.length > 0 && (
+              <div className="flex flex-col gap-3 pt-sm">
+                <SectionHeader title="Pausadas" />
+                <div className="grid grid-cols-1 gap-3 medium:grid-cols-2">{paused.map(card)}</div>
+              </div>
+            )}
+          </div>
+        )}
+      </Screen>
+    </div>
   );
 }

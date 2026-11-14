@@ -67,6 +67,7 @@ Written before the code (qa-engineer Mode C). Same rule: a seam changes only thr
 | AC-1 … AC-19 | `e2e/002-my-routines.spec.ts`, one test per AC titled `[fitness-coach/002] AC-n` (AC-14 has two) |
 | FR-2, FR-3, FR-5 logic | `src/lib/domain/routines.test.ts` (order, filters, counts, day labels, dose formats) |
 | UX Flow 2.2 (modal from 640 px) | `e2e/002-my-routines.spec.ts`, "pantalla ancha" |
+| Independent review (2026-11-14) | `e2e/002-my-routines.spec.ts`, "revisión independiente": detail with no stored routine, Back after a reload, AC-15 from 640 px, focus kept in the modal, FR-8 detail offline from the service worker |
 
 ## Test changes after the tests were written
 

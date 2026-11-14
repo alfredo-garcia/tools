@@ -11,6 +11,7 @@ const SELECTED_KEY = "fc.routines.selected";
 let filters: RoutineFilters = { day: "all", type: "all" };
 let scrollY: number | null = null;
 let selected: string | null = null;
+let fromList = false;
 
 export const routinesUi = {
   get filters() {
@@ -28,13 +29,26 @@ export const routinesUi = {
     scrollY = null;
     return y;
   },
+  /** For the list drawn behind the modal: same position, left for the real list to take. */
+  peekScroll(): number | null {
+    return scrollY;
+  },
+  /** True when the detail was opened from the list in this app session (so Back = history back). */
+  get openedFromList() {
+    return fromList;
+  },
   select(id: string) {
     selected = id;
+    fromList = true;
     try {
       sessionStorage.setItem(SELECTED_KEY, id);
     } catch {
       // storage blocked: memory is enough while the app stays open
     }
+  },
+  /** The detail is leaving: a later direct launch of /routines/detail is not "from the list". */
+  leftDetail() {
+    fromList = false;
   },
   get selected(): string | null {
     if (selected) return selected;

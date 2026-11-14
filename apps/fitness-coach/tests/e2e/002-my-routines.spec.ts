@@ -5,7 +5,7 @@
  * - Elements are found by the UX Flow names, as `data-testid` (tests/README.md).
  * - Default project: mobile viewport. "Pantalla ancha" blocks switch to 1024 × 720.
  */
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type BrowserContext, type Page } from "@playwright/test";
 import { detailSnapshot, longListSnapshot, routinesSnapshot } from "../fixtures/routines";
 import {
   H,
@@ -330,3 +330,89 @@ test.describe("[fitness-coach/002] pantalla ancha", () => {
     await expect(page.getByRole("dialog")).toHaveCount(0);
   });
 });
+
+test.describe("[fitness-coach/002] revisión independiente", () => {
+  test("[fitness-coach/002] FR-4: abrir el detalle sin rutina guardada muestra «Esta rutina ya no está» y vuelve a la lista", async ({
+    page,
+  }) => {
+    await firstSync(page, api, routinesSnapshot());
+    await page.goto("/routines/detail"); // direct launch: nothing stored for this tab
+    await expect(page.getByText("Esta rutina ya no está")).toBeVisible();
+    await page.getByTestId("back-to-list-button").click();
+    await expect(page).toHaveURL(/\/routines$/);
+  });
+
+  test("[fitness-coach/002] FR-4: tras recargar el detalle, «Atrás» lleva a Rutinas", async ({
+    page,
+  }) => {
+    await openDetail(page);
+    await page.reload();
+    await expect(page.getByRole("heading", { level: 1, name: "Rutina de detalle" })).toBeVisible();
+    await page.getByTestId("back-button").click();
+    await expect(page).toHaveURL(/\/routines$/);
+  });
+
+  test.describe("pantalla ancha", () => {
+    test.use(DESKTOP);
+
+    test("[fitness-coach/002] AC-15 (≥ 640 px): al cerrar el modal, la lista sigue en la misma posición", async ({
+      page,
+    }) => {
+      await openRoutines(page, longListSnapshot(24));
+      const target = card(page, "Rutina de relleno 22");
+      await target.scrollIntoViewIfNeeded();
+      const before = await page.evaluate(() => window.scrollY);
+      expect(before).toBeGreaterThan(200);
+      await target.click();
+      await expect(page.getByRole("dialog")).toBeVisible();
+      await page.getByTestId("back-button").click();
+      await expect(page.getByRole("dialog")).toHaveCount(0);
+      await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(before - 40);
+    });
+
+    test("[fitness-coach/002] UX Flow 2.2: con el modal abierto, la lista de detrás no recibe el foco", async ({
+      page,
+    }) => {
+      await openDetail(page);
+      for (let i = 0; i < 8; i++) {
+        await page.keyboard.press("Tab");
+        const inside = await page.evaluate(
+          () => !!document.activeElement?.closest('[role="dialog"]'),
+        );
+        expect(inside).toBe(true);
+      }
+    });
+  });
+
+  test.describe("sin conexión con service worker", () => {
+    test.use({ serviceWorkers: "allow" });
+
+    test("[fitness-coach/002] FR-8: el detalle abre sin conexión desde la caché", async ({
+      page,
+      context,
+    }) => {
+      await firstSync(page, api, detailSnapshot());
+      await page.evaluate(async () => {
+        await navigator.serviceWorker.ready;
+      });
+      await page.reload(); // the service worker controls the page and has the shells cached
+      await page.getByTestId("nav-routines").click();
+      await card(page, "Rutina de detalle").click();
+      await expect(
+        page.getByRole("heading", { level: 1, name: "Rutina de detalle" }),
+      ).toBeVisible();
+
+      await goOffline(context);
+      await page.reload();
+      await expect(
+        page.getByRole("heading", { level: 1, name: "Rutina de detalle" }),
+      ).toBeVisible();
+      await expect(page.getByTestId("start-routine-button")).toBeVisible();
+    });
+  });
+});
+
+async function goOffline(context: BrowserContext) {
+  await context.setOffline(true);
+  api.offline = true;
+}

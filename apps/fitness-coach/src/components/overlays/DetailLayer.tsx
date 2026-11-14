@@ -4,6 +4,9 @@ import { useEffect, useRef, type ReactNode } from "react";
 import { MEDIUM_UP, useMediaQuery } from "@/components/common/useMediaQuery";
 import { Button } from "@/components/inputs/Button";
 
+const FOCUSABLE =
+  'button:not([disabled]), input:not([disabled]), [href], [tabindex]:not([tabindex="-1"])';
+
 type Props = {
   onBack: () => void;
   /** Accessible name of the dialog (from 640 px). */
@@ -15,7 +18,7 @@ type Props = {
 
 /**
  * Kit `DetailLayer`: full screen below 640 px (the page itself scrolls), a 720 px modal over the
- * screen behind from 640 px (scrim, Escape closes, focus moves inside). "Atrás" at the top left.
+ * screen behind from 640 px (scrim, Escape closes, focus moves inside and Tab stays there). "Atrás" at the top left.
  */
 export function DetailLayer({ onBack, label, children, footer }: Props) {
   const wide = useMediaQuery(MEDIUM_UP);
@@ -25,7 +28,21 @@ export function DetailLayer({ onBack, label, children, footer }: Props) {
     if (!wide) return;
     panel.current?.focus();
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onBack();
+      if (e.key === "Escape") return onBack();
+      if (e.key !== "Tab" || !panel.current) return;
+      // Keep Tab inside the dialog (the screen behind is inert as well)
+      const items = [...panel.current.querySelectorAll<HTMLElement>(FOCUSABLE)];
+      if (items.length === 0) return;
+      const first = items[0];
+      const last = items[items.length - 1];
+      const active = document.activeElement;
+      if (e.shiftKey && (active === first || active === panel.current)) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && (active === last || !panel.current.contains(active))) {
+        e.preventDefault();
+        first.focus();
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);

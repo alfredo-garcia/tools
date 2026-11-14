@@ -9,6 +9,7 @@ import { expect, test, type Page } from "@playwright/test";
 import { detailSnapshot, longListSnapshot, routinesSnapshot } from "../fixtures/routines";
 import {
   H,
+  MIN,
   SnapshotApi,
   T0,
   firstSync,
@@ -58,8 +59,8 @@ test.describe("[fitness-coach/002] US-1 lista de rutinas", () => {
     await expect(cards(page)).toHaveCount(5);
     await expect(pausedHeader(page)).toBeVisible();
     expect(await titles(page)).toEqual([
-      "Natación técnica",
       "Fuerza de pierna",
+      "Natación técnica",
       "Esterilla de core",
       "Express de 10 minutos",
       "Cardio suave en bici",
@@ -124,7 +125,7 @@ test.describe("[fitness-coach/002] US-2 filtros", () => {
     await openRoutines(page);
     await page.getByTestId("day-filter-mon").click();
     await expect(page.getByTestId("day-filter-mon")).toHaveAttribute("aria-pressed", "true");
-    await expect.poll(() => titles(page)).toEqual(["Natación técnica", "Fuerza de pierna"]);
+    await expect.poll(() => titles(page)).toEqual(["Fuerza de pierna", "Natación técnica"]);
     await expect(pausedHeader(page)).toHaveCount(0);
 
     await page.getByTestId("day-filter-tue").click();
@@ -260,7 +261,8 @@ test.describe("[fitness-coach/002] US-3 detalle", () => {
     await openDetail(page);
     const without = routinesSnapshot(); // same data without «Rutina de detalle»
     api.respondOk(without, '"etag-2"');
-    await toForeground(page); // FR-6 trigger of 001
+    await setTime(page, T0 + 2 * MIN); // FR-6b of 001: only after more than 1 min
+    await toForeground(page);
     await expect(page.getByText("Esta rutina ya no está")).toBeVisible();
     await expect(page.getByTestId("start-routine-button")).toHaveCount(0);
     await page.getByTestId("back-to-list-button").click();

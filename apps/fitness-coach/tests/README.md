@@ -79,6 +79,9 @@ Written before the code (qa-engineer Mode C). Same rule: a seam changes only thr
 | 2026-11-13 | `e2e` AC-9 | Waits for the held request to reach the mock before reading `during` | Race in the test: the badge shows "Sincronizando…" a moment before the request is counted, so `during` could be one short. The assertion (`count` unchanged by other triggers) is the same |
 | 2026-11-13 | `playwright.config.ts` | `workers: 4` | With 12–16 parallel workers, tests timed out waiting for the first render under CPU load; no assertion or timeout changed |
 | 2026-11-14 | `e2e/001` AC-18 | Only Ejercicios is still checked for "Próximamente"; Rutinas keeps the navigation checks | Superseded behavior: PRD 002 replaces the provisional Rutinas screen (SCR-routines-list), and `e2e/002` covers the new one. **Needs Al's approval** |
+| 2026-11-14 | `e2e/002` AC-1, AC-6 | Expected order "Fuerza de pierna" before "Natación técnica" | Test-data error: both are Monday routines, and FR-2 orders by title after the first day; the prototype's sample order was not the rule. Same assertions |
+| 2026-11-14 | `e2e/002` AC-16 | Moves the clock 2 min forward before `toForeground` | Setup error: 001's FR-6b only refreshes on return after more than 1 min. The assertions are the same |
+| 2026-11-14 | `fixtures/routines.ts` | `as unknown as SnapshotDoc["vocabularies"]` on the vocabularies | Type-only: the fixture type was inferred from `makeSnapshot`'s single category |
 
 ## Verification record: fitness-coach/001 (qa-engineer, Mode D)
 

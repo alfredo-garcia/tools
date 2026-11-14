@@ -72,7 +72,8 @@ function genericExercises() {
 }
 
 /**
- * Four active routines and one paused (as in the prototype):
+ * Four active routines and one paused (as in the prototype). Listed order (FR-2): Fuerza de
+ * pierna, Natación técnica (both Monday, by title), Esterilla de core, Express; then Cardio.
  * - Natación técnica · swim-day · L X V · ~60 min · 6 ejercicios
  * - Fuerza de pierna · strength · L J · ~40 min · 7 ejercicios (2 bloques: 3 + 4)
  * - Esterilla de core · mobility · M J S · ~25 min · 8 ejercicios
@@ -125,7 +126,7 @@ export function routinesSnapshot(): SnapshotDoc {
     exercises: genericExercises() as unknown as SnapshotDoc["exercises"],
     routines: routines as unknown as SnapshotDoc["routines"],
     vocabularies: {
-      ...base.vocabularies,
+      ...(base.vocabularies as Record<string, unknown>),
       categories: {
         "swim-day": { label: "Natación" },
         strength: { label: "Fuerza" },
@@ -133,7 +134,7 @@ export function routinesSnapshot(): SnapshotDoc {
         express: { label: "Express" },
         cardio: { label: "Cardio" },
       },
-    },
+    } as unknown as SnapshotDoc["vocabularies"],
   };
 }
 
@@ -198,7 +199,7 @@ export function detailSnapshot(
     vocabularies: {
       ...base.vocabularies,
       resistances: { green: { label: "banda verde" } },
-    },
+    } as unknown as SnapshotDoc["vocabularies"],
   };
 }
 

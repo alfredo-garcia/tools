@@ -530,7 +530,7 @@ test.describe("[fitness-coach/001] US-6 instalable", () => {
 });
 
 test.describe("[fitness-coach/001] US-7 marco de la app", () => {
-  test("[fitness-coach/001] AC-18: en móvil, barra inferior con Inicio activo; Rutinas y Ejercicios dicen «Próximamente»", async ({
+  test("[fitness-coach/001] AC-18: en móvil, barra inferior con Inicio activo; Ejercicios dice «Próximamente»", async ({
     page,
   }) => {
     await firstSync(page, api);
@@ -542,9 +542,10 @@ test.describe("[fitness-coach/001] US-7 marco de la app", () => {
     const box = await home.boundingBox();
     expect(box!.y).toBeGreaterThan(page.viewportSize()!.height / 2); // at the bottom
 
+    // Rutinas stopped being provisional with fitness-coach/002 (its own tests cover the screen).
     for (const nav of ["nav-routines", "nav-exercises"]) {
       await page.getByTestId(nav).click();
-      await expect(page.getByText("Próximamente")).toBeVisible();
+      if (nav === "nav-exercises") await expect(page.getByText("Próximamente")).toBeVisible();
       await expect(page.getByTestId(nav)).toHaveAttribute("aria-current", "page");
       await expect(page.getByTestId("nav-home")).toBeVisible();
     }

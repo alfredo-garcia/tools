@@ -50,6 +50,25 @@ The acceptance tests were written before the code. The implementation must provi
 | PRD §10 | unit: empty sessions, missing program, no active routines; e2e: storage unavailable, 409 client_outdated, browser data cleared |
 | PRD §11 performance (< 1 s cached open, < 5 s refresh, < 300 KB) | **Manual** on the phone before the first deploy, together with the Drive integration check (tech_standards §14, §17) |
 
+## Test contract for fitness-coach/002
+
+Written before the code (qa-engineer Mode C). Same rule: a seam changes only through qa-engineer.
+
+| Seam | Signature |
+|---|---|
+| `src/lib/domain/routines.ts` | `RoutineLike`; `routineExerciseCount(r)`, `sortRoutines(list)`, `groupRoutines(list, { day, type }) → { active, paused }`, `filterCounts(list, { day, type }) → { day, type }`, `daysAria(days?)`, `formatDose(item, routineRest?, laterality?)` (pure, no React) |
+| UI | UX Flow 002 names as `data-testid`: `routine-card`, `day-filter-<all\|mon…sun>`, `type-filter-<all\|category>`, `clear-filters-button`, `block-section-<block id>`, `exercise-row`, `guidelines-section`, `progression-section`, `start-routine-button`, `guided-mode-toast`, `back-button`, `back-to-list-button`. Card titles are `h3`; the detail title is the page's `h1`; `DayChips` is `role="img"` with `aria-label` "Días: L · J". The list scrolls the window (AC-15). From 640 px the detail is a `role="dialog"` |
+| Fixtures | `tests/fixtures/routines.ts` (`routinesSnapshot`, `detailSnapshot`, `longListSnapshot`), synthetic |
+
+## Traceability: fitness-coach/002
+
+| AC | Test |
+|---|---|
+| AC-1 … AC-19 | `e2e/002-my-routines.spec.ts`, one test per AC titled `[fitness-coach/002] AC-n` (AC-14 has two) |
+| FR-2, FR-3, FR-5 logic | `src/lib/domain/routines.test.ts` (order, filters, counts, day labels, dose formats) |
+| UX Flow 2.2 (modal from 640 px) | `e2e/002-my-routines.spec.ts`, "pantalla ancha" |
+| Independent review (2026-11-14) | `e2e/002-my-routines.spec.ts`, "revisión independiente": detail with no stored routine, Back after a reload, AC-15 from 640 px, focus kept in the modal, FR-8 detail offline from the service worker |
+
 ## Test changes after the tests were written
 
 | Date | Test | Change | Why (qa-engineer) |
@@ -60,6 +79,10 @@ The acceptance tests were written before the code. The implementation must provi
 | 2026-11-13 | `e2e` AC-2 | New assertion: after the online sync no service-worker cache holds a `/api/` URL (and the caches are not empty) | Stronger: proves the high-risk rule of tech_standards §17 (§5/§10) and PRD §11; T6 review |
 | 2026-11-13 | `e2e` AC-9 | Waits for the held request to reach the mock before reading `during` | Race in the test: the badge shows "Sincronizando…" a moment before the request is counted, so `during` could be one short. The assertion (`count` unchanged by other triggers) is the same |
 | 2026-11-13 | `playwright.config.ts` | `workers: 4` | With 12–16 parallel workers, tests timed out waiting for the first render under CPU load; no assertion or timeout changed |
+| 2026-11-14 | `e2e/001` AC-18 | Only Ejercicios is still checked for "Próximamente"; Rutinas keeps the navigation checks | Superseded behavior: PRD 002 replaces the provisional Rutinas screen (SCR-routines-list), and `e2e/002` covers the new one. Approved by Al, 2026-11-14 |
+| 2026-11-14 | `e2e/002` AC-1, AC-6 | Expected order "Fuerza de pierna" before "Natación técnica" | Test-data error: both are Monday routines, and FR-2 orders by title after the first day; the prototype's sample order was not the rule. Same assertions |
+| 2026-11-14 | `e2e/002` AC-16 | Moves the clock 2 min forward before `toForeground` | Setup error: 001's FR-6b only refreshes on return after more than 1 min. The assertions are the same |
+| 2026-11-14 | `fixtures/routines.ts` | `as unknown as SnapshotDoc["vocabularies"]` on the vocabularies | Type-only: the fixture type was inferred from `makeSnapshot`'s single category |
 
 ## Verification record: fitness-coach/001 (qa-engineer, Mode D)
 

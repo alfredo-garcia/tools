@@ -1,6 +1,6 @@
 // Service worker build (ADR 004): `serwist build` runs after `next build` (Turbopack) and
 // precaches .next/static (fonts included), public/ and the prerendered pages (/, /routines,
-// /exercises).
+// /routines/detail, /exercises).
 import { generateGlobPatterns, serwist } from "@serwist/next/config";
 
 export default serwist({

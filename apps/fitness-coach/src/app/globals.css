@@ -36,20 +36,6 @@
   --breakpoint-medium: 640px;
   --breakpoint-large: 1280px;
 
-  /* Category and region tints (§2): backgrounds and chips only, never text */
-  --color-cat-swim-day: #6fc3e8;
-  --color-cat-strength: #e4572e;
-  --color-cat-mobility: #7bd88f;
-  --color-cat-express: #f2c14e;
-  --color-cat-cardio: #f58fb5;
-  --color-region-core: #e0a458;
-  --color-region-lower-body: #f28b6b;
-  --color-region-upper-body: #6fc3e8;
-  --color-region-full-body: #b7e04a;
-  --color-figure-base: var(--color-text-muted);
-  --color-figure-move: var(--color-primary-500);
-  --color-figure-band: var(--color-success-500);
-
   /* Typography (§3): text-display, text-heading-1… with their line height and weight */
   --text-display: 32px;
   --text-display--line-height: 1.15;
@@ -100,6 +86,26 @@
   --icon-md: 20px;
   --icon-nav: 24px;
   --icon-guided: 28px;
+}
+
+/*
+ * Tints and figure colors are read from inline styles and SVG classes built at runtime
+ * (color-mix over the category or region), so they are always emitted, used by a class or not.
+ */
+@theme static {
+  /* Category and region tints (§2): backgrounds and chips only, never text */
+  --color-cat-swim-day: #6fc3e8;
+  --color-cat-strength: #e4572e;
+  --color-cat-mobility: #7bd88f;
+  --color-cat-express: #f2c14e;
+  --color-cat-cardio: #f58fb5;
+  --color-region-core: #e0a458;
+  --color-region-lower-body: #f28b6b;
+  --color-region-upper-body: #6fc3e8;
+  --color-region-full-body: #b7e04a;
+  --color-figure-base: var(--color-text-muted);
+  --color-figure-move: var(--color-primary-500);
+  --color-figure-band: var(--color-success-500);
 }
 
 :root {

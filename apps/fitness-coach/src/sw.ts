@@ -21,7 +21,7 @@ const isApi = (url: URL) => sameOrigin(url) && url.pathname.startsWith("/api/");
  * The app shells. They are static client pages with no data (the data comes from IndexedDB), so
  * caching them is safe. Never widen this to server-rendered pages that could carry health data.
  */
-const SHELL_PATHS = new Set(["/", "/routines", "/exercises"]);
+const SHELL_PATHS = new Set(["/", "/routines", "/routines/detail", "/exercises"]);
 
 const serwist = new Serwist({
   // Build assets, public files and the prerendered pages; never /api/**
